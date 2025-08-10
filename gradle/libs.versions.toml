@@ -6,6 +6,7 @@ appcompat = "1.7.1"
 webkit = "1.14.0"
 viewpager2 = "1.1.0"
 cardview = "1.0.0"
+retrofit = "2.11.0"
 constraint_layout = "2.2.1"
 lifecycleProcess = "2.9.2"
 coroutine = "1.10.2"
@@ -38,6 +39,8 @@ media3_exoplayer_dash = { module = "androidx.media3:media3-exoplayer-dash", vers
 media3_session = { module = "androidx.media3:media3-session", version.ref = "media3player" }
 media3-datasource = { module = "androidx.media3:media3-datasource", version.ref = "media3player" }
 media3_ui = { module = "androidx.media3:media3-ui", version.ref = "media3player" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit_converter_gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
