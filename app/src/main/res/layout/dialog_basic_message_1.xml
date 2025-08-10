@@ -130,6 +130,7 @@
                         android:fontFamily="@font/application_font_family"
                         android:gravity="center"
                         android:maxLines="1"
+                        android:textStyle="bold"
                         android:text="@string/title_okay"
                         android:textColor="@color/color_on_secondary"
                         android:textSize="@dimen/normal_text_size"

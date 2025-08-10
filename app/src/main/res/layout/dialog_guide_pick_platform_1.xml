@@ -95,6 +95,7 @@
                     android:ellipsize="end"
                     android:fontFamily="@font/application_font_family"
                     android:gravity="center"
+                    android:textStyle="bold"
                     android:maxLines="1"
                     android:text="@string/title_okay"
                     android:textColor="@color/color_on_secondary"

@@ -150,7 +150,7 @@
     <string name="text_clear_from_list">Clear from list</string>
     <string name="text_media_file_has_deleted">Media file has been deleted.</string>
     <string name="text_show_download_info">Show download info…</string>
-    <string name="text_rename_file">Rename the file</string>
+    <string name="text_rename_file">Rename file</string>
     <string name="text_discover_more">Discover more</string>
     <string name="text_you_dont_have_any_downloads"><b>You don\'t have any downloads</b>\nGo and download something!</string>
     <string name="text_share_with_others">Share with others</string>
@@ -383,7 +383,7 @@
     <string name="text_fb_how_to_guide_1">Tap the <b><u>Share</u></b> button under the video, then select <b><u>Copy Link</u></b> to save the video’s web address for sharing or later use.</string>
     <string name="text_fb_how_to_guide_2">Return to this app, <b><u>paste the copied link</u></b> into the provided box, and press <b><u>download</u></b> icon to save the video.</string>
     <string name="text_fb_how_to_guide_3">After pasting the video link into the app’s input field, tap the <b>download</b> icon to see the available download options.</string>
-    <string name="text_fb_how_to_guide_4">Simply tap the <b><u>Download</u></b> button to save the Facebook video or reel directly to your phone’s storage for offline viewing.</string>
+    <string name="text_fb_how_to_guide_4">Simply tap the <b><u>Download</u></b> button to save the Facebook video or reel directly to phone’s storage for offline viewing.</string>
     <string name="title_pick_video_hosting_platform">Select Video Sharing Platform</string>
     <string name="title_copied_link">Copied Link</string>
     <string name="title_open_the_link">Open The Link</string>
@@ -481,5 +481,7 @@
     <string name="text_loading_downloads_data">Loading downloads data…</string>
     <string name="text_aio_github_privacy_policy">https://github.com/shibaFoss/AIO-Video-Downloader/blob/master/PRIVACY_POLICY.md</string>
     <string name="text_open_original_site">Downloaded site</string>
+    <string name="text_share_the_file">Share the file</string>
+    <string name="text_open_the_file">Open the file</string>
 
 </resources>
