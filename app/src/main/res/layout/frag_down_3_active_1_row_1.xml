@@ -105,8 +105,9 @@
                     android:gravity="center_vertical"
                     android:singleLine="true"
                     android:text="@string/text__"
+                    android:textStyle="bold"
                     android:textColor="@color/color_text_hint"
-                    android:textSize="@dimen/smaller_text_size"
+                    android:textSize="@dimen/smallest_text_size"
                     tools:ignore="TextContrastCheck" />
             </RelativeLayout>
 
