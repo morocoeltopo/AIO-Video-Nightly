@@ -68,7 +68,7 @@ class BrowserFragmentTop(val browserFragment: BrowserFragment) {
 	 */
 	private fun initializeViews(layoutView: View?) {
 		layoutView?.let { _ ->
-			browserTopTitleSection = layoutView.findViewById(R.id.top_layout_actionbar_section)
+			browserTopTitleSection = layoutView.findViewById(R.id.top_actionbar_section)
 			browserUrlEditFieldContainer = layoutView.findViewById(R.id.top_url_edit_section)
 			browserUrlEditField = layoutView.findViewById(R.id.edit_field_url)
 			webViewReloadButton = layoutView.findViewById(R.id.btn_browser_reload)

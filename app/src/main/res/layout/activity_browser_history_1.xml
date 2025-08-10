@@ -1,12 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-BROWSER HISTORY ACTIVITY LAYOUT
-Displays user's browsing history with:
-1. Action bar with title and clear button
-2. Empty state indicator when no history exists
-3. ListView for history items
-4. Load more button at bottom
--->
-
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -17,16 +9,8 @@ Displays user's browsing history with:
     tools:context="app.ui.main.fragments.browser.activities.BookmarksActivity"
     tools:ignore="UseCompatTextViewDrawableXml,UseAppTint,VisualLintBounds">
 
-    <!--
-    TOP ACTION BAR SECTION
-    Contains back button, title, and clear history button
-    Features:
-    - Fixed height of 50dp
-    - Rounded corners (10dp radius)
-    - Standard margins (15dp sides, 10dp top)
-    -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/top_layout_actionbar_section"
+        android:id="@+id/top_actionbar_section"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_50"
         android:layout_alignParentTop="true"
@@ -42,7 +26,6 @@ Displays user's browsing history with:
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- Back button (left side) -->
             <RelativeLayout
                 android:id="@+id/btn_left_actionbar"
                 android:layout_width="@dimen/_50"
@@ -51,7 +34,6 @@ Displays user's browsing history with:
                 android:clickable="true"
                 tools:ignore="SpeakableTextPresentCheck">
 
-                <!-- Back arrow icon -->
                 <ImageView
                     android:id="@+id/btn_left_actionbar_img"
                     android:layout_width="@dimen/_30"
@@ -64,9 +46,8 @@ Displays user's browsing history with:
                     tools:ignore="ImageContrastCheck" />
             </RelativeLayout>
 
-            <!-- Center title -->
             <TextView
-                android:id="@+id/title_actionbar"
+                android:id="@+id/txt_actionbar"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginStart="@dimen/_10"
@@ -83,7 +64,6 @@ Displays user's browsing history with:
                 android:textSize="@dimen/title_text_size"
                 android:textStyle="bold" />
 
-            <!-- Clear history button (right side) -->
             <RelativeLayout
                 android:id="@+id/btn_right_actionbar"
                 android:layout_width="@dimen/_50"
@@ -93,7 +73,6 @@ Displays user's browsing history with:
                 android:clickable="true"
                 tools:ignore="SpeakableTextPresentCheck">
 
-                <!-- Clear (X) icon -->
                 <ImageView
                     android:id="@+id/btn_right_actionbar_img"
                     android:layout_width="@dimen/_30"
@@ -108,15 +87,6 @@ Displays user's browsing history with:
         </RelativeLayout>
     </androidx.cardview.widget.CardView>
 
-    <!--
-    EMPTY STATE INDICATOR
-    Shown when no browsing history exists
-    Features:
-    - Centered in parent
-    - Empty box illustration
-    - Informational text
-    - Rounded corners (10dp radius)
-    -->
     <androidx.cardview.widget.CardView
         android:id="@+id/empty_history_indicator"
         android:layout_width="match_parent"
@@ -137,9 +107,7 @@ Displays user's browsing history with:
             android:orientation="vertical"
             tools:ignore="UseCompoundDrawables">
 
-            <!-- Empty box illustration -->
             <ImageView
-                android:id="@+id/img_empty_box"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|center_horizontal"
@@ -149,7 +117,6 @@ Displays user's browsing history with:
                 android:importantForAccessibility="no"
                 android:src="@drawable/image_empty_box" />
 
-            <!-- Empty state message -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -166,20 +133,12 @@ Displays user's browsing history with:
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!--
-    HISTORY LIST VIEW
-    Primary content area showing browsing history
-    Features:
-    - Takes remaining space between action bar and bottom section
-    - 8dp margins top/bottom
-    - Transparent divider between items
-    -->
     <ListView
         android:id="@+id/list_history"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/bottom_section"
-        android:layout_below="@+id/top_layout_actionbar_section"
+        android:layout_below="@+id/top_actionbar_section"
         android:layout_marginStart="@dimen/_0"
         android:layout_marginTop="@dimen/_8"
         android:layout_marginEnd="@dimen/_0"
@@ -187,15 +146,6 @@ Displays user's browsing history with:
         android:divider="@color/transparent"
         android:visibility="visible" />
 
-    <!--
-    BOTTOM SECTION
-    Contains the "Load More" action button
-    Features:
-    - Fixed to bottom of screen
-    - Secondary colored button with plus icon
-    - Standard margins (15dp horizontal, 10dp bottom)
-    - Elevation for depth
-    -->
     <LinearLayout
         android:id="@+id/bottom_section"
         android:layout_width="match_parent"
@@ -203,7 +153,6 @@ Displays user's browsing history with:
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
 
-        <!-- Load More button -->
         <RelativeLayout
             android:id="@+id/btn_load_more_history"
             android:layout_width="match_parent"
@@ -217,7 +166,6 @@ Displays user's browsing history with:
             android:elevation="@dimen/_2"
             tools:ignore="UselessParent,TouchTargetSizeCheck">
 
-            <!-- Button label with plus icon -->
             <TextView
                 android:id="@+id/btn_dialog_positive"
                 android:layout_width="wrap_content"

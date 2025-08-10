@@ -1,11 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-    Download Location Selection Dialog
-    =================================
-    Allows users to choose where downloaded files are saved:
-    - Private app folder (hidden from system gallery)
-    - Public system gallery folder (visible to other apps)
-    Features radio-style selection with visual feedback
--->
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,12 +7,6 @@
     android:layout_height="wrap_content"
     tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
 
-    <!--
-        Root Card Container
-        - Elevated card with rounded corners (10dp)
-        - Background matches app theme
-        - Margins for visual separation from screen edges
-    -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,24 +18,17 @@
         app:cardCornerRadius="@dimen/_10"
         app:cardElevation="@dimen/_5">
 
-        <!-- Main content container - vertical layout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!--
-                Title Section
-                - Surface color background
-                - Centered bold text
-                - Single line with ellipsis if needed
-                - 10dp padding on all sides
-            -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/color_surface"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/txt_dialog_title"
@@ -65,12 +45,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!--
-                Location Options Radio Group
-                - Vertical layout for option buttons
-                - 15dp horizontal margins
-                - 10dp top / 5dp bottom margins
-            -->
             <LinearLayout
                 android:id="@+id/radio_group"
                 android:layout_width="match_parent"
@@ -81,12 +55,6 @@
                 android:layout_marginBottom="@dimen/_5"
                 android:orientation="vertical">
 
-                <!--
-                    Private Folder Option (Default Selected)
-                    - Checked radio button (filled circle)
-                    - Press state selector background
-                    - Two-line description
-                -->
                 <LinearLayout
                     android:id="@+id/button_app_private_folder"
                     android:layout_width="match_parent"
@@ -99,7 +67,6 @@
                     android:clickable="true"
                     android:orientation="horizontal">
 
-                    <!-- Radio button indicator (checked state) -->
                     <ImageView
                         android:id="@+id/btn_app_private_folder_radio"
                         android:layout_width="wrap_content"
@@ -112,7 +79,6 @@
                         android:tint="@color/color_secondary"
                         tools:ignore="ImageContrastCheck" />
 
-                    <!-- Option description container -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -123,21 +89,20 @@
                         android:layout_weight="1"
                         android:orientation="vertical">
 
-                        <!-- Primary option text -->
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/application_font_family"
                             android:text="@string/title_private_folder"
                             android:textColor="@color/color_text_primary"
-                            android:textSize="@dimen/normal_text_size" />
+                            android:textSize="@dimen/normal_text_size"
+                            android:textStyle="bold" />
 
-                        <!-- Secondary description text -->
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="@dimen/_0"
-                            android:layout_marginTop="@dimen/_2"
+                            android:layout_marginTop="@dimen/_0"
                             android:layout_marginEnd="@dimen/_0"
                             android:layout_marginBottom="@dimen/_0"
                             android:fontFamily="@font/application_font_family"
@@ -147,13 +112,6 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!--
-                    System Gallery Option
-                    - Unchecked radio button (empty circle)
-                    - Press state selector background
-                    - Two-line description
-                    - 5dp top margin from previous option
-                -->
                 <LinearLayout
                     android:id="@+id/btn_system_gallery"
                     android:layout_width="match_parent"
@@ -166,7 +124,6 @@
                     android:clickable="true"
                     android:orientation="horizontal">
 
-                    <!-- Radio button indicator (unchecked state) -->
                     <ImageView
                         android:id="@+id/button_system_gallery_radio"
                         android:layout_width="wrap_content"
@@ -179,7 +136,6 @@
                         android:tint="@color/color_secondary"
                         tools:ignore="ImageContrastCheck" />
 
-                    <!-- Option description container -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -190,21 +146,20 @@
                         android:layout_weight="1"
                         android:orientation="vertical">
 
-                        <!-- Primary option text -->
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/application_font_family"
                             android:text="@string/title_system_gallery"
                             android:textColor="@color/color_text_primary"
-                            android:textSize="@dimen/normal_text_size" />
+                            android:textSize="@dimen/normal_text_size"
+                            android:textStyle="bold" />
 
-                        <!-- Secondary description text -->
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="@dimen/_0"
-                            android:layout_marginTop="@dimen/_2"
+                            android:layout_marginTop="@dimen/_0"
                             android:layout_marginEnd="@dimen/_0"
                             android:layout_marginBottom="@dimen/_0"
                             android:fontFamily="@font/application_font_family"
@@ -215,14 +170,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!--
-                Apply Changes Button
-                - Primary action button
-                - Secondary color scheme
-                - Settings icon with text
-                - Elevated for prominence
-                - 15dp horizontal margins
-            -->
             <RelativeLayout
                 android:id="@+id/btn_dialog_positive_container"
                 android:layout_width="match_parent"
@@ -253,14 +200,6 @@
                     android:textStyle="bold" />
             </RelativeLayout>
 
-            <!--
-                Changes Notification
-                - Informational text about when changes take effect
-                - Centered below the button
-                - Secondary text color (less prominent)
-                - Small text size
-                - 8dp bottom margin
-            -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

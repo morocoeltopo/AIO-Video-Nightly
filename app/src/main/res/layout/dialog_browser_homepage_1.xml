@@ -1,13 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-    Homepage Configuration Dialog
-    ============================
-    Allows users to view and modify the browser's homepage URL
-    Features:
-    - Current homepage display (read-only)
-    - URL input field
-    - Apply changes button
-    - Restart notification
--->
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -16,12 +7,6 @@
     android:layout_height="wrap_content"
     tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
 
-    <!--
-        Root Card Container
-        - Elevated card with rounded corners
-        - Background matches app theme
-        - Margins for visual separation
-    -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -33,19 +18,11 @@
         app:cardCornerRadius="@dimen/_10"
         app:cardElevation="@dimen/_5">
 
-        <!-- Main content container - vertical layout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!--
-                Current Homepage Display
-                - Shows the existing homepage URL
-                - Single line with ellipsis
-                - Text is selectable (long-press to copy)
-                - Auto-links any URLs in the text
-            -->
             <TextView
                 android:id="@+id/txt_current_homepage"
                 style="@style/style_dialog.message"
@@ -62,12 +39,6 @@
                 android:textIsSelectable="true"
                 android:textSize="@dimen/message_text_size" />
 
-            <!--
-                Divider Line
-                - Separates current URL from input field
-                - Semi-transparent dark line
-                - Horizontal margins for inset look
-            -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_2"
@@ -76,12 +47,6 @@
                 android:layout_marginBottom="@dimen/_5"
                 android:background="@color/transparent_dark" />
 
-            <!--
-                URL Input Container
-                - Rounded background for the EditText
-                - Contains the URL input field
-                - Margins for proper spacing
-            -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -92,14 +57,6 @@
                 android:background="@drawable/rounded_surface_color"
                 android:orientation="vertical">
 
-                <!--
-                    URL Input Field
-                    - Text URI input type (optimized for URLs)
-                    - Single line input
-                    - Hint text when empty
-                    - Transparent background (shows container's rounded bg)
-                    - Disabled autofill (security for URLs)
-                -->
                 <EditText
                     android:id="@+id/edit_field_url"
                     style="@style/style_dialog.message"
@@ -118,13 +75,6 @@
                     tools:ignore="TextContrastCheck,TouchTargetSizeCheck,VisualLintTextFieldSize" />
             </LinearLayout>
 
-            <!--
-                Apply Changes Button
-                - Primary action button
-                - Secondary color scheme
-                - Settings icon with text
-                - Elevated for prominence
-            -->
             <RelativeLayout
                 android:id="@+id/btn_dialog_positive_container"
                 android:layout_width="match_parent"
@@ -155,13 +105,6 @@
                     android:textStyle="bold" />
             </RelativeLayout>
 
-            <!--
-                Restart Notification
-                - Informational text about needing restart
-                - Centered below the button
-                - Secondary text color (less prominent)
-                - Small text size
-            -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

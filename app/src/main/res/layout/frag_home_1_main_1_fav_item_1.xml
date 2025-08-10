@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-    Favicon List Item Layout
-    Displays a website favicon with its name in a clickable container
-    Used in grids/lists of favorite or frequently visited websites
--->
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main_container"
     android:layout_width="match_parent"
@@ -13,14 +9,6 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <!--
-        Website Favicon Image
-        - Fixed width with proportional height (adjustViewBounds)
-        - Centered horizontally in the container
-        - FitCenter scaleType ensures full visibility
-        - Default icon provided (ic_site_google)
-        - Marked unimportant for accessibility (decorative)
-    -->
     <ImageView
         android:id="@+id/img_site_favicon"
         android:layout_width="@dimen/_40"
@@ -31,14 +19,6 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_site_google" />
 
-    <!--
-        Website Name Label
-        - Single line with ellipsis for overflow
-        - Centered below the favicon
-        - Uses application font family
-        - Small text size for compact display
-        - Vertical margins for visual separation
-    -->
     <TextView
         android:id="@+id/txt_favicon_site_name"
         android:layout_width="wrap_content"

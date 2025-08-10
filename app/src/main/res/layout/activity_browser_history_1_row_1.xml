@@ -1,15 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-HISTORY ITEM LAYOUT
-A single row item representing a browser history entry in a list
-Structure:
-1. Root container with clickable background
-2. Favicon indicator (left side)
-3. Title and date section (middle)
-4. Open indicator (right side)
-5. URL display (bottom)
--->
-
-<!-- Root layout for the history item row -->
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/button_finish_download_row"
@@ -18,13 +7,6 @@ Structure:
     android:clickable="true"
     tools:ignore="UseAppTint, UselessParent">
 
-    <!--
-    MAIN CONTENT CONTAINER
-    Wrapper with visual styling:
-    - Standard margins (15dp sides, 3dp top, 5dp bottom)
-    - Pressable background selector
-    - Slight elevation (1dp) for depth
-    -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,17 +18,8 @@ Structure:
         android:elevation="@dimen/_1"
         android:orientation="vertical">
 
-        <!--
-        FAVICON INDICATOR
-        Displays the website favicon or default icon:
-        - Fixed width (24dp)
-        - Centered vertically
-        - 10dp margins on sides
-        - Visible by default
-        - Uses information icon as fallback
-        -->
         <ImageView
-            android:id="@+id/history_url_favicon_indicator"
+            android:id="@+id/img_history_url_favicon"
             android:layout_width="@dimen/_24"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
@@ -56,36 +29,23 @@ Structure:
             android:adjustViewBounds="true"
             android:importantForAccessibility="no"
             android:src="@drawable/ic_button_information"
-            android:visibility="visible" />
+            android:visibility="visible"
+            tools:ignore="ImageContrastCheck" />
 
-        <!--
-        TITLE AND DATE CONTAINER
-        Horizontal container for:
-        - History title (left)
-        - Visit date (middle)
-        - Open indicator (right)
-        -->
         <RelativeLayout
-            android:id="@+id/history_url_title_container"
+            android:id="@+id/container_history_url_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_5"
             android:layout_marginBottom="@dimen/_0"
-            android:layout_toEndOf="@+id/history_url_favicon_indicator">
+            android:layout_toEndOf="@+id/img_history_url_favicon">
 
-            <!--
-            HISTORY TITLE
-            - Bold text in message text size (typically 14sp)
-            - Single line with ellipsis
-            - Takes available space between favicon and date
-            - Uses on_surface color for visibility
-            -->
             <TextView
-                android:id="@+id/history_url_title"
+                android:id="@+id/txt_history_url_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/history_url_date"
+                android:layout_toStartOf="@+id/txt_history_url_date"
                 android:fontFamily="@font/application_font_family"
                 android:singleLine="true"
                 android:text="@string/text__"
@@ -94,22 +54,14 @@ Structure:
                 android:textStyle="bold"
                 tools:ignore="TextContrastCheck" />
 
-            <!--
-            VISIT DATE
-            - Smaller text than title (small_text_size)
-            - Right-aligned before open indicator
-            - Single line
-            - Uses on_surface color
-            - 5dp margin from title
-            -->
             <TextView
-                android:id="@+id/history_url_date"
+                android:id="@+id/txt_history_url_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/_5"
                 android:layout_marginEnd="@dimen/_0"
-                android:layout_toStartOf="@+id/history_url_open_indicator"
+                android:layout_toStartOf="@+id/img_open_indicator"
                 android:fontFamily="@font/application_font_family"
                 android:gravity="center_vertical"
                 android:singleLine="true"
@@ -117,16 +69,8 @@ Structure:
                 android:textColor="@color/color_on_surface"
                 android:textSize="@dimen/small_text_size" />
 
-            <!--
-            OPEN INDICATOR
-            Small arrow icon indicating tappable area:
-            - Right-aligned in container
-            - Secondary color tint
-            - 10dp end margin
-            - 5dp margin from date
-            -->
             <ImageView
-                android:id="@+id/history_url_open_indicator"
+                android:id="@+id/img_open_indicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -140,25 +84,15 @@ Structure:
                 tools:ignore="ImageContrastCheck" />
         </RelativeLayout>
 
-        <!--
-        HISTORY URL
-        Displayed below the title/date section:
-        - Smaller text (smaller_text_size)
-        - Hint-colored text for less prominence
-        - Single line with ellipsis
-        - Aligned with title (right of favicon)
-        - 5dp bottom margin
-        - 10dp end margin
-        -->
         <TextView
-            android:id="@+id/history_url"
+            android:id="@+id/txt_history_url"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/history_url_title_container"
+            android:layout_below="@id/container_history_url_title"
             android:layout_marginTop="@dimen/_0"
             android:layout_marginEnd="@dimen/_10"
             android:layout_marginBottom="@dimen/_5"
-            android:layout_toEndOf="@+id/history_url_favicon_indicator"
+            android:layout_toEndOf="@+id/img_history_url_favicon"
             android:fontFamily="@font/application_font_family"
             android:singleLine="true"
             android:text="@string/text__"

@@ -1,9 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-    Browser Tab Item Layout
-    Displays a single browser tab with favicon, title, URL, and close button
-    Used in a list/dialog for tab management
-    Root layout is RelativeLayout for flexible positioning of elements
--->
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,11 +6,6 @@
     android:orientation="vertical"
     tools:ignore="UseAppTint">
 
-    <!--
-        Main tab info container - clickable area showing website info
-        Has pressed state selector for visual feedback
-        Positioned to leave space for close button on the right
-    -->
     <RelativeLayout
         android:id="@+id/browser_tab_info"
         android:layout_width="match_parent"
@@ -31,11 +21,6 @@
         android:elevation="@dimen/_1"
         tools:ignore="TouchTargetSizeCheck">
 
-        <!--
-            Tab Favicon/Website Icon
-            Fixed size image view that displays the site icon
-            Uses centerCrop to properly scale the icon
-        -->
         <ImageView
             android:id="@+id/btn_tab_favicon"
             android:layout_width="@dimen/_25"
@@ -49,11 +34,6 @@
             android:src="@drawable/ic_button_information"
             android:visibility="visible" />
 
-        <!--
-            Text container for tab title and URL
-            Vertical LinearLayout organizes the two text fields
-            Positioned to the right of the favicon
-        -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -65,12 +45,6 @@
             android:layout_toEndOf="@+id/btn_tab_favicon"
             android:orientation="vertical">
 
-            <!--
-                Tab Title (Website Title)
-                Bold text in primary color
-                Single line with ellipsis for overflow
-                Uses application font family
-            -->
             <TextView
                 android:id="@+id/browser_tab_title"
                 android:layout_width="match_parent"
@@ -84,12 +58,6 @@
                 android:textSize="@dimen/message_text_size"
                 android:textStyle="bold" />
 
-            <!--
-                Tab URL (Website Address)
-                Smaller text in hint color
-                Single line with ellipsis for overflow
-                Uses same font family as title
-            -->
             <TextView
                 android:id="@+id/browser_tab_url"
                 android:layout_width="match_parent"
@@ -107,13 +75,6 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <!--
-        Close Tab Button
-        Circular/X-shaped button to close this tab
-        Has pressed state selector for visual feedback
-        Fixed height with tinted icon
-        Positioned at the end of the item
-    -->
     <ImageView
         android:id="@+id/btn_browser_tab_close"
         android:layout_width="wrap_content"

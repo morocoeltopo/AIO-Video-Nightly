@@ -1,17 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-    LAYOUT: Browser Interface
-    PURPOSE: Provides a complete web browser interface with:
-    - Dual-mode address bar (compact and expanded)
-    - Web content display area
-    - Progress indicators
-    - Quick action buttons
-    FEATURES:
-    - Two interchangeable URL bar layouts (normal/edit modes)
-    - Animated video grabber button
-    - Progress bar for page loading
-    - Quick info display
-    - Rounded corners and material design elements
--->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -21,25 +7,13 @@
     android:orientation="vertical"
     tools:ignore="UseCompatTextViewDrawableXml,UseAppTint">
 
-    <!--
-        DEFAULT ADDRESS BAR (Normal Mode)
-        - Visible by default (visibility="visible")
-        - Contains navigation controls and URL display
-    -->
     <RelativeLayout
-        android:id="@+id/top_layout_actionbar_section"
+        android:id="@+id/top_actionbar_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/color_surface"
         android:orientation="vertical">
 
-        <!--
-            Address Bar Container Card
-            - 50dp fixed height
-            - 15dp horizontal margins, 10dp top, 5dp bottom
-            - 10dp corner radius
-            - Background color from resources
-        -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="@dimen/_50"
@@ -55,13 +29,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <!--
-                    Navigation Menu Button
-                    - 50dp fixed width, matches parent height
-                    - Negative selector background for touch feedback
-                    - Contains menu icon (30dp)
-                    - Secondary color tint
-                -->
                 <RelativeLayout
                     android:id="@+id/btn_open_navigation"
                     android:layout_width="@dimen/_50"
@@ -82,13 +49,6 @@
                         tools:ignore="ImageContrastCheck" />
                 </RelativeLayout>
 
-                <!--
-                    URL Display Container
-                    - Takes remaining space between nav and options buttons
-                    - Secondary selector background
-                    - 5dp elevation
-                    - Contains favicon, URL text, and reload button
-                -->
                 <RelativeLayout
                     android:id="@+id/container_edit_browser_url"
                     android:layout_width="match_parent"
@@ -100,12 +60,6 @@
                     android:elevation="@dimen/_5"
                     android:orientation="horizontal">
 
-                    <!--
-                        Website Favicon
-                        - 24dp fixed size
-                        - 5dp margin
-                        - Default browser favicon
-                    -->
                     <ImageView
                         android:id="@+id/img_browser_favicon"
                         android:layout_width="@dimen/_24"
@@ -119,14 +73,6 @@
                         android:visibility="visible"
                         tools:ignore="ImageContrastCheck" />
 
-                    <!--
-                        URL/Search Display Text
-                        - Marquee scrolling for long URLs
-                        - Bold text style
-                        - Single line with ellipsis
-                        - Small normal text size
-                        - Hint text when empty
-                    -->
                     <TextView
                         android:id="@+id/edit_search_suggestion"
                         android:layout_width="match_parent"
@@ -152,13 +98,6 @@
                         android:textStyle="bold"
                         tools:ignore="TextContrastCheck" />
 
-                    <!--
-                        Reload Button
-                        - 26dp fixed size
-                        - Negative selector background
-                        - Restart icon with secondary color
-                        - 5dp margin
-                    -->
                     <ImageView
                         android:id="@+id/btn_browser_reload"
                         android:layout_width="@dimen/_26"
@@ -176,13 +115,6 @@
                         tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
                 </RelativeLayout>
 
-                <!--
-                    Browser Options Button
-                    - 50dp fixed width
-                    - Negative selector background
-                    - Options menu icon
-                    - Secondary color tint
-                -->
                 <RelativeLayout
                     android:id="@+id/btn_browser_options"
                     android:layout_width="@dimen/_50"
@@ -208,12 +140,6 @@
         </androidx.cardview.widget.CardView>
     </RelativeLayout>
 
-    <!--
-        EDIT MODE ADDRESS BAR
-        - Hidden by default (visibility="gone")
-        - Activated when editing URL
-        - Contains back button, URL input field, clear and submit buttons
-    -->
     <RelativeLayout
         android:id="@+id/top_url_edit_section"
         android:layout_width="match_parent"
@@ -222,7 +148,6 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <!-- Edit Mode Address Bar Card (same styling as default) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="@dimen/_50"
@@ -239,7 +164,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <!-- Back Button -->
                 <RelativeLayout
                     android:id="@+id/btn_actionbar_back"
                     android:layout_width="@dimen/_40"
@@ -262,7 +186,6 @@
                         android:tint="@color/color_secondary" />
                 </RelativeLayout>
 
-                <!-- URL Input Field Container -->
                 <RelativeLayout
                     android:id="@+id/edit_field_url_container"
                     android:layout_width="match_parent"
@@ -278,7 +201,6 @@
                     android:elevation="@dimen/_5"
                     android:orientation="vertical">
 
-                    <!-- URL EditText -->
                     <EditText
                         android:id="@+id/edit_field_url"
                         android:layout_width="match_parent"
@@ -303,7 +225,6 @@
                         android:textStyle="bold" />
                 </RelativeLayout>
 
-                <!-- Clear Input Button -->
                 <RelativeLayout
                     android:id="@+id/btn_clear_url_edit_field"
                     android:layout_width="@dimen/_40"
@@ -328,7 +249,6 @@
                         android:tint="@color/color_secondary" />
                 </RelativeLayout>
 
-                <!-- Submit URL Button -->
                 <RelativeLayout
                     android:id="@+id/btn_load_url_to_browser"
                     android:layout_width="@dimen/_40"
@@ -355,16 +275,11 @@
         </androidx.cardview.widget.CardView>
     </RelativeLayout>
 
-    <!--
-        WEB CONTENT CONTAINER
-        - Positioned below address bar
-        - Contains WebView, progress bar, quick info, and video grabber
-    -->
     <androidx.cardview.widget.CardView
         android:id="@+id/webview_container_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/top_layout_actionbar_section"
+        android:layout_below="@+id/top_actionbar_section"
         android:layout_marginStart="@dimen/_15"
         android:layout_marginTop="@dimen/_3"
         android:layout_marginEnd="@dimen/_15"
@@ -372,24 +287,21 @@
         app:cardBackgroundColor="@color/color_background"
         app:cardCornerRadius="@dimen/_10">
 
-        <!-- WebView Container -->
         <LinearLayout
             android:id="@+id/browser_webview_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical" />
 
-        <!-- Loading Progress Bar -->
         <ProgressBar
             android:id="@+id/webview_progress_bar"
             style="@style/style_webview_loading"
             android:layout_width="fill_parent"
             android:layout_height="@dimen/_3"
-            android:layout_below="@+id/top_layout_actionbar_section"
+            android:layout_below="@+id/top_actionbar_section"
             android:alpha="1"
             android:progress="20" />
 
-        <!-- Quick Info Banner -->
         <TextView
             android:id="@+id/txt_browser_quick_info"
             android:layout_width="match_parent"
@@ -417,14 +329,6 @@
             android:visibility="visible"
             tools:ignore="TextContrastCheck,TextSizeCheck" />
 
-        <!--
-            Video Grabber Button (Lottie Animation)
-            - 50dp fixed width
-            - Bottom-right positioned
-            - Infinite loop animation
-            - Clickable with selector background
-            - 5dp elevation
-        -->
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/btn_video_grabber"
             android:layout_width="@dimen/_50"
@@ -443,6 +347,7 @@
             app:lottie_autoPlay="true"
             app:lottie_enableMergePathsForKitKatAndAbove="true"
             app:lottie_loop="true"
-            app:lottie_rawRes="@raw/animation_circle_loading" />
+            app:lottie_rawRes="@raw/animation_circle_loading"
+            tools:ignore="TouchTargetSizeCheck" />
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

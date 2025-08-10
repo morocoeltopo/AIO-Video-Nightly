@@ -89,7 +89,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 				findViewById<View>(R.id.btn_share_webpage_url) to { shareCurrentWebpageURL() },
 				findViewById<View>(R.id.btn_copy_webpage_url) to { copyCurrentWebpageURL() },
 				findViewById<View>(R.id.btn_open_with_system_browser) to { openWebpageInSystemBrowser() },
-				findViewById<View>(R.id.btn_add_download_task_editor) to { openNewDownloadTaskEditor() },
+				findViewById<View>(R.id.btn_add_download_task) to { openNewDownloadTaskEditor() },
 				findViewById<View>(R.id.btn_open_bookmark) to { openBookmarkActivity() },
 				findViewById<View>(R.id.btn_open_history) to { openHistoryActivity() },
 				findViewById<View>(R.id.btn_how_to_use) to { openHowToDownload() },

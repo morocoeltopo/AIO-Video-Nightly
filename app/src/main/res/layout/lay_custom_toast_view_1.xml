@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-    Custom Toast Notification Layout
-    A styled CardView container for displaying application toast messages
-    Features rounded corners, elevation for depth, and consistent theming
--->
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/custom_toast_layout"
@@ -17,26 +13,12 @@
     app:cardCornerRadius="@dimen/_10"
     app:cardElevation="@dimen/_5">
 
-    <!--
-        Toast Content Container
-        Horizontal LinearLayout that holds the app icon and message
-        Matches CardView dimensions and uses background color for consistency
-    -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/color_background"
         android:orientation="horizontal">
 
-        <!--
-            Application Icon
-            - Circular ImageView for brand recognition
-            - Fixed size (30x30dp) with vertical centering
-            - Left margin for spacing from edge
-            - Small elevation for subtle depth
-            - Defaults to launcher icon
-            - Marked as unimportant for accessibility (decorative)
-        -->
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/img_toast_app_icon"
             android:layout_width="@dimen/_30"
@@ -50,15 +32,6 @@
             android:importantForAccessibility="no"
             android:src="@mipmap/ic_launcher" />
 
-        <!--
-            Toast Message Text
-            - Vertically centered with the icon
-            - Uses application font family for consistency
-            - Left and right margins for balanced spacing
-            - Primary text color for readability
-            - Message text size from dimensions
-            - Default text shows percentage as example
-        -->
         <TextView
             android:id="@+id/txt_toast_message"
             android:layout_width="wrap_content"
