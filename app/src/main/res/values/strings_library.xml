@@ -483,5 +483,6 @@
     <string name="text_open_original_site">Downloaded site</string>
     <string name="text_share_the_file">Share the file</string>
     <string name="text_open_the_file">Open the file</string>
+    <string name="text_downloading_webpage">Downloading Webpage…</string>
 
 </resources>
