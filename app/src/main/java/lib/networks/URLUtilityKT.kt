@@ -1,6 +1,5 @@
 package lib.networks
 
-import app.core.engines.video_parser.parsers.SupportedURLs
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -309,17 +308,30 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Fetches HTML content from a Facebook page using old mobile User-Agents
-	 * for lighter HTML and potentially bypassing heavy scripts.
+	 * Fetches the raw HTML content of a webpage by impersonating older mobile browsers.
 	 *
-	 * @param url Facebook URL.
-	 * @param retry Whether to retry upon failure.
-	 * @param numOfRetry Number of retry attempts.
-	 * @param timeoutSeconds Connection timeout in seconds.
-	 * @return HTML content, or `null` if failed.
+	 * This method rotates between several outdated mobile User-Agent strings (iOS Safari,
+	 * older Android Chrome, and legacy Android WebKit) to request a lighter,
+	 * script-minimal version of the target webpage.
+	 *
+	 * Useful for:
+	 * - Accessing mobile-optimized pages.
+	 * - Reducing HTML payload size by avoiding heavy modern scripts.
+	 * - Potentially bypassing some modern rendering requirements.
+	 *
+	 * Retry behavior:
+	 * - If [retry] is `true`, the function will attempt the request up to [numOfRetry] times.
+	 * - Each retry uses the next User-Agent in the list.
+	 * - Retries wait progressively longer between attempts (`1s * attemptNumber`).
+	 *
+	 * @param url The target webpage URL.
+	 * @param retry Whether to enable retry logic when the initial fetch fails.
+	 * @param numOfRetry Number of retry attempts if [retry] is enabled.
+	 * @param timeoutSeconds Connection, read, and write timeout (in seconds) for each request.
+	 * @return The HTML content as a string, or `null` if all attempts fail or the response body is empty.
 	 */
 	@JvmStatic
-	fun fetchFBWebPageContent(
+	fun fetchMobileWebPageContent(
 		url: String,
 		retry: Boolean = false,
 		numOfRetry: Int = 0,
@@ -392,34 +404,17 @@ object URLUtilityKT {
 		retry: Boolean = false,
 		numOfRetry: Int = 0
 	): String? {
-		if (SupportedURLs.isFacebookUrl(url)) {
-			return fetchFBWebPageContent(url, retry, numOfRetry)
-		}
-		
-		fun fetch(): String? {
-			val client = OkHttpClient()
-			val request = Request.Builder().url(url).build()
-			return try {
-				client.newCall(request).execute().use { response ->
-					if (response.isSuccessful) response.body.string() else null
-				}
-			} catch (error: IOException) {
-				error.printStackTrace()
-				null
-			}
-		}
-		
 		if (retry && numOfRetry > 0) {
 			var index = 0
 			var htmlBody: String? = ""
 			while (index < numOfRetry || htmlBody.isNullOrEmpty()) {
-				htmlBody = fetch()
+				htmlBody = fetchMobileWebPageContent(url)
 				if (!htmlBody.isNullOrEmpty()) return htmlBody
 				index++
 			}
 		}
 		
-		return fetch()
+		return fetchMobileWebPageContent(url)
 	}
 
 	/**

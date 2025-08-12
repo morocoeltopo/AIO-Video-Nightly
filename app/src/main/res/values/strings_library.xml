@@ -487,5 +487,6 @@
     <string name="text_downloading_client_config">Downloading Client Config…</string>
     <string name="text_extracting_player_api">Extracting Player API…</string>
     <string name="text_open_externally">Open externally</string>
+    <string name="text_open_link">Open file link</string>
 
 </resources>

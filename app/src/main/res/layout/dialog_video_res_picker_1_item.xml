@@ -47,6 +47,7 @@
             android:text="@string/text__"
             android:textColor="@color/color_text_secondary"
             android:textSize="@dimen/message_text_size"
+            android:textStyle="italic"
             tools:ignore="TextContrastCheck" />
     </LinearLayout>
 </RelativeLayout>
