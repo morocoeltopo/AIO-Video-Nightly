@@ -37,13 +37,12 @@
     <color name="transparent_dark">#0A000000</color>
     <color name="transparent_darker">#4F000000</color>
 
-    <color name="pure_black">#000000</color>
-    <color name="black_light">#dd000000</color>
-    <color name="black_light_secondary">#89000000</color>
-    <color name="black_lighter">#55000000</color>
-    <color name="black_deep_lighter">#d3000000</color>
-
-    <color name="color_border">#C6CACC</color>
+    <color name="color_border_gray">#C6CACC</color>
+    <color name="color_pure_black">#000000</color>
+    <color name="color_black_light">#dd000000</color>
+    <color name="color_black_light_secondary">#89000000</color>
+    <color name="color_black_lighter">#55000000</color>
+    <color name="color_black_deep_lighter">#d3000000</color>
 
     <style name="style.application" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:statusBarColor">@color/color_surface</item>

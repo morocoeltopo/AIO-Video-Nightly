@@ -177,7 +177,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
      */
     override fun onRenderingLayout(): Int {
         setDarkSystemStatusBar(); setEdgeToEdgeFullscreen()
-        setEdgeToEdgeCustomCutoutColor(resources.getColor(color.pure_black, theme))
+        setEdgeToEdgeCustomCutoutColor(resources.getColor(color.color_pure_black, theme))
         initializeAutoRotateMediaPlayer(shouldToggleAutoRotate = true)
         return layout.activity_player_1
     }
@@ -334,8 +334,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
      */
     fun setDarkSystemStatusBar() {
         setSystemBarsColors(
-            statusBarColorResId = color.pure_black,
-            navigationBarColorResId = color.pure_black,
+            statusBarColorResId = color.color_pure_black,
+            navigationBarColorResId = color.color_pure_black,
             isLightStatusBar = false,
             isLightNavigationBar = false
         )

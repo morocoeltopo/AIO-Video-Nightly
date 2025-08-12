@@ -5,7 +5,7 @@
     android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/pure_black"
+    android:background="@color/color_pure_black"
     tools:context="app.ui.others.media_player.MediaPlayerActivity"
     tools:ignore="UseAppTint">
 
@@ -13,12 +13,12 @@
         android:id="@+id/video_player_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/pure_black"
+        android:background="@color/color_pure_black"
         app:player_layout_id="@layout/activity_player_3_con_layout_1"
         app:resize_mode="fit"
         app:show_buffering="when_playing"
         app:show_timeout="4000"
-        app:shutter_background_color="@color/pure_black"
+        app:shutter_background_color="@color/color_pure_black"
         app:surface_type="surface_view"
         app:use_controller="false" />
 
@@ -26,7 +26,7 @@
         android:id="@+id/img_audio_album_art"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/pure_black"
+        android:background="@color/color_pure_black"
         android:importantForAccessibility="no"
         android:src="@drawable/image_audio_thumb"
         android:visibility="gone" />
@@ -76,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_alignParentTop="true"
-            android:background="@color/pure_black" />
+            android:background="@color/color_pure_black" />
 
         <include
             android:id="@+id/action_bar"
