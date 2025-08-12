@@ -480,11 +480,12 @@
     <string name="title_xvideos">XVideos</string>
     <string name="text_loading_downloads_data">Loading downloads data…</string>
     <string name="text_aio_github_privacy_policy">https://github.com/shibaFoss/AIO-Video-Downloader/blob/master/PRIVACY_POLICY.md</string>
-    <string name="text_open_original_site">Downloaded site</string>
+    <string name="text_open_video_site">Open video site</string>
     <string name="text_share_the_file">Share the file</string>
     <string name="text_open_the_file">Open the file</string>
     <string name="text_downloading_webpage">Downloading Webpage…</string>
     <string name="text_downloading_client_config">Downloading Client Config…</string>
     <string name="text_extracting_player_api">Extracting Player API…</string>
+    <string name="text_open_externally">Open externally</string>
 
 </resources>

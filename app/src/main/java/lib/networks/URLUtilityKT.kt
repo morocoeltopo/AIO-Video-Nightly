@@ -304,9 +304,9 @@ object URLUtilityKT {
 			url
 		}
 	}
-	
+
 	/**
-	 * Fetches Facebook webpage content with desktop user agents and retry logic.
+	 * Fetches Facebook webpage content with old mobile user agents for faster, lighter HTML.
 	 * @param url Facebook URL
 	 * @param retry Whether to enable retry on failure
 	 * @param numOfRetry Number of retry attempts
@@ -320,35 +320,36 @@ object URLUtilityKT {
 		numOfRetry: Int = 0,
 		timeoutSeconds: Int = 30
 	): String? {
-		val desktopUserAgents = listOf(
-			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-					"AppleWebKit/537.36 (KHTML, like Gecko) " +
-					"Chrome/91.0.4472.124 Safari/537.36",
-			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
-					"AppleWebKit/537.36 (KHTML, like Gecko) " +
-					"Chrome/91.0.4472.124 Safari/537.36",
-			"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) " +
-					"Gecko/20100101 Firefox/89.0"
+		val oldMobileUserAgents = listOf(
+			// Old iPhone Safari
+			"Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_5 like Mac OS X) " +
+					"AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13G36 Safari/601.1",
+			// Old Android Chrome
+			"Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) " +
+					"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36",
+			// Even older Android WebKit browser
+			"Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; GT-I9000 Build/GINGERBREAD) " +
+					"AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
 		)
-		
+
 		fun fetch(attempt: Int = 0): String? {
 			val client = OkHttpClient.Builder()
 				.connectTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
 				.readTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
 				.writeTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
 				.build()
-			
+
 			val request = Request.Builder()
 				.url(url)
-				.header("User-Agent", desktopUserAgents[attempt % desktopUserAgents.size])
+				.header("User-Agent", oldMobileUserAgents[attempt % oldMobileUserAgents.size])
 				.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
 				.header("Accept-Language", "en-US,en;q=0.5")
 				.build()
-			
+
 			return try {
 				client.newCall(request).execute().use { response ->
 					if (response.isSuccessful)
-                        response.body.string().takeIf { it.isNotEmpty() }
+						response.body.string().takeIf { it.isNotEmpty() }
 					else null
 				}
 			} catch (error: IOException) {
@@ -357,18 +358,20 @@ object URLUtilityKT {
 				error.printStackTrace(); null
 			}
 		}
-		
+
 		if (retry && numOfRetry > 0) {
 			var attempt = 0
 			while (attempt < numOfRetry) {
 				fetch(attempt)?.let { return it }
 				attempt++
 				if (attempt < numOfRetry) Thread.sleep(1000L * attempt)
-			}; return null
+			}
+			return null
 		}
-		
+
 		return fetch()
 	}
+
 	
 	/**
 	 * Fetches webpage content with retry logic.
