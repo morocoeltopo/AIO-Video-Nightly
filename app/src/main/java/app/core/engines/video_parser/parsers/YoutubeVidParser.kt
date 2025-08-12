@@ -41,4 +41,15 @@ class YoutubeVidParser {
         }
     }
 
+    fun getStreamInfo(url: String): StreamInfo? {
+        return try {
+            val service = ServiceList.YouTube
+            val info = StreamInfo.getInfo(service, url)
+            info
+        } catch (error: Exception) {
+            error.printStackTrace()
+            null
+        }
+    }
+
 }

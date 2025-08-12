@@ -3,7 +3,9 @@ package app.ui.main.fragments.downloads.intercepter
 import android.widget.TextView
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
+import app.core.AIOApp.Companion.youtubeVidParser
 import app.core.bases.BaseActivity
+import app.core.engines.video_parser.parsers.SupportedURLs.filterYoutubeUrlWithoutPlaylist
 import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrl
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
@@ -23,6 +25,7 @@ import lib.ui.MsgDialogUtils.showMessageDialog
 import lib.ui.ViewUtility.setLeftSideDrawable
 import lib.ui.builders.ToastView.Companion.showToast
 import lib.ui.builders.WaitingDialog
+import org.schabi.newpipe.extractor.stream.StreamInfo
 import java.lang.ref.WeakReference
 
 /**
@@ -131,14 +134,23 @@ class SharedVideoURLIntercept(
      */
     private fun startAnalyzingVideoUrl(videoUrl: String) {
         safeBaseActivityRef?.let { safeBaseActivityRef ->
+            val ytStreamInfo = if (isYouTubeUrl(videoUrl))
+                youtubeVidParser.getStreamInfo(filterYoutubeUrlWithoutPlaylist(videoUrl)) else null
+
             val videoCookie = userGivenVideoInfo?.videoCookie
-            val videoTitle = userGivenVideoInfo?.videoTitle
-            val videoDescription = userGivenVideoInfo?.videoDescription
-            val videoThumbnailUrl = userGivenVideoInfo?.videoThumbnailUrl
+            val videoTitle = if (ytStreamInfo?.name.isNullOrEmpty() == false)
+                ytStreamInfo.name else userGivenVideoInfo?.videoTitle
+
+            val videoDescription = if (ytStreamInfo?.description?.content.isNullOrEmpty() == false)
+                ytStreamInfo.description?.content else userGivenVideoInfo?.videoDescription
+
+            val videoThumbnailUrl = if (ytStreamInfo?.thumbnails.isNullOrEmpty() == false)
+                ytStreamInfo.thumbnails[0].url else userGivenVideoInfo?.videoThumbnailUrl
+
             val videoUrlReferer = userGivenVideoInfo?.videoUrlReferer
             val videoThumbnailByReferer = userGivenVideoInfo?.videoThumbnailByReferer
             val videoFormats = if (isYouTubeUrl(videoUrl) && IS_ULTIMATE_VERSION_UNLOCKED)
-                getYoutubeVideoResolutions() else getYtdlpVideoFormatsListWithRetry(
+                getYoutubeVideoResolutions(ytStreamInfo) else getYtdlpVideoFormatsListWithRetry(
                 videoUrl,
                 videoCookie
             )
@@ -182,14 +194,45 @@ class SharedVideoURLIntercept(
     /**
      * Provides default YouTube resolutions when Ultimate version is unlocked.
      */
-    private fun getYoutubeVideoResolutions() = listOf(
-        "Audio", "144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"
-    ).map {
-        VideoFormat(
-            formatId = INSTANCE.packageName,
-            formatResolution = it,
-            formatFileSize = getText(R.string.title_unknown)
-        )
+    private fun getYoutubeVideoResolutions(ytStreamInfo: StreamInfo?): List<VideoFormat> {
+        if (ytStreamInfo == null) {
+            return listOf(
+                "Audio", "144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"
+            ).map {
+                VideoFormat(
+                    formatId = INSTANCE.packageName,
+                    formatResolution = it,
+                    formatFileSize = getText(R.string.text__)
+                )
+            }
+        } else {
+            val formats = mutableListOf<VideoFormat>()
+            formats.add(
+                VideoFormat(
+                    formatId = INSTANCE.packageName,
+                    formatResolution = "Audio",
+                    formatFileSize = getText(R.string.text__)
+                )
+            )
+
+            ytStreamInfo.videoOnlyStreams
+                .filter { it.bitrate > 0 }
+                .groupBy { it.height }
+                .map { (_, streams) ->
+                    val best = streams.maxByOrNull { it.bitrate }
+                    best?.let { video ->
+                        formats.add(
+                            VideoFormat(
+                                formatId = INSTANCE.packageName,
+                                formatResolution = "${video.height}p",
+                                formatFileSize = getText(R.string.text__)
+                            )
+                        )
+                    }
+                }.filterNotNull()
+
+            return formats
+        }
     }
 
     /**
