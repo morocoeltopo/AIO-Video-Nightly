@@ -488,5 +488,9 @@
     <string name="text_extracting_player_api">Extracting Player API…</string>
     <string name="text_open_externally">Open externally</string>
     <string name="text_open_link">Open file link</string>
+    <string name="text_setting_applied">Setting has applied.</string>
+    <string name="title_application_settings">Application Settings</string>
+    <string name="title_app_version">Application Version</string>
+    <string name="title_acknowledgement">Acknowledgement</string>
 
 </resources>

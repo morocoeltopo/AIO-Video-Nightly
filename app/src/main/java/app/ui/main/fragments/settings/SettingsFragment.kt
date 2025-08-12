@@ -151,6 +151,7 @@ class SettingsFragment : BaseFragment() {
             R.id.btn_open_content_policy to { settingsOnClickLogic?.showContentPolicyActivity() },
             R.id.btn_open_privacy_policy to { settingsOnClickLogic?.showPrivacyPolicyActivity() },
             R.id.btn_open_terms_condition to { settingsOnClickLogic?.showTermsConditionActivity() },
+            R.id.btn_advance_settings to { settingsOnClickLogic?.openAdvanceApplicationSettings() },
             R.id.btn_play_notification_sound to { settingsOnClickLogic?.toggleDownloadNotificationSound() },
             R.id.btn_wifi_only_downloads to { settingsOnClickLogic?.toggleWifiOnlyDownload() },
             R.id.btn_hide_task_notifications to { settingsOnClickLogic?.toggleHideDownloadNotification() },
