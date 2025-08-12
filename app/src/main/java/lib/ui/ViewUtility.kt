@@ -614,8 +614,10 @@ object ViewUtility {
         if (shouldAnimate) {
             targetView.animate().alpha(0f)
                 .setDuration(animTimeout)
-                .withEndAction { targetView.visibility = GONE }
-        } else targetView.visibility = GONE
+            targetView.visibility = GONE
+        } else {
+            targetView.visibility = GONE
+        }
     }
 
     /**

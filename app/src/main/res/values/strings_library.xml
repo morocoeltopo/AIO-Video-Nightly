@@ -229,7 +229,7 @@
     <string name="text_checking_formats_to_download">Checking Formats To Download…</string>
     <string name="text_validating_already_downloaded_part">Validating Already Downloaded Parts…</string>
     <string name="text_connection_failed_retrying">Connection Failed, Retrying (%1$s/%2$s)…</string>
-    <string name="text_load_more_history">Load More History</string>
+    <string name="title_load_more_browser_history">Load More Browser History</string>
     <string name="text_copied_url_to_clipboard">Copied URL to the clipboard.</string>
     <string name="title_not_available">Not Available</string>
     <string name="text_pick_video_resolution_for_getting_file_name">Pick a video resolution to generate a file name.</string>
@@ -242,7 +242,7 @@
     <string name="text_close_tabs">Close Tabs</string>
 
 
-    <string name="text_load_more_bookmarks">Load More Bookmarks</string>
+    <string name="title_load_more_browser_bookmarks">Load More Bookmarks</string>
     <string name="text_bookmarks_empty">Your bookmarks collection is empty.</string>
     <string name="title_bookmarks">Bookmarks</string>
     <string name="text_delete_bookmarks_confirmation">Deleting bookmarks is permanent and cannot be undone. <b>Do you want to continue?</b></string>
