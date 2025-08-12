@@ -158,7 +158,12 @@ class VideoLinkPasteEditor(
                             } else {
                                 executeOnMainThread {
                                     safeMotherActivityRef.doSomeVibration(50)
-                                    showToast(msgId = R.string.text_couldnt_get_video_title)
+                                    showToast(msgId = R.string.text_server_busy_opening_browser)
+
+                                    safeMotherActivityRef.browserFragment?.getBrowserWebEngine()?.let {
+                                        safeMotherActivityRef.sideNavigation?.addNewBrowsingTab(userGivenURL, it)
+                                        safeMotherActivityRef.openBrowserFragment()
+                                    }
                                 }
                             }
                         }

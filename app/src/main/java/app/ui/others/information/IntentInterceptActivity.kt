@@ -8,6 +8,7 @@ import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 import androidx.core.graphics.drawable.toDrawable
 import app.core.AIOApp.Companion.IS_PREMIUM_USER
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
+import app.core.AIOKeyStrings.DONT_PARSE_URL_ANYMORE
 import app.core.bases.BaseActivity
 import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
@@ -130,8 +131,8 @@ class IntentInterceptActivity : BaseActivity() {
                                 } else {
                                     executeOnMainThread {
                                         safeIntentInterceptActivityRef.doSomeVibration(50)
-                                        showToast(msgId = R.string.text_couldnt_get_video_title)
-                                        onBackPressActivity()
+                                        showToast(msgId = R.string.text_server_busy_opening_browser)
+                                        forwardIntentToMotherActivity(dontParseURLAnymore = true)
                                     }
                                 }
                             }
@@ -169,12 +170,13 @@ class IntentInterceptActivity : BaseActivity() {
      * Forward the intercepted intent directly to MotherActivity (main screen),
      * preserving the original data and intent action.
      */
-    private fun forwardIntentToMotherActivity() {
+    private fun forwardIntentToMotherActivity(dontParseURLAnymore: Boolean = false) {
         val originalIntent = intent
         val targetIntent = Intent(getActivity(), MotherActivity::class.java).apply {
             action = originalIntent.action
             setDataAndType(originalIntent.data, originalIntent.type)
             putExtras(originalIntent)
+            putExtra(DONT_PARSE_URL_ANYMORE, dontParseURLAnymore)
             flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
         }
 

@@ -543,18 +543,18 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 
     /**
      * ViewHolder for favorite site items.
-     * @param itemView The item view
+     * @param holderLayoutView The item view
      * @param onItemClick Callback when item is clicked
      */
     open class FaviconViewHolder(
-        private val itemView: View,
+        private val holderLayoutView: View,
         private val onItemClick: (String) -> Unit
-    ) : RecyclerView.ViewHolder(itemView) {
-        open val image: ImageView = itemView.findViewById(R.id.img_site_favicon)
-        open val title: TextView = itemView.findViewById(R.id.txt_favicon_site_name)
+    ) : RecyclerView.ViewHolder(holderLayoutView) {
+        open val image: ImageView = holderLayoutView.findViewById(R.id.img_site_favicon)
+        open val title: TextView = holderLayoutView.findViewById(R.id.txt_favicon_site_name)
 
         init {
-            itemView.setOnClickListener {
+            holderLayoutView.setOnClickListener {
                 onItemClick(title.text.toString())
             }
         }
@@ -658,12 +658,12 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 
     /**
      * ViewHolder for recent download items.
-     * @param itemView The item view
+     * @param holderLayoutView The item view
      */
-    class RecentDownloadsViewHolder(private val itemView: View) :
-        RecyclerView.ViewHolder(itemView) {
-        val thumbnail: ImageView = itemView.findViewById(R.id.img_file_thumbnail)
-        val duration: TextView = itemView.findViewById(R.id.txt_media_duration)
+    class RecentDownloadsViewHolder(private val holderLayoutView: View) :
+        RecyclerView.ViewHolder(holderLayoutView) {
+        val thumbnail: ImageView = holderLayoutView.findViewById(R.id.img_file_thumbnail)
+        val duration: TextView = holderLayoutView.findViewById(R.id.txt_media_duration)
 
         /**
          * Sets the click event for the download item.
@@ -674,7 +674,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
             downloadDataModel: DownloadDataModel,
             safeMotherActivityRef: MotherActivity?
         ) {
-            itemView.findViewById<View>(R.id.main_container).setOnClickListener {
+            holderLayoutView.findViewById<View>(R.id.main_container).setOnClickListener {
                 playTheMedia(downloadDataModel, safeMotherActivityRef)
             }
         }

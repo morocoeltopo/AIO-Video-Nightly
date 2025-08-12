@@ -19,8 +19,10 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.concurrent.TimeUnit
 
 /**
- * Kotlin utility object for URL-related operations including parsing, validation,
- * content fetching, and metadata extraction.
+ * Utility object for performing various URL-related operations such as parsing,
+ * validation, fetching HTML content, extracting metadata, and checking availability.
+ *
+ * This class is written in Kotlin but marked with `@JvmStatic` annotations for Java interoperability.
  */
 object URLUtilityKT {
 	
@@ -288,11 +290,12 @@ object URLUtilityKT {
 			true
 		}
 	}
-	
+
 	/**
-	 * Removes 'www.' prefix from a URL if present.
-	 * @param url The URL to process
-	 * @return URL without 'www.' prefix
+	 * Removes the `www.` prefix from a URL if it exists.
+	 *
+	 * @param url URL string, may be `null`.
+	 * @return URL without `www.` prefix, or an empty string if `url` is `null`.
 	 */
 	@JvmStatic
 	fun removeWwwFromUrl(url: String?): String {
@@ -306,12 +309,14 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Fetches Facebook webpage content with old mobile user agents for faster, lighter HTML.
-	 * @param url Facebook URL
-	 * @param retry Whether to enable retry on failure
-	 * @param numOfRetry Number of retry attempts
-	 * @param timeoutSeconds Connection timeout in seconds
-	 * @return HTML content or null if failed
+	 * Fetches HTML content from a Facebook page using old mobile User-Agents
+	 * for lighter HTML and potentially bypassing heavy scripts.
+	 *
+	 * @param url Facebook URL.
+	 * @param retry Whether to retry upon failure.
+	 * @param numOfRetry Number of retry attempts.
+	 * @param timeoutSeconds Connection timeout in seconds.
+	 * @return HTML content, or `null` if failed.
 	 */
 	@JvmStatic
 	fun fetchFBWebPageContent(
@@ -372,13 +377,14 @@ object URLUtilityKT {
 		return fetch()
 	}
 
-	
 	/**
-	 * Fetches webpage content with retry logic.
-	 * @param url The webpage URL
-	 * @param retry Whether to enable retry on failure
-	 * @param numOfRetry Number of retry attempts
-	 * @return HTML content or null if failed
+	 * Fetches webpage content, optionally retrying multiple times upon failure.
+	 * Automatically uses Facebook-specific fetching logic for Facebook URLs.
+	 *
+	 * @param url Webpage URL.
+	 * @param retry Whether to retry upon failure.
+	 * @param numOfRetry Number of retry attempts.
+	 * @return HTML content, or `null` if failed.
 	 */
 	@JvmStatic
 	fun fetchWebPageContent(
@@ -415,11 +421,13 @@ object URLUtilityKT {
 		
 		return fetch()
 	}
-	
+
 	/**
-	 * Normalizes a URL by decoding and re-encoding components consistently.
-	 * @param url The URL to normalize
-	 * @return Normalized URL or original if error occurs
+	 * Normalizes an encoded URL by decoding and re-encoding all query parameters,
+	 * and ensuring consistent ordering.
+	 *
+	 * @param url URL to normalize.
+	 * @return Normalized URL, or the original if normalization fails.
 	 */
 	@JvmStatic
 	fun normalizeEncodedUrl(url: String): String {
