@@ -171,13 +171,17 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
         }
     }
 
+    /**
+     * Opens advanced settings placeholder (currently shows "not available" message).
+     */
     fun openAdvanceApplicationSettings() {
         safeSettingsFragmentRef?.safeMotherActivityRef.let {
             it?.doSomeVibration(50)
             MsgDialogUtils.showMessageDialog(
                 baseActivityInf = it,
-                messageTxt = getText(R.string.text_feature_isnt_available_yet),
-                isNegativeButtonVisible = false
+                messageTextViewCustomize = { msgTextView ->
+                    msgTextView.setText(R.string.text_feature_isnt_available_yet)
+                }, isNegativeButtonVisible = false
             )
         }
     }

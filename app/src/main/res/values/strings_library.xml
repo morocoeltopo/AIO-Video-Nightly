@@ -107,7 +107,7 @@
 
     <string name="text_sample_video_file_name">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</string>
     <string name="text_app_running_in_the_background">Search and download your videos.</string>
-    <string name="text_feature_isnt_available_yet">This feature is currently not available, but we\'re working on it and it will be coming soon. <b>Thank you for your patience—stay tuned for future updates! 😊</b></string>
+    <string name="text_feature_isnt_available_yet">This feature is currently not available, but we\'re working on it. <b>Thank you for your patience—stay tuned for future updates! 😊</b></string>
     <string name="text_feature_isnt_implemented">Feature isn\'t implemented yet</string>
     <string name="title_okay">Okay</string>
     <string name="text_mobile_user_agent">Mobile user agent</string>
