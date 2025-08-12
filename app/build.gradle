@@ -96,4 +96,5 @@ dependencies {
     implementation libs.saf.storage
     implementation libs.ytdlp.library
     implementation libs.ytdlp.ffmpeg
+    implementation libs.newpipeextractor
 }
