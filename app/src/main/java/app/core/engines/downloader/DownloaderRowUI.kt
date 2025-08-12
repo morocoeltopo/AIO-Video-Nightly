@@ -13,7 +13,6 @@ import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
 import com.aio.R
 import com.anggrayudi.storage.file.getAbsolutePath
-import lib.files.FileSystemUtility.isVideoByName
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.texts.CommonTextUtils.getText
@@ -135,8 +134,8 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * Updates the thumbnail to either a default icon or generates a video thumbnail.
 	 */
 	private fun updateDefaultThumbnail(downloadModel: DownloadDataModel) {
-		// For non-video files or unknown sizes, show default icon
-		if (!isVideoByName(downloadModel.fileName) || downloadModel.isUnknownFileSize) {
+		// For unknown sizes, show default icon
+		if (downloadModel.isUnknownFileSize) {
 			showDefaultDownloadThumb(downloadModel)
 			thumbImageView.tag = true; return
 		}

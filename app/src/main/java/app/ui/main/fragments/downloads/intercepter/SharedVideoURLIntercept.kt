@@ -15,6 +15,7 @@ import app.ui.main.MotherActivity
 import app.ui.others.information.IntentInterceptActivity
 import com.aio.R
 import lib.device.IntentUtility.openLinkInSystemBrowser
+import lib.networks.DownloaderUtils
 import lib.networks.URLUtility.isValidURL
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils.OnTaskFinishListener
@@ -211,7 +212,7 @@ class SharedVideoURLIntercept(
                 VideoFormat(
                     formatId = INSTANCE.packageName,
                     formatResolution = resolution,
-                    formatFileSize = getText(R.string.text__)
+                    formatFileSize = getText(R.string.title_unknown)
                 )
             }
         }
@@ -220,13 +221,20 @@ class SharedVideoURLIntercept(
             val formats = mutableListOf<VideoFormat>()
 
             // Add audio-only option (always first)
-            formats.add(
-                VideoFormat(
-                    formatId = INSTANCE.packageName,
-                    formatResolution = "Audio",
-                    formatFileSize = getText(R.string.text__)
-                )
-            )
+            ytStreamInfo.audioStreams
+                .maxByOrNull { it.bitrate }?.let {  bestStream ->
+                    val contentLength = bestStream.itagItem?.contentLength
+                    formats.add(
+                        VideoFormat(
+                            formatId = INSTANCE.packageName,
+                            formatResolution = "Audio",
+                            formatFileSize = if (contentLength != null && contentLength > 0L == true)
+                                DownloaderUtils.getHumanReadableFormat(contentLength) else getText(
+                                R.string.title_unknown
+                            )
+                        )
+                    )
+                }
 
             // Process video streams:
             // 1. Filter streams with valid bitrate.
@@ -237,11 +245,15 @@ class SharedVideoURLIntercept(
                 .groupBy { it.height }
                 .forEach { (_, streams) ->
                     streams.maxByOrNull { it.bitrate }?.let { bestStream ->
+                        val contentLength = bestStream.itagItem?.contentLength
                         formats.add(
                             VideoFormat(
                                 formatId = INSTANCE.packageName,
                                 formatResolution = "${bestStream.height}p",
-                                formatFileSize = getText(R.string.text__)
+                                formatFileSize = if (contentLength != null && contentLength > 0L == true)
+                                    DownloaderUtils.getHumanReadableFormat(contentLength) else getText(
+                                    R.string.title_unknown
+                                )
                             )
                         )
                     }
