@@ -53,8 +53,9 @@ object WebVideoParser {
         // Handle YTDLP supported URLs
         if (isYtdlpSupportedUrl(webpageUrl) && !isHostOnly(webpageUrl)) {
             ThreadsUtility.executeInBackground(codeBlock = {
+                val isYoutubeMusicPage = extractHostUrl(webpageUrl).contains("music.youtube", true)
                 val thumbnailUrl = startParsingVideoThumbUrl(webpageUrl)
-                val isYoutubeMusicPage = extractHostUrl(webpageUrl).contains("music.youtube.com", true)
+
                 if (!thumbnailUrl.isNullOrEmpty() || isYoutubeMusicPage) {
                     ThreadsUtility.executeOnMain {
                         videoGrabberButton.setAnimation(R.raw.animation_videos_found)
