@@ -1,5 +1,6 @@
 package lib.networks
 
+import app.core.AIOApp.Companion.youtubeVidParser
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -109,6 +110,14 @@ object URLUtilityKT {
         callback: (String?) -> Unit
     ) {
         try {
+            val isYoutubeMusicPage = extractHostUrl(websiteUrl).contains("music.youtube", true)
+            if (isYoutubeMusicPage) {
+                val title = youtubeVidParser.getTitle(websiteUrl)
+                if (title.isNullOrEmpty() == false) {
+                    return callback.invoke("${title}_Youtube_Music_Audio")
+                }
+            }
+
             val htmlBody = if (userGivenHtmlBody.isNullOrEmpty()) {
                 fetchWebPageContent(
                     url = websiteUrl,

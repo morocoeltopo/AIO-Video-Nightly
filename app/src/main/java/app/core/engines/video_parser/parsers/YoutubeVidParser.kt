@@ -30,4 +30,15 @@ class YoutubeVidParser {
         }
     }
 
+    fun getTitle(url: String): String? {
+        return try {
+            val service = ServiceList.YouTube
+            val info = StreamInfo.getInfo(service, url)
+            info.name
+        } catch (error: Exception) {
+            error.printStackTrace()
+            null
+        }
+    }
+
 }

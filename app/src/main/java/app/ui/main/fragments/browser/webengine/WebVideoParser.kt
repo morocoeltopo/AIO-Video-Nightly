@@ -75,7 +75,7 @@ object WebVideoParser {
                                 ).show()
                             } else {
                                 val userGivenVideoInfo = VideoInfo(
-                                    videoTitle = if (isYoutubeMusicPage)webviewEngine.currentWebView?.title else null,
+                                    videoTitle = if (isYoutubeMusicPage) webviewEngine.currentWebView?.title else null,
                                     videoUrlReferer = webpageUrl,
                                     videoThumbnailUrl = thumbnailUrl,
                                     videoCookie = webviewEngine.getCurrentWebViewCookies()
