@@ -32,17 +32,17 @@ class WaitingDialog(
     private val isCancelable: Boolean = true,
     private val dialogCancelListener: OnCancelListener? = null
 ) {
-    
+
     /** Logger instance for debugging and error reporting */
     private val logger = LogHelperUtils.from(javaClass)
-    
+
     /**
      * Lazily initializes the [DialogBuilder] instance and configures its components.
      */
     val dialogBuilder: DialogBuilder? by lazy {
         DialogBuilder(baseActivityInf).apply { initializeDialogComponents() }
     }
-    
+
     /**
      * Initializes the dialog layout and behavior.
      * This method sets the view, handles cancel configuration, and loads dialog content.
@@ -53,16 +53,20 @@ class WaitingDialog(
         configureCancelListener()
         configureDialogContent()
     }
-    
+
     /**
      * Sets the cancel listener for the dialog. If no listener is provided, the dialog cancels itself.
      */
     private fun DialogBuilder.configureCancelListener() {
+        dialog.setOnDismissListener { dialog ->
+            dialogCancelListener?.onCancel(dialog) ?: dialog?.cancel()
+        }
+
         dialog.setOnCancelListener { dialog ->
             dialogCancelListener?.onCancel(dialog) ?: dialog?.cancel()
         }
     }
-    
+
     /**
      * Configures the text, buttons, and animation for the waiting dialog.
      */
@@ -73,25 +77,25 @@ class WaitingDialog(
                 it.text = loadingMessage
                 ViewUtility.animateFadInOutAnim(it)
             }
-            
+
             // Configure OK button visibility and click listener
             findViewById<View>(R.id.btn_dialog_positive_container).apply {
                 setOnClickListener { close() }
                 visibility = if (shouldHideOkayButton) GONE else VISIBLE
             }
-            
+
             // Setup animation
             findViewById<LottieAnimationView>(R.id.img_progress_circle).apply {
                 AIOApp.aioRawFiles.getCircleLoadingComposition()?.let {
                     setComposition(it)
                     playAnimation()
                 } ?: run { setAnimation(R.raw.animation_circle_loading) }
-                
+
                 showView(targetView = this, shouldAnimate = true, animTimeout = 400)
             }
         }
     }
-    
+
     /**
      * Displays the dialog if it's not already shown.
      *
@@ -107,7 +111,7 @@ class WaitingDialog(
             throw IllegalStateException("Dialog context unavailable")
         }
     }
-    
+
     /**
      * Closes the dialog if it is currently showing.
      *

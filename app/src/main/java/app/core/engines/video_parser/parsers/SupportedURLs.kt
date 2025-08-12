@@ -19,7 +19,7 @@ object SupportedURLs {
 	private val supportedBaseDomains = setOf(
 		"youtube", "youtu", "facebook", "instagram", "twitter", "x", "tiktok", "reddit", "tumblr",
 		"soundcloud", "bandcamp", "9gag", "vk", "imdb", "dailymotion", "bilibili", "twitch",
-		"likee", "snapchat", "pinterest", "linkedin", "mixcloud", "audiomack", "periscope",
+		"likee", "snapchat", "pinterest", "linkedin", "mixcloud", "audiomack", "periscope","jiosaavn",
 		"youku", "rumble", "odysee", "peertube", "bitchute", "liveleak"
 	)
 	

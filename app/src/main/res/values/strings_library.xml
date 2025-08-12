@@ -484,5 +484,7 @@
     <string name="text_share_the_file">Share the file</string>
     <string name="text_open_the_file">Open the file</string>
     <string name="text_downloading_webpage">Downloading Webpage…</string>
+    <string name="text_downloading_client_config">Downloading Client Config…</string>
+    <string name="text_extracting_player_api">Extracting Player API…</string>
 
 </resources>

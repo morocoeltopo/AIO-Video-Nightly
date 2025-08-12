@@ -5,7 +5,6 @@ import com.aio.R
 import lib.device.DateTimeUtils.calculateTime
 import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
-import java.io.File
 import java.util.Locale
 
 /**
@@ -244,27 +243,6 @@ object VideoFormatsUtils {
     }
 
     /**
-     * Extracts the formats table from yt-dlp info output.
-     *
-     * @param input Raw yt-dlp output
-     * @return Extracted formats table as string
-     */
-    private fun extractFormatsFromInfoLine(input: String): String {
-        val lines = input.split("\n")
-        val startIndex = lines.indexOfFirst { it.contains("[info] Available formats for") }
-        val downloadIndex = lines.drop(startIndex + 1).indexOfFirst { it.contains("[download]") }
-        return if (startIndex != -1) {
-            if (downloadIndex != -1) {
-                lines.subList(startIndex + 1, startIndex + 1 + downloadIndex).joinToString("\n")
-            } else {
-                lines.subList(startIndex + 1, lines.size).joinToString("\n")
-            }
-        } else {
-            ""
-        }
-    }
-
-    /**
      * Checks if a speed string is in valid format (e.g., "100K", "10M").
      *
      * @param speed Speed string to validate
@@ -333,25 +311,6 @@ object VideoFormatsUtils {
     }
 
     /**
-     * Formats size in bytes to human-readable string.
-     *
-     * @param sizeInBytes Size in bytes
-     * @return Formatted size string
-     */
-    private fun formatSize(sizeInBytes: Long): String {
-        val units = arrayOf("B", "KiB", "MiB", "GiB", "TiB")
-        var size = sizeInBytes.toDouble()
-        var unitIndex = 0
-
-        while (size >= 1024 && unitIndex < units.size - 1) {
-            size /= 1024
-            unitIndex++
-        }
-
-        return String.format(Locale.US, "%.2f %s", size, units[unitIndex])
-    }
-
-    /**
      * Checks if a video format has no audio track.
      *
      * @param videoFormat VideoFormat to check
@@ -391,6 +350,46 @@ object VideoFormatsUtils {
             error.printStackTrace()
             return input
         }
+    }
+
+    /**
+     * Extracts the formats table from yt-dlp info output.
+     *
+     * @param input Raw yt-dlp output
+     * @return Extracted formats table as string
+     */
+    private fun extractFormatsFromInfoLine(input: String): String {
+        val lines = input.split("\n")
+        val startIndex = lines.indexOfFirst { it.contains("[info] Available formats for") }
+        val downloadIndex = lines.drop(startIndex + 1).indexOfFirst { it.contains("[download]") }
+        return if (startIndex != -1) {
+            if (downloadIndex != -1) {
+                lines.subList(startIndex + 1, startIndex + 1 + downloadIndex).joinToString("\n")
+            } else {
+                lines.subList(startIndex + 1, lines.size).joinToString("\n")
+            }
+        } else {
+            ""
+        }
+    }
+
+    /**
+     * Formats size in bytes to human-readable string.
+     *
+     * @param sizeInBytes Size in bytes
+     * @return Formatted size string
+     */
+    private fun formatSize(sizeInBytes: Long): String {
+        val units = arrayOf("B", "KiB", "MiB", "GiB", "TiB")
+        var size = sizeInBytes.toDouble()
+        var unitIndex = 0
+
+        while (size >= 1024 && unitIndex < units.size - 1) {
+            size /= 1024
+            unitIndex++
+        }
+
+        return String.format(Locale.US, "%.2f %s", size, units[unitIndex])
     }
 
     /**
@@ -589,61 +588,20 @@ object VideoFormatsUtils {
     }
 
     /**
-     * Detects and converts URL extraction message to a localized version.
+     * Detects and converts YTDLP extraction message to a localized version.
      */
     private fun formatDownloadLineStage11(input: String): String {
-        return if (input.contains("Extracting URL", ignoreCase = true)) {
-            getText(R.string.text_extracting_source_url)
-        } else {
-            formatDownloadLineStage12(input)
-        }
-    }
-
-    /**
-     * Converts M3U8 live check logs to localized string.
-     */
-    private fun formatDownloadLineStage12(input: String): String {
-        return if (input.contains("Checking m3u8 live status", ignoreCase = true)) {
-            getText(R.string.text_checking_m3u8_live_status)
-        } else {
-            formatDownloadLineStage13(input)
-        }
-    }
-
-    /**
-     * Converts MPEG-TS to MP4 container fix log to a user-readable message.
-     */
-    private fun formatDownloadLineStage13(input: String): String {
-        return if (input.contains("Fixing MPEG-TS in MP4 container", ignoreCase = true)) {
-            getText(R.string.text_fixing_mpeg_ts_in_mp4_container)
-        } else formatDownloadingWebpage(input)
-    }
-
-    private fun formatDownloadingWebpage(input: String): String {
-        return if (input.startsWith("Downloading webpage:")) {
-            getText(R.string.text_downloading_webpage)
-        } else {
-           input
-        }
-    }
-
-
-    /**
-     * Creates a temporary file containing cookie information.
-     *
-     * @param tempFileName The name of the temporary file to be created.
-     * @param tempFilePath The directory path where the temporary file should be stored.
-     * @param cookiesString The content (cookie data) to be written to the file.
-     * @return The created temporary [File] object.
-     */
-    fun createCookieTempFile(
-        tempFileName: String,
-        tempFilePath: String,
-        cookiesString: String
-    ): File {
-        val tempFile = File(tempFilePath, tempFileName)
-        tempFile.writeText(cookiesString)
-        return tempFile
+        val map = mapOf(
+            "Extracting url" to R.string.text_extracting_source_url,
+            "Checking m3u8 live status" to R.string.text_checking_m3u8_live_status,
+            "Fixing MPEG-TS in MP4 container" to R.string.text_fixing_mpeg_ts_in_mp4_container,
+            "Downloading webpage" to R.string.text_downloading_webpage,
+            "tv client config" to R.string.text_downloading_client_config,
+            "player" to R.string.text_extracting_player_api
+        )
+        return map.entries.firstOrNull { input.contains(it.key, true) }
+            ?.let { getText(it.value) }
+            ?: input
     }
 
     /**
@@ -713,7 +671,8 @@ object VideoFormatsUtils {
      * Retrieves column data by its header name.
      *
      * @param header The header of the column (e.g., "ID", "EXT").
-     * @param extractedTexts The list of all column strings where each entry starts with a header followed by newline-separated values.
+     * @param extractedTexts The list of all column strings where each entry starts with a header
+     * followed by newline-separated values.
      * @param rowCount The expected number of rows for alignment.
      * @return A list of values under the given header, padded with empty strings if fewer values are found.
      */

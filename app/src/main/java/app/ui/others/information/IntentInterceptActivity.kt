@@ -66,7 +66,7 @@ class IntentInterceptActivity : BaseActivity() {
 
         val intentUrl = getIntentDataURI(getActivity())
         if (URLUtility.isValidURL(intentUrl) == false) {
-			doSomeVibration(50)
+            doSomeVibration(50)
             showToast(msgId = R.string.text_invalid_url)
             onBackPressActivity()
             return
