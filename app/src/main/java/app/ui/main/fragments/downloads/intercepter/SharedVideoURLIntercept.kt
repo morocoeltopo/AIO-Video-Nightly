@@ -192,21 +192,34 @@ class SharedVideoURLIntercept(
     }
 
     /**
-     * Provides default YouTube resolutions when Ultimate version is unlocked.
+     * Retrieves a list of available YouTube video resolutions (and audio-only option) from a [StreamInfo] object.
+     * If no stream data is provided (null), returns a default list of resolutions.
+     *
+     * @param ytStreamInfo The [StreamInfo] object containing YouTube stream data. Can be null.
+     * @return A list of [VideoFormat] objects representing available resolutions/audio options.
+     *         Each [VideoFormat] includes:
+     *         - `formatId`: Identifier (uses app package name).
+     *         - `formatResolution`: Resolution (e.g., "720p") or "Audio" for audio-only.
+     *         - `formatFileSize`: Placeholder text (replace with actual size if available).
      */
     private fun getYoutubeVideoResolutions(ytStreamInfo: StreamInfo?): List<VideoFormat> {
+        // Case 1: No stream info provided → return default resolutions
         if (ytStreamInfo == null) {
             return listOf(
                 "Audio", "144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"
-            ).map {
+            ).map { resolution ->
                 VideoFormat(
                     formatId = INSTANCE.packageName,
-                    formatResolution = it,
+                    formatResolution = resolution,
                     formatFileSize = getText(R.string.text__)
                 )
             }
-        } else {
+        }
+        // Case 2: Stream info available → extract actual resolutions
+        else {
             val formats = mutableListOf<VideoFormat>()
+
+            // Add audio-only option (always first)
             formats.add(
                 VideoFormat(
                     formatId = INSTANCE.packageName,
@@ -215,21 +228,24 @@ class SharedVideoURLIntercept(
                 )
             )
 
+            // Process video streams:
+            // 1. Filter streams with valid bitrate.
+            // 2. Group by height (resolution).
+            // 3. Select the stream with highest bitrate per resolution.
             ytStreamInfo.videoOnlyStreams
                 .filter { it.bitrate > 0 }
                 .groupBy { it.height }
-                .map { (_, streams) ->
-                    val best = streams.maxByOrNull { it.bitrate }
-                    best?.let { video ->
+                .forEach { (_, streams) ->
+                    streams.maxByOrNull { it.bitrate }?.let { bestStream ->
                         formats.add(
                             VideoFormat(
                                 formatId = INSTANCE.packageName,
-                                formatResolution = "${video.height}p",
+                                formatResolution = "${bestStream.height}p",
                                 formatFileSize = getText(R.string.text__)
                             )
                         )
                     }
-                }.filterNotNull()
+                }
 
             return formats
         }
