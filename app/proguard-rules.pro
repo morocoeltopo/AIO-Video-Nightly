@@ -2,4 +2,7 @@
 -dontwarn org.apache.commons.compress.**
 -keepattributes Signature
 -keep class org.apache.commons.compress.archivers.zip.** { *; }
+-keep class org.mozilla.javascript.** { *; }
+-keep class org.mozilla.classfile.ClassFileWriter
+-dontwarn org.mozilla.javascript.tools.**
 -optimizationpasses 7

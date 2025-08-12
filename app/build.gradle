@@ -97,4 +97,5 @@ dependencies {
     implementation libs.ytdlp.library
     implementation libs.ytdlp.ffmpeg
     implementation libs.newpipeextractor
+    coreLibraryDesugaring libs.desugar.jdk.libs.nio
 }
