@@ -64,7 +64,7 @@ object WebVideoParser {
                             if (isSocialMediaUrl(webpageUrl)) {
                                 SingleResolutionPrompter(
                                     baseActivity = browserFragment.safeMotherActivityRef,
-                                    singleResolutionName = "HD Quality",
+                                    singleResolutionName = getText(R.string.title_high_quality),
                                     extractedVideoLink = webpageUrl,
                                     currentWebUrl = webpageUrl,
                                     videoCookie = webviewEngine.getCurrentWebViewCookies(),

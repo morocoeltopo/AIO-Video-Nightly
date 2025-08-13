@@ -1,7 +1,6 @@
 package lib.networks
 
 import app.core.AIOApp.Companion.youtubeVidParser
-import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -19,17 +18,33 @@ import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 /**
- * Utility object for performing various URL-related operations such as parsing,
- * validation, fetching HTML content, extracting metadata, and checking availability.
+ * A collection of helper methods for working with URLs and web content.
  *
- * This class is written in Kotlin but marked with `@JvmStatic` annotations for Java interoperability.
+ * This object centralizes common networking tasks such as:
+ * - Extracting hosts and base domains.
+ * - Checking resource availability (favicon, URL expiration, internet connectivity).
+ * - Fetching HTML content (desktop and mobile-optimized versions).
+ * - Parsing webpage titles and metadata.
+ * - Normalizing encoded URLs.
+ *
+ * **Thread Safety:** All methods are stateless and thread-safe.
+ *
+ * **Note:** Many methods in this utility make synchronous HTTP requests.
+ * For performance, consider running them on a background thread when called from UI contexts.
  */
 object URLUtilityKT {
 
     /**
-     * Extracts the host URL (scheme + host) from a given URL string.
-     * @param urlString The complete URL string
-     * @return Base host URL (e.g., "https://example.com")
+     * Extracts only the scheme and host from a given URL string.
+     *
+     * Example:
+     * ```
+     * extractHostUrl("https://example.com/path/page.html")
+     * // returns "https://example.com"
+     * ```
+     *
+     * @param urlString Full URL (must include scheme).
+     * @return The scheme + host portion of the URL, or an empty string if parsing fails.
      */
     @JvmStatic
     fun extractHostUrl(urlString: String): String {
@@ -43,9 +58,17 @@ object URLUtilityKT {
     }
 
     /**
-     * Checks if a URL contains only the host without any path.
-     * @param url The URL to check
-     * @return true if URL has no path or only root path, false otherwise
+     * Checks if a URL contains no path beyond the root.
+     *
+     * Example:
+     * ```
+     * isHostOnly("https://example.com")      // true
+     * isHostOnly("https://example.com/")     // true
+     * isHostOnly("https://example.com/page") // false
+     * ```
+     *
+     * @param url The URL to check.
+     * @return `true` if URL has no path or only "/", otherwise `false`.
      */
     @JvmStatic
     fun isHostOnly(url: String): Boolean {
@@ -60,9 +83,12 @@ object URLUtilityKT {
     }
 
     /**
-     * Asynchronously fetches and parses the HTML title from a webpage.
-     * @param url The webpage URL
-     * @param callback Callback that receives the title (or null if unavailable)
+     * Asynchronously retrieves the `<title>` content from a webpage.
+     *
+     * This method performs a GET request and parses the returned HTML with Jsoup.
+     *
+     * @param url Webpage URL.
+     * @param callback Receives the extracted title, or `null` if unavailable or an error occurs.
      */
     @JvmStatic
     fun getTitleByParsingHTML(url: String, callback: (String?) -> Unit) {
@@ -97,11 +123,16 @@ object URLUtilityKT {
     }
 
     /**
-     * Fetches either the OpenGraph title or description from a webpage.
-     * @param websiteUrl The webpage URL
-     * @param returnDescriptionL If true returns description, otherwise title
-     * @param userGivenHtmlBody Optional pre-fetched HTML content
-     * @param callback Callback that receives the result (or null if unavailable)
+     * Retrieves the OpenGraph title or description from a webpage.
+     *
+     * Special Case:
+     * - If the URL belongs to YouTube Music, attempts to get the title using
+     *   the `youtubeVidParser` before fetching HTML.
+     *
+     * @param websiteUrl Webpage URL.
+     * @param returnDescriptionL If `true`, fetches `og:description`; otherwise `og:title`.
+     * @param userGivenHtmlBody Optional pre-fetched HTML to avoid another network request.
+     * @param callback Receives the title/description, or `null` if unavailable.
      */
     @JvmStatic
     fun getWebpageTitleOrDescription(
@@ -139,9 +170,14 @@ object URLUtilityKT {
     }
 
     /**
-     * Finds the favicon URL for a website.
-     * @param websiteUrl The website URL
-     * @return Favicon URL if found, null otherwise
+     * Finds the favicon URL for a site.
+     *
+     * Search order:
+     * 1. Checks `<site>/favicon.ico`.
+     * 2. Parses HTML for `<link rel="icon">` or `<link rel="shortcut icon">`.
+     *
+     * @param websiteUrl The site’s base URL.
+     * @return The favicon URL if found, or `null` if unavailable.
      */
     @JvmStatic
     fun getFaviconUrl(websiteUrl: String): String? {
@@ -162,9 +198,10 @@ object URLUtilityKT {
     }
 
     /**
-     * Checks if a favicon URL is accessible.
-     * @param faviconUrl The favicon URL to check
-     * @return true if favicon is accessible, false otherwise
+     * Determines whether a favicon resource exists.
+     *
+     * @param faviconUrl Direct favicon URL.
+     * @return `true` if HTTP HEAD request returns 200 OK, otherwise `false`.
      */
     @JvmStatic
     fun isFaviconAvailable(faviconUrl: String): Boolean {
@@ -181,10 +218,11 @@ object URLUtilityKT {
     }
 
     /**
-     * Fetches the file size from a URL using OkHttp.
-     * @param httpClient Configured OkHttpClient instance
-     * @param url The file URL
-     * @return File size in bytes, or -1 if unavailable
+     * Performs a HEAD request to determine file size from HTTP headers.
+     *
+     * @param httpClient OkHttpClient instance (can be reused for multiple calls).
+     * @param url File URL.
+     * @return Size in bytes, or `-1` if not available.
      */
     @JvmStatic
     fun fetchFileSize(httpClient: OkHttpClient, url: String): Long {
@@ -200,9 +238,11 @@ object URLUtilityKT {
         }
     }
 
+
     /**
-     * Checks internet connectivity by attempting to reach google.com.
-     * @return true if connection succeeds, false otherwise
+     * Checks internet connectivity by sending a short request to Google.
+     *
+     * @return `true` if Google responds with HTTP 200, otherwise `false`.
      */
     @JvmStatic
     fun isInternetConnected(): Boolean {
@@ -223,9 +263,10 @@ object URLUtilityKT {
     }
 
     /**
-     * Converts a string to URL-safe format by encoding spaces.
-     * @param input The input string
-     * @return URL-encoded string
+     * Replaces spaces with `%20` for safe URL encoding.
+     *
+     * @param input The raw string.
+     * @return A URL-safe string with spaces percent-encoded.
      */
     @JvmStatic
     fun getUrlSafeString(input: String): String {
@@ -233,9 +274,15 @@ object URLUtilityKT {
     }
 
     /**
-     * Extracts the base domain from a URL.
-     * @param url The complete URL
-     * @return Base domain (e.g., "google" from "www.google.com")
+     * Extracts the second-level domain from a URL.
+     *
+     * Example:
+     * ```
+     * getBaseDomain("https://www.google.com") // "google"
+     * ```
+     *
+     * @param url Full URL.
+     * @return Base domain without TLD, or `null` if invalid.
      */
     @JvmStatic
     fun getBaseDomain(url: String): String? {
@@ -256,9 +303,10 @@ object URLUtilityKT {
     }
 
     /**
-     * Extracts the host from a URL string.
-     * @param urlString The URL string
-     * @return Host name or null if invalid URL
+     * Extracts only the hostname from a URL.
+     *
+     * @param urlString The full URL.
+     * @return Host name, or `null` if invalid.
      */
     @JvmStatic
     fun getHostFromUrl(urlString: String?): String? {
@@ -271,9 +319,10 @@ object URLUtilityKT {
     }
 
     /**
-     * Generates a Google favicon URL for a domain.
-     * @param domain The target domain
-     * @return Google favicon service URL
+     * Returns a Google favicon service link for a given domain.
+     *
+     * @param domain Domain name (no scheme).
+     * @return Direct link to a 128px favicon image.
      */
     @JvmStatic
     fun getGoogleFaviconUrl(domain: String): String {
@@ -281,9 +330,10 @@ object URLUtilityKT {
     }
 
     /**
-     * Checks if a URL is expired (returns 4xx/5xx status).
-     * @param urlString The URL to check
-     * @return true if URL returns error status, false otherwise
+     * Checks if a URL is considered expired (HTTP status ≥ 400).
+     *
+     * @param urlString Full URL.
+     * @return `true` if the URL returns an error status, otherwise `false`.
      */
     @JvmStatic
     fun isUrlExpired(urlString: String): Boolean {
@@ -304,10 +354,10 @@ object URLUtilityKT {
     }
 
     /**
-     * Removes the `www.` prefix from a URL if it exists.
+     * Removes the `www.` prefix from a URL string.
      *
-     * @param url URL string, may be `null`.
-     * @return URL without `www.` prefix, or an empty string if `url` is `null`.
+     * @param url May be `null`.
+     * @return String without `www.`, or `""` if `url` is `null`.
      */
     @JvmStatic
     fun removeWwwFromUrl(url: String?): String {
@@ -321,27 +371,21 @@ object URLUtilityKT {
     }
 
     /**
-     * Fetches the raw HTML content of a webpage by impersonating older mobile browsers.
-     *
-     * This method rotates between several outdated mobile User-Agent strings (iOS Safari,
-     * older Android Chrome, and legacy Android WebKit) to request a lighter,
-     * script-minimal version of the target webpage.
+     * Fetches HTML using old mobile browser user-agents.
      *
      * Useful for:
-     * - Accessing mobile-optimized pages.
-     * - Reducing HTML payload size by avoiding heavy modern scripts.
-     * - Potentially bypassing some modern rendering requirements.
+     * - Reducing heavy modern scripts.
+     * - Accessing mobile-optimized versions of pages.
      *
-     * Retry behavior:
-     * - If [retry] is `true`, the function will attempt the request up to [numOfRetry] times.
-     * - Each retry uses the next User-Agent in the list.
-     * - Retries wait progressively longer between attempts (`1s * attemptNumber`).
+     * Retry logic:
+     * - If `retry` is true, will retry `numOfRetry` times with different user-agents.
+     * - Wait time increases with each attempt.
      *
-     * @param url The target webpage URL.
-     * @param retry Whether to enable retry logic when the initial fetch fails.
-     * @param numOfRetry Number of retry attempts if [retry] is enabled.
-     * @param timeoutSeconds Connection, read, and write timeout (in seconds) for each request.
-     * @return The HTML content as a string, or `null` if all attempts fail or the response body is empty.
+     * @param url Target webpage.
+     * @param retry Enable retry logic.
+     * @param numOfRetry Retry attempts if enabled.
+     * @param timeoutSeconds Timeout per request in seconds.
+     * @return HTML string or `null` if all attempts fail.
      */
     @JvmStatic
     fun fetchMobileWebPageContent(
@@ -406,13 +450,14 @@ object URLUtilityKT {
     }
 
     /**
-     * Fetches webpage content, optionally retrying multiple times upon failure.
-     * Automatically uses Facebook-specific fetching logic for Facebook URLs.
+     * Fetches HTML content of a webpage, optionally retrying.
      *
-     * @param url Webpage URL.
-     * @param retry Whether to retry upon failure.
-     * @param numOfRetry Number of retry attempts.
-     * @return HTML content, or `null` if failed.
+     * If the URL is a social media link, mobile-fetch mode is used automatically.
+     *
+     * @param url Target URL.
+     * @param retry Enable retry logic.
+     * @param numOfRetry Retry attempts.
+     * @return HTML string or `null` if all attempts fail.
      */
     @JvmStatic
     fun fetchWebPageContent(
@@ -420,32 +465,17 @@ object URLUtilityKT {
         retry: Boolean = false,
         numOfRetry: Int = 0
     ): String? {
-
-        fun fetch(): String? {
-            val client = OkHttpClient()
-            val request = Request.Builder().url(url).build()
-            return try {
-                client.newCall(request).execute().use { response ->
-                    if (response.isSuccessful) response.body.string() else null
-                }
-            } catch (error: IOException) {
-                error.printStackTrace()
-                null
-            }
-        }
-
         if (retry && numOfRetry > 0) {
             var index = 0
             var htmlBody: String? = ""
             while (index < numOfRetry || htmlBody.isNullOrEmpty()) {
-                htmlBody = if (isSocialMediaUrl(url)) fetchMobileWebPageContent(url) else
-                    fetch()
+                htmlBody = fetchMobileWebPageContent(url)
                 if (!htmlBody.isNullOrEmpty()) return htmlBody
                 index++
             }
         }
 
-        return fetch()
+        return fetchMobileWebPageContent(url)
     }
 
     /**
