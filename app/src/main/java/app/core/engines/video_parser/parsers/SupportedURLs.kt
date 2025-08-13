@@ -121,7 +121,7 @@ object SupportedURLs {
      * @return True if the URL belongs to a supported social media site.
      */
     fun isSocialMediaUrl(url: String): Boolean {
-        return isInstagramUrl(url) || isFacebookUrl(url) || isTiktokUrl(url) || isYouTubeUrl(url)
+        return isInstagramUrl(url) || isFacebookUrl(url) || isTiktokUrl(url)
     }
 
     /**
