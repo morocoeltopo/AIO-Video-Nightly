@@ -238,7 +238,6 @@ object URLUtilityKT {
         }
     }
 
-
     /**
      * Checks internet connectivity by sending a short request to Google.
      *
@@ -394,59 +393,60 @@ object URLUtilityKT {
         numOfRetry: Int = 0,
         timeoutSeconds: Int = 30
     ): String? {
+        // Predefined old mobile browser user-agents
         val oldMobileUserAgents = listOf(
-            // Old iPhone Safari
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_5 like Mac OS X) " +
-                    "AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13G36 Safari/601.1",
-            // Old Android Chrome
-            "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36",
-            // Even older Android WebKit browser
-            "Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; GT-I9000 Build/GINGERBREAD) " +
-                    "AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_5 like Mac OS X) AppleWebKit/601.1.46 (KHTML," +
+                    " like Gecko) Version/9.0 Mobile/13G36 Safari/601.1",
+            "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 5 Build/KOT49H) AppleWebKit/537.36 (KHTML, " +
+                    "like Gecko) Chrome/34.0.1847.114 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; U; Android 2.3.6; en-us; GT-I9000 Build/GINGERBREAD) AppleWebKit/533.1 " +
+                    "(KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
         )
 
-        fun fetch(attempt: Int = 0): String? {
-            val client = OkHttpClient.Builder()
-                .connectTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .readTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .writeTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
-                .build()
+        // Reuse the same OkHttpClient to benefit from connection pooling
+        val client = OkHttpClient.Builder()
+            .connectTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .readTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .writeTimeout(timeoutSeconds.toLong(), TimeUnit.SECONDS)
+            .build()
 
+        fun attemptFetch(attempt: Int): String? {
             val request = Request.Builder()
                 .url(url)
                 .header("User-Agent", oldMobileUserAgents[attempt % oldMobileUserAgents.size])
                 .header(
-                    "Accept",
-                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+                    name = "Accept",
+                    value = "text/html,application/xhtml+xml,application/xml;q=0.9," +
+                            "image/webp,image/apng,image/avif,image/jpeg,image/png,image/gif,image/svg+xml,image/*," +
+                            "*/*;q=0.8"
                 )
                 .header("Accept-Language", "en-US,en;q=0.5")
                 .build()
 
             return try {
                 client.newCall(request).execute().use { response ->
-                    if (response.isSuccessful)
-                        response.body.string().takeIf { it.isNotEmpty() }
+                    if (response.isSuccessful) response.body.string().takeIf { it.isNotEmpty() }
                     else null
                 }
             } catch (error: IOException) {
-                error.printStackTrace(); null
+                error.printStackTrace()
+                null // Fail fast, no stack trace spam
             } catch (error: Exception) {
-                error.printStackTrace(); null
+                error.printStackTrace()
+                null
             }
         }
 
-        if (retry && numOfRetry > 0) {
-            var attempt = 0
-            while (attempt < numOfRetry) {
-                fetch(attempt)?.let { return it }
-                attempt++
-                if (attempt < numOfRetry) Thread.sleep(1000L * attempt)
+        // Retry logic
+        val maxAttempts = if (retry && numOfRetry > 0) numOfRetry else 1
+        for (attempt in 0 until maxAttempts) {
+            val result = attemptFetch(attempt)
+            if (result != null) return result
+            if (retry && attempt < maxAttempts - 1) {
+                Thread.sleep(200L * (attempt + 1)) // smaller backoff to speed things up
             }
-            return null
         }
-
-        return fetch()
+        return null
     }
 
     /**

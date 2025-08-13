@@ -179,7 +179,8 @@ class SharedVideoURLIntercept(
 
                         } else {
                             VideoResolutionPicker(
-                                baseActivity = safeBaseActivityRef, videoInfo = videoInfo,
+                                baseActivity = safeBaseActivityRef,
+                                videoInfo = videoInfo,
                                 errorCallBack = {
                                     if (shouldOpenBrowserAsFallback) {
                                         showOpeningInBrowserPrompt(videoUrl)
