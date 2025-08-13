@@ -1,5 +1,6 @@
 package app.core.engines.video_parser.parsers
 
+import android.webkit.WebView
 import app.core.AIOApp.Companion.youtubeVidParser
 import lib.networks.URLUtilityKT.extractHostUrl
 import lib.networks.URLUtilityKT.fetchWebPageContent
@@ -30,7 +31,7 @@ object VideoThumbGrabber {
     fun startParsingVideoThumbUrl(
         videoUrl: String,
         userGivenHtmlBody: String? = null,
-        numOfRetry: Int = 6
+        numOfRetry: Int = 6,
     ): String? {
         // For YouTube Music, it retrieves the thumbnail directly via [youtubeVidParser]
         val isYoutubeMusicPage = extractHostUrl(videoUrl).contains("music.youtube", true)
@@ -38,6 +39,8 @@ object VideoThumbGrabber {
             val thumbnail = youtubeVidParser.getThumbnail(videoUrl)
             if (thumbnail.isNullOrEmpty() == false) return thumbnail
         }
+
+
 
         // Fetch HTML body either from user input or by making a network call
         val htmlBody = if (userGivenHtmlBody.isNullOrEmpty()) {
@@ -68,4 +71,37 @@ object VideoThumbGrabber {
         // No valid thumbnail found
         return null
     }
+
+    /**
+     * Extracts the `og:image` URL from the currently loaded page in this WebView.
+     *
+     * This method evaluates JavaScript in the context of the currently displayed page
+     * to retrieve the full HTML, then parses it using Jsoup to locate the
+     * `<meta property="og:image" content="...">` tag.
+     *
+     * **Notes:**
+     * - Works after the page is fully loaded.
+     * - Returns `null` if no `og:image` tag is found or the tag is empty.
+     * - Runs asynchronously; result is delivered via the [onResult] callback.
+     *
+     * @receiver WebView The WebView whose currently displayed page will be inspected.
+     * @param onResult Callback invoked with the `og:image` URL string if found, otherwise `null`.
+     */
+    @JvmStatic
+    fun WebView.getCurrentOgImage(onResult: (String?) -> Unit) {
+        evaluateJavascript(
+            "(function() { return document.documentElement.outerHTML; })();"
+        ) { html ->
+            val cleanHtml = html
+                .replace("\\u003C", "<")
+                .replace("\\n", "\n")
+                .replace("\\\"", "\"")
+                .trim('"')
+
+            val doc = Jsoup.parse(cleanHtml)
+            val ogImage = doc.selectFirst("meta[property=og:image]")?.attr("content")
+            onResult(ogImage?.takeIf { it.isNotBlank() })
+        }
+    }
+
 }
