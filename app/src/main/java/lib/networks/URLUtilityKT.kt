@@ -1,6 +1,7 @@
 package lib.networks
 
 import app.core.AIOApp.Companion.youtubeVidParser
+import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -419,17 +420,32 @@ object URLUtilityKT {
         retry: Boolean = false,
         numOfRetry: Int = 0
     ): String? {
+
+        fun fetch(): String? {
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
+            return try {
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) response.body.string() else null
+                }
+            } catch (error: IOException) {
+                error.printStackTrace()
+                null
+            }
+        }
+
         if (retry && numOfRetry > 0) {
             var index = 0
             var htmlBody: String? = ""
             while (index < numOfRetry || htmlBody.isNullOrEmpty()) {
-                htmlBody = fetchMobileWebPageContent(url)
+                htmlBody = if (isSocialMediaUrl(url)) fetchMobileWebPageContent(url) else
+                    fetch()
                 if (!htmlBody.isNullOrEmpty()) return htmlBody
                 index++
             }
         }
 
-        return fetchMobileWebPageContent(url)
+        return fetch()
     }
 
     /**

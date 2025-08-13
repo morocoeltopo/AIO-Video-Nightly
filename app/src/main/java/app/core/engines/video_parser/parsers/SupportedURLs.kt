@@ -115,13 +115,13 @@ object SupportedURLs {
 
     /**
      * Checks whether the given URL is from a major social media platform
-     * (Facebook, Instagram, TikTok).
+     * (Facebook, Instagram, TikTok, Youtube).
      *
      * @param url The URL to test.
      * @return True if the URL belongs to a supported social media site.
      */
     fun isSocialMediaUrl(url: String): Boolean {
-        return isInstagramUrl(url) || isFacebookUrl(url) || isTiktokUrl(url)
+        return isInstagramUrl(url) || isFacebookUrl(url) || isTiktokUrl(url) || isYouTubeUrl(url)
     }
 
     /**

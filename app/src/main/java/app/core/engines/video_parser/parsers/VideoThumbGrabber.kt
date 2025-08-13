@@ -1,6 +1,6 @@
 package app.core.engines.video_parser.parsers
 
-import app.core.AIOApp
+import app.core.AIOApp.Companion.youtubeVidParser
 import lib.networks.URLUtilityKT.extractHostUrl
 import lib.networks.URLUtilityKT.fetchWebPageContent
 import org.jsoup.Jsoup
@@ -16,6 +16,11 @@ object VideoThumbGrabber {
     /**
      * Attempts to parse and retrieve the thumbnail image URL from a video page.
      *
+     * Matching rules:
+     *      - For YouTube Music URLs, returns the thumbnail from the NewPipe extractor.
+     *      - Otherwise, searches HTML meta tags with `property="og:image"`.
+     *      - Valid image formats: JPEG, JPG, PNG, GIF, WEBP (case-insensitive).
+     *
      * @param videoUrl The URL of the video page from which to extract the thumbnail.
      * @param userGivenHtmlBody Optional HTML content of the video page (if already fetched).
      * @param numOfRetry Number of times to retry fetching the page in case of network failure.
@@ -27,22 +32,17 @@ object VideoThumbGrabber {
         userGivenHtmlBody: String? = null,
         numOfRetry: Int = 6
     ): String? {
+        // For YouTube Music, it retrieves the thumbnail directly via [youtubeVidParser]
         val isYoutubeMusicPage = extractHostUrl(videoUrl).contains("music.youtube", true)
         if (isYoutubeMusicPage) {
-            val thumbnail = AIOApp.youtubeVidParser.getThumbnail(videoUrl)
+            val thumbnail = youtubeVidParser.getThumbnail(videoUrl)
             if (thumbnail.isNullOrEmpty() == false) return thumbnail
         }
 
         // Fetch HTML body either from user input or by making a network call
         val htmlBody = if (userGivenHtmlBody.isNullOrEmpty()) {
-            fetchWebPageContent(
-                url = videoUrl,
-                retry = true,
-                numOfRetry = numOfRetry
-            ) ?: return null
-        } else {
-            userGivenHtmlBody
-        }
+            fetchWebPageContent(videoUrl, true, numOfRetry) ?: return null
+        } else userGivenHtmlBody
 
         // Parse the HTML using Jsoup
         val document = Jsoup.parse(htmlBody)
