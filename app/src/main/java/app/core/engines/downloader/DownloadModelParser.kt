@@ -144,6 +144,7 @@ object DownloadModelParser {
                 false
             }
         } catch (error: Exception) {
+            error.printStackTrace()
             handleProcessingError(file, error)
             false
         }
@@ -156,8 +157,8 @@ object DownloadModelParser {
         try {
             file.delete()
             failedFiles.remove(file.nameWithoutExtension)
-        } catch (e: Exception) {
-            // Log cleanup failure
+        } catch (error: Exception) {
+            error.printStackTrace()
         }
     }
 
@@ -172,8 +173,8 @@ object DownloadModelParser {
         if (error is IllegalStateException || error is NumberFormatException) {
             try {
                 file.delete()
-            } catch (e: Exception) {
-                // Log deletion failure
+            } catch (error: Exception) {
+               error.printStackTrace()
             }
         }
     }

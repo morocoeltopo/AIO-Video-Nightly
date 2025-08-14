@@ -371,7 +371,7 @@
     <string name="title_google">Google</string>
     <string name="title_bing">Bing</string>
     <string name="title_facebook">Facebook</string>
-    <string name="title_x">X.com</string>
+    <string name="title_x_com">X.com</string>
     <string name="title_instagram">Instagram</string>
     <string name="title_yahoo">Yahoo</string>
     <string name="title_dailymotion">Dailymotion</string>
@@ -391,6 +391,7 @@
     <string name="title_duckduckgo">DuckDuckGo</string>
     <string name="text_instagram_isnt_installed">Instagram is not installed.</string>
     <string name="text_facebook_isnt_installed">Facebook is not installed.</string>
+    <string name="text_ted_talks_app_isnt_installed">TED Talks  is not installed.</string>
     <string name="text_youtube_isnt_installed">YouTube is not installed.</string>
     <string name="title_file_size">File Size:</string>
     <string name="text_inst_how_to_guide_1">Open the Instagram reel you want, then tap the <b><u>share icon</u></b> to access the available sharing options.</string>
@@ -492,5 +493,12 @@
     <string name="title_application_settings">Application Settings</string>
     <string name="title_app_version">Application Version</string>
     <string name="title_acknowledgement">Acknowledgement</string>
+    <string name="title_pinterest">Pinterest</string>
+    <string name="title_reddit">Reddit</string>
+    <string name="title_youtube_music">YT Music</string>
+    <string name="title_soundcloud">Soundcloud</string>
+    <string name="title_tiktok">Tiktok</string>
+    <string name="title_tedtalks">TED Talks</string>
+    <string name="title_pornhub">Pornhub</string>
 
 </resources>

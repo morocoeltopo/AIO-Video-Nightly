@@ -162,5 +162,14 @@
         <package android:name="com.instagram.android" />
         <package android:name="com.facebook.katana" />
         <package android:name="com.whatsapp" />
+        <package android:name="com.ted.android" />
+        <package android:name="com.google.android.apps.youtube.music" />
+        <package android:name="com.soundcloud.android" />
+        <package android:name="com.pinterest" />
+        <package android:name="com.zhiliaoapp.musically" />
+        <package android:name="com.dailymotion.dailymotion" />
+        <package android:name="com.reddit.frontpage" />
+        <package android:name="com.twitter.android" />
+
     </queries>
 </manifest>

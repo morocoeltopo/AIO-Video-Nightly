@@ -50,9 +50,18 @@ import lib.files.FileSystemUtility.isVideoByName
 import lib.networks.URLUtility
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
+import lib.process.IntentHelperUtils.openDailymotionApp
 import lib.process.IntentHelperUtils.openFacebookApp
 import lib.process.IntentHelperUtils.openInstagramApp
+import lib.process.IntentHelperUtils.openPinterestApp
+import lib.process.IntentHelperUtils.openRedditApp
+import lib.process.IntentHelperUtils.openSoundCloudApp
+import lib.process.IntentHelperUtils.openTedTalksApp
+import lib.process.IntentHelperUtils.openTikTokApp
+import lib.process.IntentHelperUtils.openWhatsappApp
+import lib.process.IntentHelperUtils.openXApp
 import lib.process.IntentHelperUtils.openYouTubeApp
+import lib.process.IntentHelperUtils.openYouTubeMusicApp
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ActivityAnimator.animActivityFade
 import lib.ui.ViewUtility.getThumbnailFromFile
@@ -67,14 +76,21 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 /**
- * The home fragment that serves as the main landing page of the application.
+ * HomeFragment is the main landing page of the application, responsible for providing quick access
+ * to favorite sites, managing downloads, and offering navigation to key sections like History and Bookmarks.
+ * It includes a URL input field with a download button for adding new downloads, and displays both active
+ * and recent downloads with periodic updates through the AIOTimer system.
  *
- * Responsibilities:
- * - Displays quick access to favorite sites
- * - Shows recent downloads
- * - Provides URL input for downloads
- * - Manages premium subscription prompts
- * - Handles navigation to history/bookmarks
+ * The fragment can open supported apps such as YouTube, Facebook, and Instagram if installed, or fall
+ * back to browser navigation when needed. Favorite sites and recent downloads are shown using RecyclerViews
+ * with GridLayoutManagers, while media files can be played directly using MediaPlayerActivity.
+ *
+ * It handles various UI states including loading, empty, and populated views, ensuring smooth interaction for the user.
+ * Throughout its lifecycle, it registers itself with MotherActivity and AIOTimer when resumed, and unregisters
+ * while clearing adapters on pause or destruction to prevent memory leaks.
+ *
+ * @see BaseFragment
+ * @see AIOTimer.AIOTimerListener
  */
 class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 
@@ -168,11 +184,11 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
         val activeDownloadModels = downloadSystem.activeDownloadDataModels
 
         updateFinishedDownloadsUI(
-            finishedDownloadModels,
-            recentContainer,
-            emptyDownloadContainer,
-            loadingDownloadsContainer,
-            layout
+            finishedDownloadModels = finishedDownloadModels,
+            recentContainer = recentContainer,
+            emptyDownloadContainer = emptyDownloadContainer,
+            loadingDownloadsContainer = loadingDownloadsContainer,
+            fragmentLayout = layout
         )
         updateActiveDownloadsUI(activeDownloadModels, activeDownloadsContainer, layout)
     }
@@ -428,12 +444,16 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
             Pair(first = R.drawable.ic_site_duckduckgo, second = R.string.title_duckduckgo),
             Pair(first = R.drawable.ic_site_youtube, second = R.string.title_youtube),
             Pair(first = R.drawable.ic_site_facebook, second = R.string.title_facebook),
-            Pair(first = R.drawable.ic_site_twitter, second = R.string.title_x),
             Pair(first = R.drawable.ic_site_instagram, second = R.string.title_instagram),
-            Pair(first = R.drawable.ic_site_xhamster, second = R.string.title_xhamster),
-            Pair(first = R.drawable.ic_site_redwap, second = R.string.title_redwap),
-            Pair(first = R.drawable.ic_site_hentaicity, second = R.string.title_hentaicity),
-            Pair(first = R.drawable.ic_site_xvideos, second = R.string.title_xvideos),
+            Pair(first = R.drawable.ic_site_whatsapp, second = R.string.title_whatsapp),
+            Pair(first = R.drawable.ic_site_youtubemusic, second = R.string.title_youtube_music),
+            Pair(first = R.drawable.ic_site_soundcloud, second = R.string.title_soundcloud),
+            Pair(first = R.drawable.ic_site_pinterest, second = R.string.title_pinterest),
+            Pair(first = R.drawable.ic_site_tiktok, second = R.string.title_tiktok),
+            Pair(first = R.drawable.ic_site_dailymotion, second = R.string.title_dailymotion),
+            Pair(first = R.drawable.ic_site_reddit, second = R.string.title_reddit),
+            Pair(first = R.drawable.ic_site_twitter, second = R.string.title_x_com),
+            Pair(first = R.drawable.ic_site_tedtalks, second = R.string.title_tedtalks),
         )
     }
 
@@ -475,23 +495,75 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
                         getText(R.string.title_youtube).toString() -> {
                             openYouTubeApp(INSTANCE) {
                                 handleFallbackBrowserNavigation(activity, match.value, it)
-                                showToast(msgId = R.string.text_youtube_isnt_installed)
                             }
                         }
 
                         getText(R.string.title_facebook).toString() -> {
                             openFacebookApp(INSTANCE) {
                                 handleFallbackBrowserNavigation(activity, match.value, it)
-                                showToast(msgId = R.string.text_facebook_isnt_installed)
                             }
                         }
 
                         getText(R.string.title_instagram).toString() -> {
                             openInstagramApp(INSTANCE) {
                                 handleFallbackBrowserNavigation(activity, match.value, it)
-                                showToast(msgId = R.string.text_instagram_isnt_installed)
                             }
                         }
+
+                        getText(R.string.title_whatsapp).toString() -> {
+                            openWhatsappApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_youtube_music).toString() -> {
+                            openYouTubeMusicApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_soundcloud).toString() -> {
+                            openSoundCloudApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_pinterest).toString() -> {
+                            openPinterestApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_tiktok).toString() -> {
+                            openTikTokApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_dailymotion).toString() -> {
+                            openDailymotionApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_reddit).toString() -> {
+                            openRedditApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_x_com).toString() -> {
+                            openXApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
+                        getText(R.string.title_tedtalks).toString() -> {
+                            openTedTalksApp(INSTANCE) {
+                                handleFallbackBrowserNavigation(activity, match.value, it)
+                            }
+                        }
+
 
                         else -> {
                             activity.sideNavigation?.addNewBrowsingTab(match.value, it)
@@ -509,19 +581,30 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
      */
     private fun createSiteUrlMap(): Map<String, String> {
         return mapOf(
-            getText(R.string.title_google).toString() to "https://google.com",
-            getText(R.string.title_bing).toString() to "https://bing.com",
-            getText(R.string.title_yahoo).toString() to "https://yahoo.com",
-            getText(R.string.title_duckduckgo).toString() to "https://duckduckgo.com",
-            getText(R.string.title_youtube).toString() to "https://youtube.com",
-            getText(R.string.title_facebook).toString() to "https://facebook.com",
-            getText(R.string.title_whatsapp).toString() to "https://web.whatsapp.com",
-            getText(R.string.title_x).toString() to "https://x.com",
-            getText(R.string.title_instagram).toString() to "https://instagram.com",
-            getText(R.string.title_xhamster).toString() to "https://xhamster.com",
-            getText(R.string.title_redwap).toString() to "https://redwap.sex",
-            getText(R.string.title_hentaicity).toString() to "https://hentaicity.com",
-            getText(R.string.title_xvideos).toString() to "https://xvideos.com",
+            getText(R.string.title_google).toString() to "https://google.com/",
+            getText(R.string.title_bing).toString() to "https://bing.com/",
+            getText(R.string.title_yahoo).toString() to "https://yahoo.com/",
+            getText(R.string.title_duckduckgo).toString() to "https://duckduckgo.com/",
+            getText(R.string.title_youtube).toString() to "https://youtube.com/",
+            getText(R.string.title_facebook).toString() to "https://facebook.com/",
+            getText(R.string.title_instagram).toString() to "https://instagram.com/",
+            getText(R.string.title_whatsapp).toString() to "https://web.whatsapp.com/",
+            getText(R.string.title_youtube_music).toString() to "https://music.youtube.com/",
+            getText(R.string.title_soundcloud).toString() to "https://soundcloud.com/",
+            getText(R.string.title_pinterest).toString() to "https://pinterest.com/",
+            getText(R.string.title_tiktok).toString() to "https://tiktok.com/",
+            getText(R.string.title_dailymotion).toString() to "https://dailymotion.com/",
+            getText(R.string.title_reddit).toString() to "https://reddit.com/",
+            getText(R.string.title_x_com).toString() to "https://x.com/",
+            getText(R.string.title_tedtalks).toString() to "https://ted.com/talks/",
+
+            //Adult sites
+            getText(R.string.title_xhamster).toString() to "https://xhamster.com/",
+            getText(R.string.title_redwap).toString() to "https://redwap.sex/",
+            getText(R.string.title_hentaicity).toString() to "https://hentaicity.com/",
+            getText(R.string.title_xvideos).toString() to "https://xvideos.com/",
+            getText(R.string.title_pornhub).toString() to "https://pornhub.org/",
+            getText(R.string.title_pornhub).toString() to "https://pornhub.org/",
         )
     }
 

@@ -39,7 +39,7 @@ object IntentHelperUtils {
         if (intent == null || activity == null) return emptyList()
         WeakReference(activity).get()?.let { safeRef ->
             return safeRef.packageManager.queryIntentActivities(intent, 0)
-        } ?: run { return emptyList() }
+        }; return emptyList()
     }
 
     /**
@@ -77,7 +77,7 @@ object IntentHelperUtils {
         WeakReference(activity).get()?.let { safeRef ->
             val activities = safeRef.packageManager.queryIntentActivities(intent, 0)
             return activities.isNotEmpty()
-        } ?: run { return false }
+        }; return false
     }
 
     /**
@@ -94,7 +94,7 @@ object IntentHelperUtils {
             return if (canHandleIntent(safeRef, intent)) {
                 activity.startActivity(intent); true
             } else false
-        } ?: run { return false }
+        }; return false
     }
 
     /**
@@ -110,7 +110,7 @@ object IntentHelperUtils {
         WeakReference(activity).get()?.let { safeRef ->
             val activities = safeRef.packageManager.queryIntentActivities(intent, 0)
             return if (activities.isNotEmpty()) activities[0].activityInfo.packageName else ""
-        } ?: run { return "" }
+        }; return ""
     }
 
     /**
@@ -245,4 +245,205 @@ object IntentHelperUtils {
             onError?.invoke()
         }
     }
+
+    /**
+     * Opens YouTube Music app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - YouTube Music app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openYouTubeMusicApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.google.android.apps.youtube.music")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
+    /**
+     * Opens SoundCloud app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - SoundCloud app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openSoundCloudApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.soundcloud.android")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
+    /**
+     * Opens Pinterest app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - Pinterest app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openPinterestApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.pinterest")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
+    /**
+     * Opens TikTok app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - TikTok app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openTikTokApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.zhiliaoapp.musically")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
+    /**
+     * Opens Dailymotion app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - Dailymotion app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openDailymotionApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.dailymotion.dailymotion")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
+    /**
+     * Opens Reddit app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - Reddit app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openRedditApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.reddit.frontpage")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
+    /**
+     * Opens X (Twitter) app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - X app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openXApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.twitter.android")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
+    /**
+     * Opens TED Talks app with fallback handling.
+     *
+     * @param context Context to start activity
+     * @param onError Callback invoked if:
+     *                - TED Talks app not installed
+     *                - Any exception occurs
+     */
+    @JvmStatic
+    fun openTedTalksApp(context: Context, onError: (() -> Unit)? = null) {
+        try {
+            val intent = context.packageManager
+                .getLaunchIntentForPackage("com.ted.android")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else {
+                onError?.invoke()
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            onError?.invoke()
+        }
+    }
+
 }
