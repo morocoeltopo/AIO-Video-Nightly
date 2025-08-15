@@ -6,10 +6,10 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.kryoDBHelper
+import app.core.KryoRegistry
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringSerializer
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
@@ -19,7 +19,6 @@ import java.io.FileInputStream
 import java.io.FileReader
 import java.io.Serializable
 import java.nio.channels.FileChannel
-import java.util.Date
 import java.util.Locale
 
 /**
@@ -47,10 +46,6 @@ class AIOBookmarks : Serializable {
 	private val logger = LogHelperUtils.from(javaClass)
 
 	companion object {
-		/**
-		 * Serialization ID for binary format compatibility
-		 */
-		const val AIO_BOOKMARKS_SERIALIZABLE_ID = 1
 
 		/**
 		 * Default filename for JSON formatted bookmark storage
@@ -129,6 +124,7 @@ class AIOBookmarks : Serializable {
 	 * Saves bookmarks to binary format.
 	 * @param fileName Name of the binary file to save to
 	 */
+	@Synchronized
 	private fun saveToBinary(fileName: String) {
 		try {
 			logger.d("Saving bookmarks to binary file: $fileName")
@@ -259,24 +255,15 @@ class AIOBookmarks : Serializable {
 		})
 	}
 
-    /**
-     * Registers all required classes with Kryo serializer.
-     *
-     * Must include all classes that will be serialized, including collections.
-     * Called before both serialization and deserialization.
-     */
+	/**
+	 * Registers all required classes with Kryo serializer.
+	 *
+	 * Must include all classes that will be serialized, including collections.
+	 * Called before both serialization and deserialization.
+	 */
 	private fun registerKryoClasses() {
 		logger.d("Registering classes with Kryo serializer")
-		kryoDBHelper.isRegistrationRequired = true
-		kryoDBHelper.register(String::class.java, StringSerializer())
-		kryoDBHelper.register(emptyList<BookmarkModel>().javaClass)
-		kryoDBHelper.register(List::class.java)
-		kryoDBHelper.register(ArrayList::class.java)
-		kryoDBHelper.register(BookmarkModel::class.java)
-		kryoDBHelper.register(AIOBookmarks::class.java)
-		kryoDBHelper.register(Date::class.java)
-		kryoDBHelper.register(HashMap::class.java)
-		kryoDBHelper.register(HashSet::class.java)
+		KryoRegistry.registerClasses(kryoDBHelper)
 	}
 
 	/**

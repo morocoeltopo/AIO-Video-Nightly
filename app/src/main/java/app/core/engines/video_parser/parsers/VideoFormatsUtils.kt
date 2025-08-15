@@ -5,6 +5,7 @@ import com.aio.R
 import lib.device.DateTimeUtils.calculateTime
 import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
+import java.io.Serializable
 import java.util.Locale
 
 /**
@@ -49,7 +50,7 @@ object VideoFormatsUtils {
         var formatTBR: String = "",
         var formatProtocol: String = "",
         var formatStreamingUrl: String = ""
-    )
+    ) : Serializable
 
     /**
      * Data class representing complete video information.
@@ -71,10 +72,10 @@ object VideoFormatsUtils {
         var videoDescription: String? = null,
         var videoUrlReferer: String? = null,
         var videoUrl: String = "",
-        var videoFormats: List<VideoFormat> = emptyList(),
+        var videoFormats: ArrayList<VideoFormat> = ArrayList(),
         var videoCookie: String? = "",
         var videoCookieTempPath: String = ""
-    )
+    ) : Serializable
 
     /**
      * Parses yt-dlp format listing and returns structured format information.

@@ -8,6 +8,7 @@ import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 import androidx.core.graphics.drawable.toDrawable
 import app.core.AIOApp.Companion.IS_PREMIUM_USER
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
+import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOKeyStrings.DONT_PARSE_URL_ANYMORE
 import app.core.bases.BaseActivity
 import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
@@ -64,6 +65,7 @@ class IntentInterceptActivity : BaseActivity() {
      */
     override fun onAfterLayoutRender() {
         setUpWindowConfiguration()
+        downloadSystem.isInitializing
 
         val intentUrl = getIntentDataURI(getActivity())
         if (URLUtility.isValidURL(intentUrl) == false) {

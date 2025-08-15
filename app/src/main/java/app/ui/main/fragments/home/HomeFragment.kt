@@ -438,10 +438,6 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
      */
     private fun createFaviconList(): List<Pair<Int, Int>> {
         return listOf(
-            Pair(first = R.drawable.ic_site_google, second = R.string.title_google),
-            Pair(first = R.drawable.ic_site_bing, second = R.string.title_bing),
-            Pair(first = R.drawable.ic_site_yahoo, second = R.string.title_yahoo),
-            Pair(first = R.drawable.ic_site_duckduckgo, second = R.string.title_duckduckgo),
             Pair(first = R.drawable.ic_site_youtube, second = R.string.title_youtube),
             Pair(first = R.drawable.ic_site_facebook, second = R.string.title_facebook),
             Pair(first = R.drawable.ic_site_instagram, second = R.string.title_instagram),
@@ -581,10 +577,6 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
      */
     private fun createSiteUrlMap(): Map<String, String> {
         return mapOf(
-            getText(R.string.title_google).toString() to "https://google.com/",
-            getText(R.string.title_bing).toString() to "https://bing.com/",
-            getText(R.string.title_yahoo).toString() to "https://yahoo.com/",
-            getText(R.string.title_duckduckgo).toString() to "https://duckduckgo.com/",
             getText(R.string.title_youtube).toString() to "https://youtube.com/",
             getText(R.string.title_facebook).toString() to "https://facebook.com/",
             getText(R.string.title_instagram).toString() to "https://instagram.com/",

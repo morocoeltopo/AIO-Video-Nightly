@@ -9,7 +9,7 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.kryoDBHelper
-import app.core.engines.browser.bookmarks.BookmarkModel
+import app.core.KryoRegistry
 import app.core.engines.settings.AIOSettings
 import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
@@ -20,7 +20,6 @@ import com.aio.R.string
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringSerializer
 import com.google.gson.Gson
 import lib.files.FileExtensions.ARCHIVE_EXTENSIONS
 import lib.files.FileExtensions.DOCUMENT_EXTENSIONS
@@ -42,7 +41,6 @@ import lib.texts.CommonTextUtils.removeDuplicateSlashes
 import java.io.File
 import java.io.FileInputStream
 import java.io.Serializable
-import java.util.Date
 
 /**
  * A comprehensive data model class representing a download item in the application.
@@ -161,7 +159,6 @@ class DownloadDataModel : Serializable {
 
 		// Constants for file naming and storage
 		const val DOWNLOAD_MODEL_ID_KEY = "DOWNLOAD_MODEL_ID_KEY"
-		const val DOWNLOAD_MODEL_SERIALIZABLE_ID = 1
 		const val DOWNLOAD_MODEL_FILE_JSON_EXTENSION = "_download.json"
 		const val DOWNLOAD_MODEL_FILE_BINARY_EXTENSION: String = "_download.dat"
 		const val DOWNLOAD_MODEL_COOKIES_EXTENSION = "_cookies.txt"
@@ -170,12 +167,14 @@ class DownloadDataModel : Serializable {
 
 		/**
 		 * Converts a JSON string back into a DownloadDataModel instance.
-		 * @param downloadDataModelJSONFile The JSON representation of the download model
+		 * @param downloadDataModelJSONFile The JSON file containing the download model
 		 * @return Deserialized DownloadDataModel or null if conversion failed
 		 */
 		fun convertJSONStringToClass(downloadDataModelJSONFile: File): DownloadDataModel? {
+			logger.d("Starting JSON to class conversion")
 			val internalDir = AIOApp.internalDataFolder
-			val downloadDataModelBinaryFileName = "${downloadDataModelJSONFile.nameWithoutExtension}.dat"
+			val downloadDataModelBinaryFileName =
+				"${downloadDataModelJSONFile.nameWithoutExtension}.dat"
 			val downloadDataModelBinaryFile = internalDir.findFile(downloadDataModelBinaryFileName)
 
 			try {
@@ -183,30 +182,31 @@ class DownloadDataModel : Serializable {
 				var isBinaryFileValid = false
 
 				if (downloadDataModelBinaryFile != null && downloadDataModelBinaryFile.exists()) {
-					logger.d("Found binary download data model file, attempting to load")
+					logger.d("Binary download model file found, attempting load")
 					val absolutePath = downloadDataModelBinaryFile.getAbsolutePath(INSTANCE)
 					val objectInMemory = loadFromBinary(File(absolutePath))
 					if (objectInMemory != null) {
-						logger.d("Successfully loaded download data model from binary format")
+						logger.d("Binary load successful")
 						downloadDataModel = objectInMemory
 						downloadDataModel.updateInStorage()
 						isBinaryFileValid = true
 					} else {
-						logger.d("Failed to load download data model from binary format")
+						logger.d("Binary load failed")
 					}
 				}
+
 				if (!isBinaryFileValid || downloadDataModel == null) {
-					logger.d("Attempting to load download data model from JSON format")
+					logger.d("Attempting JSON load")
 					val jsonString = downloadDataModelJSONFile.readText(Charsets.UTF_8)
-					val classOfT = DownloadDataModel::class.java
-					downloadDataModel = aioGSONInstance.fromJson(jsonString, classOfT)
-					downloadDataModel.updateInStorage()
-					logger.d("Successfully loaded download data model from JSON format")
+					downloadDataModel =
+						aioGSONInstance.fromJson(jsonString, DownloadDataModel::class.java)
+					downloadDataModel?.updateInStorage()
+					logger.d("JSON load successful")
 				}
 
 				return downloadDataModel
 			} catch (error: Exception) {
-				logger.d("Error reading download data model from storage: ${error.message}")
+				logger.d("Error in conversion: ${error.message}")
 				downloadDataModelBinaryFile?.delete()
 				error.printStackTrace()
 				return null
@@ -214,28 +214,28 @@ class DownloadDataModel : Serializable {
 		}
 
 		/**
-		 * Loads download data model from a binary file.
-		 * @param downloadDataModelBinaryFile The binary file containing download data model.
-		 * @return The loaded DownloadDataModel object or null if loading fails
+		 * Loads download model from binary file.
+		 * @param downloadDataModelBinaryFile The binary file to load from
+		 * @return Loaded DownloadDataModel or null if failed
 		 */
 		private fun loadFromBinary(downloadDataModelBinaryFile: File): DownloadDataModel? {
+			logger.d("Starting binary load")
 			if (!downloadDataModelBinaryFile.exists()) {
-				logger.d("Binary download data model file does not exist")
+				logger.d("Binary file not found")
 				return null
 			}
 
 			return try {
-				logger.d("Loading download data model from binary file")
 				FileInputStream(downloadDataModelBinaryFile).use { fis ->
 					Input(fis).use { input ->
 						registerKryoClasses()
 						kryoDBHelper.readObject(input, DownloadDataModel::class.java).also {
-							logger.d("Successfully loaded download data model from binary file")
+							logger.d("Binary load completed")
 						}
 					}
 				}
 			} catch (error: Exception) {
-				logger.d("Error loading binary download data model: ${error.message}")
+				logger.d("Binary load error: ${error.message}")
 				downloadDataModelBinaryFile.delete()
 				error.printStackTrace()
 				null
@@ -243,77 +243,66 @@ class DownloadDataModel : Serializable {
 		}
 
 		/**
-		 * Registers all required classes with Kryo serializer.
-		 *
-		 * Must include all classes that will be serialized, including collections.
-		 * Called before both serialization and deserialization.
+		 * Registers classes with Kryo serializer.
+		 * Required for both serialization and deserialization.
 		 */
 		private fun registerKryoClasses() {
-			logger.d("Registering classes with Kryo serializer")
-			kryoDBHelper.isRegistrationRequired = true
-			kryoDBHelper.register(String::class.java, StringSerializer())
-			kryoDBHelper.register(emptyList<BookmarkModel>().javaClass)
-			kryoDBHelper.register(List::class.java)
-			kryoDBHelper.register(ArrayList::class.java)
-			kryoDBHelper.register(LongArray::class.java)
-			kryoDBHelper.register(IntArray::class.java)
-
-			kryoDBHelper.register(AIOSettings::class.java)
-			kryoDBHelper.register(DownloadDataModel::class.java)
-			kryoDBHelper.register(VideoInfo::class.java)
-			kryoDBHelper.register(VideoFormat::class.java)
-
-			kryoDBHelper.register(Date::class.java)
-			kryoDBHelper.register(HashMap::class.java)
-			kryoDBHelper.register(HashSet::class.java)
+			logger.d("Registering Kryo classes")
+			KryoRegistry.registerClasses(kryoDBHelper)
 		}
 	}
 
 	init {
+		logger.d("Initializing new DownloadDataModel")
 		resetToDefaultValues()
 	}
 
 	/**
-	 * Persists the current state of the download model to storage.
-	 * Performs cleanup before saving and handles cookies separately.
+	 * Persists the current state to storage.
+	 * Handles both binary and JSON formats.
 	 */
 	@Synchronized
 	fun updateInStorage() {
+		logger.d("Starting storage update")
 		ThreadsUtility.executeInBackground(codeBlock = {
-			if (fileName.isEmpty() && fileURL.isEmpty()) return@executeInBackground
+			if (fileName.isEmpty() && fileURL.isEmpty()) {
+				logger.d("Empty filename and URL, skipping update")
+				return@executeInBackground
+			}
+
+			logger.d("Saving cookies and cleaning model")
 			saveCookiesIfAvailable()
 			cleanTheModelBeforeSavingToStorage()
 
-			logger.d("Updating download data model in storage")
 			saveToBinary("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
 			saveStringToInternalStorage(
-				fileName = "$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION",
-				data = convertClassToJSON()
+				"$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION",
+				convertClassToJSON()
 			)
-			logger.d("Download data model successfully updated in storage")
+			logger.d("Storage update completed")
 		}, errorHandler = { error ->
-			logger.d("Error updating download data model in storage: ${error.message}")
+			logger.d("Storage update failed: ${error.message}")
 			error.printStackTrace()
 		})
 	}
 
 	/**
-	 * Saves the current download data model object to binary format.
-	 * @param fileName The name of the file to save to
+	 * Saves model to binary format.
+	 * @param fileName Target filename
 	 */
+	@Synchronized
 	private fun saveToBinary(fileName: String) {
 		try {
-			logger.d("Saving download data model to binary file: $fileName")
-			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
-			fileOutputStream.use { fos ->
+			logger.d("Saving to binary file: $fileName")
+			INSTANCE.openFileOutput(fileName, MODE_PRIVATE).use { fos ->
 				Output(fos).use { output ->
 					registerKryoClasses()
 					kryoDBHelper.writeObject(output, this)
 				}
 			}
-			logger.d("Binary download data model saved successfully")
+			logger.d("Binary save successful")
 		} catch (error: Exception) {
-			logger.d("Error saving binary download data model: ${error.message}")
+			logger.d("Binary save error: ${error.message}")
 		}
 	}
 
@@ -324,6 +313,7 @@ class DownloadDataModel : Serializable {
 	@Synchronized
 	fun deleteModelFromDisk() {
 		ThreadsUtility.executeInBackground(codeBlock = {
+			logger.d("Starting model deletion")
 			val internalDir = AIOApp.internalDataFolder
 			val modelJsonFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION")
 			val modelBinaryFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
@@ -340,7 +330,11 @@ class DownloadDataModel : Serializable {
 				val downloadedFile = getDestinationDocumentFile()
 				isWritableFile(downloadedFile).let { if (it) downloadedFile.delete() }
 			}
-		}, errorHandler = { error -> error.printStackTrace() })
+			logger.d("Model deletion completed")
+		}, errorHandler = { error ->
+			logger.d("Deletion error: ${error.message}")
+			error.printStackTrace()
+		})
 	}
 
 	/**
@@ -616,10 +610,11 @@ class DownloadDataModel : Serializable {
 	}
 
 	/**
-	 * Resets all fields to default values and initializes required properties.
-	 * Sets up default directory based on app settings.
+	 * Resets all fields to default values.
+	 * Initializes based on app settings.
 	 */
 	private fun resetToDefaultValues() {
+		logger.d("Resetting to default values")
 		id = getUniqueNumberForDownloadModels()
 		if (aioSettings.defaultDownloadLocation == PRIVATE_FOLDER) {
 			val externalDataFolderPath = INSTANCE.getExternalDataFolder()?.getAbsolutePath(INSTANCE)
@@ -635,16 +630,20 @@ class DownloadDataModel : Serializable {
 		}
 
 		globalSettings = deepCopy(aioSettings) ?: aioSettings
+		logger.d("Reset completed with ID: $id")
 	}
 
 	/**
-	 * Cleans up model data before persisting to storage.
-	 * Resets transient values and ensures completed downloads show 100% progress.
+	 * Cleans model before persistence.
+	 * Ensures completed downloads show 100% progress.
 	 */
 	private fun cleanTheModelBeforeSavingToStorage() {
+		logger.d("Cleaning model before save")
 		if (isRunning && status == DownloadStatus.DOWNLOADING) return
+
 		realtimeSpeed = 0L
 		realtimeSpeedInFormat = "--"
+
 		if (isComplete && status == DownloadStatus.COMPLETE) {
 			remainingTimeInSec = 0
 			remainingTimeInFormat = "--:--"
@@ -652,10 +651,12 @@ class DownloadDataModel : Serializable {
 			progressPercentageInFormat = getText(string.text_100_percentage)
 			downloadedByte = fileSize
 			downloadedByteInFormat = getHumanReadableFormat(downloadedByte)
+
 			partProgressPercentage.forEachIndexed { index, _ ->
 				partProgressPercentage[index] = 100
 				partsDownloadedByte[index] = partChunkSizes[index]
 			}
+			logger.d("Model cleaned for completed download")
 		}
 	}
 }

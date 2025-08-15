@@ -1,7 +1,7 @@
 package lib.process
 
 import app.core.AIOApp.Companion.internalDataFolder
-import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_FILE_EXTENSION
+import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_FILE_JSON_EXTENSION
 import java.util.Random
 
 /**
@@ -38,7 +38,7 @@ object UniqueNumberUtils {
 	@JvmStatic
 	fun getUniqueNumberForDownloadModels(): Int {
 		val existingFiles = internalDataFolder.listFiles()
-			.filter { it.name!!.endsWith(DOWNLOAD_MODEL_FILE_EXTENSION) }
+			.filter { it.name!!.endsWith(DOWNLOAD_MODEL_FILE_JSON_EXTENSION) }
 		
 		val existingNumbers = existingFiles.mapNotNull { file ->
 			file.name!!.split("_").firstOrNull()?.toIntOrNull()

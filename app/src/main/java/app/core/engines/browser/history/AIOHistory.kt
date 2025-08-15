@@ -6,10 +6,10 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioHistory
 import app.core.AIOApp.Companion.kryoDBHelper
+import app.core.KryoRegistry
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringSerializer
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
@@ -21,7 +21,6 @@ import java.io.Serializable
 import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 /**
@@ -50,10 +49,6 @@ class AIOHistory : Serializable {
 	private val logger = LogHelperUtils.from(javaClass)
 
 	companion object {
-		/**
-		 * Serialization ID for binary format compatibility
-		 */
-		const val AIO_HISTORY_SERIALIZABLE_ID = 1
 
 		/**
 		 * Default filename for JSON formatted history storage
@@ -135,16 +130,8 @@ class AIOHistory : Serializable {
 	 */
 	private fun registerKryoClasses() {
 		logger.d("Registering classes with Kryo serializer")
-		kryoDBHelper.isRegistrationRequired = true
-		kryoDBHelper.register(String::class.java, StringSerializer())
-		kryoDBHelper.register(emptyList<HistoryModel>().javaClass)
-		kryoDBHelper.register(List::class.java)
-		kryoDBHelper.register(ArrayList::class.java)
-		kryoDBHelper.register(HistoryModel::class.java)
-		kryoDBHelper.register(AIOHistory::class.java)
-		kryoDBHelper.register(Date::class.java)
-		kryoDBHelper.register(HashMap::class.java)
-		kryoDBHelper.register(HashSet::class.java)
+		KryoRegistry.registerClasses(kryoDBHelper)
+
 	}
 
 	/**
@@ -152,6 +139,7 @@ class AIOHistory : Serializable {
 	 *
 	 * @param fileName Name of the binary file to save to
 	 */
+	@Synchronized
 	private fun saveToBinary(fileName: String) {
 		try {
 			logger.d("Saving history to binary file: $fileName")
