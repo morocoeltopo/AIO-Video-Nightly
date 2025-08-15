@@ -163,7 +163,6 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
     var areVideoControllersLocked = false
     var trackPlaybackPosition: Long = 0L
     var isNightModeOn = false
-    var aioTimerCycle = 0
 
     var isDoubleClickedInvisibleArea = 0
     val seekAmountOfVideoForwardRewind = 10000L
@@ -241,15 +240,6 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
      */
     override fun onAIOTimerTick(loopCount: Double) {
         updateVideoProgressContainer()
-        hidePlayerControllerIfNeeded()
-    }
-
-    private fun hidePlayerControllerIfNeeded() {
-        aioTimerCycle++
-        if (aioTimerCycle >= 15) {
-            aioTimerCycle = 0
-            hideEntirePlaybackControllers()
-        }
     }
 
     /**

@@ -69,6 +69,7 @@
                 android:layout_toStartOf="@+id/btn_actionbar_add_download"
                 android:background="@drawable/ic_button_negative_selector"
                 android:clickable="true"
+                android:visibility="gone"
                 tools:ignore="SpeakableTextPresentCheck">
 
                 <ImageView
