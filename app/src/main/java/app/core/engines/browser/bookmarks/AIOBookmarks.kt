@@ -266,6 +266,7 @@ class AIOBookmarks : Serializable {
      * Called before both serialization and deserialization.
      */
 	private fun registerKryoClasses() {
+		logger.d("Registering classes with Kryo serializer")
 		kryo.isRegistrationRequired = true
 		kryo.register(String::class.java, StringSerializer())
 		kryo.register(emptyList<BookmarkModel>().javaClass)

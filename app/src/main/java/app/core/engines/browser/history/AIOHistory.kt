@@ -25,10 +25,24 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Represents the complete browsing history managed by the application.
+ * Manages browser history including storage, retrieval, and various operations.
  *
- * This class handles storing, retrieving, filtering, and updating user browsing history,
- * and persists data in JSON format using internal storage.
+ * Features:
+ * - Dual-format persistence (JSON and binary)
+ * - Size-optimized file reading strategies
+ * - Thread-safe background operations
+ * - Comprehensive history management
+ * - Advanced filtering and sorting
+ * - Automatic duplicate detection
+ * - Archive functionality
+ *
+ * Storage Strategy:
+ * - Binary format preferred for performance
+ * - JSON format maintained for readability
+ * - File size-based reading optimization:
+ *   - Small (<0.5MB): Direct read
+ *   - Medium (0.5-5MB): Buffered read
+ *   - Large (>5MB): Memory-mapped I/O with fallback
  */
 class AIOHistory : Serializable {
 
@@ -184,73 +198,108 @@ class AIOHistory : Serializable {
 		}
 	}
 
-	/** Reads small-sized history files directly using UTF-8 encoding. */
+	/**
+	 * Direct file read for small history files
+	 * @param file Source file to read
+	 * @ return File content as String
+	 */
 	private fun readSmallFile(file: File): String {
+		logger.d("Executing direct file read")
 		return file.readText(Charsets.UTF_8)
 	}
 
-	/** Reads medium-sized history files using BufferedReader for efficiency. */
+	/**
+	 * Buffered read for medium history files
+	 * @param file Source file to read
+	 * @return File content as String
+	 */
 	private fun readMediumFile(file: File): String {
+		logger.d("Executing buffered file read")
 		return BufferedReader(FileReader(file)).use { it.readText() }
 	}
 
 	/**
-	 * Reads large history files using memory mapping.
-	 * Falls back to line-by-line reading if OutOfMemoryError occurs.
+	 * Memory-mapped read for large history files with fallback
+	 * @param file Source file to read
+	 * @return File content as String
 	 */
 	private fun readLargeFile(file: File): String {
+		logger.d("Attempting memory-mapped file read")
 		return try {
 			FileInputStream(file).channel.use { channel ->
-				val buffer = channel.map(
-					FileChannel.MapMode.READ_ONLY, 0, channel.size()
-				)
+				val buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
 				Charsets.UTF_8.decode(buffer).toString()
 			}
 		} catch (error: OutOfMemoryError) {
-			error.printStackTrace()
+			logger.d("Falling back to line-by-line read due to memory constraints")
 			buildString {
 				BufferedReader(FileReader(file)).forEachLine { line -> append(line) }
 			}
 		}
 	}
 
-	/** Converts the current instance of [AIOHistory] into a JSON string. */
+	/**
+	 * Serializes history to JSON string
+	 * @return JSON representation of history
+	 */
 	private fun convertClassToJSON(): String {
+		logger.d("Converting history to JSON")
 		return aioGSONInstance.toJson(this)
 	}
 
-	/** Converts a JSON string back into an [AIOHistory] instance. */
+	/**
+	 * Deserializes JSON to history object
+	 * @param data JSON string to convert
+	 * @return AIOHistory instance
+	 */
 	private fun convertJSONStringToClass(data: String): AIOHistory {
+		logger.d("Converting JSON to history object")
 		return aioGSONInstance.fromJson(data, AIOHistory::class.java)
 	}
 
 	/**
-	 * Saves the current history data into internal storage as JSON.
-	 * This operation is done asynchronously.
+	 * Persists current history to storage in both formats.
+	 * Executes asynchronously in background.
 	 */
 	fun updateInStorage() {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {
+				logger.d("Updating history in storage")
+				saveToBinary(AIO_HISTORY_FILE_NAME_BINARY)
 				saveStringToInternalStorage(
 					fileName = AIO_HISTORY_FILE_NAME_JSON,
 					data = convertClassToJSON()
 				)
+				logger.d("history successfully updated in storage")
 			} catch (error: Exception) {
+				logger.d("Error updating history: ${error.message}")
 				error.printStackTrace()
 			}
 		})
 	}
 
-	/** Returns the current history list. */
-	fun getHistoryLibrary(): ArrayList<HistoryModel> = historyLibrary
+	/** @return Current history collection */
+	fun getHistoryLibrary(): ArrayList<HistoryModel> {
+		logger.d("Retrieving history library")
+		return historyLibrary
+	}
 
-	/** Inserts a new history entry into the library. */
+	/**
+	 * Adds new history entry
+	 * @param historyModel Entry to add
+	 */
 	fun insertNewHistory(historyModel: HistoryModel) {
+		logger.d("Adding new history entry")
 		historyLibrary.add(historyModel)
 	}
 
-	/** Updates an existing history entry by replacing it with a new one. */
+	/**
+	 * Updates existing history entry
+	 * @param oldHistory Entry to replace
+	 * @param newHistory New entry data
+	 */
 	fun updateHistory(oldHistory: HistoryModel, newHistory: HistoryModel) {
+		logger.d("Updating history entry")
 		val index = historyLibrary.indexOf(oldHistory)
 		if (index != -1) {
 			historyLibrary[index] = newHistory
@@ -258,37 +307,43 @@ class AIOHistory : Serializable {
 	}
 
 	/**
-	 * Searches the history entries by title or URL.
-	 *
-	 * @param query The search keyword.
-	 * @return List of matching history items.
+	 * Searches history by title or URL
+	 * @param query Search term
+	 * @return Matching history entries
 	 */
 	fun searchHistory(query: String): List<HistoryModel> {
+		logger.d("Searching history for: $query")
 		return historyLibrary.filter {
 			it.historyTitle.contains(query, ignoreCase = true) ||
 					it.historyUrl.contains(query, ignoreCase = true)
 		}
 	}
 
-	/** Finds and returns duplicate history entries based on URL. */
+	/** @return List of duplicate history entries */
 	fun findDuplicateHistory(): List<HistoryModel> {
+		logger.d("Finding duplicate history entries")
 		return historyLibrary
 			.groupBy { it.historyUrl }
 			.filter { it.value.size > 1 }
 			.flatMap { it.value }
 	}
 
-	/** Removes a specific history item from the library. */
+	/**
+	 * Removes history entry
+	 * @param historyModel Entry to remove
+	 */
 	fun removeHistory(historyModel: HistoryModel) {
+		logger.d("Removing history entry")
 		historyLibrary.remove(historyModel)
 	}
 
 	/**
-	 * Returns the history sorted by a given attribute.
-	 *
-	 * @param attribute Either "title" or "date".
+	 * Returns sorted history
+	 * @param attribute Sort key ("title" or "date")
+	 * @return Sorted history entries
 	 */
 	fun getHistorySortedBy(attribute: String): List<HistoryModel> {
+		logger.d("Sorting history by: $attribute")
 		return when (attribute.lowercase(Locale.ROOT)) {
 			"title" -> historyLibrary.sortedBy { it.historyTitle }
 			"date" -> historyLibrary.sortedBy { it.historyVisitDateTime }
@@ -296,18 +351,25 @@ class AIOHistory : Serializable {
 		}
 	}
 
-	/** Clears all entries from the history. */
+	/** Clears all history entries */
 	fun clearAllHistory() {
+		logger.d("Clearing all history")
 		historyLibrary.clear()
 	}
 
-	/** Returns the total number of history entries. */
-	fun countHistory(): Int = historyLibrary.size
+	/** @return Total history entries count */
+	fun countHistory(): Int {
+		logger.d("Counting history entries")
+		return historyLibrary.size
+	}
 
 	/**
-	 * Returns recent history items within the last [days] number of days.
+	 * Returns recent history within specified days
+	 * @param days Days to look back
+	 * @return Recent history entries
 	 */
 	fun getRecentHistory(days: Int): List<HistoryModel> {
+		logger.d("Getting recent history for last $days days")
 		val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 		val calendar = Calendar.getInstance()
 		calendar.add(Calendar.DAY_OF_YEAR, -days)
@@ -325,37 +387,46 @@ class AIOHistory : Serializable {
 	}
 
 	/**
-	 * Filters and returns history entries that have a visit duration
-	 * greater than or equal to [minDuration] in milliseconds.
+	 * Filters history by minimum visit duration
+	 * @param minDuration Minimum duration in ms
+	 * @return Matching history entries
 	 */
 	fun filterHistoryByDuration(minDuration: Long): List<HistoryModel> {
+		logger.d("Filtering history by duration >= $minDuration ms")
 		return historyLibrary.filter { it.historyDuration >= minDuration }
 	}
 
-	/** Returns all history entries marked as important. */
+	/** @return Important history entries */
 	fun getImportantHistory(): List<HistoryModel> {
+		logger.d("Getting important history entries")
 		return historyLibrary.filter { it.historyImportant }
 	}
 
 	/**
-	 * Filters history items by a specific tag.
-	 *
-	 * @param tag The tag to filter by.
+	 * Filters history by tag
+	 * @param tag Tag to filter by
+	 * @return Matching history entries
 	 */
 	fun filterHistoryByTag(tag: String): List<HistoryModel> {
+		logger.d("Filtering history by tag: $tag")
 		return historyLibrary.filter { it.historyTags.contains(tag) }
 	}
 
-	/** Marks a history entry as archived without removing it. */
+	/**
+	 * Archives history entry
+	 * @param historyModel Entry to archive
+	 */
 	fun archiveHistory(historyModel: HistoryModel) {
+		logger.d("Archiving history entry")
 		val index = historyLibrary.indexOf(historyModel)
 		if (index != -1) {
 			historyLibrary[index].historyArchived = true
 		}
 	}
 
-	/** Returns all archived history entries. */
+	/** @return Archived history entries */
 	fun getArchivedHistory(): List<HistoryModel> {
+		logger.d("Getting archived history entries")
 		return historyLibrary.filter { it.historyArchived }
 	}
 }
