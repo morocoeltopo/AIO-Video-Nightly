@@ -285,7 +285,7 @@ class SingleResolutionPrompter(
                     val videoThumbnailUrl = videoThumbnailUrl
                     val videoUrlReferer = videoUrlReferer
                     val videoThumbnailByReferer = true
-                    val videoFormats = listOf(
+                    val videoFormats = arrayListOf(
                         VideoFormat(
                             formatId = safeBaseActivityRef.packageName,
                             isFromSocialMedia = isSocialMediaUrl,
