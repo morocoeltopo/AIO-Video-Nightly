@@ -4,6 +4,7 @@ desugar_jdk_libs_nio = "2.0.4"
 kotlin = "2.2.0"
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
+kryo = "5.5.0"
 new_pipe_extractor = "v0.24.8"
 webkit = "1.14.0"
 viewpager2 = "1.1.0"
@@ -33,6 +34,7 @@ androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-p
 desugar_jdk_libs_nio = { module = "com.android.tools:desugar_jdk_libs_nio", version.ref = "desugar_jdk_libs_nio" }
 kotlin_coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutine" }
 kotlin_coroutines_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutine" }
+kryo = { module = "com.esotericsoftware:kryo", version.ref = "kryo" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 circleimageview = { module = "de.hdodenhof:circleimageview", version.ref = "circleimageview" }
 constraint_layout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraint_layout" }
