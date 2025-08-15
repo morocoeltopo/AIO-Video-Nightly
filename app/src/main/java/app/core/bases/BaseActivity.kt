@@ -91,26 +91,26 @@ import kotlin.system.exitProcess
  * Implements [BaseActivityInf] interface for common activity operations.
  */
 abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
-	
+
 	// Weak reference to the activity instance for safe access
 	private var weakBaseActivityRef: WeakReference<BaseActivity>? = null
 	private var safeBaseActivityRef: BaseActivity? = null
-	
+
 	// Flag to track if permission check is in progress
 	private var isUserPermissionCheckingActive = false
-	
+
 	// Flag to track activity running state
 	private var isActivityRunning = false
-	
+
 	// Counter for back button presses
 	private var isBackButtonEventFired = 0
-	
+
 	// Helper for scoped storage access
 	open var scopedStorageHelper: SimpleStorageHelper? = null
-	
+
 	// Listener for permission check results
 	open var permissionCheckListener: PermissionsResult? = null
-	
+
 	// Vibrator instance for haptic feedback
 	private val vibrator: Vibrator by lazy {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -119,110 +119,110 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			vibratorManager.defaultVibrator
 		} else getSystemService(Vibrator::class.java)
 	}
-	
+
 	override fun onStart() {
 		super.onStart()
 		isActivityRunning = true
 	}
-	
+
 	@SuppressLint("SourceLockedOrientationActivity")
-    override fun onCreate(savedInstanceState: Bundle?) {
+	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		// Initialize weak reference to this activity
 		weakBaseActivityRef = WeakReference(this)
 		safeBaseActivityRef = weakBaseActivityRef?.get()
-		
+
 		safeBaseActivityRef?.let { safeActivityRef ->
 			// Set up crash handler
 			setDefaultUncaughtExceptionHandler(CrashHandler())
-			
+
 			// Configure system UI
 			setLightSystemBarTheme()
-			
+
 			// Initialize storage helper
 			scopedStorageHelper = SimpleStorageHelper(safeActivityRef)
-			
+
 			// Apply user selected language
 			aioLanguage.applyUserSelectedLanguage(safeActivityRef)
-			
+
 			// Lock orientation to portrait
 			requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
-			
+
 			// Set up back press handler
 			WeakReference(object : OnBackPressedCallback(true) {
 				override fun handleOnBackPressed() = onBackPressActivity()
 			}).get()?.let { onBackPressedDispatcher.addCallback(safeActivityRef, it) }
-			
+
 			// Set content view if layout is specified
 			if (onRenderingLayout() > -1) setContentView(onRenderingLayout())
 		}
 	}
-	
+
 	override fun onPostCreate(savedInstanceState: Bundle?) {
 		super.onPostCreate(savedInstanceState)
 		// Called after onCreate() has completed
 		onAfterLayoutRender()
 	}
-	
+
 	override fun onResume() {
 		super.onResume()
 		// Reinitialize weak reference if null
 		if (safeBaseActivityRef == null) safeBaseActivityRef = WeakReference(this).get()
-		
+
 		safeBaseActivityRef?.let { safeActivityRef ->
 			isActivityRunning = true
-			
+
 			// Check and request permissions if needed
 			requestForPermissionIfRequired()
-			
+
 			// Update foreground service state
 			idleForegroundService.updateService()
-			
+
 			// Validate user selected folder
 			aioSettings.validateUserSelectedFolder()
-			
+
 			// Initialize YouTube DL
 			INSTANCE.initializeYtDLP()
-			
+
 			// Call subclass resume handler
 			onResumeActivity()
-			
+
 			// Check for language changes
 			aioLanguage.closeActivityIfLanguageChanged(safeActivityRef)
-			
+
 			// Update ad blocker filters
 			aioAdblocker.fetchAdFilters()
 		}
 	}
-	
+
 	override fun onPause() {
 		super.onPause()
 		isActivityRunning = false
 		// Call subclass pause handler
 		onPauseActivity()
 	}
-	
+
 	override fun onDestroy() {
 		super.onDestroy()
 		isActivityRunning = false
 		// Cancel any ongoing vibration
 		vibrator.cancel()
 	}
-	
+
 	/**
 	 * Called when activity is paused. Subclasses can override to add custom behavior.
 	 */
 	override fun onPauseActivity() {
 		// Default implementation does nothing
 	}
-	
+
 	/**
 	 * Called when activity is resumed. Subclasses can override to add custom behavior.
 	 */
 	override fun onResumeActivity() {
 		// Default implementation does nothing
 	}
-	
+
 	/**
 	 * Configures system bars (status bar and navigation bar) appearance.
 	 *
@@ -241,14 +241,14 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		activityWindow.statusBarColor = getColor(this, statusBarColorResId)
 		activityWindow.navigationBarColor = getColor(this, navigationBarColorResId)
 		val decorView = activityWindow.decorView
-		
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 			val insetsController = activityWindow.insetsController
 			insetsController?.setSystemBarsAppearance(
 				if (isLightStatusBar) APPEARANCE_LIGHT_STATUS_BARS else 0,
 				APPEARANCE_LIGHT_STATUS_BARS
 			)
-			
+
 			insetsController?.setSystemBarsAppearance(
 				if (isLightNavigationBar) APPEARANCE_LIGHT_NAVIGATION_BARS else 0,
 				APPEARANCE_LIGHT_NAVIGATION_BARS
@@ -260,7 +260,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			else decorView.systemUiVisibility =
 				decorView.systemUiVisibility and
 						SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-			
+
 			if (isLightNavigationBar) decorView.systemUiVisibility =
 				decorView.systemUiVisibility or
 						SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
@@ -269,7 +269,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 						SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
 		}
 	}
-	
+
 	/**
 	 * Handles touch events to dismiss soft keyboard when touching outside EditText.
 	 */
@@ -289,7 +289,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		}
 		return super.dispatchTouchEvent(motionEvent)
 	}
-	
+
 	/**
 	 * Launches a permission request dialog for the specified permissions.
 	 *
@@ -323,7 +323,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 				}; isUserPermissionCheckingActive = true
 		}
 	}
-	
+
 	/**
 	 * Opens another activity with optional animation.
 	 *
@@ -340,7 +340,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			}
 		}
 	}
-	
+
 	/**
 	 * Closes the current activity with swipe animation.
 	 *
@@ -351,7 +351,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			finish(); if (shouldAnimate) animActivitySwipeRight(this)
 		}
 	}
-	
+
 	/**
 	 * Closes the current activity with fade animation.
 	 *
@@ -362,7 +362,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			finish(); if (shouldAnimate) animActivityFade(this)
 		}
 	}
-	
+
 	/**
 	 * Handles double back press to exit the activity.
 	 * Shows toast on first press, exits on second press within 2 seconds.
@@ -381,7 +381,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			closeActivityWithSwipeAnimation()
 		}
 	}
-	
+
 	/**
 	 * Force quits the application.
 	 */
@@ -389,7 +389,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		Process.killProcess(Process.myPid())
 		exitProcess(0)
 	}
-	
+
 	/**
 	 * Opens the app info settings screen.
 	 */
@@ -399,7 +399,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		val intent = Intent(ACTION_APPLICATION_DETAILS_SETTINGS, uri)
 		startActivity(intent)
 	}
-	
+
 	/**
 	 * Opens the app in Play Store.
 	 */
@@ -412,7 +412,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			showToast(msgId = R.string.text_please_install_web_browser)
 		}
 	}
-	
+
 	/**
 	 * Gets the current time zone ID.
 	 *
@@ -421,7 +421,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	override fun getTimeZoneId(): String {
 		return TimeZone.getDefault().id
 	}
-	
+
 	/**
 	 * Gets the current activity instance.
 	 *
@@ -430,7 +430,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	override fun getActivity(): BaseActivity? {
 		return safeBaseActivityRef
 	}
-	
+
 	/**
 	 * Clear the weak reference of the activity. Careful using the function,
 	 * and should call by the application life cycle manager to automatically
@@ -440,7 +440,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		weakBaseActivityRef?.clear()
 		safeBaseActivityRef = null
 	}
-	
+
 	/**
 	 * Triggers device vibration for the specified duration.
 	 *
@@ -455,7 +455,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			)
 		}
 	}
-	
+
 	/**
 	 * Gets standard intent flags for single top activities.
 	 *
@@ -464,7 +464,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	override fun getSingleTopIntentFlags(): Int {
 		return FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 	}
-	
+
 	/**
 	 * Shows a dialog indicating upcoming features.
 	 */
@@ -493,7 +493,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			)
 		}
 	}
-	
+
 	/**
 	 * Requests permissions if they haven't been granted yet.
 	 */
@@ -506,7 +506,11 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 						val permissions = getRequiredPermissionsBySDKVersion()
 						if (permissions.isNotEmpty() && !isGranted(safeActivityRef, permissions[0]))
 							launchPermissionRequest(getRequiredPermissionsBySDKVersion()) else
-							permissionCheckListener?.onPermissionResultFound(true, permissions, null)
+							permissionCheckListener?.onPermissionResultFound(
+								true,
+								permissions,
+								null
+							)
 					}
 				})
 			}
@@ -521,7 +525,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	fun isActivityRunning(): Boolean {
 		return isActivityRunning
 	}
-	
+
 	/**
 	 * Gets required permissions based on SDK version.
 	 *
@@ -534,7 +538,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		else permissions.add(WRITE_EXTERNAL_STORAGE)
 		return permissions
 	}
-	
+
 	/**
 	 * Sets light theme for system bars (light icons on dark background).
 	 */
@@ -546,7 +550,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			isLightNavigationBar = true
 		)
 	}
-	
+
 	/**
 	 * Sets dark theme for system bars (dark icons on light background).
 	 */
@@ -558,7 +562,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			isLightNavigationBar = false
 		)
 	}
-	
+
 	/**
 	 * Configures edge-to-edge fullscreen mode.
 	 */
@@ -577,14 +581,14 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 					or SYSTEM_UI_FLAG_FULLSCREEN
 					or SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
 		}
-		
+
 		WindowCompat.getInsetsController(window, window.decorView).let { controller ->
 			controller.hide(WindowInsetsCompat.Type.systemBars())
 			val barsBySwipe = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 			controller.systemBarsBehavior = barsBySwipe
 		}
 	}
-	
+
 	/**
 	 * Disables edge-to-edge mode.
 	 */
@@ -603,13 +607,13 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 					or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
 			window.decorView.systemUiVisibility = flags
 		}
-		
+
 		WindowCompat.getInsetsController(window, window.decorView).let { controller ->
 			controller.show(WindowInsetsCompat.Type.systemBars())
 			controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
 		}
 	}
-	
+
 	/**
 	 * Configures edge-to-edge mode with custom cutout color.
 	 *
@@ -625,7 +629,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			window.setBackgroundDrawable(color.toDrawable())
 		}
 	}
-	
+
 	/**
 	 * Checks if the app is currently ignoring battery optimizations.
 	 *
@@ -635,7 +639,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		val powerManager = getSystemService(POWER_SERVICE) as? PowerManager
 		return powerManager?.isIgnoringBatteryOptimizations(packageName) == true
 	}
-	
+
 	/**
 	 * Prompts the user to manually disable battery optimizations for the app.
 	 *
@@ -647,7 +651,8 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	fun requestForDisablingBatteryOptimization() {
 		if (aioSettings.totalNumberOfSuccessfulDownloads < 1) return
 		if (safeBaseActivityRef !is MotherActivity) return
-		
+		if (isBatteryOptimizationIgnored() == false) return
+
 		MsgDialogUtils.getMessageDialog(
 			baseActivityInf = safeBaseActivityRef,
 			isTitleVisible = true,
