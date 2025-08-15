@@ -32,22 +32,22 @@ import java.lang.ref.WeakReference
  * Uses WeakReference to prevent memory leaks from holding strong references to views.
  */
 class DownloaderRowUI(private val rowLayout: View) {
-	
+
 	// Weak reference to the row layout to prevent memory leaks
 	private val safeRowLayoutRef = WeakReference(rowLayout)
-	
+
 	// State tracking variables
 	private var isShowingAnyDialog = false      // Tracks if an error dialog is currently shown
 	private var cachedThumbLoaded = false      // Tracks if thumbnail has been loaded from cache
 	private var isThumbnailSettingsChanged = false // Tracks changes to thumbnail visibility setting
-	
+
 	// Lazy-initialized view references
 	private val mainLayoutRowContainer: View by lazy { rowLayout.findViewById(R.id.container_running_info) }
 	private val thumbImageView: ImageView by lazy { rowLayout.findViewById(R.id.img_file_thumbnail) }
 	private val statusIndicationImageView: ImageView by lazy { rowLayout.findViewById(R.id.img_status_indicator) }
 	private val fileNameTextView: TextView by lazy { rowLayout.findViewById(R.id.txt_file_name) }
 	private val statusInfo: TextView by lazy { rowLayout.findViewById(R.id.txt_download_status) }
-	
+
 	/**
 	 * Main update method that refreshes all UI elements for a download item.
 	 * @param downloadModel The DownloadDataModel containing current download state
@@ -61,7 +61,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			updateAlertMessage(downloadModel)
 		}
 	}
-	
+
 	/**
 	 * Controls the overall visibility of the row based on download state.
 	 * Hides rows for completed, removed, or private folder downloads.
@@ -69,12 +69,13 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private fun updateEntireVisibility(downloadModel: DownloadDataModel, rowLayout: View) {
 		if (downloadModel.isRemoved ||
 			downloadModel.isComplete ||
-			downloadModel.isWentToPrivateFolder
+			downloadModel.isWentToPrivateFolder ||
+			downloadModel.globalSettings.hideDownloadProgressFromUI
 		) {
 			if (rowLayout.visibility != GONE) rowLayout.visibility = GONE
 		}
 	}
-	
+
 	/**
 	 * Updates the filename display, showing placeholder text if name isn't available yet.
 	 */
@@ -83,14 +84,14 @@ class DownloaderRowUI(private val rowLayout: View) {
 			getText(R.string.text_getting_name_from_server)
 		}
 	}
-	
+
 	/**
 	 * Updates all progress-related UI elements.
 	 */
 	private fun updateDownloadProgress(downloadModel: DownloadDataModel) {
 		updateProgressBars(downloadModel)
 	}
-	
+
 	/**
 	 * Updates the progress bar and status text with current download information.
 	 * Shows error messages in red if there are yt-dlp problems.
@@ -104,7 +105,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			statusInfo.setTextColor(INSTANCE.getColor(R.color.color_text_primary))
 		}
 	}
-	
+
 	/**
 	 * Updates the file thumbnail based on download state and settings.
 	 * Handles both video thumbnails and default icons for other file types.
@@ -114,7 +115,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 		if (downloadModel.globalSettings.downloadHideVideoThumbnail
 			!= isThumbnailSettingsChanged
 		) isThumbnailSettingsChanged = true
-		
+
 		// Only update thumbnail if not set or settings changed
 		if (thumbImageView.tag == null || isThumbnailSettingsChanged) {
 			if (downloadModel.globalSettings.downloadHideVideoThumbnail) {
@@ -129,7 +130,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Updates the thumbnail to either a default icon or generates a video thumbnail.
 	 */
@@ -139,7 +140,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			showDefaultDownloadThumb(downloadModel)
 			thumbImageView.tag = true; return
 		}
-		
+
 		// For videos with sufficient progress or known thumbnail URLs
 		if (downloadModel.progressPercentage > 5 ||
 			downloadModel.videoInfo?.videoThumbnailUrl != null ||
@@ -147,10 +148,10 @@ class DownloaderRowUI(private val rowLayout: View) {
 		) {
 			executeInBackground {
 				if (cachedThumbLoaded) return@executeInBackground
-				
+
 				val defaultThumb = downloadModel.getThumbnailDrawableID()
 				val cachedThumbPath = downloadModel.thumbPath
-				
+
 				// Check for cached thumbnail first
 				if (cachedThumbPath.isNotEmpty() && File(cachedThumbPath).exists()) {
 					executeOnMainThread {
@@ -183,26 +184,26 @@ class DownloaderRowUI(private val rowLayout: View) {
 						// Regular download file
 						downloadModel.getDestinationFile()
 					}
-					
+
 					// Get thumbnail URL from either video info or download model
 					val videoInfoThumbnailUrl = downloadModel.videoInfo?.videoThumbnailUrl
 					val downloadModelThumbUrl = downloadModel.thumbnailUrl
 					val thumbnailUrl = videoInfoThumbnailUrl ?: downloadModelThumbUrl
-					
+
 					// Generate thumbnail bitmap
 					val bitmap = getThumbnailFromFile(
 						targetFile = videoDestinationFile,
 						thumbnailUrl = thumbnailUrl,
 						requiredThumbWidth = 420
 					)
-					
+
 					if (bitmap != null) {
 						// Rotate portrait videos to landscape
 						val isPortrait = bitmap.height > bitmap.width
 						val rotatedBitmap = if (isPortrait) {
 							rotateBitmap(bitmap, 270f)
 						} else bitmap
-						
+
 						// Save and display the thumbnail
 						val thumbnailName = "${downloadModel.id}$THUMB_EXTENSION"
 						saveBitmapToFile(rotatedBitmap, thumbnailName)?.let { filePath ->
@@ -222,7 +223,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			showDefaultDownloadThumb(downloadModel)
 		}
 	}
-	
+
 	/**
 	 * Loads a thumbnail bitmap into the ImageView, falling back to default icon on error.
 	 */
@@ -234,7 +235,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			thumbImageView.setImageResource(defaultThumb)
 		}
 	}
-	
+
 	/**
 	 * Shows the default thumbnail icon based on file type.
 	 */
@@ -246,7 +247,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			)
 		)
 	}
-	
+
 	/**
 	 * Shows error messages to the user via dialog if present in the download model.
 	 */

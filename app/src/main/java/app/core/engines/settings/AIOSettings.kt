@@ -81,6 +81,7 @@ class AIOSettings : Serializable {
 	var downloadHideVideoThumbnail: Boolean = false
 	var downloadPlayNotificationSound: Boolean = true
 	var downloadHideNotification: Boolean = false
+	var hideDownloadProgressFromUI: Boolean = false
 	var downloadAutoRemoveTasks: Boolean = false
 	var downloadAutoRemoveTaskAfterNDays: Int = 0
 	var openDownloadedFileOnSingleClick: Boolean = true

@@ -1,4 +1,4 @@
-latest_version=
-latest_apk_url=
+latest_version=2025.08.14
+latest_apk_url=https://github.com/shibaFoss/AIO-Video-Downloader/releases/download/v2025.08.14/AIO_v2025-08-14-v7a-stable.apk
 changelog_url=
 published_date=
