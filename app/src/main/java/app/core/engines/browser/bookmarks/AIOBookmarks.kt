@@ -1,9 +1,17 @@
 package app.core.engines.browser.bookmarks
 
+import android.content.Context.MODE_PRIVATE
+import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioGSONInstance
+import app.core.AIOApp.Companion.kryo
+import com.anggrayudi.storage.file.getAbsolutePath
+import com.esotericsoftware.kryo.io.Input
+import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringSerializer
 import lib.files.FileSystemUtility.saveStringToInternalStorage
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import java.io.BufferedReader
 import java.io.File
@@ -26,9 +34,9 @@ import java.util.Locale
  * All file operations are performed asynchronously to avoid blocking the UI thread.
  */
 class AIOBookmarks : Serializable {
-	
-	// Configuration
-	private val bookmarkConfigFileName: String = "aio_bookmarks.json"
+
+	@Transient
+	private val logger = LogHelperUtils.from(javaClass)
 	
 	// Main bookmark storage
 	private var bookmarkLibrary: ArrayList<BookmarkModel> = ArrayList()
@@ -43,22 +51,44 @@ class AIOBookmarks : Serializable {
 	fun readObjectFromStorage() {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {
-				val configFile = File(INSTANCE.filesDir, bookmarkConfigFileName)
-				if (!configFile.exists()) return@executeInBackground
-				
-				// Determine file size and select appropriate reading strategy
-				val fileSizeMb = configFile.length().toDouble() / (1024 * 1024)
-				val json = when {
-					fileSizeMb <= 0.5 -> readSmallFile(configFile)
-					fileSizeMb <= 5.0 -> readMediumFile(configFile)
-					else -> readLargeFile(configFile)
-				}
-				
-				// Update bookmark library if data was read successfully
-				if (json.isNotEmpty()) {
-					convertJSONStringToClass(json).let { bookmarkClass ->
-						aioBookmark.bookmarkLibrary = bookmarkClass.bookmarkLibrary
+				var isBinaryFileValid = false
+				val internalDir = AIOApp.internalDataFolder
+				val bookmarkBinaryDataFile = internalDir.findFile(AIO_BOOKMARKS_FILE_NAME_BINARY)
+
+				if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
+					logger.d("Found binary settings file, attempting to load")
+					val absolutePath = bookmarkBinaryDataFile.getAbsolutePath(INSTANCE)
+					val objectInMemory = loadFromBinary(File(absolutePath))
+					if (objectInMemory != null) {
+						logger.d("Successfully loaded settings from binary format")
+						aioBookmark.bookmarkLibrary = objectInMemory.bookmarkLibrary
 						aioBookmark.updateInStorage()
+						isBinaryFileValid = true
+					} else {
+						logger.d("Failed to load settings from binary format")
+					}
+				}
+
+				if (!isBinaryFileValid) {
+					logger.d("Attempting to load settings from JSON format")
+					val configFile = File(INSTANCE.filesDir, AIO_BOOKMARKS_FILE_NAME_JSON)
+					if (!configFile.exists()) return@executeInBackground
+
+					// Determine file size and select appropriate reading strategy
+					val fileSizeMb = configFile.length().toDouble() / (1024 * 1024)
+					val json = when {
+						fileSizeMb <= 0.5 -> readSmallFile(configFile)
+						fileSizeMb <= 5.0 -> readMediumFile(configFile)
+						else -> readLargeFile(configFile)
+					}
+
+					// Update bookmark library if data was read successfully
+					if (json.isNotEmpty()) {
+						convertJSONStringToClass(json).let { bookmarkClass ->
+							logger.d("Successfully loaded settings from JSON format")
+							aioBookmark.bookmarkLibrary = bookmarkClass.bookmarkLibrary
+							aioBookmark.updateInStorage()
+						}
 					}
 				}
 			} catch (error: Exception) {
@@ -66,7 +96,52 @@ class AIOBookmarks : Serializable {
 			}
 		})
 	}
-	
+
+	/**
+	 * Saves the current settings object to binary format.
+	 * @param fileName The name of the file to save to
+	 */
+	private fun saveToBinary(fileName: String) {
+		try {
+			logger.d("Saving settings to binary file: $fileName")
+			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
+			fileOutputStream.use { fos ->
+				Output(fos).use { output ->
+					kryo.register(String()::class.java, StringSerializer())
+					kryo.register(AIOBookmarks()::class.java)
+					kryo.writeObject(output, this)
+				}
+			}
+			logger.d("Binary settings saved successfully")
+		} catch (error: Exception) {
+			logger.d("Error saving binary settings: ${error.message}")
+		}
+	}
+
+	private fun loadFromBinary(bookmarksBinaryFile: File): AIOBookmarks? {
+		if (!bookmarksBinaryFile.exists()) {
+			logger.d("Binary settings file does not exist")
+			return null
+		}
+
+		return try {
+			logger.d("Loading settings from binary file")
+			FileInputStream(bookmarksBinaryFile).use { fis ->
+				Input(fis).use { input ->
+					kryo.register(String()::class.java, StringSerializer())
+					kryo.register(AIOBookmarks()::class.java)
+					kryo.readObject(input, AIOBookmarks::class.java).also {
+						logger.d("Successfully loaded settings from binary file")
+					}
+				}
+			}
+		} catch (error: Exception) {
+			logger.d("Error loading binary settings: ${error.message}")
+			error.printStackTrace()
+			null
+		}
+	}
+
 	/**
 	 * Reads small files using simple file read operation.
 	 * @param file The file to read
@@ -136,7 +211,7 @@ class AIOBookmarks : Serializable {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {
 				saveStringToInternalStorage(
-					fileName = bookmarkConfigFileName,
+					fileName = AIO_BOOKMARKS_FILE_NAME_JSON,
 					data = convertClassToJSON()
 				)
 			} catch (error: Exception) {
@@ -293,5 +368,22 @@ class AIOBookmarks : Serializable {
 	 */
 	fun countBookmarks(): Int {
 		return bookmarkLibrary.size
+	}
+
+	companion object {
+		/**
+		 * Serialization ID for binary format
+		 */
+		const val AIO_BOOKMARKS_SERIALIZABLE_ID = 1
+
+		/**
+		 * JSON settings filename
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_JSON: String = "aio_bookmarks.json"
+
+		/**
+		 * Binary settings filename
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
 	}
 }
