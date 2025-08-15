@@ -12,6 +12,11 @@
     <string name="title_aio_archives" translatable="false">AIO Archives</string>
     <string name="title_aio_others" translatable="false">AIO Others</string>
     <string name="text_aio_github_official_page_url" translatable="false">https://github.com/shibaFoss/AIO-Video-Downloader</string>
+    <string name="text_https_google_com" translatable="false">https://google.com/</string>
+    <string name="text_whatsapp_status_file_dir" translatable="false">/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/.Statuses/</string>
+    <string name="text_downloads_default_http_user_agent" translatable="false">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36</string>
+    <string name="text_browser_default_mobile_http_user_agent" translatable="false">Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Mobile Safari/537.36</string>
+
 
     <string name="title_home">Home</string>
     <string name="title_browser">Browser</string>
@@ -158,9 +163,7 @@
     <string name="text_info">Info</string>
     <string name="text_sample_google_domain">https://www.google.com</string>
     <string name="text__">--</string>
-    <string name="text_downloads_default_http_user_agent">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36</string>
-    <string name="text_browser_default_mobile_http_user_agent">Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Mobile Safari/537.36</string>
-    <string name="text_waiting_to_join">Waiting to join the download…</string>
+     <string name="text_waiting_to_join">Waiting to join the download…</string>
     <string name="title_generating_parts">Generating Download Parts…</string>
     <string name="title_creating_empty_file">Creating Empty File…</string>
     <string name="title_started_downloading">Started Downloading…</string>
