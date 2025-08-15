@@ -13,7 +13,7 @@ import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import com.esotericsoftware.kryo.serializers.DefaultSerializers
+import com.esotericsoftware.kryo.serializers.DefaultSerializers.StringSerializer
 import lib.files.FileSystemUtility.isWritableFile
 import lib.files.FileSystemUtility.readStringFromInternalStorage
 import lib.files.FileSystemUtility.saveStringToInternalStorage
@@ -203,7 +203,7 @@ class AIOSettings : Serializable {
             val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
             fileOutputStream.use { fos ->
                 Output(fos).use { output ->
-                    kryo.register(String()::class.java, DefaultSerializers.StringSerializer())
+                    kryo.register(String()::class.java, StringSerializer())
                     kryo.register(AIOSettings()::class.java)
                     kryo.writeObject(output, this)
                 }
@@ -229,7 +229,7 @@ class AIOSettings : Serializable {
             logger.d("Loading settings from binary file")
             FileInputStream(settingDataBinaryFile).use { fis ->
                 Input(fis).use { input ->
-                    kryo.register(String()::class.java, DefaultSerializers.StringSerializer())
+                    kryo.register(String()::class.java, StringSerializer())
                     kryo.register(AIOSettings()::class.java)
                     kryo.readObject(input, AIOSettings::class.java).also {
                         logger.d("Successfully loaded settings from binary file")
