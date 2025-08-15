@@ -42,12 +42,12 @@ class AIOHistory : Serializable {
 		const val AIO_HISTORY_SERIALIZABLE_ID = 1
 
 		/**
-		 * Default filename for JSON formatted bookmark storage
+		 * Default filename for JSON formatted history storage
 		 */
 		const val AIO_HISTORY_FILE_NAME_JSON: String = "browsing_history.json"
 
 		/**
-		 * Default filename for binary formatted bookmark storage
+		 * Default filename for binary formatted history storage
 		 */
 		const val AIO_HISTORY_FILE_NAME_BINARY: String = "browsing_history.dat"
 	}
@@ -67,21 +67,21 @@ class AIOHistory : Serializable {
 				val historyBinaryDataFile = internalDir.findFile(AIO_HISTORY_FILE_NAME_BINARY)
 
 				if (historyBinaryDataFile != null && historyBinaryDataFile.exists()) {
-					logger.d("Found binary bookmarks file, attempting load")
+					logger.d("Found binary history file, attempting load")
 					val absolutePath = historyBinaryDataFile.getAbsolutePath(INSTANCE)
 					val objectInMemory = loadFromBinary(File(absolutePath))
 					if (objectInMemory != null) {
-						logger.d("Successfully loaded bookmarks from binary format")
+						logger.d("Successfully loaded history from binary format")
 						aioHistory = objectInMemory
 						aioHistory.updateInStorage()
 						isBinaryFileValid = true
 					} else {
-						logger.d("Failed to load bookmarks from binary format")
+						logger.d("Failed to load history from binary format")
 					}
 				}
 
 				if (!isBinaryFileValid) {
-					logger.d("Attempting to load bookmarks from JSON format")
+					logger.d("Attempting to load history from JSON format")
 					val configFile = File(INSTANCE.filesDir, AIO_HISTORY_FILE_NAME_JSON)
 					if (!configFile.exists()) {
 						aioHistory.historyLibrary = ArrayList()
@@ -100,14 +100,14 @@ class AIOHistory : Serializable {
 
 					if (json.isNotEmpty()) {
 						convertJSONStringToClass(json).let { historyClass ->
-							logger.d("Successfully loaded ${historyClass.historyLibrary.size} bookmarks")
+							logger.d("Successfully loaded ${historyClass.historyLibrary.size} history")
 							aioHistory.historyLibrary = historyClass.historyLibrary
 							aioHistory.updateInStorage()
 						}
 					}
 				}
 			} catch (error: Exception) {
-				logger.d("Error reading bookmarks: ${error.message}")
+				logger.d("Error reading history: ${error.message}")
 				error.printStackTrace()
 			}
 		})
@@ -120,6 +120,7 @@ class AIOHistory : Serializable {
 	 * Called before both serialization and deserialization.
 	 */
 	private fun registerKryoClasses() {
+		logger.d("Registering classes with Kryo serializer")
 		kryo.isRegistrationRequired = true
 		kryo.register(String::class.java, StringSerializer())
 		kryo.register(emptyList<HistoryModel>().javaClass)
@@ -133,12 +134,13 @@ class AIOHistory : Serializable {
 	}
 
 	/**
-	 * Saves bookmarks to binary format.
+	 * Saves history to binary format for fast loading.
+	 *
 	 * @param fileName Name of the binary file to save to
 	 */
 	private fun saveToBinary(fileName: String) {
 		try {
-			logger.d("Saving bookmarks to binary file: $fileName")
+			logger.d("Saving history to binary file: $fileName")
 			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
 			fileOutputStream.use { fos ->
 				Output(fos).use { output ->
@@ -146,30 +148,31 @@ class AIOHistory : Serializable {
 					kryo.writeObject(output, this)
 				}
 			}
-			logger.d("Bookmarks saved successfully to binary format")
+			logger.d("History saved successfully to binary format")
 		} catch (error: Exception) {
-			logger.d("Error saving binary bookmarks: ${error.message}")
+			logger.d("Error saving binary history: ${error.message}")
 		}
 	}
 
 	/**
-	 * Loads bookmarks from binary format.
-	 * @param historyBinaryFile File containing binary bookmarks data
+	 * Loads history from binary format.
+	 *
+	 * @param historyBinaryFile File containing binary history data
 	 * @return AIOHistory instance or null if loading fails
 	 */
 	private fun loadFromBinary(historyBinaryFile: File): AIOHistory? {
 		if (!historyBinaryFile.exists()) {
-			logger.d("Binary bookmarks file does not exist")
+			logger.d("Binary history file does not exist")
 			return null
 		}
 
 		return try {
-			logger.d("Loading bookmarks from binary file")
+			logger.d("Loading history from binary file")
 			FileInputStream(historyBinaryFile).use { fis ->
 				Input(fis).use { input ->
 					registerKryoClasses()
 					kryo.readObject(input, AIOHistory::class.java).also {
-						logger.d("Successfully loaded ${it.historyLibrary.size} browser histories from binary")
+						logger.d("Successfully loaded ${it.historyLibrary.size} history entries from binary")
 					}
 				}
 			}
