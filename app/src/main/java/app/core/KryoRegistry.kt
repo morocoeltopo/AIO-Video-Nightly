@@ -54,6 +54,9 @@ object KryoRegistry {
 		kryo.register(emptyList<Any>().javaClass, 22)              // Immutable empty list
 		kryo.register(emptyMap<Any, Any>().javaClass, 23)          // Immutable empty map (generic)
 		kryo.register(emptyMap<String, String>().javaClass, 52)    // Immutable empty map (String-to-String)
+		kryo.register(emptyList<VideoFormat>().javaClass, 53)
+		kryo.register(emptyList<VideoInfo>().javaClass, 53)
+
 		kryo.register(emptySet<Any>().javaClass, 24)               // Immutable empty set
 		kryo.register(emptyList<BookmarkModel>().javaClass, 25)    // Immutable empty list of bookmarks
 		kryo.register(emptyList<HistoryModel>().javaClass, 26)     // Immutable empty list of history items

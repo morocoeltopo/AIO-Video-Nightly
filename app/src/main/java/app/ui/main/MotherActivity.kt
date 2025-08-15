@@ -192,7 +192,6 @@ class MotherActivity : BaseActivity() {
 			fragmentViewPager.adapter = FragmentsPageAdapter(it)
 
 			// Listener for page changes
-			//fragmentViewPager.setPageTransformer(FadeViewPage2Transformer())
 			fragmentViewPager.isUserInputEnabled = false
 
 			fragmentViewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {

@@ -19,14 +19,19 @@ class OpeningActivity : BaseActivity() {
     private val safeOpenActivityRef = WeakReference(this).get()
 
     override fun onRenderingLayout(): Int {
-        setLightSystemBarTheme()
+        setSystemBarsColors(
+            statusBarColorResId = R.color.color_background,
+            navigationBarColorResId = R.color.color_background,
+            isLightStatusBar = true,
+            isLightNavigationBar = true
+        )
         return R.layout.activity_opening_1
     }
 
     override fun onAfterLayoutRender() {
         showApkVersionInfo()
         CoroutineScope(Dispatchers.Main).launch {
-            delay(2000)
+            delay(1000)
             launchMotherActivity()
         }
     }

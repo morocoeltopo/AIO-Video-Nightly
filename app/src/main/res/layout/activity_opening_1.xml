@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_surface">
+    android:background="@color/color_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,7 +14,7 @@
 
         <ImageView
             android:id="@+id/img_opening_splash"
-            android:layout_width="@dimen/_150"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/_20"
@@ -23,7 +22,8 @@
             android:adjustViewBounds="true"
             android:elevation="@dimen/_2"
             android:importantForAccessibility="no"
-            android:src="@drawable/ic_launcher_logo_v4" />
+            android:src="@drawable/ic_image_open_splash"
+            tools:ignore="ImageContrastCheck" />
 
         <TextView
             android:id="@+id/txt_opening_subtitle"
@@ -33,35 +33,32 @@
             android:layout_marginTop="@dimen/_5"
             android:fontFamily="@font/application_font_family"
             android:gravity="center"
-            android:paddingStart="@dimen/_10"
-            android:paddingTop="@dimen/_2"
-            android:paddingEnd="@dimen/_10"
-            android:paddingBottom="@dimen/_2"
-            android:text="@string/title_video_downloader"
+            android:text="@string/title_aio_video_downloader"
             android:textColor="@color/color_text_primary"
             android:textSize="@dimen/extra_large_text_size"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:ignore="VisualLintBounds" />
 
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/img_progress_circle"
-            android:layout_width="@dimen/_150"
+        <TextView
+            android:id="@+id/txt_opening_subtag"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:layout_marginBottom="-25dp"
-            android:adjustViewBounds="true"
-            android:hardwareAccelerated="true"
-            android:importantForAccessibility="no"
-            android:layerType="hardware"
-            android:visibility="visible"
-            app:lottie_autoPlay="true"
-            app:lottie_enableMergePathsForKitKatAndAbove="true"
-            app:lottie_loop="true"
-            app:lottie_rawRes="@raw/animation_circle_loading"
-            tools:ignore="ImageContrastCheck,VisualLintBounds" />
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="@dimen/_50"
+            android:layout_marginTop="@dimen/_0"
+            android:layout_marginEnd="@dimen/_50"
+            android:fontFamily="@font/application_font_family"
+            android:gravity="center"
+            android:text="@string/text_aio_downloader_tagline"
+            android:textColor="@color/color_text_hint"
+            android:textSize="@dimen/message_text_size"
+            android:textStyle="italic"
+            tools:ignore="TextContrastCheck,VisualLintBounds" />
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_50" />
+            android:layout_height="@dimen/_50"
+            tools:ignore="VisualLintBounds" />
     </LinearLayout>
 
     <TextView
@@ -83,7 +80,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="@dimen/_50"
         android:fontFamily="@font/application_font_family"
-        android:paddingTop="@dimen/_5"
         android:text="@string/text__"
         android:textColor="@color/color_text_primary"
         android:textSize="@dimen/small_text_size" />

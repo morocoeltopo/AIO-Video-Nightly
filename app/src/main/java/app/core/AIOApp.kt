@@ -167,9 +167,6 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
      */
     override fun onTerminate() {
         executeInBackground(codeBlock = {
-            aioSettings.updateInStorage()
-            aioBookmark.updateInStorage()
-            aioHistory.updateInStorage()
             downloadSystem.pauseAllDownloads()
             aioTimer.cancel()
         })
