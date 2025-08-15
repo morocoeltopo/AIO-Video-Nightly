@@ -17,6 +17,7 @@ import app.core.engines.settings.AIOSettings
 import app.core.engines.video_parser.parsers.YoutubeVidParser
 import com.anggrayudi.storage.file.DocumentFileCompat.fromPublicFolder
 import com.anggrayudi.storage.file.PublicDirectory.DOWNLOADS
+import com.esotericsoftware.kryo.Kryo
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness.LENIENT
@@ -59,6 +60,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
             get() = INSTANCE.getExternalFilesDir(null)?.let { fromFile(it) }
 
         // Core modules initialized during startup
+        lateinit var kryo: Kryo
         lateinit var aioSettings: AIOSettings
         lateinit var aioBookmark: AIOBookmarks
         lateinit var aioHistory: AIOHistory
@@ -97,6 +99,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
         startupManager.apply {
             // Load essential settings and raw resources
             addCriticalTask {
+                initializeKryo()
                 aioSettings = AIOSettings().apply(AIOSettings::readObjectFromStorage)
                 aioRawFiles = AIORawFiles().apply(AIORawFiles::preloadLottieAnimation)
                 youtubeVidParser.initSystem()
@@ -124,6 +127,11 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
             startupManager.executeHighPriorityTasks()
             startupManager.executeBackgroundTasks()
         })
+    }
+
+    private fun initializeKryo() {
+        kryo = Kryo()
+        kryo.isRegistrationRequired = true
     }
 
     /**
