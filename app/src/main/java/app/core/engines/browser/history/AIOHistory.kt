@@ -5,7 +5,7 @@ import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioHistory
-import app.core.AIOApp.Companion.kryo
+import app.core.AIOApp.Companion.kryoDBHelper
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
@@ -135,16 +135,16 @@ class AIOHistory : Serializable {
 	 */
 	private fun registerKryoClasses() {
 		logger.d("Registering classes with Kryo serializer")
-		kryo.isRegistrationRequired = true
-		kryo.register(String::class.java, StringSerializer())
-		kryo.register(emptyList<HistoryModel>().javaClass)
-		kryo.register(List::class.java)
-		kryo.register(ArrayList::class.java)
-		kryo.register(HistoryModel::class.java)
-		kryo.register(AIOHistory::class.java)
-		kryo.register(Date::class.java)
-		kryo.register(HashMap::class.java)
-		kryo.register(HashSet::class.java)
+		kryoDBHelper.isRegistrationRequired = true
+		kryoDBHelper.register(String::class.java, StringSerializer())
+		kryoDBHelper.register(emptyList<HistoryModel>().javaClass)
+		kryoDBHelper.register(List::class.java)
+		kryoDBHelper.register(ArrayList::class.java)
+		kryoDBHelper.register(HistoryModel::class.java)
+		kryoDBHelper.register(AIOHistory::class.java)
+		kryoDBHelper.register(Date::class.java)
+		kryoDBHelper.register(HashMap::class.java)
+		kryoDBHelper.register(HashSet::class.java)
 	}
 
 	/**
@@ -159,7 +159,7 @@ class AIOHistory : Serializable {
 			fileOutputStream.use { fos ->
 				Output(fos).use { output ->
 					registerKryoClasses()
-					kryo.writeObject(output, this)
+					kryoDBHelper.writeObject(output, this)
 				}
 			}
 			logger.d("History saved successfully to binary format")
@@ -185,7 +185,7 @@ class AIOHistory : Serializable {
 			FileInputStream(historyBinaryFile).use { fis ->
 				Input(fis).use { input ->
 					registerKryoClasses()
-					kryo.readObject(input, AIOHistory::class.java).also {
+					kryoDBHelper.readObject(input, AIOHistory::class.java).also {
 						logger.d("Successfully loaded ${it.historyLibrary.size} history entries from binary")
 					}
 				}

@@ -55,12 +55,11 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
         const val IS_PREMIUM_USER = true
 
         // Internal file paths
-        val internalDataFolder: DocumentFile get() = fromFile(INSTANCE.filesDir)
-        val externalDataFolder: DocumentFile?
-            get() = INSTANCE.getExternalFilesDir(null)?.let { fromFile(it) }
+        val internalDataFolder: DocumentFile by lazy { fromFile(INSTANCE.filesDir) }
+        val externalDataFolder: DocumentFile? by lazy { INSTANCE.getExternalFilesDir(null)?.let { fromFile(it) } }
 
         // Core modules initialized during startup
-        lateinit var kryo: Kryo
+        lateinit var kryoDBHelper: Kryo
         lateinit var aioSettings: AIOSettings
         lateinit var aioBookmark: AIOBookmarks
         lateinit var aioHistory: AIOHistory
@@ -77,7 +76,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
         // Persistent background service
         val idleForegroundService by lazy { AIOForegroundService().apply { updateService() } }
 
-        // Download engine
+        // Download engines & manager
         val downloadSystem: DownloadSystem by lazy { DownloadSystem() }
         val youtubeVidParser: YoutubeVidParser by lazy { YoutubeVidParser() }
 
@@ -99,7 +98,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
         startupManager.apply {
             // Load essential settings and raw resources
             addCriticalTask {
-                initializeKryo()
+                kryoDBHelper = Kryo()
                 aioSettings = AIOSettings().apply(AIOSettings::readObjectFromStorage)
                 aioRawFiles = AIORawFiles().apply(AIORawFiles::preloadLottieAnimation)
                 youtubeVidParser.initSystem()
@@ -109,14 +108,11 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
             addHighPriorityTask {
                 aioBookmark = AIOBookmarks().apply(AIOBookmarks::readObjectFromStorage)
                 aioHistory = AIOHistory().apply(AIOHistory::readObjectFromStorage)
-
                 manageActivityLifeCycle()
             }
 
             // Load Youtube-DL and session tracker
-            addBackgroundTask {
-                initializeYtDLP()
-            }
+            addBackgroundTask { initializeYtDLP() }
         }
 
         // Execute blocking critical tasks first
@@ -127,11 +123,6 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
             startupManager.executeHighPriorityTasks()
             startupManager.executeBackgroundTasks()
         })
-    }
-
-    private fun initializeKryo() {
-        kryo = Kryo()
-        kryo.isRegistrationRequired = true
     }
 
     /**
@@ -176,6 +167,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
      */
     override fun onTerminate() {
         executeInBackground(codeBlock = {
+            aioSettings.updateInStorage()
             aioBookmark.updateInStorage()
             aioHistory.updateInStorage()
             downloadSystem.pauseAllDownloads()
@@ -183,8 +175,6 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
         })
         super.onTerminate()
     }
-
-    // Helper accessors
 
     /**
      * Returns the internal data folder used by the application.

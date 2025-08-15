@@ -6,7 +6,7 @@ import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioSettings
-import app.core.AIOApp.Companion.kryo
+import app.core.AIOApp.Companion.kryoDBHelper
 import app.core.AIOLanguage.Companion.ENGLISH
 import com.aio.R.string
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
@@ -203,9 +203,9 @@ class AIOSettings : Serializable {
             val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
             fileOutputStream.use { fos ->
                 Output(fos).use { output ->
-                    kryo.register(String()::class.java, StringSerializer())
-                    kryo.register(AIOSettings()::class.java)
-                    kryo.writeObject(output, this)
+                    kryoDBHelper.register(String()::class.java, StringSerializer())
+                    kryoDBHelper.register(AIOSettings()::class.java)
+                    kryoDBHelper.writeObject(output, this)
                 }
             }
             logger.d("Binary settings saved successfully")
@@ -229,9 +229,9 @@ class AIOSettings : Serializable {
             logger.d("Loading settings from binary file")
             FileInputStream(settingDataBinaryFile).use { fis ->
                 Input(fis).use { input ->
-                    kryo.register(String()::class.java, StringSerializer())
-                    kryo.register(AIOSettings()::class.java)
-                    kryo.readObject(input, AIOSettings::class.java).also {
+                    kryoDBHelper.register(String()::class.java, StringSerializer())
+                    kryoDBHelper.register(AIOSettings()::class.java)
+                    kryoDBHelper.readObject(input, AIOSettings::class.java).also {
                         logger.d("Successfully loaded settings from binary file")
                     }
                 }
