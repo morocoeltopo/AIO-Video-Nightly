@@ -119,10 +119,10 @@ class AIOBookmarks : Serializable {
             fileOutputStream.use { fos ->
                 Output(fos).use { output ->
                     kryo.register(String::class.java, StringSerializer())
-					kryo.register(ArrayList::class.java)
-					kryo.register(HashMap::class.java)
-					kryo.register(Date::class.java)
-					kryo.register(BookmarkModel::class.java)
+                    kryo.register(ArrayList::class.java)
+                    kryo.register(HashMap::class.java)
+                    kryo.register(Date::class.java)
+                    kryo.register(BookmarkModel::class.java)
                     kryo.register(AIOBookmarks::class.java)
                     kryo.writeObject(output, this)
                 }
@@ -148,12 +148,12 @@ class AIOBookmarks : Serializable {
             logger.d("Loading bookmarks from binary file")
             FileInputStream(bookmarksBinaryFile).use { fis ->
                 Input(fis).use { input ->
-					kryo.register(String::class.java, StringSerializer())
-					kryo.register(ArrayList::class.java)
-					kryo.register(HashMap::class.java)
-					kryo.register(Date::class.java)
-					kryo.register(BookmarkModel::class.java)
-					kryo.register(AIOBookmarks::class.java)
+                    kryo.register(String::class.java, StringSerializer())
+                    kryo.register(ArrayList::class.java)
+                    kryo.register(HashMap::class.java)
+                    kryo.register(Date::class.java)
+                    kryo.register(BookmarkModel::class.java)
+                    kryo.register(AIOBookmarks::class.java)
                     kryo.readObject(input, AIOBookmarks::class.java).also {
                         logger.d("Successfully loaded ${it.bookmarkLibrary.size} bookmarks from binary")
                     }
@@ -161,7 +161,7 @@ class AIOBookmarks : Serializable {
             }
         } catch (error: Exception) {
             logger.d("Error loading binary bookmarks: ${error.message}")
-			bookmarksBinaryFile.delete()
+            bookmarksBinaryFile.delete()
             error.printStackTrace()
             null
         }
