@@ -1,17 +1,25 @@
 package app.core.engines.settings
 
+import android.content.Context.MODE_PRIVATE
 import androidx.documentfile.provider.DocumentFile
+import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioSettings
+import app.core.AIOApp.Companion.kryo
 import app.core.AIOLanguage.Companion.ENGLISH
 import com.aio.R.string
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
+import com.anggrayudi.storage.file.getAbsolutePath
+import com.esotericsoftware.kryo.io.Input
+import com.esotericsoftware.kryo.io.Output
 import lib.files.FileSystemUtility.isWritableFile
 import lib.files.FileSystemUtility.readStringFromInternalStorage
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
+import java.io.File
+import java.io.FileInputStream
 import java.io.Serializable
 
 /**
@@ -21,7 +29,7 @@ import java.io.Serializable
  * and handles serialization to and from internal storage.
  */
 class AIOSettings : Serializable {
-    
+
     // Basic user state
     var userInstallationId: String = ""
     var isFirstTimeLanguageSelectionComplete = false
@@ -30,13 +38,13 @@ class AIOSettings : Serializable {
     var totalUsageTimeInMs = 0.0f
     var totalUsageTimeInFormat = ""
     var lastProcessedClipboardText = ""
-    
+
     // Default download location
     var defaultDownloadLocation = SYSTEM_GALLERY
-    
+
     // Language settings
     var userSelectedUILanguage: String = ENGLISH
-    
+
     // Analytics / interaction counters
     var totalClickCountOnRating = 0
     var totalClickCountOnLanguageChange = 0
@@ -52,11 +60,11 @@ class AIOSettings : Serializable {
     var totalInterstitialImpression = 0
     var totalRewardedAdClick = 0
     var totalRewardedImpression = 0
-    
+
     // Path to WhatsApp Statuses folder (used in status saving)
     val whatsAppStatusFullFolderPath =
         "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/.Statuses/"
-    
+
     // Download preferences
     var downloadSingleUIProgress: Boolean = true
     var downloadHideVideoThumbnail: Boolean = false
@@ -65,7 +73,7 @@ class AIOSettings : Serializable {
     var downloadAutoRemoveTasks: Boolean = false
     var downloadAutoRemoveTaskAfterNDays: Int = 0
     var openDownloadedFileOnSingleClick: Boolean = true
-    
+
     // Advanced download features
     var downloadAutoResume: Boolean = true
     var downloadAutoResumeMaxErrors: Int = 35
@@ -74,7 +82,7 @@ class AIOSettings : Serializable {
     var downloadAutoThreadSelection: Boolean = true
     var downloadAutoFileMoveToPrivate: Boolean = false
     var downloadAutoConvertVideosToMp3: Boolean = false
-    
+
     // Download performance settings
     var downloadBufferSize: Int = 1024 * 8
     var downloadMaxHttpReadingTimeout: Int = 1000 * 10
@@ -86,15 +94,15 @@ class AIOSettings : Serializable {
     var downloadHttpUserAgent: String =
         getText(string.text_downloads_default_http_user_agent)
     var downloadHttpProxyServer = ""
-    
+
     // Crash handling
     var hasAppCrashedRecently: Boolean = false
-    
+
     // Privacy and limits
     var privateFolderPassword: String = ""
     var numberOfMaxDownloadThreshold = 1
     var numberOfDownloadsUserDid = 0
-    
+
     // Browser-specific settings
     var browserDefaultHomepage: String = "https://google.com/"
     var browserDesktopBrowsing: Boolean = false
@@ -105,7 +113,7 @@ class AIOSettings : Serializable {
     var browserEnableVideoGrabber: Boolean = true
     var browserHttpUserAgent: String =
         getText(string.text_browser_default_mobile_http_user_agent)
-    
+
     /**
      * Reads settings from internal storage and applies them to the current app instance.
      * If read is successful, updates the app state and validates user folder selection.
@@ -113,7 +121,23 @@ class AIOSettings : Serializable {
     fun readObjectFromStorage() {
         ThreadsUtility.executeInBackground(codeBlock = {
             try {
-                readStringFromInternalStorage(AIO_SETTINGS_FILE_NAME).let { jsonString ->
+                var isBinaryFileValid = false
+                val internalDir = AIOApp.internalDataFolder
+                val settingsBinaryDataFile = internalDir.findFile(AIO_SETTINGS_FILE_NAME_BINARY)
+                if (settingsBinaryDataFile != null && settingsBinaryDataFile.exists()) {
+                    val absolutePath = settingsBinaryDataFile.getAbsolutePath(INSTANCE)
+                    val objectInMemory = loadFromBinary(File(absolutePath))
+                    if (objectInMemory != null) {
+                        aioSettings = objectInMemory
+                        aioSettings.updateInStorage()
+                        validateUserSelectedFolder()
+                        isBinaryFileValid = true
+                        print("Using AIOSetting from binary file")
+                    }
+                }
+
+                if (isBinaryFileValid) return@executeInBackground
+                readStringFromInternalStorage(AIO_SETTINGS_FILE_NAME_JSON).let { jsonString ->
                     convertJSONStringToClass(data = jsonString).let {
                         aioSettings = it
                         aioSettings.updateInStorage()
@@ -125,19 +149,43 @@ class AIOSettings : Serializable {
             }
         })
     }
-    
+
     /**
      * Saves current settings to internal storage as a JSON file.
      */
     fun updateInStorage() {
         ThreadsUtility.executeInBackground(codeBlock = {
+            saveToBinary(fileName = AIO_SETTINGS_FILE_NAME_BINARY)
             saveStringToInternalStorage(
-                fileName = AIO_SETTINGS_FILE_NAME,
+                fileName = AIO_SETTINGS_FILE_NAME_JSON,
                 data = convertClassToJSON()
             )
         })
     }
-    
+
+    fun saveToBinary(fileName: String) {
+        val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
+        fileOutputStream.use { fos ->
+            Output(fos).use { output ->
+                kryo.writeObject(output, this)
+            }
+        }
+    }
+
+    fun loadFromBinary(settingDataBinaryFile: File): AIOSettings? {
+        if (!settingDataBinaryFile.exists()) return null
+        return try {
+            FileInputStream(settingDataBinaryFile).use { fis ->
+                Input(fis).use { input ->
+                    kryo.readObject(input, AIOSettings::class.java)
+                }
+            }
+        } catch (error: Exception) {
+            error.printStackTrace()
+            null
+        }
+    }
+
     /**
      * Validates whether the user-selected folder is writable.
      * If not, falls back to creating a default download folder.
@@ -147,7 +195,7 @@ class AIOSettings : Serializable {
             createDefaultAIODownloadFolder()
         }; aioSettings.updateInStorage()
     }
-    
+
     /**
      * Returns a [DocumentFile] representing the user-selected directory,
      * depending on whether it's a private folder or system gallery.
@@ -162,7 +210,7 @@ class AIOSettings : Serializable {
                     requiresWriteAccess = true
                 )
             }
-            
+
             SYSTEM_GALLERY -> {
                 val externalDataFolderPath =
                     getText(string.text_default_aio_download_folder_path)
@@ -174,7 +222,7 @@ class AIOSettings : Serializable {
             }; else -> return null
         }
     }
-    
+
     /**
      * Attempts to create a default AIO folder in the public download directory.
      */
@@ -186,23 +234,25 @@ class AIOSettings : Serializable {
             error.printStackTrace()
         }
     }
-    
+
     /**
      * Converts this settings object into a JSON string using Gson.
      */
     fun convertClassToJSON(): String {
         return aioGSONInstance.toJson(this)
     }
-    
+
     /**
      * Converts a JSON string into an [AIOSettings] object using Gson.
      */
     private fun convertJSONStringToClass(data: String): AIOSettings {
         return aioGSONInstance.fromJson(data, AIOSettings::class.java)
     }
-    
+
     companion object {
-        const val AIO_SETTINGS_FILE_NAME: String = "aio_settings.json"
+        const val AIO_SETTINGS_SERIALIZABLE_ID = 1
+        const val AIO_SETTINGS_FILE_NAME_JSON: String = "aio_settings.json"
+        const val AIO_SETTINGS_FILE_NAME_BINARY: String = "aio_settings.dat"
         const val PRIVATE_FOLDER = 1
         const val SYSTEM_GALLERY = 2
     }
