@@ -46,6 +46,23 @@ class AIOBookmarks : Serializable {
 	@Transient
 	private val logger = LogHelperUtils.from(javaClass)
 
+	companion object {
+		/**
+		 * Serialization ID for binary format compatibility
+		 */
+		const val AIO_BOOKMARKS_SERIALIZABLE_ID = 1
+
+		/**
+		 * Default filename for JSON formatted bookmark storage
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_JSON: String = "aio_bookmarks.json"
+
+		/**
+		 * Default filename for binary formatted bookmark storage
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
+	}
+
 	// Main bookmark storage
 	private var bookmarkLibrary: ArrayList<BookmarkModel> = ArrayList()
 
@@ -242,6 +259,12 @@ class AIOBookmarks : Serializable {
 		})
 	}
 
+    /**
+     * Registers all required classes with Kryo serializer.
+     *
+     * Must include all classes that will be serialized, including collections.
+     * Called before both serialization and deserialization.
+     */
 	private fun registerKryoClasses() {
 		kryo.isRegistrationRequired = true
 		kryo.register(String::class.java, StringSerializer())
@@ -403,22 +426,5 @@ class AIOBookmarks : Serializable {
 	 */
 	fun countBookmarks(): Int {
 		return bookmarkLibrary.size
-	}
-
-	companion object {
-		/**
-		 * Serialization ID for binary format
-		 */
-		const val AIO_BOOKMARKS_SERIALIZABLE_ID = 1
-
-		/**
-		 * JSON bookmarks filename
-		 */
-		const val AIO_BOOKMARKS_FILE_NAME_JSON: String = "aio_bookmarks.json"
-
-		/**
-		 * Binary bookmarks filename
-		 */
-		const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
 	}
 }
