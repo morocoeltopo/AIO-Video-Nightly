@@ -1,7 +1,7 @@
 package app.core.engines.downloader
 
 import app.core.AIOApp.Companion.INSTANCE
-import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_FILE_EXTENSION
+import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_FILE_JSON_EXTENSION
 import app.core.engines.downloader.DownloadDataModel.Companion.convertJSONStringToClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -111,7 +111,7 @@ object DownloadModelParser {
     private fun loadSingleModelWithRecovery(id: String) {
         if (!shouldAttemptLoad(id)) return
 
-        val fileName = "$id$DOWNLOAD_MODEL_FILE_EXTENSION"
+        val fileName = "$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION"
         val file = File(INSTANCE.filesDir, fileName)
         if (file.exists()) {
             processModelFileWithRecovery(file)
@@ -132,8 +132,7 @@ object DownloadModelParser {
      */
     private fun processModelFileWithRecovery(file: File): Boolean {
         return try {
-            val jsonString = file.readText(Charsets.UTF_8)
-            val model = convertJSONStringToClass(jsonString)
+            val model = convertJSONStringToClass(file)
 
             if (model != null) {
                 modelCache[file.nameWithoutExtension] = model
@@ -202,7 +201,7 @@ object DownloadModelParser {
      * Lists model files with basic validation.
      */
     private fun listModelFiles(directory: File?): List<File> {
-        val suffix = DOWNLOAD_MODEL_FILE_EXTENSION
+        val suffix = DOWNLOAD_MODEL_FILE_JSON_EXTENSION
         return directory?.takeIf { it.isDirectory }
             ?.listFiles { file ->
                 file.isFile && file.name.endsWith(suffix) &&

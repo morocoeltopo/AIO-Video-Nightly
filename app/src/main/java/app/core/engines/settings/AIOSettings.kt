@@ -238,6 +238,7 @@ class AIOSettings : Serializable {
             }
         } catch (error: Exception) {
             logger.d("Error loading binary settings: ${error.message}")
+            settingDataBinaryFile.delete()
             error.printStackTrace()
             null
         }
