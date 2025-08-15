@@ -43,379 +43,382 @@ import java.util.Locale
  */
 class AIOBookmarks : Serializable {
 
-    @Transient
-    private val logger = LogHelperUtils.from(javaClass)
+	@Transient
+	private val logger = LogHelperUtils.from(javaClass)
 
-    // Main bookmark storage
-    private var bookmarkLibrary: ArrayList<BookmarkModel> = ArrayList()
+	// Main bookmark storage
+	private var bookmarkLibrary: ArrayList<BookmarkModel> = ArrayList()
 
-    /**
-     * Reads bookmarks from persistent storage.
-     * Attempts binary format first, falls back to JSON if binary is invalid.
-     * Automatically selects optimal reading strategy based on file size.
-     */
-    fun readObjectFromStorage() {
-        ThreadsUtility.executeInBackground(codeBlock = {
-            try {
-                var isBinaryFileValid = false
-                val internalDir = AIOApp.internalDataFolder
-                val bookmarkBinaryDataFile = internalDir.findFile(AIO_BOOKMARKS_FILE_NAME_BINARY)
+	/**
+	 * Reads bookmarks from persistent storage.
+	 * Attempts binary format first, falls back to JSON if binary is invalid.
+	 * Automatically selects optimal reading strategy based on file size.
+	 */
+	fun readObjectFromStorage() {
+		ThreadsUtility.executeInBackground(codeBlock = {
+			try {
+				var isBinaryFileValid = false
+				val internalDir = AIOApp.internalDataFolder
+				val bookmarkBinaryDataFile = internalDir.findFile(AIO_BOOKMARKS_FILE_NAME_BINARY)
 
-                if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
-                    logger.d("Found binary bookmarks file, attempting load")
-                    val absolutePath = bookmarkBinaryDataFile.getAbsolutePath(INSTANCE)
-                    val objectInMemory = loadFromBinary(File(absolutePath))
-                    if (objectInMemory != null) {
-                        logger.d("Successfully loaded bookmarks from binary format")
-                        aioBookmark.bookmarkLibrary = objectInMemory.bookmarkLibrary
-                        aioBookmark.updateInStorage()
-                        isBinaryFileValid = true
-                    } else {
-                        logger.d("Failed to load bookmarks from binary format")
-                    }
-                }
+				if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
+					logger.d("Found binary bookmarks file, attempting load")
+					val absolutePath = bookmarkBinaryDataFile.getAbsolutePath(INSTANCE)
+					val objectInMemory = loadFromBinary(File(absolutePath))
+					if (objectInMemory != null) {
+						logger.d("Successfully loaded bookmarks from binary format")
+						aioBookmark = objectInMemory
+						aioBookmark.updateInStorage()
+						isBinaryFileValid = true
+					} else {
+						logger.d("Failed to load bookmarks from binary format")
+					}
+				}
 
-                if (!isBinaryFileValid) {
-                    logger.d("Attempting to load bookmarks from JSON format")
-                    val configFile = File(INSTANCE.filesDir, AIO_BOOKMARKS_FILE_NAME_JSON)
-                    if (!configFile.exists()) {
-                        aioBookmark.bookmarkLibrary = ArrayList()
-                        logger.d("No bookmarks file found, starting with empty library")
-                        return@executeInBackground
-                    }
+				if (!isBinaryFileValid) {
+					logger.d("Attempting to load bookmarks from JSON format")
+					val configFile = File(INSTANCE.filesDir, AIO_BOOKMARKS_FILE_NAME_JSON)
+					if (!configFile.exists()) {
+						aioBookmark.bookmarkLibrary = ArrayList()
+						logger.d("No bookmarks file found, starting with empty library")
+						return@executeInBackground
+					}
 
-                    val fileSizeMb = configFile.length().toDouble() / (1024 * 1024)
-                    logger.d("Bookmarks file size: ${"%.2f".format(fileSizeMb)} MB")
+					val fileSizeMb = configFile.length().toDouble() / (1024 * 1024)
+					logger.d("Bookmarks file size: ${"%.2f".format(fileSizeMb)} MB")
 
-                    val json = when {
-                        fileSizeMb <= 0.5 -> readSmallFile(configFile)
-                        fileSizeMb <= 5.0 -> readMediumFile(configFile)
-                        else -> readLargeFile(configFile)
-                    }
+					val json = when {
+						fileSizeMb <= 0.5 -> readSmallFile(configFile)
+						fileSizeMb <= 5.0 -> readMediumFile(configFile)
+						else -> readLargeFile(configFile)
+					}
 
-                    if (json.isNotEmpty()) {
-                        convertJSONStringToClass(json).let { bookmarkClass ->
-                            logger.d("Successfully loaded ${bookmarkClass.bookmarkLibrary.size} bookmarks")
-                            aioBookmark.bookmarkLibrary = bookmarkClass.bookmarkLibrary
-                            aioBookmark.updateInStorage()
-                        }
-                    }
-                }
-            } catch (error: Exception) {
-                logger.d("Error reading bookmarks: ${error.message}")
-                error.printStackTrace()
-            }
-        })
-    }
+					if (json.isNotEmpty()) {
+						convertJSONStringToClass(json).let { bookmarkClass ->
+							logger.d("Successfully loaded ${bookmarkClass.bookmarkLibrary.size} bookmarks")
+							aioBookmark = bookmarkClass
+							aioBookmark.updateInStorage()
+						}
+					}
+				}
+			} catch (error: Exception) {
+				logger.d("Error reading bookmarks: ${error.message}")
+				error.printStackTrace()
+			}
+		})
+	}
 
-    /**
-     * Saves bookmarks to binary format.
-     * @param fileName Name of the binary file to save to
-     */
-    private fun saveToBinary(fileName: String) {
-        try {
-            logger.d("Saving bookmarks to binary file: $fileName")
-            val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
-            fileOutputStream.use { fos ->
-                Output(fos).use { output ->
-                    kryo.register(String::class.java, StringSerializer())
-                    kryo.register(ArrayList::class.java)
-                    kryo.register(HashMap::class.java)
-                    kryo.register(Date::class.java)
-                    kryo.register(BookmarkModel::class.java)
-                    kryo.register(AIOBookmarks::class.java)
-                    kryo.writeObject(output, this)
-                }
-            }
-            logger.d("Bookmarks saved successfully to binary format")
-        } catch (error: Exception) {
-            logger.d("Error saving binary bookmarks: ${error.message}")
-        }
-    }
+	/**
+	 * Saves bookmarks to binary format.
+	 * @param fileName Name of the binary file to save to
+	 */
+	private fun saveToBinary(fileName: String) {
+		try {
+			logger.d("Saving bookmarks to binary file: $fileName")
+			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
+			fileOutputStream.use { fos ->
+				Output(fos).use { output ->
+					registerKryoClasses()
+					kryo.writeObject(output, this)
+				}
+			}
+			logger.d("Bookmarks saved successfully to binary format")
+		} catch (error: Exception) {
+			logger.d("Error saving binary bookmarks: ${error.message}")
+		}
+	}
 
-    /**
-     * Loads bookmarks from binary format.
-     * @param bookmarksBinaryFile File containing binary bookmarks data
-     * @return AIOBookmarks instance or null if loading fails
-     */
-    private fun loadFromBinary(bookmarksBinaryFile: File): AIOBookmarks? {
-        if (!bookmarksBinaryFile.exists()) {
-            logger.d("Binary bookmarks file does not exist")
-            return null
-        }
+	/**
+	 * Loads bookmarks from binary format.
+	 * @param bookmarksBinaryFile File containing binary bookmarks data
+	 * @return AIOBookmarks instance or null if loading fails
+	 */
+	private fun loadFromBinary(bookmarksBinaryFile: File): AIOBookmarks? {
+		if (!bookmarksBinaryFile.exists()) {
+			logger.d("Binary bookmarks file does not exist")
+			return null
+		}
 
-        return try {
-            logger.d("Loading bookmarks from binary file")
-            FileInputStream(bookmarksBinaryFile).use { fis ->
-                Input(fis).use { input ->
-                    kryo.register(String::class.java, StringSerializer())
-                    kryo.register(ArrayList::class.java)
-                    kryo.register(HashMap::class.java)
-                    kryo.register(Date::class.java)
-                    kryo.register(BookmarkModel::class.java)
-                    kryo.register(AIOBookmarks::class.java)
-                    kryo.readObject(input, AIOBookmarks::class.java).also {
-                        logger.d("Successfully loaded ${it.bookmarkLibrary.size} bookmarks from binary")
-                    }
-                }
-            }
-        } catch (error: Exception) {
-            logger.d("Error loading binary bookmarks: ${error.message}")
-            bookmarksBinaryFile.delete()
-            error.printStackTrace()
-            null
-        }
-    }
+		return try {
+			logger.d("Loading bookmarks from binary file")
+			FileInputStream(bookmarksBinaryFile).use { fis ->
+				Input(fis).use { input ->
+					registerKryoClasses()
+					kryo.readObject(input, AIOBookmarks::class.java).also {
+						logger.d("Successfully loaded ${it.bookmarkLibrary.size} bookmarks from binary")
+					}
+				}
+			}
+		} catch (error: Exception) {
+			logger.d("Error loading binary bookmarks: ${error.message}")
+			bookmarksBinaryFile.delete()
+			error.printStackTrace()
+			null
+		}
+	}
 
-    /**
-     * Reads small files using simple file operation.
-     * @param file File to read
-     * @return File contents as String
-     */
-    private fun readSmallFile(file: File): String {
-        logger.d("Using simple read for small file")
-        return file.readText(Charsets.UTF_8)
-    }
+	/**
+	 * Reads small files using simple file operation.
+	 * @param file File to read
+	 * @return File contents as String
+	 */
+	private fun readSmallFile(file: File): String {
+		logger.d("Using simple read for small file")
+		return file.readText(Charsets.UTF_8)
+	}
 
-    /**
-     * Reads medium files using buffered reader.
-     * @param file File to read
-     * @return File contents as String
-     */
-    private fun readMediumFile(file: File): String {
-        logger.d("Using buffered read for medium file")
-        return BufferedReader(FileReader(file)).use { it.readText() }
-    }
+	/**
+	 * Reads medium files using buffered reader.
+	 * @param file File to read
+	 * @return File contents as String
+	 */
+	private fun readMediumFile(file: File): String {
+		logger.d("Using buffered read for medium file")
+		return BufferedReader(FileReader(file)).use { it.readText() }
+	}
 
-    /**
-     * Reads large files using memory-mapped I/O with fallback.
-     * @param file File to read
-     * @return File contents as String
-     */
-    private fun readLargeFile(file: File): String {
-        return try {
-            logger.d("Using memory-mapped I/O for large file")
-            FileInputStream(file).channel.use { channel ->
-                val buffer = channel.map(
-                    FileChannel.MapMode.READ_ONLY,
-                    0, channel.size()
-                )
-                Charsets.UTF_8.decode(buffer).toString()
-            }
-        } catch (error: OutOfMemoryError) {
-            logger.d("Falling back to line-by-line reading")
-            buildString {
-                BufferedReader(FileReader(file)).forEachLine { line ->
-                    append(line)
-                }
-            }
-        }
-    }
+	/**
+	 * Reads large files using memory-mapped I/O with fallback.
+	 * @param file File to read
+	 * @return File contents as String
+	 */
+	private fun readLargeFile(file: File): String {
+		return try {
+			logger.d("Using memory-mapped I/O for large file")
+			FileInputStream(file).channel.use { channel ->
+				val buffer = channel.map(
+					FileChannel.MapMode.READ_ONLY,
+					0, channel.size()
+				)
+				Charsets.UTF_8.decode(buffer).toString()
+			}
+		} catch (error: OutOfMemoryError) {
+			logger.d("Falling back to line-by-line reading")
+			buildString {
+				BufferedReader(FileReader(file)).forEachLine { line ->
+					append(line)
+				}
+			}
+		}
+	}
 
-    /**
-     * Serializes bookmarks to JSON.
-     * @return JSON string representation
-     */
-    private fun convertClassToJSON(): String {
-        logger.d("Converting bookmarks to JSON")
-        return aioGSONInstance.toJson(this)
-    }
+	/**
+	 * Serializes bookmarks to JSON.
+	 * @return JSON string representation
+	 */
+	private fun convertClassToJSON(): String {
+		logger.d("Converting bookmarks to JSON")
+		return aioGSONInstance.toJson(this)
+	}
 
-    /**
-     * Deserializes JSON to AIOBookmarks instance.
-     * @param data JSON string to convert
-     * @return AIOBookmarks instance
-     */
-    private fun convertJSONStringToClass(data: String): AIOBookmarks {
-        logger.d("Converting JSON to bookmarks object")
-        return aioGSONInstance.fromJson(data, AIOBookmarks::class.java)
-    }
+	/**
+	 * Deserializes JSON to AIOBookmarks instance.
+	 * @param data JSON string to convert
+	 * @return AIOBookmarks instance
+	 */
+	private fun convertJSONStringToClass(data: String): AIOBookmarks {
+		logger.d("Converting JSON to bookmarks object")
+		return aioGSONInstance.fromJson(data, AIOBookmarks::class.java)
+	}
 
-    /**
-     * Persists current bookmarks to storage.
-     * Saves both JSON and binary formats asynchronously.
-     */
-    fun updateInStorage() {
-        ThreadsUtility.executeInBackground(codeBlock = {
-            try {
-                logger.d("Updating bookmarks in storage")
-                saveToBinary(AIO_BOOKMARKS_FILE_NAME_BINARY)
-                saveStringToInternalStorage(
-                    fileName = AIO_BOOKMARKS_FILE_NAME_JSON,
-                    data = convertClassToJSON()
-                )
-                logger.d("Bookmarks successfully updated in storage")
-            } catch (error: Exception) {
-                logger.d("Error updating bookmarks: ${error.message}")
-                error.printStackTrace()
-            }
-        })
-    }
+	/**
+	 * Persists current bookmarks to storage.
+	 * Saves both JSON and binary formats asynchronously.
+	 */
+	fun updateInStorage() {
+		ThreadsUtility.executeInBackground(codeBlock = {
+			try {
+				logger.d("Updating bookmarks in storage")
+				saveToBinary(AIO_BOOKMARKS_FILE_NAME_BINARY)
+				saveStringToInternalStorage(
+					fileName = AIO_BOOKMARKS_FILE_NAME_JSON,
+					data = convertClassToJSON()
+				)
+				logger.d("Bookmarks successfully updated in storage")
+			} catch (error: Exception) {
+				logger.d("Error updating bookmarks: ${error.message}")
+				error.printStackTrace()
+			}
+		})
+	}
 
-    /**
-     * Gets all bookmarks in the library.
-     * @return List of all bookmarks
-     */
-    fun getBookmarkLibrary(): ArrayList<BookmarkModel> {
-        return bookmarkLibrary
-    }
+	private fun registerKryoClasses() {
+		kryo.isRegistrationRequired = true
+		kryo.register(String::class.java, StringSerializer())
+		kryo.register(emptyList<BookmarkModel>().javaClass)
+		kryo.register(List::class.java)
+		kryo.register(ArrayList::class.java)
+		kryo.register(BookmarkModel::class.java)
+		kryo.register(AIOBookmarks::class.java)
+		kryo.register(Date::class.java)
+		kryo.register(HashMap::class.java)
+		kryo.register(HashSet::class.java)
+	}
 
-    /**
-     * Adds a new bookmark to the library.
-     * @param bookmarkModel Bookmark to add
-     */
-    fun insertNewBookmark(bookmarkModel: BookmarkModel) {
-        getBookmarkLibrary().add(bookmarkModel)
-    }
+	/**
+	 * Gets all bookmarks in the library.
+	 * @return List of all bookmarks
+	 */
+	fun getBookmarkLibrary(): ArrayList<BookmarkModel> {
+		return bookmarkLibrary
+	}
 
-    /**
-     * Updates an existing bookmark.
-     * @param oldBookmark Bookmark to replace
-     * @param newBookmark New bookmark data
-     */
-    fun updateBookmark(oldBookmark: BookmarkModel, newBookmark: BookmarkModel) {
-        val index = bookmarkLibrary.indexOf(oldBookmark)
-        if (index != -1) {
-            bookmarkLibrary[index] = newBookmark
-        }
-    }
+	/**
+	 * Adds a new bookmark to the library.
+	 * @param bookmarkModel Bookmark to add
+	 */
+	fun insertNewBookmark(bookmarkModel: BookmarkModel) {
+		getBookmarkLibrary().add(bookmarkModel)
+	}
 
-    /**
-     * Removes a bookmark from the library.
-     * @param bookmarkModel Bookmark to remove
-     */
-    fun removeBookmark(bookmarkModel: BookmarkModel) {
-        bookmarkLibrary.remove(bookmarkModel)
-    }
+	/**
+	 * Updates an existing bookmark.
+	 * @param oldBookmark Bookmark to replace
+	 * @param newBookmark New bookmark data
+	 */
+	fun updateBookmark(oldBookmark: BookmarkModel, newBookmark: BookmarkModel) {
+		val index = bookmarkLibrary.indexOf(oldBookmark)
+		if (index != -1) {
+			bookmarkLibrary[index] = newBookmark
+		}
+	}
 
-    /**
-     * Searches bookmarks by name or URL.
-     * @param query Search term
-     * @return List of matching bookmarks (case-insensitive)
-     */
-    fun searchBookmarks(query: String): List<BookmarkModel> {
-        return bookmarkLibrary.filter {
-            it.bookmarkName.contains(query, ignoreCase = true) ||
-                    it.bookmarkUrl.contains(query, ignoreCase = true)
-        }
-    }
+	/**
+	 * Removes a bookmark from the library.
+	 * @param bookmarkModel Bookmark to remove
+	 */
+	fun removeBookmark(bookmarkModel: BookmarkModel) {
+		bookmarkLibrary.remove(bookmarkModel)
+	}
 
-    /**
-     * Finds duplicate bookmarks (same URL).
-     * @return List of duplicate bookmarks
-     */
-    fun findDuplicateBookmarks(): List<BookmarkModel> {
-        return bookmarkLibrary
-            .groupBy { it.bookmarkUrl }
-            .filter { it.value.size > 1 }
-            .flatMap { it.value }
-    }
+	/**
+	 * Searches bookmarks by name or URL.
+	 * @param query Search term
+	 * @return List of matching bookmarks (case-insensitive)
+	 */
+	fun searchBookmarks(query: String): List<BookmarkModel> {
+		return bookmarkLibrary.filter {
+			it.bookmarkName.contains(query, ignoreCase = true) ||
+					it.bookmarkUrl.contains(query, ignoreCase = true)
+		}
+	}
 
-    /**
-     * Sorts bookmarks by specified attribute.
-     * @param attribute Attribute to sort by ("name" or "date")
-     * @return Sorted list of bookmarks
-     */
-    fun getBookmarksSortedBy(attribute: String): List<BookmarkModel> {
-        return when (attribute.lowercase(Locale.ROOT)) {
-            "name" -> bookmarkLibrary.sortedBy { it.bookmarkName }
-            "date" -> bookmarkLibrary.sortedBy { it.bookmarkCreationDate }
-            else -> bookmarkLibrary
-        }
-    }
+	/**
+	 * Finds duplicate bookmarks (same URL).
+	 * @return List of duplicate bookmarks
+	 */
+	fun findDuplicateBookmarks(): List<BookmarkModel> {
+		return bookmarkLibrary
+			.groupBy { it.bookmarkUrl }
+			.filter { it.value.size > 1 }
+			.flatMap { it.value }
+	}
 
-    /**
-     * Filters bookmarks by minimum rating.
-     * @param minRating Minimum rating threshold
-     * @return List of bookmarks meeting the rating criteria
-     */
-    fun filterBookmarksByRating(minRating: Float): List<BookmarkModel> {
-        return bookmarkLibrary.filter { it.bookmarkRating >= minRating }
-    }
+	/**
+	 * Sorts bookmarks by specified attribute.
+	 * @param attribute Attribute to sort by ("name" or "date")
+	 * @return Sorted list of bookmarks
+	 */
+	fun getBookmarksSortedBy(attribute: String): List<BookmarkModel> {
+		return when (attribute.lowercase(Locale.ROOT)) {
+			"name" -> bookmarkLibrary.sortedBy { it.bookmarkName }
+			"date" -> bookmarkLibrary.sortedBy { it.bookmarkCreationDate }
+			else -> bookmarkLibrary
+		}
+	}
 
-    /**
-     * Gets all favorite bookmarks.
-     * @return List of favorite bookmarks
-     */
-    fun getFavoriteBookmarks(): List<BookmarkModel> {
-        return bookmarkLibrary.filter { it.bookmarkFavorite }
-    }
+	/**
+	 * Filters bookmarks by minimum rating.
+	 * @param minRating Minimum rating threshold
+	 * @return List of bookmarks meeting the rating criteria
+	 */
+	fun filterBookmarksByRating(minRating: Float): List<BookmarkModel> {
+		return bookmarkLibrary.filter { it.bookmarkRating >= minRating }
+	}
 
-    /**
-     * Filters bookmarks by tag.
-     * @param tag Tag to filter by
-     * @return List of bookmarks containing the specified tag
-     */
-    fun filterBookmarksByTag(tag: String): List<BookmarkModel> {
-        return bookmarkLibrary.filter { it.bookmarkTags.contains(tag) }
-    }
+	/**
+	 * Gets all favorite bookmarks.
+	 * @return List of favorite bookmarks
+	 */
+	fun getFavoriteBookmarks(): List<BookmarkModel> {
+		return bookmarkLibrary.filter { it.bookmarkFavorite }
+	}
 
-    /**
-     * Filters bookmarks by minimum priority.
-     * @param minPriority Minimum priority threshold
-     * @return List of bookmarks meeting the priority criteria
-     */
-    fun filterBookmarksByPriority(minPriority: Int): List<BookmarkModel> {
-        return bookmarkLibrary.filter { it.bookmarkPriority >= minPriority }
-    }
+	/**
+	 * Filters bookmarks by tag.
+	 * @param tag Tag to filter by
+	 * @return List of bookmarks containing the specified tag
+	 */
+	fun filterBookmarksByTag(tag: String): List<BookmarkModel> {
+		return bookmarkLibrary.filter { it.bookmarkTags.contains(tag) }
+	}
 
-    /**
-     * Gets all archived bookmarks.
-     * @return List of archived bookmarks
-     */
-    fun getArchivedBookmarks(): List<BookmarkModel> {
-        return bookmarkLibrary.filter { it.bookmarkArchived }
-    }
+	/**
+	 * Filters bookmarks by minimum priority.
+	 * @param minPriority Minimum priority threshold
+	 * @return List of bookmarks meeting the priority criteria
+	 */
+	fun filterBookmarksByPriority(minPriority: Int): List<BookmarkModel> {
+		return bookmarkLibrary.filter { it.bookmarkPriority >= minPriority }
+	}
 
-    /**
-     * Archives a bookmark.
-     * @param bookmarkModel Bookmark to archive
-     */
-    fun archiveBookmark(bookmarkModel: BookmarkModel) {
-        val index = bookmarkLibrary.indexOf(bookmarkModel)
-        if (index != -1) {
-            bookmarkLibrary[index].bookmarkArchived = true
-        }
-    }
+	/**
+	 * Gets all archived bookmarks.
+	 * @return List of archived bookmarks
+	 */
+	fun getArchivedBookmarks(): List<BookmarkModel> {
+		return bookmarkLibrary.filter { it.bookmarkArchived }
+	}
 
-    /**
-     * Gets bookmarks shared with specific user.
-     * @param user User identifier
-     * @return List of shared bookmarks
-     */
-    fun getBookmarksSharedWithUser(user: String): List<BookmarkModel> {
-        return bookmarkLibrary.filter { it.bookmarkSharedWith.contains(user) }
-    }
+	/**
+	 * Archives a bookmark.
+	 * @param bookmarkModel Bookmark to archive
+	 */
+	fun archiveBookmark(bookmarkModel: BookmarkModel) {
+		val index = bookmarkLibrary.indexOf(bookmarkModel)
+		if (index != -1) {
+			bookmarkLibrary[index].bookmarkArchived = true
+		}
+	}
 
-    /**
-     * Clears all bookmarks from the library.
-     */
-    fun clearAllBookmarks() {
-        bookmarkLibrary.clear()
-    }
+	/**
+	 * Gets bookmarks shared with specific user.
+	 * @param user User identifier
+	 * @return List of shared bookmarks
+	 */
+	fun getBookmarksSharedWithUser(user: String): List<BookmarkModel> {
+		return bookmarkLibrary.filter { it.bookmarkSharedWith.contains(user) }
+	}
 
-    /**
-     * Gets total number of bookmarks.
-     * @return Count of bookmarks
-     */
-    fun countBookmarks(): Int {
-        return bookmarkLibrary.size
-    }
+	/**
+	 * Clears all bookmarks from the library.
+	 */
+	fun clearAllBookmarks() {
+		bookmarkLibrary.clear()
+	}
 
-    companion object {
-        /**
-         * Serialization ID for binary format
-         */
-        const val AIO_BOOKMARKS_SERIALIZABLE_ID = 1
+	/**
+	 * Gets total number of bookmarks.
+	 * @return Count of bookmarks
+	 */
+	fun countBookmarks(): Int {
+		return bookmarkLibrary.size
+	}
 
-        /**
-         * JSON bookmarks filename
-         */
-        const val AIO_BOOKMARKS_FILE_NAME_JSON: String = "aio_bookmarks.json"
+	companion object {
+		/**
+		 * Serialization ID for binary format
+		 */
+		const val AIO_BOOKMARKS_SERIALIZABLE_ID = 1
 
-        /**
-         * Binary bookmarks filename
-         */
-        const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
-    }
+		/**
+		 * JSON bookmarks filename
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_JSON: String = "aio_bookmarks.json"
+
+		/**
+		 * Binary bookmarks filename
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
+	}
 }
