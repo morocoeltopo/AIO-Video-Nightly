@@ -99,7 +99,8 @@
 							android:layout_height="wrap_content"
 							android:adjustViewBounds="true"
 							android:importantForAccessibility="no"
-							android:src="@drawable/ic_fb_how_to_guide_2" />
+							android:src="@drawable/ic_fb_how_to_guide_2"
+							tools:ignore="ImageContrastCheck" />
 
 					</androidx.cardview.widget.CardView>
 

@@ -383,10 +383,14 @@
     <string name="title_history">History</string>
     <string name="text_open_downloads_for_recent_downloads"><b>Open Tasks</b> for all downloads</string>
     <string name="title_recent_downloads">Recent Downloads</string>
-    <string name="text_fb_how_to_guide_1">Tap the <b><u>Share</u></b> button under the video, then select <b><u>Copy Link</u></b> to save the video’s web address for sharing or later use.</string>
-    <string name="text_fb_how_to_guide_2">Return to this app, <b><u>paste the copied link</u></b> into the provided box, and press <b><u>download</u></b> icon to save the video.</string>
-    <string name="text_fb_how_to_guide_3">After pasting the video link into the app’s input field, tap the <b>download</b> icon to see the available download options.</string>
-    <string name="text_fb_how_to_guide_4">Simply tap the <b><u>Download</u></b> button to save the Facebook video or reel directly to phone’s storage for offline viewing.</string>
+    <string name="text_fb_how_to_guide_1"><b><u>Tap the Share button</u></b> under the video, then <b><u>select Copy link</u></b> to save the video or reel’s web address into the clipboard.</string>
+    <string name="text_yt_how_to_guide_1"><b><u>Tap the Share button</u></b> below the video, then <b><u>scroll horizontally</u></b> to find the <b><u>More option</u></b>.</string>
+    <string name="text_fb_how_to_guide_2"><b><u>Return to AIO app</u></b>, then paste the copied link into <b><u>the top search box</u></b>, and press <b><u>download icon</u></b> to save the video.</string>
+    <string name="text_yt_how_to_guide_2">Scroll the options to the left to reveal more. <b><u>Tap More to view AIO</u></b> along with other apps.</string>
+    <string name="text_fb_how_to_guide_3"><b><u>After pasting the video link</u></b> into the app’s input field, tap the <b><u>download icon</u></b> to see the available download options.</string>
+    <string name="text_yt_how_to_guide_3">Once the <b><u>list of available apps appears</u></b>, find <b><u>AIO Video Downloader</u></b> in the list and select it.</string>
+    <string name="text_fb_how_to_guide_4">Simply tap the <b><u>Download button</u></b> to save the Facebook video or reel directly to <b><u>your phone’s storage</u></b> for offline viewing.</string>
+    <string name="text_yt_how_to_guide_4">Simply tap the <b><u>Download button</u></b> to save the YouTube video <b><u>on your phone’s storage</u></b>.</string>
     <string name="title_pick_video_hosting_platform">Select Video Sharing Platform</string>
     <string name="title_copied_link">Copied Link</string>
     <string name="title_open_the_link">Open The Link</string>
@@ -397,10 +401,10 @@
     <string name="text_ted_talks_app_isnt_installed">TED Talks  is not installed.</string>
     <string name="text_youtube_isnt_installed">YouTube is not installed.</string>
     <string name="title_file_size">File Size:</string>
-    <string name="text_inst_how_to_guide_1">Open the Instagram reel you want, then tap the <b><u>share icon</u></b> to access the available sharing options.</string>
-    <string name="text_inst_how_to_guide_2">Tap the share icon again, and you’ll see different ways to share or copy the reel link.</string>
-    <string name="text_inst_how_to_guide_3">Now choose <b>AIO</b> from the share options, which will open the app and let you download the video instantly.</string>
-    <string name="text_inst_how_to_guide_4">Simply tap the <b><u>Download</u></b> button to save the Instagram video or reel directly to your phone’s storage for offline viewing.</string>
+    <string name="text_inst_how_to_guide_1"><b><u>Open the Instagram reel you want</u></b>, then tap the <b><u>share icon</u></b> to access the available sharing options.</string>
+    <string name="text_inst_how_to_guide_2"><b><u>Tap the share icon again</u></b>, and you’ll see different ways to <b><u>share or copy the reel link</u></b>.</string>
+    <string name="text_inst_how_to_guide_3">Now choose <b><u>AIO</u></b> from the share options, which will open the app and <b><u>let you download the video instantly</u></b>.</string>
+    <string name="text_inst_how_to_guide_4">Simply tap the <b><u>Download</u></b> button to save the Instagram video or reel <b><u>directly to your phone’s storage</u></b> for offline viewing.</string>
 
     <string name="text_you_have_b_active_downloads_b">You have <b>%1$s active downloads.</b></string>
     <string name="text_google_play_store_inst_installed">Google play store isn\'t installed.</string>
@@ -421,9 +425,9 @@
     <string name="title_download_instagram_reel">Download Instagram Reels</string>
     <string name="title_download_fb_videos">Download Facebook Videos</string>
     <string name="title_download_video_from_web">Download Web Videos</string>
-    <string name="text_web_how_to_guide_1">First, <b><u>play the video</u></b> you want to download. Once it’s playing, click the <b><u>Video Grabber</u></b> icon to see the detected video links.</string>
+    <string name="text_web_how_to_guide_1">First, <b><u>play the video you want to download</u></b>. Once it’s playing, click the <b><u>Video Grabber icon</u></b> to see the detected video links.</string>
     <string name="text_web_how_to_guide_2">Choose a <b><u>video resolution</u></b> from the available detected video links. <b>Tip*</b> Higher resolutions give better quality.</string>
-    <string name="text_web_how_to_guide_3">Now, click on the <b><u>Download</u></b> button to start downloading. You can see the download progress at the <b><u>Tasks</u></b> section.</string>
+    <string name="text_web_how_to_guide_3">Now, click on the <b><u>Download button</u></b> to start downloading. You can see the <b><u>download progress</u></b> at the <b><u>Tasks</u></b> section.</string>
     <string name="title_internet">Internet</string>
     <string name="text_show_download_information">Download information…</string>
     <string name="text_file_name_will_be_renamed"><b><u>The actual file name</u></b> on disk will be changed.</string>
@@ -504,5 +508,6 @@
     <string name="title_tedtalks">TED Talks</string>
     <string name="title_pornhub">Pornhub</string>
     <string name="text_aio_downloader_tagline">Download, Watch &amp; Share with Friends</string>
+    <string name="title_download_yt_videos">Download YouTube Videos</string>
 
 </resources>
