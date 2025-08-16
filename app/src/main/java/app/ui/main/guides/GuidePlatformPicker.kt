@@ -24,7 +24,6 @@ import java.lang.ref.WeakReference
  * @param baseActivity The parent activity that will host this dialog
  */
 class GuidePlatformPicker(private val baseActivity: BaseActivity?) {
-
 	private val logger = LogHelperUtils.from(javaClass)
 
 	// Weak reference to parent activity to prevent memory leaks

@@ -240,7 +240,7 @@
     <string name="text_waiting_for_server_to_respond">Waiting for the server to respond.</string>
     <string name="text_reached_limit_for_going_back">Reached the limit for going back.</string>
     <string name="text_reached_limit_for_going_forward">Reached the limit for going forward.</string>
-    <string name="text_many_tabs_open_consider_warning"><b>You have %1$s browser tabs open.</b> Once closed, access the lost tabs from the browser history.</string>
+    <string name="text_many_tabs_open_consider_warning"><b>You have %1$s browser tabs open.</b> After closing them, you can access the lost tabs from your browser history.</string>
     <string name="text_exit_the_app">Exit Now</string>
     <string name="text_close_tabs">Close Tabs</string>
 

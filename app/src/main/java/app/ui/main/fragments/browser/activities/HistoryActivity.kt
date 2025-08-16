@@ -6,10 +6,10 @@ import android.view.View.GONE
 import android.widget.ListView
 import app.core.AIOApp.Companion.aioHistory
 import app.core.AIOApp.Companion.aioTimer
+import app.core.AIOKeyStrings.ACTIVITY_RESULT_KEY
 import app.core.AIOTimer.AIOTimerListener
 import app.core.bases.BaseActivity
 import app.core.engines.browser.history.HistoryModel
-import app.ui.main.MotherActivity.Companion.ACTIVITY_RESULT_KEY
 import app.ui.main.fragments.browser.activities.HistoryAdapter.OnHistoryItemClick
 import app.ui.main.fragments.browser.activities.HistoryAdapter.OnHistoryItemLongClick
 import com.aio.R

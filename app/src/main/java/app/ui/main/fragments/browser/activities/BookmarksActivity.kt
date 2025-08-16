@@ -6,10 +6,10 @@ import android.view.View.GONE
 import android.widget.ListView
 import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioTimer
+import app.core.AIOKeyStrings.ACTIVITY_RESULT_KEY
 import app.core.AIOTimer.AIOTimerListener
 import app.core.bases.BaseActivity
 import app.core.engines.browser.bookmarks.BookmarkModel
-import app.ui.main.MotherActivity.Companion.ACTIVITY_RESULT_KEY
 import app.ui.main.fragments.browser.activities.BookmarkAdapter.OnBookmarkItemClick
 import app.ui.main.fragments.browser.activities.BookmarkAdapter.OnBookmarkItemLongClick
 import com.aio.R
