@@ -20,6 +20,8 @@ import app.core.engines.browser.history.HistoryModel
 import app.ui.main.MotherActivity
 import com.aio.R
 import com.bumptech.glide.Glide
+import lib.networks.URLUtilityKT
+import lib.networks.URLUtilityKT.normalizeEncodedUrl
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.texts.CommonTextUtils.getText
@@ -235,7 +237,7 @@ class BrowserWebChromeClient(val webviewEngine: WebViewEngine) : WebChromeClient
                     aioHistory.getHistoryLibrary().add(0, HistoryModel().apply {
                         historyUserAgent = webView.settings.userAgentString.toString()
                         historyVisitDateTime = Date()
-                        historyUrl = webView.url.toString()
+                        historyUrl = normalizeEncodedUrl(webView.url.toString())
                         historyTitle = titleText
                     })
 

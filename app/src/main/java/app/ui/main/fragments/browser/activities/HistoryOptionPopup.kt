@@ -11,6 +11,8 @@ import app.core.AIOApp.Companion.aioHistory
 import app.core.engines.browser.bookmarks.BookmarkModel
 import app.core.engines.browser.history.HistoryModel
 import com.aio.R
+import lib.networks.URLUtilityKT
+import lib.networks.URLUtilityKT.normalizeEncodedUrl
 import lib.process.LogHelperUtils
 import lib.texts.ClipboardUtils.copyTextToClipboard
 import lib.texts.CommonTextUtils.getText
@@ -141,7 +143,7 @@ class HistoryOptionPopup(
 			val bookmarkModel = BookmarkModel().apply {
 				bookmarkCreationDate = Date()
 				bookmarkModifiedDate = Date()
-				bookmarkUrl = historyModel.historyUrl
+				bookmarkUrl = normalizeEncodedUrl(historyModel.historyUrl)
 				bookmarkName = historyModel.historyTitle.ifEmpty { getText(R.string.title_unknown) }
 			}
 

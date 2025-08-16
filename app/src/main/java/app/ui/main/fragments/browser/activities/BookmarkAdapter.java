@@ -33,7 +33,6 @@ import lib.process.LogHelperUtils;
 
 /**
  * Adapter for displaying bookmark items in a list view.
- *
  * Responsibilities:
  * - Binds {@link BookmarkModel} data (title, URL, favicon, creation date) to list rows.
  * - Handles item click and long-click events via callback interfaces.
@@ -169,7 +168,7 @@ public class BookmarkAdapter extends BaseAdapter {
      */
     public void loadMoreBookmarks() {
         AIOBookmarks aioBookmarks = INSTANCE.getAIOBookmarks();
-        List<BookmarkModel> fullList = aioBookmarks.getBookmarkLibrary();
+        ArrayList<BookmarkModel> fullList = aioBookmarks.getBookmarkLibrary();
         if (currentIndex >= fullList.size()) {
             logger.d("No more bookmarks to load.");
             return;

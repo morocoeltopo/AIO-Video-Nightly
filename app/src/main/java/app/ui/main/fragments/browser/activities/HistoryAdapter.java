@@ -179,7 +179,7 @@ public class HistoryAdapter extends BaseAdapter {
      * Loads a maximum of 50 new items per call.
      */
     public void loadMoreHistory() {
-        List<HistoryModel> fullList = INSTANCE.getAIOHistory().getHistoryLibrary();
+        ArrayList<HistoryModel> fullList = INSTANCE.getAIOHistory().getHistoryLibrary();
         if (currentIndex >= fullList.size()) {
             logger.d("No more history items to load.");
             return;

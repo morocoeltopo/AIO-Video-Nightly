@@ -17,6 +17,8 @@ import app.ui.main.guides.GuidePlatformPicker
 import app.ui.others.information.UserFeedbackActivity
 import com.aio.R
 import lib.networks.URLUtility
+import lib.networks.URLUtilityKT
+import lib.networks.URLUtilityKT.normalizeEncodedUrl
 import lib.texts.ClipboardUtils.copyTextToClipboard
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ViewUtility.hideOnScreenKeyboard
@@ -149,7 +151,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			aioBookmark.getBookmarkLibrary().add(0, BookmarkModel().apply {
 				bookmarkCreationDate = Date()
 				bookmarkModifiedDate = Date()
-				bookmarkUrl = currentWebpageUrl
+				bookmarkUrl = normalizeEncodedUrl(currentWebpageUrl)
 				bookmarkName = if (currentWebpageTitle.isNullOrEmpty())
 					getText(R.string.title_unknown) else currentWebpageTitle
 			})
