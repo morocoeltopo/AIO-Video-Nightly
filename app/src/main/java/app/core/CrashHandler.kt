@@ -1,7 +1,10 @@
 package app.core
 
 import app.core.AIOApp.Companion.aioSettings
-import lib.files.FileSystemUtility.saveStringToInternalStorage
+import com.aio.R
+import lib.process.LogHelperUtils
+import lib.texts.CommonTextUtils.getText
+import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
 
@@ -16,10 +19,12 @@ import java.io.StringWriter
  * - Updates the persisted settings.
  */
 class CrashHandler : Thread.UncaughtExceptionHandler {
-	
+
+	private val logger = LogHelperUtils.from(javaClass)
+
 	/** Holds the application context instance from [AIOApp]. */
 	private val appInstance = AIOApp.INSTANCE.applicationContext
-	
+
 	/**
 	 * Called when an uncaught exception occurs in any thread.
 	 *
@@ -35,16 +40,37 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 					sw.toString()
 				}
 			}
-			
+
 			// Save crash information for later inspection
-			saveStringToInternalStorage("aio_crash_log.txt", stackTrace)
+			try {
+				// Build directory path
+				val externalDataFolderPath = getText(R.string.text_default_aio_download_folder_path)
+				val directoryPath = "$externalDataFolderPath${getText(R.string.title_aio_others)}"
+				val dir = File(directoryPath)
+
+				// Ensure directory exists
+				if (!dir.exists()) {
+					dir.mkdirs()
+				}
+
+				// Create crash log file
+				val crashLogFile = File(dir, "aio_crash_log.txt")
+
+				// Write crash data
+				crashLogFile.writeText(stackTrace)
+
+				logger.d("Crash log saved at: ${crashLogFile.absolutePath}")
+			} catch (error: Exception) {
+				error.printStackTrace()
+				logger.d("Failed to save crash log: ${error.message}")
+			}
 
 			// Update crash flag in settings
 			aioSettings.hasAppCrashedRecently = true
 			aioSettings.updateInStorage()
 		} catch (error: Exception) {
 			// Log any errors that occur while handling the original crash
-			error.printStackTrace()
+			logger.e(error)
 		}
 	}
 }

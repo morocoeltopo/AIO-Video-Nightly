@@ -508,21 +508,9 @@ class DownloadDataModel : Serializable {
 				endsWithExtension(fileName, IMAGE_EXTENSIONS) -> getText(string.title_aio_images)
 				endsWithExtension(fileName, VIDEO_EXTENSIONS) -> getText(string.title_aio_videos)
 				endsWithExtension(fileName, MUSIC_EXTENSIONS) -> getText(string.title_aio_sounds)
-				endsWithExtension(
-					fileName,
-					DOCUMENT_EXTENSIONS
-				) -> getText(string.title_aio_documents)
-
-				endsWithExtension(
-					fileName,
-					PROGRAM_EXTENSIONS
-				) -> getText(string.title_aio_programs)
-
-				endsWithExtension(
-					fileName,
-					ARCHIVE_EXTENSIONS
-				) -> getText(string.title_aio_archives)
-
+				endsWithExtension(fileName, DOCUMENT_EXTENSIONS) -> getText(string.title_aio_documents)
+				endsWithExtension(fileName, PROGRAM_EXTENSIONS) -> getText(string.title_aio_programs)
+				endsWithExtension(fileName, ARCHIVE_EXTENSIONS) -> getText(string.title_aio_archives)
 				else -> getText(string.title_aio_others)
 			}; return categoryName
 		}
