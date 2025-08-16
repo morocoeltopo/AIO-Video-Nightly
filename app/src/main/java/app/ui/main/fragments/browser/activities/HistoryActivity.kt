@@ -35,7 +35,7 @@ class HistoryActivity : BaseActivity(),
 	private var historyOptionPopup: HistoryOptionPopup? = null
 
 	private val arg = safeHistoryActivityRef
-	private lateinit var historyAdapter: HistoryAdapter
+	private val historyAdapter by lazy { HistoryAdapter(arg, arg, arg) }
 
 	override fun onRenderingLayout(): Int {
 		return R.layout.activity_browser_history_1
@@ -107,7 +107,6 @@ class HistoryActivity : BaseActivity(),
 			historyList = findViewById(R.id.list_history)
 			buttonLoadMoreHistory = findViewById(R.id.btn_load_more_history)
 
-			historyAdapter = HistoryAdapter(it, it, it)
 			historyList.adapter = historyAdapter
 			historyList.visibility = GONE
 

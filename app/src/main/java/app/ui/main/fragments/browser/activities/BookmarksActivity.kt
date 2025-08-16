@@ -34,7 +34,10 @@ class BookmarksActivity : BaseActivity(),
 
 	private var bookmarkOptionPopup: BookmarkOptionPopup? = null
 
-	private lateinit var bookmarksAdapter: BookmarkAdapter
+	private val bookmarksAdapter by lazy {
+		val activityRef = safeBookmarksActivityRef
+		BookmarkAdapter(activityRef, activityRef, activityRef)
+	}
 
 	override fun onRenderingLayout(): Int {
 		return R.layout.activity_bookmarks_1
@@ -106,7 +109,6 @@ class BookmarksActivity : BaseActivity(),
 			bookmarkListView = findViewById(R.id.list_bookmarks)
 			buttonLoadMoreBookmarks = findViewById(R.id.btn_load_more_bookmarks)
 
-			bookmarksAdapter = BookmarkAdapter(it, it, it)
 			bookmarkListView.adapter = bookmarksAdapter
 			bookmarkListView.visibility = GONE
 
