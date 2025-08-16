@@ -9,30 +9,36 @@ import java.io.PrintWriter
 import java.io.StringWriter
 
 /**
- * CrashHandler is a custom [Thread.UncaughtExceptionHandler] that handles uncaught exceptions
- * across the application and performs necessary logging and state updates.
+ * [CrashHandler] is a custom implementation of [Thread.UncaughtExceptionHandler].
  *
- * When an uncaught exception occurs, this handler:
- * - Extracts the full stack trace.
- * - Saves the crash information using [aioBackend].
- * - Marks that the app has recently crashed in [aioSettings].
- * - Updates the persisted settings.
+ * It provides a centralized way to handle uncaught exceptions across the entire app.
+ *
+ * Responsibilities:
+ * - Captures the stack trace of any uncaught exception.
+ * - Persists crash logs to a text file for later inspection.
+ * - Marks in [aioSettings] that the app has recently crashed.
+ * - Updates stored settings to reflect the crash state.
+ *
+ * This ensures that crash information is retained even after the app restarts,
+ * aiding in debugging and recovery.
  */
 class CrashHandler : Thread.UncaughtExceptionHandler {
 
 	private val logger = LogHelperUtils.from(javaClass)
 
-	/** Holds the application context instance from [AIOApp]. */
+	/** Reference to the global application context instance. */
 	private val appInstance = AIOApp.INSTANCE.applicationContext
 
 	/**
-	 * Called when an uncaught exception occurs in any thread.
+	 * Handles uncaught exceptions from any thread in the application.
 	 *
-	 * @param thread The thread that has encountered the exception.
-	 * @param exception The uncaught exception.
+	 * @param thread The thread that encountered the uncaught exception.
+	 * @param exception The exception that was thrown but not caught.
 	 */
 	override fun uncaughtException(thread: Thread, exception: Throwable) {
 		try {
+			logger.d("Uncaught exception detected in thread: ${thread.name}")
+
 			// Extract full stack trace as a string
 			val stackTrace = StringWriter().use { sw ->
 				PrintWriter(sw).use { pw ->
@@ -40,8 +46,9 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 					sw.toString()
 				}
 			}
+			logger.d("Stack trace extracted successfully")
 
-			// Save crash information for later inspection
+			// Save crash information to persistent storage
 			try {
 				// Build directory path
 				val externalDataFolderPath = getText(R.string.text_default_aio_download_folder_path)
@@ -51,6 +58,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 				// Ensure directory exists
 				if (!dir.exists()) {
 					dir.mkdirs()
+					logger.d("Crash log directory created at: ${dir.absolutePath}")
 				}
 
 				// Create crash log file
@@ -68,9 +76,11 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 			// Update crash flag in settings
 			aioSettings.hasAppCrashedRecently = true
 			aioSettings.updateInStorage()
+			logger.d("Crash flag updated in aioSettings")
+
 		} catch (error: Exception) {
 			// Log any errors that occur while handling the original crash
-			logger.e(error)
+			logger.d("Error while handling uncaught exception: ${error.message}")
 		}
 	}
 }
