@@ -24,14 +24,24 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import app.core.AIOApp;
 import app.core.bases.BaseActivity;
 import app.core.engines.browser.bookmarks.AIOBookmarks;
 import app.core.engines.browser.bookmarks.BookmarkModel;
 import app.core.engines.caches.AIOFavicons;
 import lib.device.DateTimeUtils;
+import lib.process.LogHelperUtils;
 
+/**
+ * Adapter for displaying bookmark items in a list view.
+ *
+ * Responsibilities:
+ * - Binds {@link BookmarkModel} data (title, URL, favicon, creation date) to list rows.
+ * - Handles item click and long-click events via callback interfaces.
+ * - Supports lazy-loading of bookmarks in chunks for performance.
+ */
 public class BookmarkAdapter extends BaseAdapter {
+
+    private final LogHelperUtils logger = LogHelperUtils.from(getClass());
 
     private final WeakReference<BaseActivity> safeBaseActivityRef;
     private final OnBookmarkItemClick onBookmarkItemClick;
@@ -39,12 +49,20 @@ public class BookmarkAdapter extends BaseAdapter {
     private int currentIndex = 0;
     private final List<BookmarkModel> displayedBookmarks = new ArrayList<>();
 
+    /**
+     * Constructs a new {@link BookmarkAdapter}.
+     *
+     * @param bookmarkActivity      optional activity reference for inflating views.
+     * @param onBookmarkItemClick   callback for click events.
+     * @param onBookmarkItemLongClick callback for long-click events.
+     */
     public BookmarkAdapter(@Nullable BookmarksActivity bookmarkActivity,
                            @Nullable OnBookmarkItemClick onBookmarkItemClick,
                            @Nullable OnBookmarkItemLongClick onBookmarkItemLongClick) {
         this.safeBaseActivityRef = new WeakReference<>(bookmarkActivity);
         this.onBookmarkItemClick = onBookmarkItemClick;
         this.onBookmarkItemLongClick = onBookmarkItemLongClick;
+        logger.d("BookmarkAdapter initialized. Loading initial bookmarks...");
         loadMoreBookmarks();
     }
 
@@ -59,6 +77,7 @@ public class BookmarkAdapter extends BaseAdapter {
         if (position >= 0 && position < displayedBookmarks.size()) {
             return displayedBookmarks.get(position);
         }
+        logger.d("Invalid position requested in getItem: " + position);
         return null;
     }
 
@@ -67,10 +86,19 @@ public class BookmarkAdapter extends BaseAdapter {
         return position;
     }
 
+    /**
+     * Inflates or reuses a list row view and binds bookmark data into it.
+     *
+     * @param position    position of the item.
+     * @param convertView recycled view, if available.
+     * @param parent      parent view group.
+     * @return a populated row view.
+     */
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         BaseActivity activity = this.safeBaseActivityRef.get();
         if (activity == null) {
+            logger.d("Activity reference lost. Returning fallback view.");
             return convertView != null ? convertView : new View(parent.getContext());
         }
 
@@ -87,12 +115,15 @@ public class BookmarkAdapter extends BaseAdapter {
             holder.bookmarkUrl = convertView.findViewById(R.id.bookmark_url);
 
             convertView.setTag(holder);
+            logger.d("Created new ViewHolder for position " + position);
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
 
         BookmarkModel bookmarkModel = getItem(position);
         if (bookmarkModel != null) {
+            logger.d("Binding bookmark: " + bookmarkModel.getBookmarkName());
+
             holder.bookmarkTitle.setText(bookmarkModel.getBookmarkName());
             holder.bookmarkUrl.setText(removeWwwFromUrl(bookmarkModel.getBookmarkUrl()));
 
@@ -101,12 +132,14 @@ public class BookmarkAdapter extends BaseAdapter {
             holder.bookmarkDate.setText(formattedDate);
 
             convertView.setOnClickListener(view -> {
+                logger.d("Bookmark clicked: " + bookmarkModel.getBookmarkUrl());
                 if (onBookmarkItemClick != null) {
                     onBookmarkItemClick.onBookmarkClick(bookmarkModel);
                 }
             });
 
             convertView.setOnLongClickListener(view -> {
+                logger.d("Bookmark long-clicked: " + bookmarkModel.getBookmarkUrl());
                 if (onBookmarkItemLongClick != null) {
                     onBookmarkItemLongClick.onBookmarkLongClick(bookmarkModel, position, view);
                 }
@@ -119,8 +152,10 @@ public class BookmarkAdapter extends BaseAdapter {
                 if (faviconCachedPath != null && !faviconCachedPath.isEmpty()) {
                     File faviconImg = new File(faviconCachedPath);
                     if (faviconImg.exists()) {
-                        executeOnMainThread(() ->
-                                holder.bookmarkFavicon.setImageURI(Uri.fromFile(faviconImg)));
+                        executeOnMainThread(() -> {
+                            holder.bookmarkFavicon.setImageURI(Uri.fromFile(faviconImg));
+                            logger.d("Favicon loaded for: " + bookmarkModel.getBookmarkUrl());
+                        });
                     }
                 }
             });
@@ -129,10 +164,16 @@ public class BookmarkAdapter extends BaseAdapter {
         return convertView;
     }
 
+    /**
+     * Loads the next batch of bookmarks (50 items at a time) into the adapter.
+     */
     public void loadMoreBookmarks() {
         AIOBookmarks aioBookmarks = INSTANCE.getAIOBookmarks();
         List<BookmarkModel> fullList = aioBookmarks.getBookmarkLibrary();
-        if (currentIndex >= fullList.size()) return;
+        if (currentIndex >= fullList.size()) {
+            logger.d("No more bookmarks to load.");
+            return;
+        }
 
         int itemsToLoad = Math.min(50, fullList.size() - currentIndex);
         int endIndex = currentIndex + itemsToLoad;
@@ -141,24 +182,38 @@ public class BookmarkAdapter extends BaseAdapter {
             displayedBookmarks.add(fullList.get(index));
 
         currentIndex = endIndex;
+        logger.d("Loaded " + itemsToLoad + " bookmarks. Current index: " + currentIndex);
         notifyDataSetChanged();
     }
 
+    /**
+     * Resets the adapter state by clearing bookmarks and resetting index.
+     */
     public void resetBookmarkAdapter() {
+        logger.d("Resetting BookmarkAdapter. Clearing " + displayedBookmarks.size() + " items.");
         currentIndex = 0;
         displayedBookmarks.clear();
         notifyDataSetChanged();
     }
 
+    /**
+     * Callback interface for bookmark item clicks.
+     */
     public interface OnBookmarkItemClick {
         void onBookmarkClick(@NonNull BookmarkModel bookmarkModel);
     }
 
+    /**
+     * Callback interface for bookmark item long-clicks.
+     */
     public interface OnBookmarkItemLongClick {
         void onBookmarkLongClick(@NonNull BookmarkModel bookmarkModel,
                                  int position, @NonNull View listView);
     }
 
+    /**
+     * ViewHolder pattern for caching row views.
+     */
     private static class ViewHolder {
         ImageView bookmarkFavicon;
         TextView bookmarkTitle;

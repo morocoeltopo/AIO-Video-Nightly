@@ -62,7 +62,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 				}
 
 				// Create crash log file
-				val crashLogFile = File(dir, "aio_crash_log.txt")
+				val crashLogFile = File(dir, ".aio_crash_log.txt")
 
 				// Write crash data
 				crashLogFile.writeText(stackTrace)
