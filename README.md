@@ -61,47 +61,8 @@ intrusive advertisements.
 - **Made in India**: Developed with pride by Indian developers
 
 ## 📥 Installation
-
-AIO Video Downloader is available in two ways:
-
-### 1. Official Releases (Recommended)
-
-Download the latest APK from our *
-*[GitHub Releases page](https://github.com/shibaFoss/AIO-Video-Downloader/releases/)** Or
-straight [Download the lastest apk here](https://github.com/shibaFoss/AIO-Video-Downloader/releases/download/20250729v2/AIO_version_20250729-arm64-v8a-release.apk)
-
-### 2. Build from Source
-
-For developers who want to build the app themselves:
-
-```bash
-git clone https://github.com/shibafoss/AIO-Video-Downloader.git
-cd AIO Video Downloader
-./gradlew assembleDebug
-```
-
-The APK will be generated in `app/build/outputs/apk/debug/`
-
-## 🛠️ Technology Stack
-
-- **Backend**: [youtubedl-android-wrapper](https://github.com/yausername/youtubedl-android) - The
-  most powerful video downloader engine
-- **Frontend**: Native Android (Kotlin/Java)
-- **Architecture**: MVVM (Model-View-ViewModel)
-- **Database**: JSON + FST
-- **Networking**: Retrofit + OkHttp
-- 
-## 🤝 Contributing
-
-We welcome contributions from the open-source community! Here's how you can help:
-
-1. **Code Contributions**: Fork the repository, make your changes, and submit a pull request
-2. **Bug Reports**: Open an issue if you find any bugs
-3. **Feature Requests**: Suggest new features or improvements
-4. **Documentation**: Help improve documentation or translations
-5. **Testing**: Test the app and report any issues
-
-Please read our [Contribution Guidelines](CONTRIBUTING.md) before getting started.
+Download the latest APK from our **[GitHub Releases page](https://github.com/shibaFoss/AIO-Video-Downloader/releases/)** Or
+straight [Download the lastest apk here]https://github.com/shibaFoss/AIO-Video-Downloader/releases/download/v2025.08.18/app-arm64-v8a-release.apk)
 
 ## 📜 License
 
