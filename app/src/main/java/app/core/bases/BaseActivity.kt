@@ -52,17 +52,22 @@ import app.core.AIOApp.Companion.aioLanguage
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.idleForegroundService
 import app.core.CrashHandler
+import app.core.bases.dialogs.UpdaterDialog
 import app.core.bases.interfaces.BaseActivityInf
 import app.core.bases.interfaces.PermissionsResult
 import app.core.bases.language.LanguageAwareActivity
+import app.core.engines.updater.AIOUpdater
 import app.ui.main.MotherActivity
 import app.ui.others.startup.OpeningActivity
 import com.aio.R
 import com.anggrayudi.storage.SimpleStorageHelper
 import com.permissionx.guolindev.PermissionX
 import com.permissionx.guolindev.PermissionX.isGranted
+import lib.files.FileSystemUtility.getFileExtension
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
+import lib.process.LogHelperUtils
+import lib.process.ThreadsUtility
 import lib.ui.ActivityAnimator.animActivityFade
 import lib.ui.ActivityAnimator.animActivitySwipeRight
 import lib.ui.MsgDialogUtils
@@ -91,6 +96,8 @@ import kotlin.system.exitProcess
  * Implements [BaseActivityInf] interface for common activity operations.
  */
 abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
+
+	private val logger = LogHelperUtils.from(javaClass)
 
 	// Weak reference to the activity instance for safe access
 	private var weakBaseActivityRef: WeakReference<BaseActivity>? = null
@@ -670,4 +677,65 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			}
 		}?.show()
 	}
+
+	/**
+	 * Checks for the latest available update in the background.
+	 *
+	 * - Verifies if a new version is available.
+	 * - Fetches update info and the latest APK URL.
+	 * - Downloads the APK silently if available.
+	 * - Launches [UpdaterDialog] on the main thread to prompt installation.
+	 */
+	fun checkForLatestUpdate() {
+		safeBaseActivityRef?.let { safeBaseActivityRef ->
+			logger.d("Starting checkForLatestUpdate()")
+
+			ThreadsUtility.executeInBackground(codeBlock = {
+				val updater = AIOUpdater()
+
+				if (updater.isNewUpdateAvailable()) {
+					logger.d("New update available — fetching details")
+
+					val latestAPKUrl = updater.getLatestApkUrl()
+					if (latestAPKUrl.isNullOrEmpty()) {
+						logger.d("Latest APK URL is null or empty — aborting update check")
+						return@executeInBackground
+					}
+					logger.d("Latest APK URL: $latestAPKUrl")
+
+					val updateInfo = updater.fetchUpdateInfo(latestAPKUrl)
+					if (updateInfo == null) {
+						logger.d("UpdateInfo is null — aborting update check")
+						return@executeInBackground
+					}
+					logger.d("Fetched update info: version=${updateInfo.latestVersion}")
+
+					val latestAPKFile =
+						updater.downloadUpdateApkSilently(safeBaseActivityRef, latestAPKUrl)
+					if (latestAPKFile != null &&
+						latestAPKFile.exists() &&
+						latestAPKFile.isFile &&
+						getFileExtension(latestAPKFile.name)?.contains("apk", true) == true
+					) {
+						logger.d("Downloaded latest APK successfully at ${latestAPKFile.absolutePath}")
+
+						ThreadsUtility.executeOnMain(codeBlock = {
+							logger.d("Launching UpdaterDialog for new version=${updateInfo.latestVersion}")
+							if (isActivityRunning == false) return@executeOnMain
+							UpdaterDialog(
+								baseActivity = safeBaseActivityRef,
+								latestVersionApkFile = latestAPKFile,
+								versionInfo = updateInfo
+							).show()
+						})
+					} else {
+						logger.d("Failed to download latest APK or invalid file")
+					}
+				} else {
+					logger.d("No new update available — skipping update check")
+				}
+			})
+		} ?: logger.d("safeBaseActivityRef is null — cannot check for updates")
+	}
+
 }

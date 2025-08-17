@@ -280,7 +280,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					}
 				}
 			}
-		} ?: run { return false }
+		};  return false
 	}
 	
 	/**

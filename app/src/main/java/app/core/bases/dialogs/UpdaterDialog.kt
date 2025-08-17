@@ -17,6 +17,21 @@ import lib.ui.builders.ToastView.Companion.showToast
 import java.io.File
 import java.lang.ref.WeakReference
 
+/**
+ * A dialog that notifies the user when a new version of the app is available
+ * and provides an option to install it.
+ *
+ * This dialog shows:
+ * - The latest version available.
+ * - The currently installed version.
+ * - A changelog link (clickable).
+ *
+ * When the user accepts, the downloaded APK is opened for installation.
+ *
+ * @param baseActivity The hosting [BaseActivity], held weakly to prevent leaks.
+ * @param latestVersionApkFile The downloaded APK file for the latest version.
+ * @param versionInfo Metadata about the new update (version, changelog URL, etc.).
+ */
 class UpdaterDialog(
 	private val baseActivity: BaseActivity?,
 	private val latestVersionApkFile: File,
@@ -27,84 +42,85 @@ class UpdaterDialog(
 	// Weak reference to parent activity to prevent memory leaks
 	private val safeBaseActivityRef = WeakReference(baseActivity).get()
 
-	// Dialog builder for creating and managing the tutorial dialog
+	// Builder for creating and managing the update dialog
 	private val dialogBuilder: DialogBuilder = DialogBuilder(safeBaseActivityRef)
 
 	init {
-		safeBaseActivityRef?.let { _ ->
-			logger.d("Initializing FBDownloadGuide dialog")
+		safeBaseActivityRef?.let {
+			logger.d("Initializing UpdaterDialog")
 
-			// Set up the dialog layout and properties
+			// Configure dialog layout
 			dialogBuilder.setView(R.layout.dialog_new_version_updater_1)
 			dialogBuilder.setCancelable(true)
 
+			// Populate message text with styled HTML and enable clickable links
 			dialogBuilder.view.apply {
-				findViewById<TextView>(R.id.txt_dialog_message).let {
+				findViewById<TextView>(R.id.txt_dialog_message).let { textView ->
 					val htmlMsg = """
-								<b>Latest version:</b> ${versionInfo.latestVersion}<br/>
-								<b>Current version:</b> ${AppVersionUtility.versionName}<br/>
-								<hr/>
-								A new update for <b>AIO Video Downloader</b> is available! 🚀<br/><br/>
-								This update includes important bug fixes, performance improvements, and exciting new features.<br/><br/>
-								👉 You can read the full changelog <a href="${versionInfo.changelogUrl}">here</a>.
-							""".trimIndent()
-					val spannedText = Html.fromHtml(htmlMsg, FROM_HTML_MODE_COMPACT)
+                        <b>Latest version:</b> ${versionInfo.latestVersion}<br/>
+                        <b>Current version:</b> ${AppVersionUtility.versionName}<br/>
+                        <hr/>
+                        A new update for <b>AIO Video Downloader</b> is available! 🚀<br/><br/>
+                        This update includes important bug fixes, performance improvements, 
+                        and exciting new features.<br/><br/>
+                        👉 You can read the full changelog 
+                        <a href="${versionInfo.changelogUrl}">here</a>.
+                    """.trimIndent()
 
-					// Set the styled text and enable links
-					it.text = spannedText
-					it.movementMethod = LinkMovementMethod.getInstance()
+					textView.text = Html.fromHtml(htmlMsg, FROM_HTML_MODE_COMPACT)
+					textView.movementMethod = LinkMovementMethod.getInstance()
 				}
 			}
 
-			// Set up click listeners for dialog buttons
+			// Setup button click listeners
 			setViewOnClickListener(
 				{ button: View -> this.setupClickEvents(button) },
 				dialogBuilder.view,
 				R.id.btn_dialog_positive_container
 			)
-		} ?: logger.d("safeBaseActivityRef is null — cannot initialize FBDownloadGuide dialog")
+		} ?: logger.d("UpdaterDialog initialization skipped — activity reference is null")
 	}
 
 	/**
 	 * Handles click events for dialog buttons.
-	 * @param button The view that was clicked
+	 *
+	 * @param button The view that was clicked.
 	 */
 	private fun setupClickEvents(button: View) {
 		logger.d("Button clicked with id=${button.id}")
 		when (button.id) {
 			R.id.btn_dialog_positive_container -> {
-				logger.d("Close button clicked in FBDownloadGuide")
+				logger.d("Positive button clicked — attempting to install update")
 				close()
-				safeBaseActivityRef?.let { safeBaseActivityRef ->
-					val authority = "${safeBaseActivityRef.packageName}.provider"
-					openApkFile(safeBaseActivityRef, latestVersionApkFile, authority)
-					return@let
-				}; showToast(msgId = R.string.text_something_went_wrong)
+				safeBaseActivityRef?.let { activity ->
+					val authority = "${activity.packageName}.provider"
+					openApkFile(activity, latestVersionApkFile, authority)
+				} ?: showToast(msgId = R.string.text_something_went_wrong)
 			}
 		}
 	}
 
 	/**
-	 * Shows the Facebook download guide dialog if it's not already showing.
+	 * Shows the update dialog if it's not already visible.
 	 */
 	fun show() {
 		if (!dialogBuilder.isShowing) {
-			logger.d("Showing FBDownloadGuide dialog")
+			logger.d("Showing UpdaterDialog")
 			dialogBuilder.show()
 		} else {
-			logger.d("FBDownloadGuide dialog already showing — skipping show()")
+			logger.d("UpdaterDialog already showing — skipping show()")
 		}
 	}
 
 	/**
-	 * Closes the Facebook download guide dialog if it's currently showing.
+	 * Closes the update dialog if it's currently visible.
 	 */
 	fun close() {
 		if (dialogBuilder.isShowing) {
-			logger.d("Closing FBDownloadGuide dialog")
+			logger.d("Closing UpdaterDialog")
 			dialogBuilder.close()
 		} else {
-			logger.d("FBDownloadGuide dialog already closed — skipping close()")
+			logger.d("UpdaterDialog already closed — skipping close()")
 		}
 	}
 }
