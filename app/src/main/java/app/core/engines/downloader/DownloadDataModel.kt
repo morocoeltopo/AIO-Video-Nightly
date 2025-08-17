@@ -8,8 +8,7 @@ import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioSettings
-import app.core.AIOApp.Companion.kryoDBHelper
-import app.core.KryoRegistry
+import app.core.FSTBuilder.fstConfig
 import app.core.engines.settings.AIOSettings
 import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
@@ -18,8 +17,6 @@ import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import com.aio.R.drawable
 import com.aio.R.string
 import com.anggrayudi.storage.file.getAbsolutePath
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
 import com.google.gson.Gson
 import lib.files.FileExtensions.ARCHIVE_EXTENSIONS
 import lib.files.FileExtensions.DOCUMENT_EXTENSIONS
@@ -39,7 +36,6 @@ import lib.process.UniqueNumberUtils.getUniqueNumberForDownloadModels
 import lib.texts.CommonTextUtils.getText
 import lib.texts.CommonTextUtils.removeDuplicateSlashes
 import java.io.File
-import java.io.FileInputStream
 import java.io.Serializable
 
 /**
@@ -226,29 +222,16 @@ class DownloadDataModel : Serializable {
 			}
 
 			return try {
-				FileInputStream(downloadDataModelBinaryFile).use { fis ->
-					Input(fis).use { input ->
-						registerKryoClasses()
-						kryoDBHelper.readObject(input, DownloadDataModel::class.java).also {
-							logger.d("Binary load completed")
-						}
-					}
-				}
+				val bytes = downloadDataModelBinaryFile.readBytes()
+				fstConfig.asObject(bytes).apply {
+					logger.d("Binary load completed")
+				} as DownloadDataModel
 			} catch (error: Exception) {
 				logger.d("Binary load error: ${error.message}")
 				downloadDataModelBinaryFile.delete()
 				error.printStackTrace()
 				null
 			}
-		}
-
-		/**
-		 * Registers classes with Kryo serializer.
-		 * Required for both serialization and deserialization.
-		 */
-		private fun registerKryoClasses() {
-			logger.d("Registering Kryo classes")
-			KryoRegistry.registerClasses(kryoDBHelper)
 		}
 	}
 
@@ -300,13 +283,12 @@ class DownloadDataModel : Serializable {
 			} }
 
 			logger.d("Saving to binary file: $fileName")
-			INSTANCE.openFileOutput(fileName, MODE_PRIVATE).use { fos ->
-				Output(fos).use { output ->
-					registerKryoClasses()
-					kryoDBHelper.writeObject(output, this)
-				}
+			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
+			fileOutputStream.use { fos ->
+				val bytes = fstConfig.asByteArray(this)
+				fos.write(bytes)
+				logger.d("Binary save successful")
 			}
-			logger.d("Binary save successful")
 		} catch (error: Exception) {
 			logger.d("Binary save error: ${error.message}")
 		}

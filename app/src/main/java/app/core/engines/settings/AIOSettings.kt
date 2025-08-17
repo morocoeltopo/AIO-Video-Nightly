@@ -6,14 +6,11 @@ import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioSettings
-import app.core.AIOApp.Companion.kryoDBHelper
 import app.core.AIOLanguage.Companion.ENGLISH
-import app.core.KryoRegistry
+import app.core.FSTBuilder.fstConfig
 import com.aio.R.string
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
 import lib.files.FileSystemUtility.isWritableFile
 import lib.files.FileSystemUtility.readStringFromInternalStorage
 import lib.files.FileSystemUtility.saveStringToInternalStorage
@@ -21,7 +18,6 @@ import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import java.io.File
-import java.io.FileInputStream
 import java.io.Serializable
 
 /**
@@ -204,12 +200,10 @@ class AIOSettings : Serializable {
 			logger.d("Saving settings to binary file: $fileName")
 			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
 			fileOutputStream.use { fos ->
-				Output(fos).use { output ->
-					KryoRegistry.registerClasses(kryoDBHelper)
-					kryoDBHelper.writeObject(output, this)
-				}
+				val bytes = fstConfig.asByteArray(this)
+				fos.write(bytes)
+				logger.d("Binary settings saved successfully")
 			}
-			logger.d("Binary settings saved successfully")
 		} catch (error: Exception) {
 			logger.d("Error saving binary settings: ${error.message}")
 		}
@@ -228,14 +222,10 @@ class AIOSettings : Serializable {
 
 		return try {
 			logger.d("Loading settings from binary file")
-			FileInputStream(settingDataBinaryFile).use { fis ->
-				Input(fis).use { input ->
-					KryoRegistry.registerClasses(kryoDBHelper)
-					kryoDBHelper.readObject(input, AIOSettings::class.java).also {
-						logger.d("Successfully loaded settings from binary file")
-					}
-				}
-			}
+			val bytes = settingDataBinaryFile.readBytes()
+			fstConfig.asObject(bytes).apply {
+				logger.d("Successfully loaded settings from binary file")
+			} as AIOSettings
 		} catch (error: Exception) {
 			logger.d("Error loading binary settings: ${error.message}")
 			settingDataBinaryFile.delete()

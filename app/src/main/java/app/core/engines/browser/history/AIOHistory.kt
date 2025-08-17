@@ -5,11 +5,8 @@ import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioHistory
-import app.core.AIOApp.Companion.kryoDBHelper
-import app.core.KryoRegistry
+import app.core.FSTBuilder.fstConfig
 import com.anggrayudi.storage.file.getAbsolutePath
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
@@ -123,18 +120,6 @@ class AIOHistory : Serializable {
 	}
 
 	/**
-	 * Registers all required classes with Kryo serializer.
-	 *
-	 * Must include all classes that will be serialized, including collections.
-	 * Called before both serialization and deserialization.
-	 */
-	private fun registerKryoClasses() {
-		logger.d("Registering classes with Kryo serializer")
-		KryoRegistry.registerClasses(kryoDBHelper)
-
-	}
-
-	/**
 	 * Saves history to binary format for fast loading.
 	 *
 	 * @param fileName Name of the binary file to save to
@@ -145,12 +130,10 @@ class AIOHistory : Serializable {
 			logger.d("Saving history to binary file: $fileName")
 			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
 			fileOutputStream.use { fos ->
-				Output(fos).use { output ->
-					registerKryoClasses()
-					kryoDBHelper.writeObject(output, this)
-				}
+				val bytes = fstConfig.asByteArray(this)
+				fos.write(bytes)
+				logger.d("History saved successfully to binary format")
 			}
-			logger.d("History saved successfully to binary format")
 		} catch (error: Exception) {
 			logger.d("Error saving binary history: ${error.message}")
 		}
@@ -170,14 +153,10 @@ class AIOHistory : Serializable {
 
 		return try {
 			logger.d("Loading history from binary file")
-			FileInputStream(historyBinaryFile).use { fis ->
-				Input(fis).use { input ->
-					registerKryoClasses()
-					kryoDBHelper.readObject(input, AIOHistory::class.java).also {
-						logger.d("Successfully loaded ${it.historyLibrary.size} history entries from binary")
-					}
-				}
-			}
+			val bytes = historyBinaryFile.readBytes()
+			fstConfig.asObject(bytes).apply {
+				logger.d("Successfully loaded history from binary format")
+			} as AIOHistory
 		} catch (error: Exception) {
 			logger.d("Error loading binary history: ${error.message}")
 			historyBinaryFile.delete()

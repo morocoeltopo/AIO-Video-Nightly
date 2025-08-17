@@ -5,11 +5,8 @@ import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioGSONInstance
-import app.core.AIOApp.Companion.kryoDBHelper
-import app.core.KryoRegistry
+import app.core.FSTBuilder.fstConfig
 import com.anggrayudi.storage.file.getAbsolutePath
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
@@ -130,12 +127,10 @@ class AIOBookmarks : Serializable {
 			logger.d("Saving bookmarks to binary file: $fileName")
 			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
 			fileOutputStream.use { fos ->
-				Output(fos).use { output ->
-					registerKryoClasses()
-					kryoDBHelper.writeObject(output, this)
-				}
+				val bytes = fstConfig.asByteArray(this)
+				fos.write(bytes)
+				logger.d("Bookmarks saved successfully to binary format")
 			}
-			logger.d("Bookmarks saved successfully to binary format")
 		} catch (error: Exception) {
 			logger.d("Error saving binary bookmarks: ${error.message}")
 		}
@@ -154,14 +149,10 @@ class AIOBookmarks : Serializable {
 
 		return try {
 			logger.d("Loading bookmarks from binary file")
-			FileInputStream(bookmarksBinaryFile).use { fis ->
-				Input(fis).use { input ->
-					registerKryoClasses()
-					kryoDBHelper.readObject(input, AIOBookmarks::class.java).also {
-						logger.d("Successfully loaded ${it.bookmarkLibrary.size} bookmarks from binary")
-					}
-				}
-			}
+			val bytes = bookmarksBinaryFile.readBytes()
+			fstConfig.asObject(bytes).apply {
+				logger.d("Successfully loaded bookmarks from binary format")
+			} as AIOBookmarks
 		} catch (error: Exception) {
 			logger.d("Error loading binary bookmarks: ${error.message}")
 			bookmarksBinaryFile.delete()
@@ -253,17 +244,6 @@ class AIOBookmarks : Serializable {
 				error.printStackTrace()
 			}
 		})
-	}
-
-	/**
-	 * Registers all required classes with Kryo serializer.
-	 *
-	 * Must include all classes that will be serialized, including collections.
-	 * Called before both serialization and deserialization.
-	 */
-	private fun registerKryoClasses() {
-		logger.d("Registering classes with Kryo serializer")
-		KryoRegistry.registerClasses(kryoDBHelper)
 	}
 
 	/**
