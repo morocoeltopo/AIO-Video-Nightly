@@ -150,7 +150,7 @@
 						android:layout_marginBottom="@dimen/_8"
 						app:cardBackgroundColor="@color/color_background"
 						app:cardCornerRadius="@dimen/_10">
- 
+
 						<ImageView
 							android:layout_width="match_parent"
 							android:layout_height="wrap_content"

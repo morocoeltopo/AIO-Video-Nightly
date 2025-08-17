@@ -98,6 +98,7 @@
 			android:text="@string/text__"
 			android:textColor="@color/color_text_hint"
 			android:textSize="@dimen/smaller_text_size"
+			android:textStyle="italic"
 			tools:ignore="TextContrastCheck" />
 	</RelativeLayout>
 </RelativeLayout>
