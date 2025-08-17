@@ -35,6 +35,7 @@ intrusive advertisements.
 <img src="others/graphics/screenshots/3.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
 <img src="others/graphics/screenshots/4.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
 <img src="others/graphics/screenshots/5.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
+<img src="others/graphics/screenshots/6.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
 <img src="others/graphics/screenshots/7.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
 <img src="others/graphics/screenshots/8.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
 <img src="others/graphics/screenshots/9.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
