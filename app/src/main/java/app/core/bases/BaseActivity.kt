@@ -170,6 +170,9 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		super.onPostCreate(savedInstanceState)
 		// Called after onCreate() has completed
 		onAfterLayoutRender()
+
+		// Check out for latest apk version
+		checkForLatestUpdate()
 	}
 
 	override fun onResume() {
@@ -200,9 +203,6 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 
 			// Update ad blocker filters
 			aioAdblocker.fetchAdFilters()
-
-			// Check out for latest apk version
-			checkForLatestUpdate()
 		}
 	}
 

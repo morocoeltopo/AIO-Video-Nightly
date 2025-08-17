@@ -38,4 +38,5 @@
 -dontwarn jdk.dynalink.linker.support.CompositeTypeBasedGuardingDynamicLinker
 -dontwarn jdk.dynalink.linker.support.Guards
 -dontwarn jdk.dynalink.support.ChainedCallSite
+-dontwarn sun.reflect.ReflectionFactory
 -optimizationpasses 7
