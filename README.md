@@ -15,13 +15,16 @@
 
 ## 📌 Introduction
 
-AIO Video Downloader is a clean, open-source Android application designed as an alternative to VidMate and
+AIO Video Downloader is a clean, open-source Android application designed as an alternative to
+VidMate and
 SnapTube, offering a simplified yet powerful video downloading experience. Developed in India with
-privacy and user experience in mind, AIO Video Downloader removes all the clutter and ads found in similar apps
+privacy and user experience in mind, AIO Video Downloader removes all the clutter and ads found in
+similar apps
 while maintaining all the essential features.
 
 Built on the robust **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** backend with the help
-of [youtubedl-android](https://github.com/yausername/youtubedl-android), AIO Video Downloader supports
+of [youtubedl-android](https://github.com/yausername/youtubedl-android), AIO Video Downloader
+supports
 downloading from **1000+ websites** including YouTube, Facebook, Instagram, Twitter, Dailymotion,
 and many more. Enjoy your favorite videos offline without compromising on quality or dealing with
 intrusive advertisements.
@@ -53,7 +56,6 @@ intrusive advertisements.
 - **Batch Downloads**: Queue multiple downloads at once
 - **Background Downloads**: Continue using your device while downloads complete
 - **Download Manager**: Pause, resume, or cancel downloads
-- **Dark/Light Theme**: Choose your preferred appearance
 - **Built-in Browser**: Securely browse supported sites within the app
 - **Open Source**: Transparent codebase you can audit and contribute to
 - **Made in India**: Developed with pride by Indian developers
@@ -64,7 +66,8 @@ AIO Video Downloader is available in two ways:
 
 ### 1. Official Releases (Recommended)
 
-Download the latest APK from our **[GitHub Releases page](https://github.com/shibaFoss/AIO-Video-Downloader/releases/)** Or
+Download the latest APK from our *
+*[GitHub Releases page](https://github.com/shibaFoss/AIO-Video-Downloader/releases/)** Or
 straight [Download the lastest apk here](https://github.com/shibaFoss/AIO-Video-Downloader/releases/download/20250729v2/AIO_version_20250729-arm64-v8a-release.apk)
 
 ### 2. Build from Source
@@ -85,21 +88,9 @@ The APK will be generated in `app/build/outputs/apk/debug/`
   most powerful video downloader engine
 - **Frontend**: Native Android (Kotlin/Java)
 - **Architecture**: MVVM (Model-View-ViewModel)
-- **Database**: ObjectBox Library
+- **Database**: JSON + FST
 - **Networking**: Retrofit + OkHttp
-
-## 🌟 Why Choose AIO Video Downloader Over Alternatives?
-
-| Feature         | AIO | VidMate | SnapTube |
-|-----------------|-----|---------|----------|
-| Open Source     | ✅ Yes | ❌ No    | ❌ No     |
-| Ad-Free         | ✅ Yes | ❌ No    | ❌ No     |
-| Privacy Focused | ✅ Yes | ❌ No    | ❌ No     |
-| 1000+ Sites     | ✅ Yes | ✅ Yes   | ✅ Yes    |
-| Lightweight     | ✅ Yes | ✅ Yes   | ✅ Yes    |
-| Customizable    | ✅ Yes | ✅ Yes   | ✅ Yes    |
-| Transparent     | ✅ Yes | ❌ No    | ❌ No     |
-
+- 
 ## 🤝 Contributing
 
 We welcome contributions from the open-source community! Here's how you can help:
@@ -114,7 +105,8 @@ Please read our [Contribution Guidelines](CONTRIBUTING.md) before getting starte
 
 ## 📜 License
 
-AIO Video Downloader is released under the **GNU AFFERO GENERAL PUBLIC LICENSE**. See [LICENSE](LICENSE) for
+AIO Video Downloader is released under the **GNU AFFERO GENERAL PUBLIC LICENSE**.
+See [LICENSE](LICENSE) for
 full details.
 
 ## 📞 Contact & Support
@@ -134,4 +126,5 @@ For support, feature requests, or general inquiries:
 
 **Made with ❤️ in India** 🇮🇳
 
-*AIO Video Downloader is not affiliated with VidMate, SnapTube, or any other proprietary video downloader.*
+*AIO Video Downloader is not affiliated with VidMate, SnapTube, or any other proprietary video
+downloader.*
