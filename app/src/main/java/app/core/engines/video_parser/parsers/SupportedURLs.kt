@@ -2,60 +2,67 @@ package app.core.engines.video_parser.parsers
 
 import androidx.core.net.toUri
 import lib.networks.URLUtilityKT.getBaseDomain
+import lib.process.LogHelperUtils
 import java.net.URL
 
 /**
  * Utility object for identifying and filtering supported video URLs for parsing.
  *
- * This object includes functions to detect if a URL belongs to a major media platform,
- * to normalize certain URLs (like YouTube links), and to determine whether a URL
- * is supported by tools like yt-dlp.
+ * This includes detection of major media platforms, URL normalization (e.g., YouTube),
+ * and determining whether a URL is supported by yt-dlp or internal parsers.
  */
 object SupportedURLs {
 
+	private val logger = LogHelperUtils.from(javaClass)
+
 	/**
-	 * A set of base domain keywords that are supported for video parsing using yt-dlp or custom logic.
+	 * Base domains supported for video parsing via yt-dlp or custom logic.
 	 */
 	private val supportedBaseDomains = setOf(
 		"youtube", "youtu", "facebook", "instagram", "twitter", "x", "tiktok", "reddit", "tumblr",
 		"soundcloud", "bandcamp", "9gag", "vk", "imdb", "dailymotion", "bilibili", "twitch",
-		"likee", "snapchat", "pinterest", "linkedin", "mixcloud", "audiomack", "periscope","jiosaavn",
+		"likee", "snapchat", "pinterest", "linkedin", "mixcloud", "audiomack", "periscope", "jiosaavn",
 		"youku", "rumble", "odysee", "peertube", "bitchute", "liveleak"
 	)
 
-    /**
-     * Normalizes YouTube URLs by removing playlist parameters and ensuring a consistent format.
-     *
-     * For example, short links (youtu.be) are expanded to full URLs.
-     *
-     * @param url The input YouTube URL.
-     * @return A normalized YouTube watch URL, or the original URL if not YouTube or parsing fails.
-     */
-    fun filterYoutubeUrlWithoutPlaylist(url: String): String {
-        return try {
-            if (!isYouTubeUrl(url)) return url
+	/**
+	 * Normalizes YouTube URLs by removing playlist parameters and ensuring a consistent watch format.
+	 *
+	 * Short URLs (youtu.be) are expanded to full URLs.
+	 *
+	 * @param url The input YouTube URL.
+	 * @return A normalized YouTube watch URL, or the original URL if not YouTube or parsing fails.
+	 */
+	fun filterYoutubeUrlWithoutPlaylist(url: String): String {
+		return try {
+			if (!isYouTubeUrl(url)) {
+				logger.d("URL is not YouTube: $url")
+				return url
+			}
 
-            val uri = url.toUri()
-            val host = uri.host ?: return url
+			val uri = url.toUri()
+			val host = uri.host ?: return url
 
-            when {
-                host.contains("youtu.be") -> {
-                    val videoId = uri.lastPathSegment ?: return url
-                    "https://www.youtube.com/watch?v=$videoId"
-                }
+			val normalizedUrl = when {
+				host.contains("youtu.be") -> {
+					val videoId = uri.lastPathSegment ?: return url
+					"https://www.youtube.com/watch?v=$videoId"
+				}
+				host.contains("youtube.com") -> {
+					val videoId = uri.getQueryParameter("v") ?: return url
+					"https://www.youtube.com/watch?v=$videoId"
+				}
+				else -> url
+			}
 
-                host.contains("youtube.com") -> {
-                    val videoId = uri.getQueryParameter("v") ?: return url
-                    "https://www.youtube.com/watch?v=$videoId"
-                }
-
-                else -> url
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            url
-        }
-    }
+			logger.d("Normalized YouTube URL: $normalizedUrl")
+			normalizedUrl
+		} catch (error: Exception) {
+			error.printStackTrace()
+			logger.d("Error normalizing YouTube URL: ${error.message}")
+			url
+		}
+	}
 
     /**
      * Checks whether the given URL is a valid YouTube URL.

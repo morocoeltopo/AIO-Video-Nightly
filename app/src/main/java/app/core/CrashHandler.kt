@@ -9,48 +9,53 @@ import java.io.PrintWriter
 import java.io.StringWriter
 
 /**
- * [CrashHandler] is a custom implementation of [Thread.UncaughtExceptionHandler].
+ * [CrashHandler] is a global [Thread.UncaughtExceptionHandler] implementation.
  *
- * It provides a centralized way to handle uncaught exceptions across the entire app.
+ * Its purpose is to intercept uncaught exceptions across the app,
+ * record useful debugging information, and persist it for later inspection.
  *
- * Responsibilities:
- * - Captures the stack trace of any uncaught exception.
- * - Persists crash logs to a text file for later inspection.
- * - Marks in [aioSettings] that the app has recently crashed.
- * - Updates stored settings to reflect the crash state.
+ * Key responsibilities:
+ * - Capture stack traces from uncaught exceptions.
+ * - Persist crash details into a local text file for offline debugging.
+ * - Mark in [aioSettings] that the app experienced a recent crash.
+ * - Update stored settings so crash state survives app restarts.
  *
- * This ensures that crash information is retained even after the app restarts,
- * aiding in debugging and recovery.
+ * By centralizing crash handling, this class makes error diagnostics easier
+ * and improves resilience after unexpected failures.
  */
 class CrashHandler : Thread.UncaughtExceptionHandler {
 
 	private val logger = LogHelperUtils.from(javaClass)
 
-	/** Reference to the global application context instance. */
+	/** Global application context reference. */
 	private val appInstance = AIOApp.INSTANCE.applicationContext
 
 	/**
-	 * Handles uncaught exceptions from any thread in the application.
+	 * Handles uncaught exceptions in any application thread.
 	 *
-	 * @param thread The thread that encountered the uncaught exception.
-	 * @param exception The exception that was thrown but not caught.
+	 * Flow:
+	 * 1. Logs thread and exception details.
+	 * 2. Extracts and saves the full stack trace to a file.
+	 * 3. Updates [aioSettings] to mark that a crash occurred.
+	 *
+	 * @param thread    The thread where the uncaught exception occurred.
+	 * @param exception The uncaught [Throwable].
 	 */
 	override fun uncaughtException(thread: Thread, exception: Throwable) {
 		try {
-			logger.d("Uncaught exception detected in thread: ${thread.name}")
+			logger.d("Uncaught exception in thread: ${thread.name}")
 
-			// Extract full stack trace as a string
+			// Extract full stack trace into a string
 			val stackTrace = StringWriter().use { sw ->
 				PrintWriter(sw).use { pw ->
 					exception.printStackTrace(pw)
 					sw.toString()
 				}
 			}
-			logger.d("Stack trace extracted successfully")
+			logger.d("Stack trace successfully captured")
 
-			// Save crash information to persistent storage
+			// Attempt to persist crash log
 			try {
-				// Build directory path
 				val externalDataFolderPath = getText(R.string.text_default_aio_download_folder_path)
 				val directoryPath = "$externalDataFolderPath/${getText(R.string.title_aio_others)}/.configs"
 				val dir = File(directoryPath)
@@ -61,26 +66,24 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 					logger.d("Crash log directory created at: ${dir.absolutePath}")
 				}
 
-				// Create crash log file
+				// Write stack trace to log file
 				val crashLogFile = File(dir, ".aio_crash_log.txt")
-
-				// Write crash data
 				crashLogFile.writeText(stackTrace)
 
-				logger.d("Crash log saved at: ${crashLogFile.absolutePath}")
+				logger.d("Crash log written at: ${crashLogFile.absolutePath}")
 			} catch (error: Exception) {
-				error.printStackTrace()
 				logger.d("Failed to save crash log: ${error.message}")
+				error.printStackTrace()
 			}
 
-			// Update crash flag in settings
+			// Mark crash state in settings
 			aioSettings.hasAppCrashedRecently = true
 			aioSettings.updateInStorage()
-			logger.d("Crash flag updated in aioSettings")
+			logger.d("Crash flag persisted in aioSettings")
 
 		} catch (error: Exception) {
-			// Log any errors that occur while handling the original crash
-			logger.d("Error while handling uncaught exception: ${error.message}")
+			// Catch secondary failures in the crash handling flow
+			logger.d("Secondary error during crash handling: ${error.message}")
 		}
 	}
 }

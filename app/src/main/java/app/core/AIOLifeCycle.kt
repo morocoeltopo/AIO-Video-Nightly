@@ -5,26 +5,9 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 
 /**
- * AIOLifeCycle is a simplified interface that implements [ActivityLifecycleCallbacks] with empty default methods.
- *
- * This allows you to override only the lifecycle methods you care about in your implementation,
- * rather than implementing all seven methods of the interface.
- *
- * It's useful when you want to observe the lifecycle of all activities globally from the Application class.
- *
- * Example usage:
- * ```kotlin
- * class MyApp : Application() {
- *     override fun onCreate() {
- *         super.onCreate()
- *         registerActivityLifecycleCallbacks(object : AIOLifeCycle {
- *             override fun onActivityResumed(activity: Activity) {
- *                 // Perform something when any activity is resumed
- *             }
- *         })
- *     }
- * }
- * ```
+ * AIOLifeCycle is a simplified interface that implements [ActivityLifecycleCallbacks]
+ * with empty default methods. This allows you to override only the lifecycle methods you
+ * care about in your implementation, rather than implementing all seven methods of the interface.
  */
 interface AIOLifeCycle : ActivityLifecycleCallbacks {
 	
