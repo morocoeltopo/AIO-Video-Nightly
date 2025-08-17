@@ -48,14 +48,15 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * Must be called after activity layout is rendered.
 	 */
 	fun initialize() {
+		logger.d("Initializing WebNavigationDrawer")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			safeMotherActivityRef.apply {
-				// Initialize UI components
+				logger.d("Finding navigation drawer views")
 				sideNavigationDrawer = findViewById(R.id.navigation_drawer)
 				buttonAddNewTab = findViewById(R.id.btn_create_new_tab)
 				browserTabsListView = findViewById(R.id.list_browser_tabs)
 
-				// Set up event listeners
+				logger.d("Setting up event listeners")
 				initializeClickEvents()
 				initializeDrawerListener()
 			}
@@ -66,9 +67,11 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * Initializes the web tab list adapter if not already initialized.
 	 */
 	private fun initializeWebListAdapter() {
+		logger.d("Initializing web list adapter")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			safeMotherActivityRef.browserFragment?.let {
 				if (browserTabsListView.adapter == null) {
+					logger.d("Creating new WebTabListAdapter")
 					browserTabsListView.adapter =
 						if (!::webTabListAdapter.isInitialized) {
 							// Create new adapter if needed
@@ -84,8 +87,10 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * Initializes drawer state listener and updates adapter.
 	 */
 	private fun initializeDrawerListener() {
+		logger.d("Initializing drawer listener")
 		safeMotherActivityRef?.let { _ ->
 			if (::webTabListAdapter.isInitialized) {
+				logger.d("Notifying adapter of data changes")
 				webTabListAdapter.notifyDataSetChanged()
 			}
 		}
@@ -95,14 +100,16 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * Sets up click event listeners for drawer components.
 	 */
 	private fun initializeClickEvents() {
+		logger.d("Initializing click events")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			buttonAddNewTab.setOnClickListener {
+				logger.d("Add new tab button clicked")
 				val browserFragment = safeMotherActivityRef.browserFragment
 				val browserFragmentBody = browserFragment?.browserFragmentBody
 				val webviewEngine = browserFragmentBody?.webviewEngine
 
 				webviewEngine?.apply {
-					// Add new tab with default homepage
+					logger.d("Adding new tab with homepage: ${aioSettings.browserDefaultHomepage}")
 					addNewBrowsingTab(aioSettings.browserDefaultHomepage, this)
 					this.safeMotherActivityRef.openBrowserFragment()
 				}
@@ -114,14 +121,20 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * Opens the navigation drawer with animation.
 	 */
 	fun openDrawerNavigation() {
-		if (sideNavigationDrawer.isVisible) hideView(sideNavigationDrawer, true, 100)
-		else showView(sideNavigationDrawer, true, 100)
+		logger.d("Opening navigation drawer")
+		if (sideNavigationDrawer.isVisible) {
+			logger.d("Drawer already visible, hiding it first")
+			hideView(sideNavigationDrawer, true, 100)
+		} else {
+			showView(sideNavigationDrawer, true, 100)
+		}
 	}
 
 	/**
 	 * Closes the navigation drawer with animation.
 	 */
 	fun closeDrawerNavigation() {
+		logger.d("Closing navigation drawer")
 		hideView(sideNavigationDrawer, true, 100)
 	}
 
@@ -130,7 +143,9 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * @return true if drawer is visible, false otherwise
 	 */
 	fun isDrawerOpened(): Boolean {
-		return sideNavigationDrawer.isVisible
+		val isOpen = sideNavigationDrawer.isVisible
+		logger.d("Checking if drawer is opened: $isOpen")
+		return isOpen
 	}
 
 	/**
@@ -139,26 +154,27 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * @param webviewEngine The web view engine to use for the new tab
 	 */
 	fun addNewBrowsingTab(url: String, webviewEngine: WebViewEngine) {
+		logger.d("Adding new browsing tab with URL: $url")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			initializeWebListAdapter()
 
 			webviewEngine.generateNewWebview()?.let { generatedWebView ->
-				// Configure the new web view
+				logger.d("Generated new WebView, configuring it")
 				webviewEngine.currentWebView = (generatedWebView as WebView)
 
 				val browserFragment = safeMotherActivityRef.browserFragment
 				val webViewContainer = browserFragment?.getBrowserWebViewContainer()
 
-				// Update UI
+				logger.d("Updating UI with new WebView")
 				webViewContainer?.removeAllViews()
 				webViewContainer?.addView(webviewEngine.currentWebView)
 
-				// Pause all other tabs and activate new one
+				logger.d("Pausing other tabs and activating new one")
 				totalWebViews.forEach { webView -> webView.onPause() }
 				webviewEngine.updateEngineOfWebView(webviewEngine.currentWebView!!)
 				webviewEngine.loadURLIntoCurrentWebview(url)
 
-				// Add to beginning of list and update UI
+				logger.d("Adding new tab to list and updating UI")
 				totalWebViews.add(0, webviewEngine.currentWebView!!)
 				webTabListAdapter.notifyDataSetChanged()
 				closeDrawerNavigation()
@@ -172,6 +188,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * @param correspondingWebView The web view to close
 	 */
 	fun closeWebViewTab(position: Int, correspondingWebView: WebView) {
+		logger.d("Closing web view tab at position: $position")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			initializeWebListAdapter()
 
@@ -181,11 +198,12 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 
 				// Handle case when closing last tab
 				if (position == 0 && totalWebViews.size == 1) {
+					logger.d("Closing last remaining tab")
 					totalWebViews.remove(correspondingWebView)
 					webTabListAdapter.notifyDataSetChanged()
 
 					browserWebviewEngine?.let {
-						// Create new default tab if closing last one
+						logger.d("Creating new default tab")
 						addNewBrowsingTab(
 							webviewEngine = it,
 							url = aioSettings.browserDefaultHomepage
@@ -195,7 +213,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 					return
 				}
 
-				// Remove the tab
+				logger.d("Removing tab from list")
 				totalWebViews.remove(correspondingWebView)
 				webTabListAdapter.notifyDataSetChanged()
 				totalWebViews.forEach { webView -> webView.onPause() }
@@ -204,9 +222,11 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				if (position == 0) {
 					val nextPosition = if (totalWebViews.isNotEmpty()) 0 else -1
 					if (nextPosition != -1) {
+						logger.d("Opening next tab at position: $nextPosition")
 						openWebViewTab(totalWebViews[nextPosition])
 					} else {
 						browserWebviewEngine?.let {
+							logger.d("No tabs left, creating new default tab")
 							addNewBrowsingTab(
 								webviewEngine = it,
 								url = aioSettings.browserDefaultHomepage
@@ -219,18 +239,18 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 							})
 					}
 				} else {
-					// Show previous tab
-					val previousPosition = position - 1
-					openWebViewTab(totalWebViews[previousPosition])
+					logger.d("Opening previous tab at position: ${position - 1}")
+					openWebViewTab(totalWebViews[position - 1])
 				}
 
-				// Clean up the closed web view
+				logger.d("Cleaning up closed web view")
 				correspondingWebView.clearHistory()
 				correspondingWebView.onPause()
 				correspondingWebView.loadUrl("about:blank")
 				ViewUtility.unbindDrawables(correspondingWebView)
 				System.gc()
 			} catch (error: Exception) {
+				logger.d("Error closing web view tab: ${error.message}")
 				error.printStackTrace()
 				safeMotherActivityRef.doSomeVibration(50)
 				ToastView.showToast(msgId = R.string.text_something_went_wrong)
@@ -243,6 +263,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	 * @param targetWebview The web view to activate
 	 */
 	fun openWebViewTab(targetWebview: WebView) {
+		logger.d("Opening web view tab: ${targetWebview.url}")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			initializeWebListAdapter()
 			try {
@@ -252,14 +273,14 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				val browserWebViewContainer = browserFragment?.getBrowserWebViewContainer()
 				val browserWebviewFavicon = browserFragment?.browserFragmentTop?.webViewFavicon
 
-				// Update current web view reference
+				logger.d("Updating current web view reference")
 				browserWebviewEngine?.currentWebView = targetWebview
 
-				// Update UI
+				logger.d("Updating UI with target web view")
 				browserWebViewContainer?.removeAllViews()
 				browserWebViewContainer?.addView(targetWebview)
 
-				// Configure web view
+				logger.d("Configuring web view")
 				browserWebviewEngine?.updateEngineOfWebView(targetWebview)
 				browserFragment?.browserFragmentTop?.webviewTitle?.text = if (
 					targetWebview.title.isNullOrEmpty()
@@ -268,7 +289,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				targetWebview.requestFocus()
 				browserWebviewEngine?.resumeCurrentWebView()
 
-				// Update progress
+				logger.d("Updating progress and favicon")
 				browserWebChromeClient?.onProgressChanged(targetWebview, targetWebview.progress)
 
 				// Update favicon
@@ -279,6 +300,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 					}
 				}
 			} catch (error: Exception) {
+				logger.d("Error opening web view tab: ${error.message}")
 				error.printStackTrace()
 				safeMotherActivityRef.doSomeVibration(50)
 				ToastView.showToast(msgId = R.string.text_something_went_wrong)

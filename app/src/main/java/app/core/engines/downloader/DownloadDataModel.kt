@@ -186,22 +186,22 @@ class DownloadDataModel : Serializable {
 					val absolutePath = downloadDataModelBinaryFile.getAbsolutePath(INSTANCE)
 					val objectInMemory = loadFromBinary(File(absolutePath))
 					if (objectInMemory != null) {
-						logger.d("Binary load successful")
+						logger.d("Binary load successful | File name: ${downloadDataModelBinaryFile.name}")
 						downloadDataModel = objectInMemory
 						downloadDataModel.updateInStorage()
 						isBinaryFileValid = true
 					} else {
-						logger.d("Binary load failed")
+						logger.d("Binary load failed | File name: ${downloadDataModelBinaryFile.name}")
 					}
 				}
 
 				if (!isBinaryFileValid || downloadDataModel == null) {
-					logger.d("Attempting JSON load")
+					logger.d("Attempting JSON load | File name: ${downloadDataModelJSONFile.name}")
 					val jsonString = downloadDataModelJSONFile.readText(Charsets.UTF_8)
-					downloadDataModel =
-						aioGSONInstance.fromJson(jsonString, DownloadDataModel::class.java)
+					downloadDataModel = aioGSONInstance.fromJson(jsonString, DownloadDataModel::class.java)
 					downloadDataModel?.updateInStorage()
-					logger.d("JSON load successful")
+					logger.d("JSON load successful | File name: ${downloadDataModelJSONFile.name}\"")
+					downloadDataModel.updateInStorage()
 				}
 
 				return downloadDataModel
@@ -293,6 +293,12 @@ class DownloadDataModel : Serializable {
 	@Synchronized
 	private fun saveToBinary(fileName: String) {
 		try {
+			val internalDir = AIOApp.internalDataFolder
+			val modelBinaryFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
+			isWritableFile(modelBinaryFile).let { if (it) modelBinaryFile?.delete().let {
+				logger.d("Binary file deleted successfully | File Name: $fileName")
+			} }
+
 			logger.d("Saving to binary file: $fileName")
 			INSTANCE.openFileOutput(fileName, MODE_PRIVATE).use { fos ->
 				Output(fos).use { output ->
