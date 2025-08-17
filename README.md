@@ -62,7 +62,7 @@ intrusive advertisements.
 
 ## 📥 Installation
 Download the latest APK from our **[GitHub Releases page](https://github.com/shibaFoss/AIO-Video-Downloader/releases/)** Or
-straight [Download the lastest apk here]https://github.com/shibaFoss/AIO-Video-Downloader/releases/download/v2025.08.18/app-arm64-v8a-release.apk)
+straight [Download the lastest apk here](https://github.com/shibaFoss/AIO-Video-Downloader/releases/download/v2025.08.18/app-arm64-v8a-release.apk)
 
 ## 📜 License
 
