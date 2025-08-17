@@ -86,7 +86,6 @@ dependencies {
     implementation libs.media3.ui
     implementation libs.media3.session
     implementation libs.gson
-    implementation libs.kryo
     implementation libs.fst
     implementation libs.jsoup
     implementation libs.retrofit

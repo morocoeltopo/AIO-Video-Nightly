@@ -1,11 +1,10 @@
 [versions]
 agp = "8.12.0"
 desugar_jdk_libs_nio = "2.0.4"
-fst = "2.57"
+fst = "3.0.1"
 kotlin = "2.2.0"
 coreKtx = "1.16.0"
 appcompat = "1.7.1"
-kryo = "5.5.0"
 new_pipe_extractor = "v0.24.8"
 webkit = "1.14.0"
 viewpager2 = "1.1.0"
@@ -36,7 +35,6 @@ desugar_jdk_libs_nio = { module = "com.android.tools:desugar_jdk_libs_nio", vers
 fst = { module = "de.ruedigermoeller:fst", version.ref = "fst" }
 kotlin_coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutine" }
 kotlin_coroutines_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutine" }
-kryo = { module = "com.esotericsoftware:kryo", version.ref = "kryo" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
 circleimageview = { module = "de.hdodenhof:circleimageview", version.ref = "circleimageview" }
 constraint_layout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraint_layout" }

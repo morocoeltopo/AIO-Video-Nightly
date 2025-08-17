@@ -167,7 +167,7 @@ class DownloadDataModel : Serializable {
 		 * @return Deserialized DownloadDataModel or null if conversion failed
 		 */
 		fun convertJSONStringToClass(downloadDataModelJSONFile: File): DownloadDataModel? {
-			logger.d("Starting JSON to class conversion")
+			logger.d("Starting JSON to class conversion for file: ${downloadDataModelJSONFile.absolutePath}")
 			val internalDir = AIOApp.internalDataFolder
 			val downloadDataModelBinaryFileName =
 				"${downloadDataModelJSONFile.nameWithoutExtension}.dat"
@@ -178,33 +178,42 @@ class DownloadDataModel : Serializable {
 				var isBinaryFileValid = false
 
 				if (downloadDataModelBinaryFile != null && downloadDataModelBinaryFile.exists()) {
-					logger.d("Binary download model file found, attempting load")
+					logger.d("Found binary download model file: ${downloadDataModelBinaryFile.name}")
 					val absolutePath = downloadDataModelBinaryFile.getAbsolutePath(INSTANCE)
+					logger.d("Attempting to load binary from: $absolutePath")
 					val objectInMemory = loadFromBinary(File(absolutePath))
 					if (objectInMemory != null) {
-						logger.d("Binary load successful | File name: ${downloadDataModelBinaryFile.name}")
+						logger.d("Binary load successful for file: ${downloadDataModelBinaryFile.name}")
 						downloadDataModel = objectInMemory
 						downloadDataModel.updateInStorage()
 						isBinaryFileValid = true
 					} else {
-						logger.d("Binary load failed | File name: ${downloadDataModelBinaryFile.name}")
+						logger.d("Binary load failed for file: ${downloadDataModelBinaryFile.name}")
 					}
 				}
 
 				if (!isBinaryFileValid || downloadDataModel == null) {
-					logger.d("Attempting JSON load | File name: ${downloadDataModelJSONFile.name}")
+					logger.d("Attempting JSON load for file: ${downloadDataModelJSONFile.name}")
 					val jsonString = downloadDataModelJSONFile.readText(Charsets.UTF_8)
+					logger.d("JSON content length: ${jsonString.length} chars")
 					downloadDataModel = aioGSONInstance.fromJson(jsonString, DownloadDataModel::class.java)
-					downloadDataModel?.updateInStorage()
-					logger.d("JSON load successful | File name: ${downloadDataModelJSONFile.name}\"")
-					downloadDataModel.updateInStorage()
+					if (downloadDataModel != null) {
+						logger.d("JSON load successful for file: ${downloadDataModelJSONFile.name}")
+						downloadDataModel.updateInStorage()
+					} else {
+						logger.e("Failed to parse JSON for file: ${downloadDataModelJSONFile.name}")
+					}
 				}
 
 				return downloadDataModel
 			} catch (error: Exception) {
-				logger.d("Error in conversion: ${error.message}")
-				downloadDataModelBinaryFile?.delete()
-				error.printStackTrace()
+				logger.e("Error in conversion: ${error.message}", error)
+				try {
+					downloadDataModelBinaryFile?.delete()
+					logger.d("Deleted potentially corrupted binary file")
+				} catch (error: Exception) {
+					logger.e("Failed to delete binary file", error)
+				}
 				return null
 			}
 		}
@@ -215,21 +224,29 @@ class DownloadDataModel : Serializable {
 		 * @return Loaded DownloadDataModel or null if failed
 		 */
 		private fun loadFromBinary(downloadDataModelBinaryFile: File): DownloadDataModel? {
-			logger.d("Starting binary load")
+			logger.d("Starting binary load from: ${downloadDataModelBinaryFile.absolutePath}")
 			if (!downloadDataModelBinaryFile.exists()) {
-				logger.d("Binary file not found")
+				logger.d("Binary file not found at: ${downloadDataModelBinaryFile.absolutePath}")
 				return null
 			}
 
 			return try {
+				logger.d("Reading binary file content")
 				val bytes = downloadDataModelBinaryFile.readBytes()
-				fstConfig.asObject(bytes).apply {
-					logger.d("Binary load completed")
+				logger.d("Binary file size: ${bytes.size} bytes")
+				val result = fstConfig.asObject(bytes).apply {
+					logger.d("Binary deserialization completed")
 				} as DownloadDataModel
+				logger.d("Binary load successful")
+				result
 			} catch (error: Exception) {
-				logger.d("Binary load error: ${error.message}")
-				downloadDataModelBinaryFile.delete()
-				error.printStackTrace()
+				logger.e("Binary load error: ${error.message}", error)
+				try {
+					downloadDataModelBinaryFile.delete()
+					logger.d("Deleted corrupted binary file")
+				} catch (error: Exception) {
+					logger.e("Failed to delete corrupted binary file", error)
+				}
 				null
 			}
 		}
@@ -246,26 +263,30 @@ class DownloadDataModel : Serializable {
 	 */
 	@Synchronized
 	fun updateInStorage() {
-		logger.d("Starting storage update")
+		logger.d("Starting storage update for download ID: $id")
 		ThreadsUtility.executeInBackground(codeBlock = {
 			if (fileName.isEmpty() && fileURL.isEmpty()) {
 				logger.d("Empty filename and URL, skipping update")
 				return@executeInBackground
 			}
 
-			logger.d("Saving cookies and cleaning model")
+			logger.d("Saving cookies and cleaning model before storage")
 			saveCookiesIfAvailable()
 			cleanTheModelBeforeSavingToStorage()
 
+			logger.d("Saving to binary format")
 			saveToBinary("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
+
+			logger.d("Saving to JSON format")
+			val json = convertClassToJSON()
+			logger.d("JSON content length: ${json.length} chars")
 			saveStringToInternalStorage(
-				"$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION",
-				convertClassToJSON()
+				fileName = "$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION",
+				data = json
 			)
-			logger.d("Storage update completed")
+			logger.d("Storage update completed for download ID: $id")
 		}, errorHandler = { error ->
-			logger.d("Storage update failed: ${error.message}")
-			error.printStackTrace()
+			logger.e("Storage update failed for download ID: $id", error)
 		})
 	}
 
@@ -276,21 +297,26 @@ class DownloadDataModel : Serializable {
 	@Synchronized
 	private fun saveToBinary(fileName: String) {
 		try {
+			logger.d("Saving to binary file: $fileName")
 			val internalDir = AIOApp.internalDataFolder
 			val modelBinaryFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
-			isWritableFile(modelBinaryFile).let { if (it) modelBinaryFile?.delete().let {
-				logger.d("Binary file deleted successfully | File Name: $fileName")
-			} }
 
-			logger.d("Saving to binary file: $fileName")
+			if (isWritableFile(modelBinaryFile)) {
+				modelBinaryFile?.delete()?.let {
+					if (it) logger.d("Deleted existing binary file successfully")
+					else logger.d("Failed to delete existing binary file")
+				}
+			}
+
 			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
 			fileOutputStream.use { fos ->
 				val bytes = fstConfig.asByteArray(this)
+				logger.d("Serialized binary size: ${bytes.size} bytes")
 				fos.write(bytes)
-				logger.d("Binary save successful")
+				logger.d("Binary save successful for file: $fileName")
 			}
 		} catch (error: Exception) {
-			logger.d("Binary save error: ${error.message}")
+			logger.e("Binary save error for file: $fileName", error)
 		}
 	}
 
@@ -300,28 +326,57 @@ class DownloadDataModel : Serializable {
 	 */
 	@Synchronized
 	fun deleteModelFromDisk() {
+		logger.d("Starting model deletion for download ID: $id")
 		ThreadsUtility.executeInBackground(codeBlock = {
-			logger.d("Starting model deletion")
 			val internalDir = AIOApp.internalDataFolder
 			val modelJsonFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION")
 			val modelBinaryFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
 			val cookieFile = internalDir.findFile("$id$DOWNLOAD_MODEL_COOKIES_EXTENSION")
 			val thumbFile = internalDir.findFile("$id$THUMB_EXTENSION")
 
-			isWritableFile(modelJsonFile).let { if (it) modelJsonFile?.delete() }
-			isWritableFile(modelBinaryFile).let { if (it) modelBinaryFile?.delete() }
-			isWritableFile(thumbFile).let { if (it) thumbFile?.delete() }
-			isWritableFile(cookieFile).let { if (it) cookieFile?.delete() }
+			logger.d("Deleting JSON file")
+			isWritableFile(modelJsonFile).let {
+				if (it) modelJsonFile?.delete()?.let {
+					logger.d("Deleted JSON file successfully")
+				}
+			}
+
+			logger.d("Deleting binary file")
+			isWritableFile(modelBinaryFile).let {
+				if (it) modelBinaryFile?.delete()?.let {
+					logger.d("Deleted binary file successfully")
+				}
+			}
+
+			logger.d("Deleting thumbnail file")
+			isWritableFile(thumbFile).let {
+				if (it) thumbFile?.delete()?.let {
+					logger.d("Deleted thumbnail file successfully")
+				}
+			}
+
+			logger.d("Deleting cookies file")
+			isWritableFile(cookieFile).let {
+				if (it) cookieFile?.delete()?.let {
+					logger.d("Deleted cookies file successfully")
+				}
+			}
+
+			logger.d("Deleting temporary files")
 			deleteAllTempDownloadedFiles(internalDir)
 
 			if (globalSettings.defaultDownloadLocation == PRIVATE_FOLDER) {
+				logger.d("Deleting downloaded file from private folder")
 				val downloadedFile = getDestinationDocumentFile()
-				isWritableFile(downloadedFile).let { if (it) downloadedFile.delete() }
+				isWritableFile(downloadedFile).let {
+					if (it) downloadedFile.delete().let {
+						logger.d("Deleted downloaded file successfully")
+					}
+				}
 			}
-			logger.d("Model deletion completed")
+			logger.d("Model deletion completed for download ID: $id")
 		}, errorHandler = { error ->
-			logger.d("Deletion error: ${error.message}")
-			error.printStackTrace()
+			logger.e("Deletion error for download ID: $id", error)
 		})
 	}
 
@@ -330,13 +385,20 @@ class DownloadDataModel : Serializable {
 	 * @return Absolute path to cookies file or null if no cookies exist
 	 */
 	fun getCookieFilePathIfAvailable(): String? {
-		if (siteCookieString.isEmpty()) return null
+		if (siteCookieString.isEmpty()) {
+			logger.d("No cookies available for download ID: $id")
+			return null
+		}
 		val cookieFileName = "$id$DOWNLOAD_MODEL_COOKIES_EXTENSION"
 		val internalDir = AIOApp.internalDataFolder
 		val cookieFile = internalDir.findFile(cookieFileName)
-		return if (cookieFile != null && cookieFile.exists())
+		return if (cookieFile != null && cookieFile.exists()) {
+			logger.d("Found cookies file for download ID: $id")
 			cookieFile.getAbsolutePath(INSTANCE)
-		else null
+		} else {
+			logger.d("No cookies file found for download ID: $id")
+			null
+		}
 	}
 
 	/**
@@ -344,15 +406,23 @@ class DownloadDataModel : Serializable {
 	 * @param shouldOverride Whether to overwrite existing cookie file
 	 */
 	fun saveCookiesIfAvailable(shouldOverride: Boolean = false) {
-		if (siteCookieString.isEmpty()) return
+		if (siteCookieString.isEmpty()) {
+			logger.d("No cookies to save for download ID: $id")
+			return
+		}
 		val cookieFileName = "$id$DOWNLOAD_MODEL_COOKIES_EXTENSION"
 		val internalDir = AIOApp.internalDataFolder
 		val cookieFile = internalDir.findFile(cookieFileName)
-		if (!shouldOverride && cookieFile != null && cookieFile.exists()) return
+		if (!shouldOverride && cookieFile != null && cookieFile.exists()) {
+			logger.d("Cookies file already exists and override not requested for download ID: $id")
+			return
+		}
+		logger.d("Saving cookies for download ID: $id")
 		saveStringToInternalStorage(
-			cookieFileName,
-			generateNetscapeFormattedCookieString(siteCookieString)
+			fileName = cookieFileName,
+			data = generateNetscapeFormattedCookieString(siteCookieString)
 		)
+		logger.d("Cookies saved successfully for download ID: $id")
 	}
 
 	/**
@@ -361,6 +431,7 @@ class DownloadDataModel : Serializable {
 	 * @return Formatted cookie file content
 	 */
 	private fun generateNetscapeFormattedCookieString(cookieString: String): String {
+		logger.d("Generating Netscape formatted cookie string")
 		val cookies = cookieString.split(";").map { it.trim() }
 		val domain = ""
 		val path = "/"
@@ -379,6 +450,7 @@ class DownloadDataModel : Serializable {
 				stringBuilder.append("$domain\tFALSE\t$path\t$secure\t$expiry\t$name\t$value\n")
 			}
 		}
+		logger.d("Generated Netscape cookie string with ${cookies.size} cookies")
 		return stringBuilder.toString()
 	}
 
@@ -386,13 +458,19 @@ class DownloadDataModel : Serializable {
 	 * Serializes the model to JSON string.
 	 * @return JSON representation of the model
 	 */
-	fun convertClassToJSON(): String = Gson().toJson(this)
+	fun convertClassToJSON(): String {
+		logger.d("Converting class to JSON for download ID: $id")
+		return Gson().toJson(this)
+	}
 
 	/**
 	 * Gets the temporary directory for partial downloads.
 	 * @return File object representing temp directory
 	 */
-	fun getTempDestinationDir(): File = File("${fileDirectory}.temp/")
+	fun getTempDestinationDir(): File {
+		logger.d("Getting temp destination directory for download ID: $id")
+		return File("${fileDirectory}.temp/")
+	}
 
 	/**
 	 * Gets the destination file as a DocumentFile.
@@ -400,6 +478,7 @@ class DownloadDataModel : Serializable {
 	 */
 	fun getDestinationDocumentFile(): DocumentFile {
 		val destinationPath = removeDuplicateSlashes("$fileDirectory/$fileName")
+		logger.d("Getting destination DocumentFile for path: $destinationPath")
 		return DocumentFile.fromFile(File(destinationPath!!))
 	}
 
@@ -409,6 +488,7 @@ class DownloadDataModel : Serializable {
 	 */
 	fun getDestinationFile(): File {
 		val destinationPath = removeDuplicateSlashes("$fileDirectory/$fileName")
+		logger.d("Getting destination File for path: $destinationPath")
 		return File(destinationPath!!)
 	}
 
@@ -418,6 +498,7 @@ class DownloadDataModel : Serializable {
 	 */
 	fun getTempDestinationFile(): File {
 		val tempFilePath = "${getDestinationFile().absolutePath}${TEMP_EXTENSION}"
+		logger.d("Getting temp destination file: $tempFilePath")
 		return File(tempFilePath)
 	}
 
@@ -427,6 +508,7 @@ class DownloadDataModel : Serializable {
 	 */
 	fun getThumbnailURI(): Uri? {
 		val thumbFilePath = "$id$THUMB_EXTENSION"
+		logger.d("Getting thumbnail URI for file: $thumbFilePath")
 		return AIOApp.internalDataFolder.findFile(thumbFilePath)?.uri
 	}
 
@@ -434,12 +516,20 @@ class DownloadDataModel : Serializable {
 	 * Clears any cached thumbnail file and updates storage.
 	 */
 	fun clearCachedThumbnailFile() {
+		logger.d("Clearing cached thumbnail for download ID: $id")
 		try {
-			getThumbnailURI()?.toFile()?.delete()
+			val thumbnailUri = getThumbnailURI()
+			if (thumbnailUri != null) {
+				thumbnailUri.toFile().delete()
+				logger.d("Deleted thumbnail file successfully")
+			} else {
+				logger.d("No thumbnail file to delete")
+			}
 			thumbPath = ""
 			updateInStorage()
+			logger.d("Thumbnail cleared successfully for download ID: $id")
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error clearing thumbnail for download ID: $id", error)
 		}
 	}
 
@@ -448,6 +538,7 @@ class DownloadDataModel : Serializable {
 	 * @return Resource ID of default thumbnail drawable
 	 */
 	fun getThumbnailDrawableID(): Int {
+		logger.d("Getting default thumbnail drawable ID")
 		return drawable.image_no_thumb_available
 	}
 
@@ -456,6 +547,7 @@ class DownloadDataModel : Serializable {
 	 * @return Human-readable status string
 	 */
 	fun generateDownloadInfoInString(): String {
+		logger.d("Generating download info string for download ID: $id")
 		if (videoFormat != null && videoInfo != null) {
 			return if (status == DownloadStatus.CLOSE) {
 				val waitingToJoin = getText(string.text_waiting_to_join).lowercase()
@@ -465,14 +557,23 @@ class DownloadDataModel : Serializable {
 					statusInfo.lowercase().startsWith(preparingToDownload) ||
 					statusInfo.lowercase().startsWith(downloadFailed)
 				) {
+					logger.d("Returning special status info")
 					statusInfo
 				} else normalDownloadStatusInfo()
 			} else {
 				val currentStatus = getText(string.title_started_downloading).lowercase()
-				if (!statusInfo.lowercase().startsWith(currentStatus))
-					normalDownloadStatusInfo() else tempYtdlpStatusInfo
+				if (!statusInfo.lowercase().startsWith(currentStatus)) {
+					logger.d("Returning normal download status info")
+					normalDownloadStatusInfo()
+				} else {
+					logger.d("Returning yt-dlp status info")
+					tempYtdlpStatusInfo
+				}
 			}
-		} else return normalDownloadStatusInfo()
+		} else {
+			logger.d("Returning normal download status info (non-video)")
+			return normalDownloadStatusInfo()
+		}
 	}
 
 	/**
@@ -481,6 +582,7 @@ class DownloadDataModel : Serializable {
 	 * @return Localized category name string
 	 */
 	fun getUpdatedCategoryName(shouldRemoveAIOPrefix: Boolean = false): String {
+		logger.d("Getting updated category name for file: $fileName")
 		if (shouldRemoveAIOPrefix) {
 			val categoryName = when {
 				endsWithExtension(fileName, IMAGE_EXTENSIONS) -> getText(string.title_images)
@@ -490,7 +592,9 @@ class DownloadDataModel : Serializable {
 				endsWithExtension(fileName, PROGRAM_EXTENSIONS) -> getText(string.title_programs)
 				endsWithExtension(fileName, ARCHIVE_EXTENSIONS) -> getText(string.title_archives)
 				else -> getText(string.title_aio_others)
-			}; return categoryName
+			}
+			logger.d("Category name (no prefix): $categoryName")
+			return categoryName
 		} else {
 			val categoryName = when {
 				endsWithExtension(fileName, IMAGE_EXTENSIONS) -> getText(string.title_aio_images)
@@ -500,7 +604,9 @@ class DownloadDataModel : Serializable {
 				endsWithExtension(fileName, PROGRAM_EXTENSIONS) -> getText(string.title_aio_programs)
 				endsWithExtension(fileName, ARCHIVE_EXTENSIONS) -> getText(string.title_aio_archives)
 				else -> getText(string.title_aio_others)
-			}; return categoryName
+			}
+			logger.d("Category name (with prefix): $categoryName")
+			return categoryName
 		}
 	}
 
@@ -509,8 +615,15 @@ class DownloadDataModel : Serializable {
 	 * @return Human-readable size string or "Unknown" if size not available
 	 */
 	fun getFormattedFileSize(): String {
-		return if (fileSize <= 1 || isUnknownFileSize) getText(string.title_unknown_size)
-		else FileSizeFormatter.humanReadableSizeOf(fileSize.toDouble())
+		logger.d("Getting formatted file size for download ID: $id")
+		return if (fileSize <= 1 || isUnknownFileSize) {
+			logger.d("File size unknown")
+			getText(string.title_unknown_size)
+		} else {
+			val formattedSize = FileSizeFormatter.humanReadableSizeOf(fileSize.toDouble())
+			logger.d("Formatted file size: $formattedSize")
+			formattedSize
+		}
 	}
 
 	/**
@@ -518,7 +631,9 @@ class DownloadDataModel : Serializable {
 	 * @return File extension (without dot) or empty string if no extension
 	 */
 	fun getFileExtension(): String {
-		return fileName.substringAfterLast('.', "")
+		val extension = fileName.substringAfterLast('.', "")
+		logger.d("File extension for $fileName: $extension")
+		return extension
 	}
 
 	/**
@@ -526,19 +641,23 @@ class DownloadDataModel : Serializable {
 	 * @param internalDir The directory containing temporary files
 	 */
 	private fun deleteAllTempDownloadedFiles(internalDir: DocumentFile) {
+		logger.d("Deleting all temp files for download ID: $id")
 		try {
 			if (videoFormat != null && videoInfo != null) {
 				if (tempYtdlpDestinationFilePath.isNotEmpty()) {
 					val tempYtdlpFileName = File(tempYtdlpDestinationFilePath).name
+					logger.d("Processing yt-dlp temp files with prefix: $tempYtdlpFileName")
 					internalDir.listFiles().forEach { file ->
 						try {
 							file?.let {
 								if (!file.isFile) return@let
-								if (file.name!!.startsWith(tempYtdlpFileName))
+								if (file.name!!.startsWith(tempYtdlpFileName)) {
 									file.delete()
+									logger.d("Deleted temp file: ${file.name}")
+								}
 							}
 						} catch (error: Exception) {
-							error.printStackTrace()
+							logger.e("Error deleting temp file", error)
 						}
 					}
 				}
@@ -547,11 +666,13 @@ class DownloadDataModel : Serializable {
 					val tempCookieFile = File(videoInfo!!.videoCookieTempPath)
 					if (tempCookieFile.isFile && tempCookieFile.exists()) {
 						tempCookieFile.delete()
+						logger.d("Deleted temp cookie file: ${tempCookieFile.absolutePath}")
 					}
 				}
 			}
+			logger.d("Temp files deletion completed for download ID: $id")
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error deleting temp files for download ID: $id", error)
 		}
 	}
 
@@ -560,10 +681,12 @@ class DownloadDataModel : Serializable {
 	 * @return Formatted status string with progress, speed, and time remaining
 	 */
 	private fun normalDownloadStatusInfo(): String {
+		logger.d("Generating normal download status info for download ID: $id")
 		if (videoFormat != null && videoInfo != null) {
 			val textDownload = getText(string.text_downloaded)
 			val infoString = "$statusInfo  |  $textDownload ($progressPercentage%)" +
 					"  |  --/s  |  --:-- "
+			logger.d("Generated video download status: $infoString")
 			return infoString
 		} else {
 			val totalFileSize = fileSizeInFormat
@@ -575,13 +698,15 @@ class DownloadDataModel : Serializable {
 			) "--:--" else remainingTimeInFormat
 
 			val downloadingStatus = getText(string.title_started_downloading).lowercase()
-			return if (statusInfo.lowercase().startsWith(downloadingStatus)) {
+			val result = if (statusInfo.lowercase().startsWith(downloadingStatus)) {
 				"$progressPercentageInFormat% Of $totalFileSize | " +
 						"$downloadSpeedInfo | $remainingTimeInfo"
 			} else {
 				"$statusInfo | $totalFileSize | " +
 						"$downloadSpeedInfo | $remainingTimeInfo"
 			}
+			logger.d("Generated normal download status: $result")
+			return result
 		}
 	}
 
@@ -590,23 +715,28 @@ class DownloadDataModel : Serializable {
 	 * Initializes based on app settings.
 	 */
 	private fun resetToDefaultValues() {
-		logger.d("Resetting to default values")
+		logger.d("Resetting to default values for new download")
 		id = getUniqueNumberForDownloadModels()
+		logger.d("Assigned new download ID: $id")
+
 		if (aioSettings.defaultDownloadLocation == PRIVATE_FOLDER) {
 			val externalDataFolderPath = INSTANCE.getExternalDataFolder()?.getAbsolutePath(INSTANCE)
 			if (!externalDataFolderPath.isNullOrEmpty()) {
 				fileDirectory = externalDataFolderPath
+				logger.d("Set file directory to external: $externalDataFolderPath")
 			} else {
 				val internalDataFolderPath = INSTANCE.dataDir.absolutePath
 				fileDirectory = internalDataFolderPath
+				logger.d("Set file directory to internal: $internalDataFolderPath")
 			}
 		} else if (aioSettings.defaultDownloadLocation == SYSTEM_GALLERY) {
 			val externalDataFolderPath = getText(string.text_default_aio_download_folder_path)
 			fileDirectory = externalDataFolderPath
+			logger.d("Set file directory to system gallery: $externalDataFolderPath")
 		}
 
 		globalSettings = deepCopy(aioSettings) ?: aioSettings
-		logger.d("Reset completed with ID: $id")
+		logger.d("Reset completed for download ID: $id with settings: ${globalSettings.defaultDownloadLocation}")
 	}
 
 	/**
@@ -614,8 +744,11 @@ class DownloadDataModel : Serializable {
 	 * Ensures completed downloads show 100% progress.
 	 */
 	private fun cleanTheModelBeforeSavingToStorage() {
-		logger.d("Cleaning model before save")
-		if (isRunning && status == DownloadStatus.DOWNLOADING) return
+		logger.d("Cleaning model before saving to storage for download ID: $id")
+		if (isRunning && status == DownloadStatus.DOWNLOADING) {
+			logger.d("Download is running, skipping cleanup")
+			return
+		}
 
 		realtimeSpeed = 0L
 		realtimeSpeedInFormat = "--"
@@ -632,7 +765,7 @@ class DownloadDataModel : Serializable {
 				partProgressPercentage[index] = 100
 				partsDownloadedByte[index] = partChunkSizes[index]
 			}
-			logger.d("Model cleaned for completed download")
+			logger.d("Model cleaned for completed download ID: $id")
 		}
 	}
 }
