@@ -14,6 +14,7 @@ import lib.networks.URLUtilityKT.getWebpageTitleOrDescription
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ViewUtility.showOnScreenKeyboard
@@ -32,156 +33,161 @@ import java.lang.ref.WeakReference
  * @property autoStart Indicate whether the dialog auto start the parsing.
  */
 class VideoLinkPasteEditor(
-    val motherActivity: MotherActivity,
-    val passOnUrl: String? = null,
-    val autoStart: Boolean = false
+	val motherActivity: MotherActivity,
+	val passOnUrl: String? = null,
+	val autoStart: Boolean = false
 ) {
+	private val logger = LogHelperUtils.from(javaClass)
 
-    // Weak reference to avoid memory leaks
-    private val safeMotherActivityRef = WeakReference(motherActivity).get()
-    private var dialogBuilder: DialogBuilder? = DialogBuilder(safeMotherActivityRef)
+	// Weak reference to avoid memory leaks
+	private val safeMotherActivityRef = WeakReference(motherActivity).get()
+	private var dialogBuilder: DialogBuilder? = DialogBuilder(safeMotherActivityRef)
 
-    // UI components
-    private lateinit var buttonDownload: View
-    private lateinit var editFieldFileURL: EditText
-    private lateinit var editFieldContainer: View
+	// UI components
+	private lateinit var buttonDownload: View
+	private lateinit var editFieldFileURL: EditText
+	private lateinit var editFieldContainer: View
 
-    private var userGivenURL: String = ""
-    private var isParsingTitleFromUrlAborted = false
+	private var userGivenURL: String = ""
+	private var isParsingTitleFromUrlAborted = false
 
-    /**
-     * Initializes the dialog and preloads the interstitial ad if needed.
-     */
-    init {
-        safeMotherActivityRef?.let {
-            dialogBuilder?.let { builder ->
-                builder.setView(R.layout.dialog_video_link_editor_1)
-                builder.view.apply {
-                    buttonDownload = findViewById(R.id.btn_dialog_positive_container)
-                    editFieldContainer = findViewById(R.id.edit_url_container)
-                    editFieldFileURL = findViewById(R.id.edit_url)
-                    passOnUrl?.let { editFieldFileURL.setText(it) }
+	/**
+	 * Initializes the dialog and preloads the interstitial ad if needed.
+	 */
+	init {
+		safeMotherActivityRef?.let {
+			dialogBuilder?.let { builder ->
+				builder.setView(R.layout.dialog_video_link_editor_1)
+				builder.view.apply {
+					buttonDownload = findViewById(R.id.btn_dialog_positive_container)
+					editFieldContainer = findViewById(R.id.edit_url_container)
+					editFieldFileURL = findViewById(R.id.edit_url)
+					passOnUrl?.let { editFieldFileURL.setText(it) }
 
-                    val clickActions = mapOf(
-                        editFieldContainer to { focusEditTextField() },
-                        buttonDownload to { downloadVideo() }
-                    )
+					val clickActions = mapOf(
+						editFieldContainer to { focusEditTextField() },
+						buttonDownload to { downloadVideo() }
+					)
 
-                    clickActions.forEach { (view, action) ->
-                        view.setOnClickListener { action() }
-                    }
-                }
-            }
-        }
-    }
+					clickActions.forEach { (view, action) ->
+						view.setOnClickListener { action() }
+					}
+				}
+			}
+		}
+	}
 
-    /**
-     * Displays the dialog and focuses on the input field.
-     */
-    fun show() {
-        if (!passOnUrl.isNullOrEmpty() && autoStart) {
-            downloadVideo()
-        } else {
-            dialogBuilder?.show()
-            delay(200, object : OnTaskFinishListener {
-                override fun afterDelay() {
-                    focusEditTextField()
-                    editFieldFileURL.selectAll()
-                    showOnScreenKeyboard(safeMotherActivityRef, editFieldFileURL)
-                }
-            })
-        }
-    }
+	/**
+	 * Displays the dialog and focuses on the input field.
+	 */
+	fun show() {
+		if (!passOnUrl.isNullOrEmpty() && autoStart) {
+			downloadVideo()
+		} else {
+			dialogBuilder?.show()
+			delay(200, object : OnTaskFinishListener {
+				override fun afterDelay() {
+					focusEditTextField()
+					editFieldFileURL.selectAll()
+					showOnScreenKeyboard(safeMotherActivityRef, editFieldFileURL)
+				}
+			})
+		}
+	}
 
-    /**
-     * Closes the dialog if it's open.
-     */
-    fun close() = dialogBuilder?.close()
+	/**
+	 * Closes the dialog if it's open.
+	 */
+	fun close() = dialogBuilder?.close()
 
-    /**
-     * Focuses the input field inside the dialog.
-     */
-    private fun focusEditTextField() {
-        editFieldFileURL.requestFocus()
-    }
+	/**
+	 * Focuses the input field inside the dialog.
+	 */
+	private fun focusEditTextField() {
+		editFieldFileURL.requestFocus()
+	}
 
-    /**
-     * Handles the logic when user clicks on the download button.
-     * Validates the URL, shows appropriate dialogs, and processes the video URL.
-     */
-    private fun downloadVideo() {
-        safeMotherActivityRef?.let { safeActivity ->
-            userGivenURL = editFieldFileURL.text.toString()
-            if (!URLUtility.isValidURL(userGivenURL)) {
-                safeActivity.doSomeVibration(50)
-                showToast(getText(R.string.text_file_url_not_valid))
-                return
-            } else {
-                close()
+	/**
+	 * Handles the logic when user clicks on the download button.
+	 * Validates the URL, shows appropriate dialogs, and processes the video URL.
+	 */
+	private fun downloadVideo() {
+		safeMotherActivityRef?.let { safeActivity ->
+			userGivenURL = editFieldFileURL.text.toString()
+			if (!URLUtility.isValidURL(userGivenURL)) {
+				safeActivity.doSomeVibration(50)
+				showToast(getText(R.string.text_file_url_not_valid))
+				return
+			} else {
+				close()
 
-                if (isSocialMediaUrl(userGivenURL)) {
-                    // Handle social media URL
-                    val waitingDialog = WaitingDialog(
-                        isCancelable = false,
-                        baseActivityInf = motherActivity,
-                        loadingMessage = getText(R.string.text_analyzing_url_please_wait),
-                        dialogCancelListener = { dialog ->
-                            isParsingTitleFromUrlAborted = true
-                            dialog.dismiss()
-                        }
-                    ); waitingDialog.show()
+				if (isSocialMediaUrl(userGivenURL)) {
+					// Handle social media URL
+					val waitingDialog = WaitingDialog(
+						isCancelable = false,
+						baseActivityInf = motherActivity,
+						loadingMessage = getText(R.string.text_analyzing_url_please_wait),
+						dialogCancelListener = { dialog ->
+							isParsingTitleFromUrlAborted = true
+							dialog.dismiss()
+						}
+					); waitingDialog.show()
 
-                    ThreadsUtility.executeInBackground(codeBlock = {
-                        val htmlBody = fetchWebPageContent(userGivenURL, true)
-                        val thumbnailUrl = startParsingVideoThumbUrl(userGivenURL, htmlBody)
+					ThreadsUtility.executeInBackground(codeBlock = {
+						val htmlBody = fetchWebPageContent(userGivenURL, true)
+						val thumbnailUrl = startParsingVideoThumbUrl(userGivenURL, htmlBody)
 
-                        getWebpageTitleOrDescription(
-                            userGivenURL,
-                            userGivenHtmlBody = htmlBody
-                        ) { resultedTitle ->
-                            waitingDialog.close()
-                            if (!resultedTitle.isNullOrEmpty() && !isParsingTitleFromUrlAborted) {
-                                executeOnMainThread {
-                                    SingleResolutionPrompter(
-                                        baseActivity = motherActivity,
-                                        singleResolutionName = getText(R.string.title_high_quality),
-                                        extractedVideoLink = userGivenURL,
-                                        currentWebUrl = userGivenURL,
-                                        videoTitle = resultedTitle,
-                                        videoUrlReferer = userGivenURL,
-                                        isSocialMediaUrl = true,
-                                        isDownloadFromBrowser = false,
-                                        dontParseFBTitle = true,
-                                        thumbnailUrlProvided = thumbnailUrl
-                                    ).show()
-                                }
-                            } else {
-                                executeOnMainThread {
-                                    safeMotherActivityRef.doSomeVibration(50)
-                                    showToast(msgId = R.string.text_server_busy_opening_browser)
+						getWebpageTitleOrDescription(
+							userGivenURL,
+							userGivenHtmlBody = htmlBody
+						) { resultedTitle ->
+							waitingDialog.close()
+							if (!resultedTitle.isNullOrEmpty() && !isParsingTitleFromUrlAborted) {
+								executeOnMainThread {
+									SingleResolutionPrompter(
+										baseActivity = motherActivity,
+										singleResolutionName = getText(R.string.title_high_quality),
+										extractedVideoLink = userGivenURL,
+										currentWebUrl = userGivenURL,
+										videoTitle = resultedTitle,
+										videoUrlReferer = userGivenURL,
+										isSocialMediaUrl = true,
+										isDownloadFromBrowser = false,
+										dontParseFBTitle = true,
+										thumbnailUrlProvided = thumbnailUrl
+									).show()
+								}
+							} else {
+								executeOnMainThread {
+									safeMotherActivityRef.doSomeVibration(50)
+									showToast(msgId = R.string.text_server_busy_opening_browser)
 
-                                    safeMotherActivityRef.browserFragment?.getBrowserWebEngine()?.let {
-                                        safeMotherActivityRef.sideNavigation?.addNewBrowsingTab(userGivenURL, it)
-                                        safeMotherActivityRef.openBrowserFragment()
-                                    }
-                                }
-                            }
-                        }
-                    })
-                } else {
-                    // Direct video URL
-                    startParingVideoURL(safeActivity)
-                }
-            }
-        }
-    }
+									safeMotherActivityRef.browserFragment?.getBrowserWebEngine()
+										?.let {
+											safeMotherActivityRef.sideNavigation?.addNewBrowsingTab(
+												userGivenURL,
+												it
+											)
+											safeMotherActivityRef.openBrowserFragment()
+										}
+								}
+							}
+						}
+					})
+				} else {
+					// Direct video URL
+					startParingVideoURL(safeActivity)
+				}
+			}
+		}
+	}
 
-    /**
-     * Triggers interception of the provided video URL for non-social platforms.
-     */
-    private fun startParingVideoURL(safeActivity: MotherActivity) {
-        close()
-        val videoInterceptor = SharedVideoURLIntercept(safeActivity)
-        videoInterceptor.interceptIntentURI(userGivenURL)
-    }
+	/**
+	 * Triggers interception of the provided video URL for non-social platforms.
+	 */
+	private fun startParingVideoURL(safeActivity: MotherActivity) {
+		close()
+		val videoInterceptor = SharedVideoURLIntercept(safeActivity)
+		videoInterceptor.interceptIntentURI(userGivenURL)
+	}
 }
