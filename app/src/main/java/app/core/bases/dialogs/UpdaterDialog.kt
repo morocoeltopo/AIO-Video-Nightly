@@ -8,7 +8,6 @@ import android.widget.TextView
 import app.core.bases.BaseActivity
 import app.core.engines.updater.AIOUpdater.UpdateInfo
 import com.aio.R
-import lib.device.AppVersionUtility
 import lib.device.ShareUtility.openApkFile
 import lib.process.LogHelperUtils
 import lib.ui.ViewUtility.setViewOnClickListener
@@ -51,20 +50,13 @@ class UpdaterDialog(
 
 			// Configure dialog layout
 			dialogBuilder.setView(R.layout.dialog_new_version_updater_1)
-			dialogBuilder.setCancelable(true)
+			dialogBuilder.setCancelable(false)
 
 			// Populate message text with styled HTML and enable clickable links
 			dialogBuilder.view.apply {
 				findViewById<TextView>(R.id.txt_dialog_message).let { textView ->
 					val htmlMsg = """
-                        <b>Latest version:</b> ${versionInfo.latestVersion}<br/>
-                        <b>Current version:</b> ${AppVersionUtility.versionName}<br/>
-                        <hr/>
-                        A new update for <b>AIO Video Downloader</b> is available! 🚀<br/><br/>
-                        This update includes important bug fixes, performance improvements, 
-                        and exciting new features.<br/><br/>
-                        👉 You can read the full changelog 
-                        <a href="${versionInfo.changelogUrl}">here</a>.
+                        <b>Latest version:</b> ${versionInfo.latestVersion}                   
                     """.trimIndent()
 
 					textView.text = Html.fromHtml(htmlMsg, FROM_HTML_MODE_COMPACT)

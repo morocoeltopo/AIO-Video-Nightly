@@ -46,6 +46,7 @@ import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioAdblocker
 import app.core.AIOApp.Companion.aioLanguage
@@ -199,6 +200,9 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 
 			// Update ad blocker filters
 			aioAdblocker.fetchAdFilters()
+
+			// Check out for latest apk version
+			checkForLatestUpdate()
 		}
 	}
 
@@ -688,6 +692,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	 */
 	fun checkForLatestUpdate() {
 		safeBaseActivityRef?.let { safeBaseActivityRef ->
+			if (AIOApp.IS_DEBUG_MODE_ON) return
 			logger.d("Starting checkForLatestUpdate()")
 
 			ThreadsUtility.executeInBackground(codeBlock = {
@@ -703,15 +708,14 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 					}
 					logger.d("Latest APK URL: $latestAPKUrl")
 
-					val updateInfo = updater.fetchUpdateInfo(latestAPKUrl)
+					val updateInfo = updater.fetchUpdateInfo()
 					if (updateInfo == null) {
 						logger.d("UpdateInfo is null — aborting update check")
 						return@executeInBackground
 					}
 					logger.d("Fetched update info: version=${updateInfo.latestVersion}")
 
-					val latestAPKFile =
-						updater.downloadUpdateApkSilently(safeBaseActivityRef, latestAPKUrl)
+					val latestAPKFile = updater.downloadUpdateApkSilently(latestAPKUrl)
 					if (latestAPKFile != null &&
 						latestAPKFile.exists() &&
 						latestAPKFile.isFile &&
@@ -722,11 +726,13 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 						ThreadsUtility.executeOnMain(codeBlock = {
 							logger.d("Launching UpdaterDialog for new version=${updateInfo.latestVersion}")
 							if (isActivityRunning == false) return@executeOnMain
-							UpdaterDialog(
-								baseActivity = safeBaseActivityRef,
-								latestVersionApkFile = latestAPKFile,
-								versionInfo = updateInfo
-							).show()
+							if (safeBaseActivityRef is MotherActivity) {
+								UpdaterDialog(
+									baseActivity = safeBaseActivityRef,
+									latestVersionApkFile = latestAPKFile,
+									versionInfo = updateInfo
+								).show()
+							}
 						})
 					} else {
 						logger.d("Failed to download latest APK or invalid file")

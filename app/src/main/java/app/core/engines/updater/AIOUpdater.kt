@@ -1,9 +1,9 @@
 package app.core.engines.updater
 
-import android.content.Context
-import app.core.AIOApp.Companion.INSTANCE
+import com.aio.R
 import lib.device.AppVersionUtility.versionName
 import lib.process.LogHelperUtils
+import lib.texts.CommonTextUtils.getText
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -43,9 +43,9 @@ class AIOUpdater {
 	private val logger by lazy { LogHelperUtils.from(javaClass) }
 
 	companion object {
-		const val APK_FILE_NAME = "update.apk"
-		const val TEMP_APK_FILE_NAME = "update.apk.temp"
-		const val APK_DOWNLOAD_INFO_FILE = "update_download_info.txt"
+		const val APK_FILE_NAME = ".aio_update.apk"
+		const val TEMP_APK_FILE_NAME = ".aio_update.apk.temp"
+		const val APK_DOWNLOAD_INFO_FILE = ".aio_update_download_info.txt"
 
 		/**
 		 * URL pointing to the version information file on GitHub.
@@ -77,7 +77,8 @@ class AIOUpdater {
 	 * @param url The URL of the version information text file.
 	 * @return [UpdateInfo] object if successful, or null if the request fails.
 	 */
-	fun fetchUpdateInfo(url: String): UpdateInfo? {
+	fun fetchUpdateInfo(): UpdateInfo? {
+		val url = GITHUB_UPDATE_INFO_URL
 		logger.d("Fetching update info from URL: $url")
 		val client = OkHttpClient()
 		val request = Request.Builder().url(url).build()
@@ -116,7 +117,7 @@ class AIOUpdater {
 	 */
 	fun getLatestApkUrl(): String? {
 		logger.d("Getting latest APK URL")
-		return fetchUpdateInfo(GITHUB_UPDATE_INFO_URL)?.latestApkUrl
+		return fetchUpdateInfo()?.latestApkUrl
 	}
 
 	/**
@@ -127,7 +128,7 @@ class AIOUpdater {
 	 */
 	fun isNewUpdateAvailable(): Boolean {
 		logger.d("Checking for new update")
-		val updateInfo = fetchUpdateInfo(GITHUB_UPDATE_INFO_URL) ?: return false
+		val updateInfo = fetchUpdateInfo() ?: return false
 		val onlineVersion = updateInfo.latestVersion?.replace(".", "")
 		val localVersion = versionName?.replace(".", "") ?: return false
 
@@ -147,21 +148,24 @@ class AIOUpdater {
 	 * Silently downloads a file from the given URL and saves it as "update.apk"
 	 * in the app's private files directory with resume support.
 	 *
-	 * @param context Application or activity context.
 	 * @param url The direct URL to the APK file.
 	 * @return The File object pointing to the saved APK, or null if download fails.
 	 */
-	fun downloadUpdateApkSilently(context: Context?, url: String): File? {
+	fun downloadUpdateApkSilently( url: String): File? {
 		logger.d("Starting silent APK download from URL: $url")
-		if (context == null) {
-			logger.d("Context is null, download aborted")
-			return null
+		val externalDataFolderPath = getText(R.string.text_default_aio_download_folder_path)
+		val directoryPath = "$externalDataFolderPath/${getText(R.string.title_aio_others)}/.configs"
+		val downloadDestination = File(directoryPath)
+		// Ensure directory exists
+		if (!downloadDestination.exists()) {
+			downloadDestination.mkdirs()
+			logger.d("Directory created at: ${downloadDestination.absolutePath}")
 		}
 
-		val internalDataFolderPath = INSTANCE.dataDir.absolutePath
-		val outputFile = File(internalDataFolderPath, APK_FILE_NAME)
-		val tempFile = File(internalDataFolderPath, TEMP_APK_FILE_NAME)
-		val infoFile = File(internalDataFolderPath, APK_DOWNLOAD_INFO_FILE)
+		val outputFile = File(downloadDestination, APK_FILE_NAME)
+		val tempFile = File(downloadDestination, TEMP_APK_FILE_NAME)
+		val infoFile = File(downloadDestination, APK_DOWNLOAD_INFO_FILE)
+		if (outputFile.isFile && outputFile.exists()) return outputFile
 
 		try {
 			// Check for existing download progress

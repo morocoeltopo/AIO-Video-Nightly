@@ -52,7 +52,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 			try {
 				// Build directory path
 				val externalDataFolderPath = getText(R.string.text_default_aio_download_folder_path)
-				val directoryPath = "$externalDataFolderPath${getText(R.string.title_aio_others)}"
+				val directoryPath = "$externalDataFolderPath/${getText(R.string.title_aio_others)}/.configs"
 				val dir = File(directoryPath)
 
 				// Ensure directory exists
