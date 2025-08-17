@@ -11,6 +11,7 @@ import com.aio.R
 import com.bumptech.glide.Glide
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
+import lib.process.LogHelperUtils
 import lib.ui.ViewUtility
 import lib.ui.ViewUtility.hideView
 import lib.ui.ViewUtility.showView
@@ -27,19 +28,21 @@ import java.lang.ref.WeakReference
  * - Coordinates tab switching and lifecycle events
  */
 class WebNavigationDrawer(motherActivity: MotherActivity?) {
-	
+
+	private val logger = LogHelperUtils.from(javaClass)
+
 	// Weak reference to parent activity to prevent memory leaks
 	val safeMotherActivityRef = WeakReference(motherActivity).get()
-	
+
 	// List of all active web views
 	val totalWebViews: ArrayList<WebView> = ArrayList()
-	
+
 	// UI Components
 	lateinit var sideNavigationDrawer: View
 	lateinit var buttonAddNewTab: View
 	lateinit var browserTabsListView: ListView
 	lateinit var webTabListAdapter: WebTabListAdapter
-	
+
 	/**
 	 * Initializes the navigation drawer components.
 	 * Must be called after activity layout is rendered.
@@ -51,14 +54,14 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				sideNavigationDrawer = findViewById(R.id.navigation_drawer)
 				buttonAddNewTab = findViewById(R.id.btn_create_new_tab)
 				browserTabsListView = findViewById(R.id.list_browser_tabs)
-				
+
 				// Set up event listeners
 				initializeClickEvents()
 				initializeDrawerListener()
 			}
 		}
 	}
-	
+
 	/**
 	 * Initializes the web tab list adapter if not already initialized.
 	 */
@@ -76,7 +79,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Initializes drawer state listener and updates adapter.
 	 */
@@ -87,7 +90,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Sets up click event listeners for drawer components.
 	 */
@@ -97,7 +100,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				val browserFragment = safeMotherActivityRef.browserFragment
 				val browserFragmentBody = browserFragment?.browserFragmentBody
 				val webviewEngine = browserFragmentBody?.webviewEngine
-				
+
 				webviewEngine?.apply {
 					// Add new tab with default homepage
 					addNewBrowsingTab(aioSettings.browserDefaultHomepage, this)
@@ -106,7 +109,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Opens the navigation drawer with animation.
 	 */
@@ -114,14 +117,14 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 		if (sideNavigationDrawer.isVisible) hideView(sideNavigationDrawer, true, 100)
 		else showView(sideNavigationDrawer, true, 100)
 	}
-	
+
 	/**
 	 * Closes the navigation drawer with animation.
 	 */
 	fun closeDrawerNavigation() {
 		hideView(sideNavigationDrawer, true, 100)
 	}
-	
+
 	/**
 	 * Checks if the drawer is currently open.
 	 * @return true if drawer is visible, false otherwise
@@ -129,7 +132,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	fun isDrawerOpened(): Boolean {
 		return sideNavigationDrawer.isVisible
 	}
-	
+
 	/**
 	 * Adds a new browsing tab with the specified URL.
 	 * @param url The URL to load in the new tab
@@ -138,23 +141,23 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	fun addNewBrowsingTab(url: String, webviewEngine: WebViewEngine) {
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			initializeWebListAdapter()
-			
+
 			webviewEngine.generateNewWebview()?.let { generatedWebView ->
 				// Configure the new web view
 				webviewEngine.currentWebView = (generatedWebView as WebView)
-				
+
 				val browserFragment = safeMotherActivityRef.browserFragment
 				val webViewContainer = browserFragment?.getBrowserWebViewContainer()
-				
+
 				// Update UI
 				webViewContainer?.removeAllViews()
 				webViewContainer?.addView(webviewEngine.currentWebView)
-				
+
 				// Pause all other tabs and activate new one
 				totalWebViews.forEach { webView -> webView.onPause() }
 				webviewEngine.updateEngineOfWebView(webviewEngine.currentWebView!!)
 				webviewEngine.loadURLIntoCurrentWebview(url)
-				
+
 				// Add to beginning of list and update UI
 				totalWebViews.add(0, webviewEngine.currentWebView!!)
 				webTabListAdapter.notifyDataSetChanged()
@@ -162,7 +165,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Closes a web view tab at the specified position.
 	 * @param position The position of the tab to close
@@ -171,16 +174,16 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 	fun closeWebViewTab(position: Int, correspondingWebView: WebView) {
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			initializeWebListAdapter()
-			
+
 			try {
 				val browserFragment = safeMotherActivityRef.browserFragment
 				val browserWebviewEngine = browserFragment?.getBrowserWebEngine()
-				
+
 				// Handle case when closing last tab
 				if (position == 0 && totalWebViews.size == 1) {
 					totalWebViews.remove(correspondingWebView)
 					webTabListAdapter.notifyDataSetChanged()
-					
+
 					browserWebviewEngine?.let {
 						// Create new default tab if closing last one
 						addNewBrowsingTab(
@@ -191,12 +194,12 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 					closeDrawerNavigation()
 					return
 				}
-				
+
 				// Remove the tab
 				totalWebViews.remove(correspondingWebView)
 				webTabListAdapter.notifyDataSetChanged()
 				totalWebViews.forEach { webView -> webView.onPause() }
-				
+
 				// Determine which tab to show next
 				if (position == 0) {
 					val nextPosition = if (totalWebViews.isNotEmpty()) 0 else -1
@@ -206,20 +209,21 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 						browserWebviewEngine?.let {
 							addNewBrowsingTab(
 								webviewEngine = it,
-								url = aioSettings.browserDefaultHomepage)
+								url = aioSettings.browserDefaultHomepage
+							)
 						}
 						delay(
 							timeInMile = 200,
 							listener = object : OnTaskFinishListener {
 								override fun afterDelay() = closeDrawerNavigation()
-						})
+							})
 					}
 				} else {
 					// Show previous tab
 					val previousPosition = position - 1
 					openWebViewTab(totalWebViews[previousPosition])
 				}
-				
+
 				// Clean up the closed web view
 				correspondingWebView.clearHistory()
 				correspondingWebView.onPause()
@@ -233,7 +237,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Opens and activates the specified web view tab.
 	 * @param targetWebview The web view to activate
@@ -247,26 +251,26 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				val browserWebChromeClient = browserWebviewEngine?.browserWebChromeClient
 				val browserWebViewContainer = browserFragment?.getBrowserWebViewContainer()
 				val browserWebviewFavicon = browserFragment?.browserFragmentTop?.webViewFavicon
-				
+
 				// Update current web view reference
 				browserWebviewEngine?.currentWebView = targetWebview
-				
+
 				// Update UI
 				browserWebViewContainer?.removeAllViews()
 				browserWebViewContainer?.addView(targetWebview)
-				
+
 				// Configure web view
 				browserWebviewEngine?.updateEngineOfWebView(targetWebview)
 				browserFragment?.browserFragmentTop?.webviewTitle?.text = if (
 					targetWebview.title.isNullOrEmpty()
 				) targetWebview.url else targetWebview.title
-				
+
 				targetWebview.requestFocus()
 				browserWebviewEngine?.resumeCurrentWebView()
-				
+
 				// Update progress
 				browserWebChromeClient?.onProgressChanged(targetWebview, targetWebview.progress)
-				
+
 				// Update favicon
 				browserFragment?.browserFragmentTop?.animateDefaultFaviconLoading(true)
 				targetWebview.favicon?.let { favicon ->
