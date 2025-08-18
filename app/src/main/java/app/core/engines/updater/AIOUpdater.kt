@@ -69,7 +69,8 @@ class AIOUpdater {
 		val latestVersion: String?,
 		val latestApkUrl: String?,
 		val changelogUrl: String?,
-		val publishedDate: String?
+		val publishedDate: String?,
+		val versionHash: String?
 	)
 
 	/**
@@ -115,7 +116,8 @@ class AIOUpdater {
 							latestVersion = lines["latest_version"],
 							latestApkUrl = lines["latest_apk_url"],
 							changelogUrl = lines["changelog_url"],
-							publishedDate = lines["published_date"]
+							publishedDate = lines["published_date"],
+							versionHash = lines["version_hash"]
 						)
 						logger.d("Successfully parsed update info: $updateInfo")
 						return updateInfo

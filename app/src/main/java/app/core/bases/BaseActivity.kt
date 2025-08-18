@@ -64,6 +64,7 @@ import com.anggrayudi.storage.SimpleStorageHelper
 import com.permissionx.guolindev.PermissionX
 import com.permissionx.guolindev.PermissionX.isGranted
 import lib.files.FileSystemUtility.getFileExtension
+import lib.files.FileSystemUtility.getFileSha256
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
 import lib.process.LogHelperUtils
@@ -721,6 +722,12 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 					) {
 						logger.d("Downloaded latest APK successfully at ${latestAPKFile.absolutePath}")
 
+						if (getFileSha256(latestAPKFile) != updateInfo.versionHash) {
+							logger.d("SHA256 mismatch! Expected=${updateInfo.versionHash}, Got=${getFileSha256(latestAPKFile)}")
+							latestAPKFile.delete()
+							return@executeInBackground
+						}
+
 						ThreadsUtility.executeOnMain(codeBlock = {
 							logger.d("Launching UpdaterDialog for new version=${updateInfo.latestVersion}")
 							if (isActivityRunning == false) return@executeOnMain
@@ -737,6 +744,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 					}
 				} else {
 					logger.d("No new update available — skipping update check")
+
 				}
 			})
 		} ?: logger.d("safeBaseActivityRef is null — cannot check for updates")

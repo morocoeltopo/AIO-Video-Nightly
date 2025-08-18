@@ -30,6 +30,7 @@ import java.io.IOException
 import java.io.OutputStream
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets.UTF_8
+import java.security.MessageDigest
 import java.util.Locale
 
 /**
@@ -37,7 +38,7 @@ import java.util.Locale
  * handling file extensions, and interacting with Android's media store.
  */
 object FileSystemUtility {
-	
+
 	/**
 	 * Updates the media store with files from the finished download data models.
 	 */
@@ -56,7 +57,7 @@ object FileSystemUtility {
 			error.printStackTrace()
 		}
 	}
-	
+
 	/**
 	 * Extracts the file name from the content disposition header of a response.
 	 * @param contentDisposition The content disposition header string.
@@ -74,7 +75,7 @@ object FileSystemUtility {
 		}
 		return null
 	}
-	
+
 	/**
 	 * Decodes a URL-encoded file name.
 	 * @param encodedString The URL-encoded file name.
@@ -90,7 +91,7 @@ object FileSystemUtility {
 			encodedString
 		}
 	}
-	
+
 	/**
 	 * Retrieves the file name from a given URI.
 	 * @param context The application context.
@@ -121,7 +122,7 @@ object FileSystemUtility {
 			return null
 		}
 	}
-	
+
 	/**
 	 * Retrieves a `File` object from a given URI.
 	 * @param uri The URI of the file.
@@ -138,7 +139,7 @@ object FileSystemUtility {
 			null
 		}
 	}
-	
+
 	/**
 	 * Saves a string of data to the internal storage of the app.
 	 * @param fileName The name of the file to save the data to.
@@ -155,7 +156,7 @@ object FileSystemUtility {
 			error.printStackTrace()
 		}
 	}
-	
+
 	/**
 	 * Reads a string of data from the internal storage of the app.
 	 * @param fileName The name of the file to read the data from.
@@ -174,7 +175,7 @@ object FileSystemUtility {
 			throw error
 		}
 	}
-	
+
 	/**
 	 * Sanitizes a file name by replacing invalid characters with underscores.
 	 * @param fileName The original file name to sanitize.
@@ -188,7 +189,7 @@ object FileSystemUtility {
 			.replace("__", "_")
 		return sanitizedFileName
 	}
-	
+
 	/**
 	 * Sanitizes a file name by removing invalid characters and trimming excess underscores and spaces.
 	 * @param fileName The original file name to sanitize.
@@ -206,7 +207,7 @@ object FileSystemUtility {
 			.replace("__", "_")
 		return sanitizedFileName
 	}
-	
+
 	/**
 	 * Checks whether a file name is valid and can be created in the app's internal storage.
 	 * @param fileName The file name to check.
@@ -225,7 +226,7 @@ object FileSystemUtility {
 			false
 		}
 	}
-	
+
 	/**
 	 * Checks if a given file is writable.
 	 * @param file The file to check.
@@ -236,7 +237,7 @@ object FileSystemUtility {
 		val isWritable = file?.canWrite() ?: false
 		return isWritable
 	}
-	
+
 	/**
 	 * Checks if a given folder has write access.
 	 * @param folder The folder to check.
@@ -247,7 +248,7 @@ object FileSystemUtility {
 		if (folder == null) {
 			return false
 		}
-		
+
 		return try {
 			val tempFile = folder.createFile("text/plain", "temp_check_file.txt")
 			if (tempFile != null) {
@@ -263,7 +264,7 @@ object FileSystemUtility {
 			false
 		}
 	}
-	
+
 	/**
 	 * Creates an empty file in the given context and file.
 	 * @param context The context used to access the content resolver.
@@ -276,7 +277,7 @@ object FileSystemUtility {
 		return try {
 			val contentResolver: ContentResolver = context.contentResolver
 			val outputStream: OutputStream? = contentResolver.openOutputStream(file.uri)
-			
+
 			outputStream?.use { stream ->
 				val placeholder = ByteArray(fileSize.toInt())
 				stream.write(placeholder)
@@ -288,7 +289,7 @@ object FileSystemUtility {
 			false
 		}
 	}
-	
+
 	/**
 	 * Generates a unique file name by appending a number to the file name if it already exists in the directory.
 	 * @param fileDirectory The directory where the file will be stored.
@@ -300,7 +301,7 @@ object FileSystemUtility {
 		var sanitizedFileName = sanitizeFileNameExtreme(originalFileName)
 		var index = 1
 		val regex = Regex("^(\\d+)_")
-		
+
 		while (fileDirectory.findFile(sanitizedFileName) != null) {
 			val matchResult = regex.find(sanitizedFileName)
 			if (matchResult != null) {
@@ -311,10 +312,10 @@ object FileSystemUtility {
 			sanitizedFileName = "${index}_$sanitizedFileName"
 			index++
 		}
-		
+
 		return sanitizedFileName
 	}
-	
+
 	/**
 	 * Finds the first file in the given directory whose name starts with the specified prefix.
 	 *
@@ -329,7 +330,7 @@ object FileSystemUtility {
 		}
 		return result
 	}
-	
+
 	/**
 	 * Creates a new directory within the specified parent folder.
 	 *
@@ -342,7 +343,7 @@ object FileSystemUtility {
 		val newDirectory = parentFolder?.createDirectory(folderName)
 		return newDirectory
 	}
-	
+
 	/**
 	 * Returns the MIME type of a file based on its extension or content.
 	 *
@@ -360,7 +361,7 @@ object FileSystemUtility {
 		}
 		return mimeType
 	}
-	
+
 	/**
 	 * Extracts the file extension from the given file name.
 	 *
@@ -371,7 +372,7 @@ object FileSystemUtility {
 	fun getFileExtension(fileName: String): String? {
 		return fileName.substringAfterLast('.', "").takeIf { it.isNotEmpty() }
 	}
-	
+
 	/**
 	 * Determines whether the given file has one of the specified extensions.
 	 *
@@ -382,7 +383,7 @@ object FileSystemUtility {
 	fun DocumentFile.isFileType(extensions: Array<String>): Boolean {
 		return endsWithExtension(name, extensions)
 	}
-	
+
 	/**
 	 * Checks if the given file is an audio file based on its extension.
 	 *
@@ -393,7 +394,7 @@ object FileSystemUtility {
 	fun isAudio(file: DocumentFile): Boolean {
 		return file.isFileType(MUSIC_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the given file is an archive file based on its extension.
 	 *
@@ -404,7 +405,7 @@ object FileSystemUtility {
 	fun isArchive(file: DocumentFile): Boolean {
 		return file.isFileType(ARCHIVE_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the given file is a program file based on its extension.
 	 *
@@ -415,7 +416,7 @@ object FileSystemUtility {
 	fun isProgram(file: DocumentFile): Boolean {
 		return file.isFileType(PROGRAM_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the given file is a video file based on its extension.
 	 *
@@ -426,7 +427,7 @@ object FileSystemUtility {
 	fun isVideo(file: DocumentFile): Boolean {
 		return file.isFileType(VIDEO_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the given file is a document file based on its extension.
 	 *
@@ -437,7 +438,7 @@ object FileSystemUtility {
 	fun isDocument(file: DocumentFile): Boolean {
 		return file.isFileType(DOCUMENT_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the given file is an image file based on its extension.
 	 *
@@ -448,7 +449,7 @@ object FileSystemUtility {
 	fun isImage(file: DocumentFile): Boolean {
 		return file.isFileType(IMAGE_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Returns the type of the given file based on its extension.
 	 *
@@ -459,7 +460,7 @@ object FileSystemUtility {
 	fun getFileType(file: DocumentFile): String {
 		return getFileType(file.name)
 	}
-	
+
 	/**
 	 * Returns the type of the file based on its name.
 	 *
@@ -478,7 +479,7 @@ object FileSystemUtility {
 			else -> getText(R.string.title_others)
 		}
 	}
-	
+
 	/**
 	 * Triggers a media scan to add the given file to the device's media store.
 	 *
@@ -496,7 +497,7 @@ object FileSystemUtility {
 			error.printStackTrace()
 		}
 	}
-	
+
 	/**
 	 * Checks if the given file name ends with one of the specified extensions.
 	 *
@@ -510,7 +511,7 @@ object FileSystemUtility {
 			fileName?.lowercase(Locale.getDefault())?.endsWith(".$it") == true
 		}
 	}
-	
+
 	/**
 	 * Checks if the file name represents an audio file based on its extension.
 	 *
@@ -521,7 +522,7 @@ object FileSystemUtility {
 	fun isAudioByName(name: String?): Boolean {
 		return endsWithExtension(name, MUSIC_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the file name represents an archive file based on its extension.
 	 *
@@ -532,7 +533,7 @@ object FileSystemUtility {
 	fun isArchiveByName(name: String?): Boolean {
 		return endsWithExtension(name, ARCHIVE_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the file name represents a program file based on its extension.
 	 *
@@ -543,7 +544,7 @@ object FileSystemUtility {
 	fun isProgramByName(name: String?): Boolean {
 		return endsWithExtension(name, PROGRAM_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the file name represents a video file based on its extension.
 	 *
@@ -554,7 +555,7 @@ object FileSystemUtility {
 	fun isVideoByName(name: String?): Boolean {
 		return endsWithExtension(name, VIDEO_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the file name represents a document file based on its extension.
 	 *
@@ -565,7 +566,7 @@ object FileSystemUtility {
 	fun isDocumentByName(name: String?): Boolean {
 		return endsWithExtension(name, DOCUMENT_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Checks if the file name represents an image file based on its extension.
 	 *
@@ -576,7 +577,7 @@ object FileSystemUtility {
 	fun isImageByName(name: String?): Boolean {
 		return endsWithExtension(name, IMAGE_EXTENSIONS)
 	}
-	
+
 	/**
 	 * Removes the file extension from the file name.
 	 *
@@ -593,5 +594,20 @@ object FileSystemUtility {
 			fileName
 		}
 	}
-	
+
+	/**
+	 * Compute SHA-256 hash of a file.
+	 */
+	@JvmStatic
+	fun getFileSha256(file: File): String {
+		val digest = MessageDigest.getInstance("SHA-256")
+		FileInputStream(file).use { input ->
+			val buffer = ByteArray(8192)
+			var bytesRead: Int
+			while (input.read(buffer).also { bytesRead = it } != -1) {
+				digest.update(buffer, 0, bytesRead)
+			}
+		}
+		return digest.digest().joinToString("") { "%02x".format(it) }
+	}
 }
