@@ -6,25 +6,30 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.core.content.ContextCompat.getDrawable
+import androidx.core.net.toUri
 import app.core.AIOApp
 import app.core.AIOApp.Companion.aioSettings
+import app.core.engines.updater.AIOUpdater
 import app.ui.main.fragments.settings.dialogs.DownloadLocation
 import app.ui.others.information.UserFeedbackActivity
 import app.ui.others.startup.LanguagePickerDialog
 import com.aio.R
+import kotlinx.coroutines.delay
 import lib.device.ShareUtility
 import lib.networks.URLUtility.ensureHttps
 import lib.networks.URLUtility.isValidDomain
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
 import lib.process.LogHelperUtils
-import lib.process.OSProcessUtils
+import lib.process.OSProcessUtils.restartApp
+import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.MsgDialogUtils
 import lib.ui.ViewUtility.setLeftSideDrawable
 import lib.ui.ViewUtility.showOnScreenKeyboard
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
+import lib.ui.builders.WaitingDialog
 import java.lang.ref.WeakReference
 
 /**
@@ -66,7 +71,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 						getDialogBuilder().setCancelable(true)
 						onApplyListener = {
 							close()
-							OSProcessUtils.restartApp(shouldKillProcess = true)
+							restartApp(shouldKillProcess = true)
 						}
 					}.show()
 				}
@@ -182,6 +187,8 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			it?.doSomeVibration(50)
 			MsgDialogUtils.showMessageDialog(
 				baseActivityInf = it,
+				isTitleVisible = true,
+				titleText = getText(R.string.text_feature_isnt_implemented),
 				messageTextViewCustomize = { msgTextView ->
 					msgTextView.setText(R.string.text_feature_isnt_available_yet)
 				}, isNegativeButtonVisible = false
@@ -191,17 +198,28 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Navigate to Terms & Conditions screen */
 	fun showTermsConditionActivity() {
-
+		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
+			try {
+				val uri = getText(R.string.text_aio_official_terms_conditions_url).toString()
+				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
+			} catch (error: Exception) {
+				error.printStackTrace()
+				showToast(msgId = R.string.text_please_install_web_browser)
+			}
+		}
 	}
 
 	/** Navigate to Privacy Policy screen */
 	fun showPrivacyPolicyActivity() {
-
-	}
-
-	/** Navigate to Content Policy screen */
-	fun showContentPolicyActivity() {
-
+		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
+			try {
+				val uri = getText(R.string.text_aio_official_privacy_policy_url).toString()
+				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
+			} catch (error: Exception) {
+				error.printStackTrace()
+				showToast(msgId = R.string.text_please_install_web_browser)
+			}
+		}
 	}
 
 	/** Navigate to user feedback screen */
@@ -228,14 +246,39 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	/** Constructs the Play Store sharing message */
 	private fun getShareText(context: Context): String {
 		val appName = context.getString(R.string.title_aio_video_downloader)
-		val githubOfficialPage = context.getString(R.string.text_aio_github_official_page_url)
+		val githubOfficialPage = context.getString(R.string.text_aio_official_page_url)
 		return context.getString(R.string.text_sharing_app_msg, appName, githubOfficialPage)
 			.trimIndent()
 	}
 
-	/** Open app page on Play Store */
+	/** Check for new version update */
 	fun checkForNewApkVersion() {
-		safeSettingsFragmentRef?.safeBaseActivityRef?.openApplicationOfficialSite()
+		safeSettingsFragmentRef?.safeBaseActivityRef?.let { safeBaseActivityRef ->
+			ThreadsUtility.executeInBackground(codeBlock = {
+				var waitingDialog: WaitingDialog? = null
+				ThreadsUtility.executeOnMain {
+					waitingDialog = WaitingDialog(
+						baseActivityInf = safeBaseActivityRef,
+						loadingMessage = getText(R.string.text_checking_for_new_update),
+						isCancelable = false,
+					); waitingDialog.show()
+					delay(1000)
+				}
+
+				ThreadsUtility.executeOnMain { waitingDialog?.close() }
+				if (AIOUpdater().isNewUpdateAvailable()) {
+					safeBaseActivityRef.openApplicationOfficialSite()
+				} else {
+					ThreadsUtility.executeOnMain {
+						safeBaseActivityRef.doSomeVibration(50)
+						showToast(msgId = R.string.text_you_are_using_the_latest_version)
+					}
+				}
+			}, errorHandler = {
+				safeBaseActivityRef.doSomeVibration(50)
+				showToast(msgId = R.string.text_something_went_wrong)
+			})
+		}
 	}
 
 	/** Update the end icon of each setting option based on current settings */
