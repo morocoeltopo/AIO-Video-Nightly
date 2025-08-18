@@ -46,7 +46,6 @@ import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioAdblocker
 import app.core.AIOApp.Companion.aioLanguage
@@ -692,7 +691,6 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	 */
 	fun checkForLatestUpdate() {
 		safeBaseActivityRef?.let { safeBaseActivityRef ->
-			if (AIOApp.IS_DEBUG_MODE_ON) return
 			logger.d("Starting checkForLatestUpdate()")
 
 			ThreadsUtility.executeInBackground(codeBlock = {
