@@ -43,7 +43,8 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 	private val safeWebEngineRef = WeakReference(webviewEngine).get()
 
 	companion object {
-
+		// Tracks active download dialogs to prevent duplicates
+		private val activeDownloadLinks = mutableSetOf<String>()
 	}
 
 	/**
@@ -62,9 +63,6 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 		mimetype: String?,
 		contentLength: Long
 	) {
-		val lastDownloadLink = webviewEngine.browserWebClient.lastTimeDownloadLink
-		if (lastDownloadLink == url) return
-
 		// Delegate download handling to show a user dialog.
 		showDownloadAvailableDialog(
 			contentDisposition = contentDisposition,
@@ -161,14 +159,20 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 				}
 			)?.let { dialogBuilder ->
 				dialogBuilder.dialog.setOnDismissListener {
-					webviewEngine.browserWebClient.lastTimeDownloadLink = ""
+					synchronized(activeDownloadLinks) { activeDownloadLinks.remove(url) }
 				}
 
 				dialogBuilder.dialog.setOnCancelListener {
-					webviewEngine.browserWebClient.lastTimeDownloadLink = ""
+					synchronized(activeDownloadLinks) { activeDownloadLinks.remove(url) }
 				}
 
-				dialogBuilder.show()
+				synchronized(activeDownloadLinks) {
+					if (activeDownloadLinks.contains(url) == false) {
+						dialogBuilder.show()
+						activeDownloadLinks.add(url)
+					}
+				}
+
 				dialogBuilder.setOnClickForPositiveButton {
 					dialogBuilder.close()
 					addToDownloadSystem(downloadModel)

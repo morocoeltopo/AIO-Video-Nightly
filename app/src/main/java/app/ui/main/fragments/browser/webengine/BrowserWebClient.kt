@@ -36,9 +36,6 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
     // Weak reference to parent activity to prevent leaks
     val safeMotherActivityRef = webviewEngine.safeMotherActivityRef
 
-    // Tracks last detected download URL to prevent duplicate dialogs
-    var lastTimeDownloadLink: String = ""
-
     /**
      * Called when page starts loading
      * @param webView The WebView that initiated the callback
@@ -47,7 +44,7 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
      */
     override fun onPageStarted(webView: WebView?, url: String?, favicon: Bitmap?) {
         super.onPageStarted(webView, url, favicon)
-        resetLastTimeDownloadLink()
+        println("On Page Started URL = $url")
         analyzeDownloadableLink(url)
         updateBrowserFavicon(webView)
         resetVideoGrabbingButton(webviewEngine)
@@ -61,6 +58,7 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
     override fun onPageFinished(webView: WebView?, url: String?) {
         super.onPageFinished(webView, url)
         updateBrowserFavicon(webView)
+        println("On Page Finished URL = $url")
         analyzeDownloadableLink(url)
     }
 
@@ -75,6 +73,7 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
         val url = request?.url?.toString() ?: return true
         if (isInvalidScheme(url)) return true
         if (isSpecialCaseUrl(url)) return handleSpecialUrl(url)
+        println("On shouldOverrideUrlLoading URL = $url")
         analyzeDownloadableLink(url)
         return false
     }
@@ -92,7 +91,8 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 
             // Only process if request is for main frame (not CSS/JS/images/etc.)
             if (request?.isForMainFrame == true && isDownloadableUrl(url)) {
-                analyzeDownloadableLink(url)
+                println("On shouldInterceptRequest URL = $url")
+               // analyzeDownloadableLink(url)
             }
 
             // Video format detection (optional)
@@ -130,18 +130,10 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
     private fun analyzeDownloadableLink(url: String?) {
         url?.let {
             normalizeEncodedUrl(url).let { link ->
-                if (lastTimeDownloadLink == link) return
                 if (isDownloadableUrl(link) == false) return
                 triggerDownloadManually(normalizeEncodedUrl(link))
             }
         }
-    }
-
-    /**
-     * Resets the last detected download URL
-     */
-    private fun resetLastTimeDownloadLink() {
-        lastTimeDownloadLink = ""
     }
 
     /**
@@ -161,7 +153,6 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
                             if (urlFileInfo.fileSize > 0) {
                                 val filename = decodeURLFileName(urlFileInfo.fileName)
                                 ThreadsUtility.executeOnMain {
-                                    lastTimeDownloadLink = url
                                     webviewEngine.webViewDownloadHandler.showDownloadAvailableDialog(
                                         url = url,
                                         contentLength = urlFileInfo.fileSize,
