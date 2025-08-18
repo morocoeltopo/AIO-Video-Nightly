@@ -11,7 +11,10 @@
 	<string name="title_aio_programs" translatable="false">AIO Programs</string>
 	<string name="title_aio_archives" translatable="false">AIO Archives</string>
 	<string name="title_aio_others" translatable="false">AIO Others</string>
-	<string name="text_aio_github_official_page_url" translatable="false">https://github.com/shibaFoss/AIO-Video-Downloader</string>
+	<string name="text_aio_official_page_url" translatable="false">https://github.com/shibaFoss/AIO-Video-Downloader</string>
+	<string name="text_aio_official_privacy_policy_url" translatable="false">https://github.com/shibaFoss/AIO-Video-Downloader/blob/master/PRIVACY_POLICY.md</string>
+	<string name="text_aio_official_terms_conditions_url" translatable="false">https://github.com/shibaFoss/AIO-Video-Downloader/blob/master/TERMS_CONDITIONS.md</string>
+
 	<string name="text_https_google_com" translatable="false">https://google.com/</string>
 	<string name="text_whatsapp_status_file_dir" translatable="false">/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/.Statuses/</string>
 	<string name="text_downloads_default_http_user_agent" translatable="false">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36</string>
@@ -108,7 +111,7 @@
 
 	<string name="text_sample_video_file_name">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</string>
 	<string name="text_app_running_in_the_background">Search and download your videos.</string>
-	<string name="text_feature_isnt_available_yet">This feature is currently not available, but we\'re working on it. <b>Thank you for your patience—stay tuned for future updates! 😊</b></string>
+	<string name="text_feature_isnt_available_yet">This feature is currently not available, but we\'re working on it. <b>Thank you for your patience and stay tuned for future updates! 😊</b></string>
 	<string name="text_feature_isnt_implemented">Feature isn\'t implemented yet</string>
 	<string name="title_okay">Okay</string>
 	<string name="text_mobile_user_agent">Mobile user agent</string>
@@ -482,5 +485,10 @@
 	<string name="title_download_yt_videos">Download YouTube Videos</string>
 	<string name="title_new_version_available">New Version Available</string>
 	<string name="title_update_now">Update Now</string>
+	<string name="text_show_dialog_at_bottom">Show dialogs at bottom</string>
+	<string name="text_show_startup_splash_screen">Show startup splash screen</string>
+	<string name="title_policies_licenses">Customer Services</string>
+	<string name="text_checking_for_new_update">Checking for new update, Please wait…</string>
+	<string name="text_you_are_using_the_latest_version">You\'re using the latest version.</string>
 
 </resources>

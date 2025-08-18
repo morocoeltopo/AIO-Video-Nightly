@@ -14,6 +14,7 @@
 		android:orientation="vertical">
 
 		<androidx.cardview.widget.CardView
+			android:id="@+id/container_application_settings"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginStart="@dimen/_15"
@@ -332,6 +333,7 @@
 		</androidx.cardview.widget.CardView>
 
 		<androidx.cardview.widget.CardView
+			android:id="@+id/container_customer_service"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginStart="@dimen/_15"
@@ -362,14 +364,14 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center"
 						android:maxLines="1"
-						android:text="@string/title_content_policy"
+						android:text="@string/title_policies_licenses"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						android:textStyle="bold" />
 				</LinearLayout>
 
 				<LinearLayout
-					android:id="@+id/btn_open_terms_condition"
+					android:id="@+id/btn_share_with_friends"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
 					android:layout_marginStart="@dimen/_10"
@@ -382,85 +384,19 @@
 					tools:ignore="TouchTargetSizeCheck">
 
 					<TextView
-						android:id="@+id/txt_open_terms_condition"
+						android:id="@+id/txt_share_with_friends"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:layout_margin="@dimen/_8"
-						android:drawableStart="@drawable/ic_button_term_conditions"
+						android:drawableStart="@drawable/ic_button_share"
 						android:drawableEnd="@drawable/ic_button_open_small"
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_terms_conditions"
+						android:text="@string/text_share_with_friends"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
-
-				<LinearLayout
-					android:id="@+id/btn_open_privacy_policy"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:layout_marginStart="@dimen/_10"
-					android:layout_marginTop="@dimen/_0"
-					android:layout_marginEnd="@dimen/_10"
-					android:layout_marginBottom="@dimen/_0"
-					android:background="@drawable/ic_button_negative_selector"
-					android:clickable="true"
-					android:orientation="vertical"
-					tools:ignore="TouchTargetSizeCheck">
-
-					<TextView
-						android:id="@+id/txt_open_privacy_policy"
-						android:layout_width="match_parent"
-						android:layout_height="match_parent"
-						android:layout_margin="@dimen/_8"
-						android:drawableStart="@drawable/ic_privacy_policy"
-						android:drawableEnd="@drawable/ic_button_open_small"
-						android:drawablePadding="@dimen/_5"
-						android:drawableTint="@color/color_secondary"
-						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_privacy_policy"
-						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size" />
-				</LinearLayout>
-
-				<LinearLayout
-					android:id="@+id/btn_open_content_policy"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:layout_marginStart="@dimen/_10"
-					android:layout_marginTop="@dimen/_0"
-					android:layout_marginEnd="@dimen/_10"
-					android:layout_marginBottom="@dimen/_0"
-					android:background="@drawable/ic_button_negative_selector"
-					android:clickable="true"
-					android:orientation="vertical"
-					android:visibility="gone"
-					tools:ignore="TouchTargetSizeCheck">
-
-					<TextView
-						android:id="@+id/txt_open_content_policy"
-						android:layout_width="match_parent"
-						android:layout_height="match_parent"
-						android:layout_margin="@dimen/_8"
-						android:drawableStart="@drawable/ic_button_content_policy"
-						android:drawableEnd="@drawable/ic_button_open_small"
-						android:drawablePadding="@dimen/_5"
-						android:drawableTint="@color/color_secondary"
-						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_content_policy"
-						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size" />
-				</LinearLayout>
-
-				<View
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_1"
-					android:layout_marginStart="@dimen/_10"
-					android:layout_marginTop="@dimen/_5"
-					android:layout_marginEnd="@dimen/_10"
-					android:layout_marginBottom="@dimen/_5"
-					android:background="@color/transparent_dark" />
 
 				<LinearLayout
 					android:id="@+id/btn_open_feedback"
@@ -518,8 +454,45 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<View
+					android:layout_width="match_parent"
+					android:layout_height="@dimen/_1"
+					android:layout_marginStart="@dimen/_10"
+					android:layout_marginTop="@dimen/_5"
+					android:layout_marginEnd="@dimen/_10"
+					android:layout_marginBottom="@dimen/_5"
+					android:background="@color/transparent_dark" />
+
 				<LinearLayout
-					android:id="@+id/btn_share_with_friends"
+					android:id="@+id/btn_open_privacy_policy"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:layout_marginStart="@dimen/_10"
+					android:layout_marginTop="@dimen/_0"
+					android:layout_marginEnd="@dimen/_10"
+					android:layout_marginBottom="@dimen/_0"
+					android:background="@drawable/ic_button_negative_selector"
+					android:clickable="true"
+					android:orientation="vertical"
+					tools:ignore="TouchTargetSizeCheck">
+
+					<TextView
+						android:id="@+id/txt_open_privacy_policy"
+						android:layout_width="match_parent"
+						android:layout_height="match_parent"
+						android:layout_margin="@dimen/_8"
+						android:drawableStart="@drawable/ic_privacy_policy"
+						android:drawableEnd="@drawable/ic_button_open_small"
+						android:drawablePadding="@dimen/_5"
+						android:drawableTint="@color/color_secondary"
+						android:fontFamily="@font/application_font_family"
+						android:text="@string/text_privacy_policy"
+						android:textColor="@color/color_text_primary"
+						android:textSize="@dimen/normal_text_size" />
+				</LinearLayout>
+
+				<LinearLayout
+					android:id="@+id/btn_open_terms_condition"
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
 					android:layout_marginStart="@dimen/_10"
@@ -532,23 +505,25 @@
 					tools:ignore="TouchTargetSizeCheck">
 
 					<TextView
-						android:id="@+id/txt_share_with_friends"
+						android:id="@+id/txt_open_terms_condition"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:layout_margin="@dimen/_8"
-						android:drawableStart="@drawable/ic_button_share"
+						android:drawableStart="@drawable/ic_button_term_conditions"
 						android:drawableEnd="@drawable/ic_button_open_small"
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_share_with_friends"
+						android:text="@string/text_terms_conditions"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
+
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
 		<androidx.cardview.widget.CardView
+			android:id="@+id/container_application_version"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginStart="@dimen/_15"

@@ -33,17 +33,19 @@ import lib.ui.builders.WaitingDialog
 import java.lang.ref.WeakReference
 
 /**
- * Class responsible for handling logic when interacting with Settings options.
+ * Handles the logic for Settings screen interactions (toggles, dialogs, navigation).
+ * Uses [logger] for debugging flow across actions.
  */
 class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	private val logger = LogHelperUtils.from(javaClass)
 
-	// Keeps a weak reference to the fragment to avoid memory leaks.
+	// Weak reference to avoid leaks
 	private val safeSettingsFragmentRef = WeakReference(settingsFragment).get()
 
 	/** Show a dialog to select default download location */
 	fun setDefaultDownloadLocationPicker() {
+		logger.d("Opening Download Location Picker")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivity ->
 			DownloadLocation(baseActivity = safeMotherActivity).show()
 		}
@@ -51,6 +53,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Launches the language picker and restarts the app upon change */
 	fun showApplicationLanguageChanger() {
+		logger.d("Opening Language Picker Dialog")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
 			MsgDialogUtils.getMessageDialog(
 				baseActivityInf = safeMotherActivityRef,
@@ -66,6 +69,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				}
 			)?.apply {
 				setOnClickForPositiveButton {
+					logger.d("Language change confirmed → restarting app")
 					close()
 					LanguagePickerDialog(safeMotherActivityRef).apply {
 						getDialogBuilder().setCancelable(true)
@@ -81,6 +85,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Displays a dialog to set the default homepage for the in-app browser */
 	fun setBrowserDefaultHomepage() {
+		logger.d("Opening Browser Homepage dialog")
 		try {
 			safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeActivityRef ->
 				val dialogBuilder = DialogBuilder(safeActivityRef)
@@ -98,13 +103,16 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 				dialogBuilder.setOnClickForPositiveButton {
 					val userEnteredURL = editTextURL.text.toString()
+					logger.d("User entered homepage: $userEnteredURL")
 					if (isValidDomain(userEnteredURL)) {
 						val finalNormalizedURL = ensureHttps(userEnteredURL) ?: userEnteredURL
 						aioSettings.browserDefaultHomepage = finalNormalizedURL
 						aioSettings.updateInStorage()
+						logger.d("Homepage updated: $finalNormalizedURL")
 						dialogBuilder.close()
 						showToast(msgId = R.string.title_successful)
 					} else {
+						logger.d("Invalid homepage URL entered")
 						safeActivityRef.doSomeVibration(50)
 						showToast(msgId = R.string.text_invalid_url)
 					}
@@ -118,6 +126,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				})
 			}
 		} catch (error: Exception) {
+			logger.d("Error setting homepage: ${error.message}")
 			error.printStackTrace()
 			showToast(msgId = R.string.text_something_went_wrong)
 		}
@@ -128,8 +137,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		try {
 			aioSettings.browserEnablePopupBlocker = !aioSettings.browserEnablePopupBlocker
 			aioSettings.updateInStorage()
+			logger.d("Popup Blocker toggled: ${aioSettings.browserEnablePopupBlocker}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
+			logger.d("Error toggling popup blocker: ${error.message}")
 			error.printStackTrace()
 		}
 	}
@@ -139,8 +150,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		try {
 			aioSettings.browserEnableVideoGrabber = !aioSettings.browserEnableVideoGrabber
 			aioSettings.updateInStorage()
+			logger.d("Video Grabber toggled: ${aioSettings.browserEnableVideoGrabber}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
+			logger.d("Error toggling video grabber: ${error.message}")
 			error.printStackTrace()
 		}
 	}
@@ -150,8 +163,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		try {
 			aioSettings.downloadHideNotification = !aioSettings.downloadHideNotification
 			aioSettings.updateInStorage()
+			logger.d("Download Notification Hidden: ${aioSettings.downloadHideNotification}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
+			logger.d("Error toggling download notification: ${error.message}")
 			error.printStackTrace()
 		}
 	}
@@ -161,8 +176,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		try {
 			aioSettings.downloadWifiOnly = !aioSettings.downloadWifiOnly
 			aioSettings.updateInStorage()
+			logger.d("Wi-Fi only downloads: ${aioSettings.downloadWifiOnly}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
+			logger.d("Error toggling Wi-Fi only downloads: ${error.message}")
 			error.printStackTrace()
 		}
 	}
@@ -170,19 +187,19 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	/** Toggle sound played when a download completes */
 	fun toggleDownloadNotificationSound() {
 		try {
-			aioSettings.downloadPlayNotificationSound =
-				!aioSettings.downloadPlayNotificationSound
+			aioSettings.downloadPlayNotificationSound = !aioSettings.downloadPlayNotificationSound
 			aioSettings.updateInStorage()
+			logger.d("Download Sound Enabled: ${aioSettings.downloadPlayNotificationSound}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
+			logger.d("Error toggling download sound: ${error.message}")
 			error.printStackTrace()
 		}
 	}
 
-	/**
-	 * Opens advanced settings placeholder (currently shows "not available" message).
-	 */
+	/** Opens advanced settings placeholder (currently shows not available message). */
 	fun openAdvanceApplicationSettings() {
+		logger.d("Opening Advanced Settings (not implemented)")
 		safeSettingsFragmentRef?.safeMotherActivityRef.let {
 			it?.doSomeVibration(50)
 			MsgDialogUtils.showMessageDialog(
@@ -198,11 +215,13 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Navigate to Terms & Conditions screen */
 	fun showTermsConditionActivity() {
+		logger.d("Opening Terms & Conditions")
 		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
 			try {
 				val uri = getText(R.string.text_aio_official_terms_conditions_url).toString()
 				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 			} catch (error: Exception) {
+				logger.d("Error opening Terms: ${error.message}")
 				error.printStackTrace()
 				showToast(msgId = R.string.text_please_install_web_browser)
 			}
@@ -211,11 +230,13 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Navigate to Privacy Policy screen */
 	fun showPrivacyPolicyActivity() {
+		logger.d("Opening Privacy Policy")
 		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
 			try {
 				val uri = getText(R.string.text_aio_official_privacy_policy_url).toString()
 				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 			} catch (error: Exception) {
+				logger.d("Error opening Privacy Policy: ${error.message}")
 				error.printStackTrace()
 				showToast(msgId = R.string.text_please_install_web_browser)
 			}
@@ -224,6 +245,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Navigate to user feedback screen */
 	fun openUserFeedbackActivity() {
+		logger.d("Opening User Feedback Activity")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.openActivity(
 			UserFeedbackActivity::class.java, shouldAnimate = false
 		)
@@ -231,11 +253,13 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Open application details screen in Android settings */
 	fun openApplicationInformation() {
+		logger.d("Opening Application Info")
 		safeSettingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting()
 	}
 
 	/** Share the app with others via system sharing intent */
 	fun shareApplicationWithFriends() {
+		logger.d("Sharing application")
 		ShareUtility.shareText(
 			context = safeSettingsFragmentRef?.safeMotherActivityRef,
 			title = getText(R.string.text_share_with_others),
@@ -253,7 +277,9 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Check for new version update */
 	fun checkForNewApkVersion() {
+		logger.d("Checking for new APK version")
 		safeSettingsFragmentRef?.safeBaseActivityRef?.let { safeBaseActivityRef ->
+
 			ThreadsUtility.executeInBackground(codeBlock = {
 				var waitingDialog: WaitingDialog? = null
 				ThreadsUtility.executeOnMain {
@@ -265,16 +291,20 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 					delay(1000)
 				}
 
-				ThreadsUtility.executeOnMain { waitingDialog?.close() }
 				if (AIOUpdater().isNewUpdateAvailable()) {
+					ThreadsUtility.executeOnMain { waitingDialog?.close() }
+					logger.d("New update available → opening official site")
 					safeBaseActivityRef.openApplicationOfficialSite()
 				} else {
+					ThreadsUtility.executeOnMain { waitingDialog?.close() }
+					logger.d("Already on latest version")
 					ThreadsUtility.executeOnMain {
 						safeBaseActivityRef.doSomeVibration(50)
 						showToast(msgId = R.string.text_you_are_using_the_latest_version)
 					}
 				}
 			}, errorHandler = {
+				logger.d("Error while checking updates: ${it.message}")
 				safeBaseActivityRef.doSomeVibration(50)
 				showToast(msgId = R.string.text_something_went_wrong)
 			})
@@ -283,6 +313,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	/** Update the end icon of each setting option based on current settings */
 	fun updateSettingStateUI() {
+		logger.d("Updating Setting State UI")
 		safeSettingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
 			listOf(
 				SettingViewConfig(
@@ -324,10 +355,11 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	}
 
 	/**
-	 * Restarts the application. This can be useful when something goes wrong,
-	 * providing users with a quick way to recover from unexpected behavior.
+	 * Restarts the application after user confirmation.
+	 * Useful for applying major changes or recovering from unexpected states.
 	 */
 	fun restartApplication() {
+		logger.d("Restart Application dialog opened")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
 			MsgDialogUtils.getMessageDialog(
 				baseActivityInf = safeMotherActivityRef,
@@ -345,18 +377,17 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Function that execute the actual restarting application by the exiting the system process id.
-	 */
+	/** Executes the actual restart by relaunching the main activity and exiting process */
 	private fun processedToRestart() {
+		logger.d("Processing application restart")
 		val context = AIOApp.INSTANCE
 		val packageManager = context.packageManager
 		val intent = packageManager.getLaunchIntentForPackage(context.packageName)
 		intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
 		context.startActivity(intent)
-		Runtime.getRuntime().exit(0) // Forcefully exits to ensure full restart
+		Runtime.getRuntime().exit(0)
 	}
 
-	/** Data class representing a view ID and whether the setting is enabled */
+	/** Holds mapping of setting TextView and its state */
 	data class SettingViewConfig(@field:IdRes val viewId: Int, val isEnabled: Boolean)
 }

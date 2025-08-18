@@ -125,7 +125,7 @@
     </style>
 
     <style name="style_padding_textview_style">
-        <item name="android:includeFontPadding">true</item>
+        <item name="android:includeFontPadding">false</item>
         <item name="android:lineSpacingMultiplier">0.9</item>
     </style>
 </resources>

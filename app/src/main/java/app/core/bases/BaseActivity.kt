@@ -416,7 +416,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	 */
 	override fun openApplicationOfficialSite() {
 		try {
-			val uri = "https://github.com/shibaFoss/VideoMate"
+			val uri = getText(R.string.text_aio_official_page_url).toString()
 			startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 		} catch (error: Exception) {
 			error.printStackTrace()

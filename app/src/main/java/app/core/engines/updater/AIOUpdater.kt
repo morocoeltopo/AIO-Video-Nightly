@@ -9,6 +9,7 @@ import okhttp3.Request
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
+import java.util.concurrent.TimeUnit
 
 /**
  * AIOUpdater is responsible for checking the latest version of the app
@@ -77,37 +78,65 @@ class AIOUpdater {
 	 * @param url The URL of the version information text file.
 	 * @return [UpdateInfo] object if successful, or null if the request fails.
 	 */
-	fun fetchUpdateInfo(): UpdateInfo? {
+	fun fetchUpdateInfo(
+		maxRetries: Int = 3,
+		initialDelayMillis: Long = 1000L
+	): UpdateInfo? {
 		val url = GITHUB_UPDATE_INFO_URL
 		logger.d("Fetching update info from URL: $url")
-		val client = OkHttpClient()
+
+		// OkHttp client with timeouts
+		val client = OkHttpClient.Builder()
+			.connectTimeout(15, TimeUnit.SECONDS)
+			.readTimeout(20, TimeUnit.SECONDS)
+			.writeTimeout(20, TimeUnit.SECONDS)
+			.build()
+
 		val request = Request.Builder().url(url).build()
 
-		return try {
-			client.newCall(request).execute().use { response ->
-				if (!response.isSuccessful) {
-					logger.d("Request failed with code: ${response.code}")
-					return null
-				}
+		var attempt = 0
+		var delay = initialDelayMillis
 
-				val lines = response.body.string().lines().associate {
-					val parts = it.split("=", limit = 2)
-					if (parts.size == 2) parts[0].trim() to parts[1].trim() else "" to ""
-				}
+		while (attempt < maxRetries) {
+			try {
+				attempt++
+				logger.d("Attempt $attempt of $maxRetries...")
 
-				val updateInfo = UpdateInfo(
-					latestVersion = lines["latest_version"],
-					latestApkUrl = lines["latest_apk_url"],
-					changelogUrl = lines["changelog_url"],
-					publishedDate = lines["published_date"]
-				)
-				logger.d("Successfully parsed update info: $updateInfo")
-				updateInfo
+				client.newCall(request).execute().use { response ->
+					if (!response.isSuccessful) {
+						logger.d("Request failed (code=${response.code}, msg=${response.message})")
+					} else {
+						val lines = response.body.string().lines().associate {
+							val parts = it.split("=", limit = 2)
+							if (parts.size == 2) parts[0].trim() to parts[1].trim() else "" to ""
+						}
+
+						val updateInfo = UpdateInfo(
+							latestVersion = lines["latest_version"],
+							latestApkUrl = lines["latest_apk_url"],
+							changelogUrl = lines["changelog_url"],
+							publishedDate = lines["published_date"]
+						)
+						logger.d("Successfully parsed update info: $updateInfo")
+						return updateInfo
+					}
+				}
+			} catch (error: IOException) {
+				logger.d("Network error on attempt $attempt: ${error.localizedMessage}")
+			} catch (error: Exception) {
+				logger.d("Unexpected error on attempt $attempt: ${error.localizedMessage}")
 			}
-		} catch (error: IOException) {
-			logger.d("Error fetching update info: ${error.localizedMessage}")
-			null
+
+			// Exponential backoff before retrying
+			if (attempt < maxRetries) {
+				logger.d("Retrying in ${delay}ms...")
+				Thread.sleep(delay)
+				delay *= 2
+			}
 		}
+
+		logger.d("Failed to fetch update info after $maxRetries attempts.")
+		return null
 	}
 
 	/**
