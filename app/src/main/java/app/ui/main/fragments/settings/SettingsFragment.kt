@@ -59,6 +59,7 @@ class SettingsFragment : BaseFragment() {
 	 * @return The layout resource ID (R.layout.frag_settings_1_main_1)
 	 */
 	override fun getLayoutResId(): Int {
+		logger.d("Providing layout resource ID for SettingsFragment")
 		return R.layout.frag_settings_1_main_1
 	}
 
@@ -70,6 +71,7 @@ class SettingsFragment : BaseFragment() {
 	 * @param state The saved instance state bundle, if any
 	 */
 	override fun onAfterLayoutLoad(layoutView: View, state: Bundle?) {
+		logger.d("onAfterLayoutLoad() called: initializing views and click listeners")
 		safeSettingsFragmentRef?.let { fragmentRef ->
 			safeFragmentLayoutRef?.let { layoutRef ->
 				registerSelfReferenceInMotherActivity()
@@ -84,6 +86,7 @@ class SettingsFragment : BaseFragment() {
 	 * Re-registers with the activity and refreshes UI state.
 	 */
 	override fun onResumeFragment() {
+		logger.d("onResumeFragment() called: re-registering fragment and updating UI state")
 		registerSelfReferenceInMotherActivity()
 		settingsOnClickLogic?.updateSettingStateUI()
 	}
@@ -93,6 +96,7 @@ class SettingsFragment : BaseFragment() {
 	 * Currently no cleanup needed here.
 	 */
 	override fun onPauseFragment() {
+		logger.d("onPauseFragment() called: no specific cleanup required")
 		// Intentionally left blank
 	}
 
@@ -101,6 +105,7 @@ class SettingsFragment : BaseFragment() {
 	 * Cleans up references to prevent memory leaks.
 	 */
 	override fun onDestroyView() {
+		logger.d("onDestroyView() called: unregistering fragment reference")
 		unregisterSelfReferenceInMotherActivity()
 		super.onDestroyView()
 	}
@@ -110,6 +115,7 @@ class SettingsFragment : BaseFragment() {
 	 * Allows the activity to reference this fragment when needed.
 	 */
 	private fun registerSelfReferenceInMotherActivity() {
+		logger.d("Registering SettingsFragment reference in MotherActivity")
 		safeMotherActivityRef?.settingsFragment = safeSettingsFragmentRef
 		safeMotherActivityRef?.sideNavigation?.closeDrawerNavigation()
 	}
@@ -119,6 +125,7 @@ class SettingsFragment : BaseFragment() {
 	 * Prevents memory leaks when the fragment is destroyed.
 	 */
 	private fun unregisterSelfReferenceInMotherActivity() {
+		logger.d("Unregistering SettingsFragment reference from MotherActivity")
 		safeMotherActivityRef?.settingsFragment = null
 	}
 
@@ -127,6 +134,7 @@ class SettingsFragment : BaseFragment() {
 	 * @param fragmentLayout The root view of the fragment
 	 */
 	private fun initializeViews(fragmentLayout: View) {
+		logger.d("Initializing view references for SettingsFragment")
 		buttonCheckNewUpdate = fragmentLayout.findViewById(R.id.btn_check_new_update)
 		initializeViewsInfo(fragmentLayout)
 	}
@@ -142,6 +150,7 @@ class SettingsFragment : BaseFragment() {
 		settingsFragmentRef: SettingsFragment,
 		fragmentLayout: View
 	) {
+		logger.d("Setting up click listeners for settings options")
 		settingsOnClickLogic = SettingsOnClickLogic(settingsFragmentRef)
 
 		// Map of view IDs to their corresponding click actions
@@ -166,7 +175,10 @@ class SettingsFragment : BaseFragment() {
 
 		// Apply all click listeners
 		clickActions.forEach { (id, action) ->
-			fragmentLayout.setClickListener(id) { action() }
+			fragmentLayout.setClickListener(id) {
+				logger.d("Click action triggered for viewId=$id")
+				action()
+			}
 		}
 	}
 
@@ -177,6 +189,7 @@ class SettingsFragment : BaseFragment() {
 	 * @param fragmentLayout The root view of the fragment
 	 */
 	private fun initializeViewsInfo(fragmentLayout: View) {
+		logger.d("Initializing version info views with versionName=$versionName and versionCode=$versionCode")
 		with(fragmentLayout) {
 			findViewById<TextView>(R.id.txt_version_info)?.apply {
 				val versionNameText = "${getString(R.string.title_version_number)} $versionName"
