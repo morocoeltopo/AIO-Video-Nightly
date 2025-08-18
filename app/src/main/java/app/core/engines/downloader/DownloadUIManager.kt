@@ -46,10 +46,13 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 	 */
 	@Synchronized
 	fun redrawEverything() {
+		logger.d("Redrawing all active download UI elements")
 		ThreadsUtility.executeInBackground(codeBlock = {
 			ThreadsUtility.executeOnMain(codeBlock = {
+				logger.d("Clearing active tasks container")
 				activeTasksFragment?.activeTasksListContainer?.removeAllViews()
 				downloadSystem.activeDownloadDataModels.forEach { downloadDataModel ->
+					logger.d("Adding UI for active download: ${downloadDataModel.fileName}")
 					addNewActiveUI(downloadDataModel)
 				}
 			})
@@ -64,13 +67,20 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 	 */
 	@Synchronized
 	fun addNewActiveUI(downloadModel: DownloadDataModel, position: Int = -1) {
+		logger.d("Adding new active UI for: ${downloadModel.fileName}, position=$position")
 		ThreadsUtility.executeInBackground(codeBlock = {
 			ThreadsUtility.executeOnMain(codeBlock = {
 				val rowUI = generateActiveUI(downloadModel)
+				logger.d("Generated new row UI for: ${downloadModel.fileName}")
 				configureActiveUI(rowUI, downloadModel)
 				val activeDownloadsListContainer = activeTasksFragment?.activeTasksListContainer
-				if (position != -1) activeDownloadsListContainer?.addView(rowUI, position)
-				else activeDownloadsListContainer?.addView(rowUI)
+				if (position != -1) {
+					logger.d("Inserting row at position: $position")
+					activeDownloadsListContainer?.addView(rowUI, position)
+				} else {
+					logger.d("Appending row at end")
+					activeDownloadsListContainer?.addView(rowUI)
+				}
 			})
 		})
 	}
@@ -82,11 +92,17 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 	 */
 	@Synchronized
 	fun updateActiveUI(downloadModel: DownloadDataModel) {
+		logger.d("Updating active UI for: ${downloadModel.fileName}")
 		ThreadsUtility.executeInBackground(codeBlock = {
 			ThreadsUtility.executeOnMain(codeBlock = {
 				val activeDownloadsListContainer = activeTasksFragment?.activeTasksListContainer
 				val resultedRow = activeDownloadsListContainer?.findViewById<View>(downloadModel.id)
-				if (resultedRow != null) configureActiveUI(resultedRow, downloadModel)
+				if (resultedRow != null) {
+					logger.d("Found existing row, configuring UI for: ${downloadModel.fileName}")
+					configureActiveUI(resultedRow, downloadModel)
+				} else {
+					logger.d("No existing row found for: ${downloadModel.fileName}")
+				}
 			})
 		})
 	}
@@ -99,13 +115,20 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 	 */
 	@SuppressLint("InflateParams")
 	private fun generateActiveUI(downloadModel: DownloadDataModel): View {
+		logger.d("Generating UI for download model: ${downloadModel.fileName}")
 		val inflater = LayoutInflater.from(AIOApp.INSTANCE)
 		val rowUI = inflater.inflate(R.layout.frag_down_3_active_1_row_1, null)
 		rowUI.apply {
 			id = downloadModel.id
 			isClickable = true
-			setOnClickListener { activeTasksFragment?.onDownloadUIItemClick(downloadModel) }
-			setOnLongClickListener { activeTasksFragment?.onDownloadUIItemClick(downloadModel); true }
+			setOnClickListener {
+				logger.d("Row clicked for: ${downloadModel.fileName}")
+				activeTasksFragment?.onDownloadUIItemClick(downloadModel)
+			}
+			setOnLongClickListener {
+				logger.d("Row long-clicked for: ${downloadModel.fileName}")
+				activeTasksFragment?.onDownloadUIItemClick(downloadModel); true
+			}
 			val dpValue = 0f
 			val pixels = dpValue * context.resources.displayMetrics.density
 			val layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT)
@@ -121,26 +144,35 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 	 */
 	@Synchronized
 	fun removeActiveUI(downloadModel: DownloadDataModel) {
+		logger.d("Removing active UI for: ${downloadModel.fileName}")
 		val activeDownloadListContainer = activeTasksFragment?.activeTasksListContainer
 		activeDownloadListContainer?.let {
 			val resultedRow = activeDownloadListContainer.findViewById<View>(downloadModel.id)
 			if (resultedRow != null) {
+				logger.d("Found row to remove for: ${downloadModel.fileName}")
 				if (resultedRow.parent != null) {
 					val parent = resultedRow.parent as ViewGroup
 					parent.removeView(resultedRow)
+					logger.d("Removed row from parent view group")
 				}
 
 				activeDownloadListContainer.removeView(resultedRow)
+				logger.d("Removed row from activeTasksListContainer")
+
 				ThreadsUtility.executeInBackground(codeBlock = {
 					ThreadsUtility.executeOnMain {
 						val view = activeDownloadListContainer.findViewById<View>(downloadModel.id)
 						if (view != null) {
+							logger.d("Cleaning up remaining view for: ${downloadModel.fileName}")
 							if (view.parent != null) {
-								val parent = view.parent as ViewGroup; parent.removeView(view)
+								val parent = view.parent as ViewGroup
+								parent.removeView(view)
 							}; activeTasksFragment?.activeTasksListContainer?.removeView(view)
 						}
 					}
 				})
+			} else {
+				logger.d("No row found to remove for: ${downloadModel.fileName}")
 			}
 		}
 	}
@@ -153,10 +185,17 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 	 */
 	@Synchronized
 	private fun configureActiveUI(rowUI: View, downloadModel: DownloadDataModel) {
+		logger.d("Configuring UI for: ${downloadModel.fileName}")
 		ThreadsUtility.executeInBackground(codeBlock = {
 			ThreadsUtility.executeOnMain {
-				if (rowUI.tag == null) rowUI.tag = DownloaderRowUI(rowUI)
-				(rowUI.tag as DownloaderRowUI).apply { updateView(downloadModel) }
+				if (rowUI.tag == null) {
+					logger.d("Creating new DownloaderRowUI for: ${downloadModel.fileName}")
+					rowUI.tag = DownloaderRowUI(rowUI)
+				}
+				(rowUI.tag as DownloaderRowUI).apply {
+					logger.d("Updating DownloaderRowUI for: ${downloadModel.fileName}")
+					updateView(downloadModel)
+				}
 			}
 		})
 	}

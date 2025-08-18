@@ -20,22 +20,22 @@ import kotlin.coroutines.CoroutineContext
  * Also includes coroutine helpers for better structure and error handling.
  */
 object ThreadsUtility : CoroutineScope {
-	
+
 	/** Logger for debugging and error tracking. */
 	private val logger = LogHelperUtils.from(javaClass)
-	
+
 	/** Default timeout duration for background tasks (in milliseconds). */
 	private const val JOB_TIMEOUT = 500000L
-	
+
 	/** The root SupervisorJob for the scope, allowing structured concurrency. */
 	private val job = SupervisorJob()
-	
+
 	/** The coroutine context combining a default dispatcher, the job, and an error handler. */
 	override val coroutineContext: CoroutineContext
 		get() = Dispatchers.Default + job + CoroutineExceptionHandler { _, throwable ->
 			logger.d("Coroutine error: ${throwable.message}")
 		}
-	
+
 	/**
 	 * Executes a suspending block of code in the IO dispatcher with a default timeout.
 	 *
@@ -54,7 +54,7 @@ object ThreadsUtility : CoroutineScope {
 			errorHandler?.invoke(error)
 		}
 	}
-	
+
 	/**
 	 * Executes a suspending block of code on the main thread.
 	 *
@@ -63,7 +63,7 @@ object ThreadsUtility : CoroutineScope {
 	suspend fun executeOnMain(codeBlock: suspend () -> Unit) {
 		withContext(Dispatchers.Main) { codeBlock() }
 	}
-	
+
 	/**
 	 * Executes a background task and then updates the UI on the main thread with the result.
 	 *
@@ -84,12 +84,12 @@ object ThreadsUtility : CoroutineScope {
 			logger.e("Error in executing code in async background thread:", error)
 		}
 	}
-	
+
 	/**
 	 * Cancels all child coroutines launched under the [SupervisorJob] context.
 	 */
 	fun cancelAll() = job.cancelChildren()
-	
+
 	/**
 	 * Returns the lifecycle-aware [CoroutineScope] for the given [LifecycleOwner].
 	 *
