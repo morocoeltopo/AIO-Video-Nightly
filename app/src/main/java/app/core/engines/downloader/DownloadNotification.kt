@@ -26,6 +26,7 @@ import app.ui.others.media_player.MediaPlayerActivity.Companion.PLAY_MEDIA_FILE_
 import com.aio.R
 import lib.files.FileSystemUtility.isAudio
 import lib.files.FileSystemUtility.isVideo
+import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
 import java.io.File
 
@@ -45,27 +46,29 @@ import java.io.File
  * - Suppressed based on user preferences
  */
 class DownloadNotification {
-	
+
+	private val logger = LogHelperUtils.from(javaClass)
+
 	private lateinit var notificationManager: NotificationManager
-	
+
 	companion object {
 		/** Notification channel ID for download notifications */
 		const val CHANNEL_ID = "Download_Notification_Channel"
-		
+
 		/** User-visible name for the notification channel */
 		const val CHANNEL_NAME = "Download Notifications"
-		
+
 		/** Intent extra key for tracking notification source */
 		const val WHERE_DID_YOU_COME_FROM = "WHERE_DID_YOU_COME_FROM"
-		
+
 		/** Value indicating the notification came from download completion */
 		const val FROM_DOWNLOAD_NOTIFICATION = 4
 	}
-	
+
 	init {
 		createNotificationChannelForSystem()
 	}
-	
+
 	/**
 	 * Updates or cancels the notification based on download state.
 	 *
@@ -78,7 +81,7 @@ class DownloadNotification {
 			return
 		}; updateDownloadProgress(downloadDataModel)
 	}
-	
+
 	/**
 	 * Creates or updates a progress notification for the download.
 	 *
@@ -87,7 +90,7 @@ class DownloadNotification {
 	private fun updateDownloadProgress(downloadDataModel: DownloadDataModel) {
 		val notificationId = downloadDataModel.id
 		val notificationBuilder = Builder(INSTANCE, CHANNEL_ID)
-		
+
 		notificationBuilder
 			.setContentTitle(downloadDataModel.fileName)
 			.setContentText(getContentTextByStatus(downloadDataModel))
@@ -100,10 +103,10 @@ class DownloadNotification {
 					downloadModel = downloadDataModel
 				)
 			)
-		
+
 		notificationManager.notify(notificationId, notificationBuilder.build())
 	}
-	
+
 	/**
 	 * Generates appropriate notification text based on download status.
 	 *
@@ -114,7 +117,7 @@ class DownloadNotification {
 		val completedText = getText(R.string.text_download_complete_click_to_open)
 		val pausedText = getText(R.string.text_download_has_been_paused)
 		val runningText = downloadDataModel.generateDownloadInfoInString()
-		
+
 		return when {
 			downloadDataModel.isComplete -> completedText
 			downloadDataModel.isRunning -> runningText
@@ -125,7 +128,7 @@ class DownloadNotification {
 			else downloadDataModel.statusInfo
 		}
 	}
-	
+
 	/**
 	 * Checks if notifications should be suppressed for this download.
 	 *
@@ -135,7 +138,7 @@ class DownloadNotification {
 	private fun shouldStopNotifying(downloadModel: DownloadDataModel): Boolean {
 		return downloadModel.globalSettings.downloadHideNotification
 	}
-	
+
 	/**
 	 * Determines if the notification should be cancelled.
 	 *
@@ -145,7 +148,7 @@ class DownloadNotification {
 	private fun shouldCancelNotification(downloadModel: DownloadDataModel): Boolean {
 		return downloadModel.isRemoved || downloadModel.isDeleted
 	}
-	
+
 	/**
 	 * Creates a pending intent appropriate for the download state.
 	 *
@@ -170,7 +173,7 @@ class DownloadNotification {
 			)
 		}
 	}
-	
+
 	/**
 	 * Generates an intent based on the downloaded file type.
 	 *
@@ -181,7 +184,7 @@ class DownloadNotification {
 	private fun generatePendingIntent(downloadModel: DownloadDataModel): Intent {
 		val destFile = File("${downloadModel.fileDirectory}/${downloadModel.fileName}")
 		val downloadFile = fromFile(destFile)
-		
+
 		return Intent(INSTANCE, getCorrespondingActivity(downloadFile)).apply {
 			flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 			putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.id)
@@ -190,7 +193,7 @@ class DownloadNotification {
 			putExtra(WHERE_DID_YOU_COME_FROM, FROM_DOWNLOAD_NOTIFICATION)
 		}
 	}
-	
+
 	/**
 	 * Determines the appropriate activity class based on file type.
 	 *
@@ -201,7 +204,7 @@ class DownloadNotification {
 	private fun getCorrespondingActivity(downloadedFile: DocumentFile) =
 		if (isVideo(downloadedFile) || isAudio(downloadedFile))
 			MediaPlayerActivity::class.java else MotherActivity::class.java
-	
+
 	/**
 	 * Creates the notification channel required for Android 8.0+.
 	 */

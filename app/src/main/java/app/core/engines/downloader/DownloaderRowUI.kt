@@ -15,6 +15,7 @@ import com.aio.R
 import com.anggrayudi.storage.file.getAbsolutePath
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
+import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
 import lib.ui.MsgDialogUtils
 import lib.ui.ViewUtility.getThumbnailFromFile
@@ -26,12 +27,18 @@ import java.lang.ref.WeakReference
 
 /**
  * A UI controller class that manages the display and interaction of download items in a list row.
- * Handles all visual aspects of a download item including thumbnails, progress indicators,
- * status messages, and error dialogs.
+ *
+ * Handles:
+ * - Thumbnails (cached, default, or dynamically generated)
+ * - Progress bars & status messages
+ * - Visibility based on download state
+ * - Error dialogs for failed downloads
  *
  * Uses WeakReference to prevent memory leaks from holding strong references to views.
  */
 class DownloaderRowUI(private val rowLayout: View) {
+
+	private val logger = LogHelperUtils.from(javaClass)
 
 	// Weak reference to the row layout to prevent memory leaks
 	private val safeRowLayoutRef = WeakReference(rowLayout)
@@ -53,13 +60,14 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * @param downloadModel The DownloadDataModel containing current download state
 	 */
 	fun updateView(downloadModel: DownloadDataModel) {
+		logger.d("Updating UI for downloadId=${downloadModel.id}, status=${downloadModel.status}")
 		safeRowLayoutRef.get()?.let { safeRowLayoutRef ->
 			updateEntireVisibility(downloadModel, safeRowLayoutRef)
 			updateFileName(downloadModel)
 			updateDownloadProgress(downloadModel)
 			updateFileThumbnail(downloadModel)
 			updateAlertMessage(downloadModel)
-		}
+		} ?: logger.d("Row layout reference lost, skipping update.")
 	}
 
 	/**
@@ -67,12 +75,19 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * Hides rows for completed, removed, or private folder downloads.
 	 */
 	private fun updateEntireVisibility(downloadModel: DownloadDataModel, rowLayout: View) {
+		logger.d(
+			"updateEntireVisibility: id=${downloadModel.id}," +
+					" removed=${downloadModel.isRemoved}, complete=${downloadModel.isComplete}"
+		)
 		if (downloadModel.isRemoved ||
 			downloadModel.isComplete ||
 			downloadModel.isWentToPrivateFolder ||
 			downloadModel.globalSettings.hideDownloadProgressFromUI
 		) {
-			if (rowLayout.visibility != GONE) rowLayout.visibility = GONE
+			if (rowLayout.visibility != GONE) {
+				logger.d("Hiding row for id=${downloadModel.id}")
+				rowLayout.visibility = GONE
+			}
 		}
 	}
 
@@ -81,6 +96,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 */
 	private fun updateFileName(downloadModel: DownloadDataModel) {
 		fileNameTextView.text = downloadModel.fileName.ifEmpty {
+			logger.d("Filename not available yet for id=${downloadModel.id}, showing placeholder")
 			getText(R.string.text_getting_name_from_server)
 		}
 	}
@@ -89,6 +105,11 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * Updates all progress-related UI elements.
 	 */
 	private fun updateDownloadProgress(downloadModel: DownloadDataModel) {
+		logger.d(
+			"updateDownloadProgress: id=${downloadModel.id}," +
+					" progress=${downloadModel.progressPercentage}," +
+					" status=${downloadModel.status}"
+		)
 		updateProgressBars(downloadModel)
 	}
 
@@ -98,6 +119,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 */
 	private fun updateProgressBars(downloadModel: DownloadDataModel) {
 		if (downloadModel.status != DOWNLOADING && downloadModel.ytdlpProblemMsg.isNotEmpty()) {
+			logger.d("yt-dlp error for id=${downloadModel.id}: ${downloadModel.ytdlpProblemMsg}")
 			statusInfo.text = downloadModel.ytdlpProblemMsg
 			statusInfo.setTextColor(INSTANCE.getColor(R.color.color_error))
 		} else {
@@ -111,6 +133,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * Handles both video thumbnails and default icons for other file types.
 	 */
 	private fun updateFileThumbnail(downloadModel: DownloadDataModel) {
+		logger.d("updateFileThumbnail: id=${downloadModel.id}, hideThumb=${downloadModel.globalSettings.downloadHideVideoThumbnail}")
 		// Check if thumbnail visibility setting changed
 		if (downloadModel.globalSettings.downloadHideVideoThumbnail
 			!= isThumbnailSettingsChanged
@@ -120,12 +143,14 @@ class DownloaderRowUI(private val rowLayout: View) {
 		if (thumbImageView.tag == null || isThumbnailSettingsChanged) {
 			if (downloadModel.globalSettings.downloadHideVideoThumbnail) {
 				// Show actual thumbnail if enabled in settings
+				logger.d("Setting actual thumbnail URI for id=${downloadModel.id}")
 				thumbImageView.setImageURI(downloadModel.getThumbnailURI())
 				thumbImageView.tag = true
 				isThumbnailSettingsChanged =
 					downloadModel.globalSettings.downloadHideVideoThumbnail
 			} else {
 				// Show default thumbnail
+				logger.d("Using default thumbnail logic for id=${downloadModel.id}")
 				updateDefaultThumbnail(downloadModel)
 			}
 		}
@@ -231,7 +256,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 		try {
 			thumbImageView.setImageURI(File(thumbFilePath).toUri())
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error loading thumbnail into ImageView: ${error.message}", error)
 			thumbImageView.setImageResource(defaultThumb)
 		}
 	}
@@ -240,11 +265,9 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * Shows the default thumbnail icon based on file type.
 	 */
 	private fun showDefaultDownloadThumb(downloadModel: DownloadDataModel) {
+		logger.d("Showing default thumb for id=${downloadModel.id}")
 		thumbImageView.setImageDrawable(
-			getDrawable(
-				INSTANCE,
-				downloadModel.getThumbnailDrawableID()
-			)
+			getDrawable(INSTANCE, downloadModel.getThumbnailDrawableID())
 		)
 	}
 
@@ -253,6 +276,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 */
 	private fun updateAlertMessage(downloadDataModel: DownloadDataModel) {
 		if (downloadDataModel.msgToShowUserViaDialog.isNotEmpty()) {
+			logger.d("Showing error dialog for id=${downloadDataModel.id}")
 			downloadSystem.downloadsUIManager.activeTasksFragment?.let {
 				if (!isShowingAnyDialog) {
 					MsgDialogUtils.showMessageDialog(
