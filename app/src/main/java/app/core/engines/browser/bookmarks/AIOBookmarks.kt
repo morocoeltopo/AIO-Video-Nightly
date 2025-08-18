@@ -16,6 +16,7 @@ import java.io.FileInputStream
 import java.io.FileReader
 import java.io.Serializable
 import java.nio.channels.FileChannel
+import java.util.Date
 import java.util.Locale
 
 /**
@@ -88,8 +89,8 @@ class AIOBookmarks : Serializable {
 					logger.d("Attempting to load bookmarks from JSON format")
 					val configFile = File(INSTANCE.filesDir, AIO_BOOKMARKS_FILE_NAME_JSON)
 					if (!configFile.exists()) {
-						aioBookmark.bookmarkLibrary = ArrayList()
-						logger.d("No bookmarks file found, starting with empty library")
+						aioBookmark.bookmarkLibrary = getPreloadedBookmarks()
+						logger.d("No bookmarks file found, starting with preloaded library")
 						return@executeInBackground
 					}
 
@@ -116,6 +117,168 @@ class AIOBookmarks : Serializable {
 			}
 		})
 	}
+
+	/**
+	 * Creates and returns a list of preloaded bookmarks.
+	 *
+	 * @return ArrayList of BookmarkModel with 50+ well-known sites.
+	 */
+	fun getPreloadedBookmarks(): ArrayList<BookmarkModel> {
+		val bookmarks = ArrayList<BookmarkModel>()
+
+		val sites = listOf(
+			// 🌍 General / Search
+			"Google" to "https://www.google.com/",
+			"Bing" to "https://www.bing.com/",
+			"Yahoo" to "https://www.yahoo.com/",
+			"DuckDuckGo" to "https://duckduckgo.com/",
+			"Wikipedia" to "https://www.wikipedia.org/",
+
+			// 🎵 Music
+			"PagalNew" to "https://www.pagalnew.com/",
+			"PagalSongs" to "https://www.pagalsongs.in/",
+			"Mr-Jatt" to "https://www.mr-jatt.im/",
+			"DJMaza" to "https://www.djmaza.cool/",
+			"Songspk" to "https://songspk.mobi/",
+			"Webmusic" to "https://webmusic.cam/",
+			"FunMaza" to "https://funmaza.in/",
+			"Mp3Juices" to "https://www.mp3juices.cc/",
+			"Mp3Skull" to "https://mp3skulls.to/",
+			"SongsPKHindi" to "https://www.songspkhindi.net/",
+			"DJPunjab" to "https://djpunjab.fm/",
+			"Raag.fm" to "https://raag.fm/",
+			"JioSaavn" to "https://www.jiosaavn.com/",
+			"Wynk Music" to "https://wynk.in/music",
+			"Gaana" to "https://gaana.com/",
+			"SongsLover" to "https://songslover.cam/",
+			"Mp3Quack" to "https://mp3quack.lol/",
+			"MyMp3Song" to "https://mymp3song.org/",
+			"FreshMaza" to "https://freshmaza.com/",
+			"Downloadming" to "https://downloadming.ws/",
+			"Indiamp3" to "https://indiamp3.com/",
+			"BestWap" to "https://bestwap.org/",
+			"Naa Songs" to "https://naasongs.com.in/",
+			"Starmusiq" to "https://www.starmusiq.fun/",
+			"Masstamilan" to "https://masstamilan.dev/",
+			"Isaimini" to "https://isaimini.day/",
+			"RockMyMp3" to "https://rockmymp3.in/",
+
+			// 🎬 Movie Download Sites
+			"MoviesWap" to "https://movieswap.cam/",
+			"MoviesDa" to "https://moviesda7.com/",
+			"Isaimini" to "https://isaimini.day/",
+			"TamilYogi" to "https://tamilyogi.cool/",
+			"TamilRockers" to "https://tamilrockers.li/",
+			"Filmyzilla" to "https://filmyzilla.net/",
+			"FilmyWap" to "https://filmywap.com/",
+			"9xMovies" to "https://9xmovies.team/",
+			"7StarHD" to "https://7starhd.run/",
+			"Khatrimaza" to "https://khatrimaza.uno/",
+			"WorldFree4U" to "https://worldfree4u.lol/",
+			"MoviesFlix" to "https://themoviesflix.org/",
+			"HDMoviesHub" to "https://hdmovieshub.ltd/",
+			"BollywoodHungama" to "https://www.bollywoodhungama.com/movies/",
+			"Movierulz" to "https://movierulz.ag/",
+			"SSRMovies" to "https://ssrmovies.rest/",
+			"CoolMoviez" to "https://coolmoviez.win/",
+			"SkyMoviesHD" to "https://skymovieshd.work/",
+			"KatMovieHD" to "https://katmoviehd.run/",
+			"HDHub4U" to "https://hdhub4u.day/",
+			"RdxHD" to "https://rdxhd.com/",
+			"Okjatt" to "https://okjatt.team/",
+			"VegaMovies" to "https://vegamovies.boo/",
+			"KuttyMovies" to "https://kuttymovies.day/",
+			"MLWBD" to "https://mlwbd.world/",
+			"JioRockers" to "https://jiorockers.link/",
+			"HDMoviesPoint" to "https://hdmoviespoint.vip/",
+			"Extramovies" to "https://extramovies.wiki/",
+			"FilmyHit" to "https://filmyhit.cam/",
+			"MoviesBaba" to "https://moviesbaba.run/",
+			"DesiFilmy" to "https://desifilmy.me/",
+			"DownloadHub" to "https://downloadhub.baby/",
+			"MovieMad" to "https://moviemad.run/",
+			"KatMovies" to "https://katmovieshd.surf/",
+
+			// 🔞 Adult (18+)
+			"Pornhub" to "https://www.pornhub.com/",
+			"UncutClips" to "https://www.uncutclips.org/",
+			"XVideos" to "https://www.xvideos.com/",
+			"XNXX" to "https://www.xnxx.com/",
+			"RedTube" to "https://www.redtube.com/",
+			"YouPorn" to "https://www.youporn.com/",
+			"Eporner" to "https://www.eporner.com/",
+			"SpankBang" to "https://spankbang.com/",
+			"xHamster" to "https://xhamster.com/",
+			"Tube8" to "https://www.tube8.com/",
+			"Porn.com" to "https://www.porn.com/",
+			"Thumbzilla" to "https://www.thumbzilla.com/",
+			"Tnaflix" to "https://www.tnaflix.com/",
+			"Beeg" to "https://beeg.com/",
+			"DrTuber" to "https://www.drtuber.com/",
+			"SunPorno" to "https://www.sunporno.com/",
+			"PornTrex" to "https://www.porntrex.com/",
+			"XTube" to "https://www.xtube.com/",
+			"Slutload" to "https://www.slutload.com/",
+			"PornHD" to "https://www.pornhd.com/",
+			"BravoPorn" to "https://www.bravoporn.com/",
+			"Fantasti.cc" to "https://fantasti.cc/",
+			"XTubePorn" to "https://xtubeporn.com/",
+			"HotMovies" to "https://www.hotmovies.com/",
+			"XMovie8" to "https://xmovie8.com/",
+			"PornOne" to "https://www.pornone.com/",
+			"NuBay" to "https://www.nubay.com/",
+			"Motherless" to "https://motherless.com/",
+			"RedGifs" to "https://www.redgifs.com/",
+			"CamSoda" to "https://www.camsoda.com/",
+			"Chaturbate" to "https://chaturbate.com/",
+			"MyFreeCams" to "https://www.myfreecams.com/",
+			"LiveJasmin" to "https://www.livejasmin.com/",
+			"Stripchat" to "https://stripchat.com/",
+			"BongaCams" to "https://bongacams.com/",
+			"Cam4" to "https://www.cam4.com/",
+			"XConfessions" to "https://xconfessions.com/",
+			"Sex.com" to "https://www.sex.com/",
+			"HClips" to "https://hclips.com/",
+			"HQPorner" to "https://hqporner.com/",
+			"XXNX" to "https://xxnx.com/",
+			"4Tube" to "https://www.4tube.com/",
+			"Fapster" to "https://fapster.xxx/",
+			"FapVid" to "https://fapvid.com/",
+			"FapNation" to "https://fapnxx.com/",
+			"YesPornPlease" to "https://yespornplease.to/",
+			"DaftSex" to "https://daftsex.com/",
+			"Xozilla" to "https://xozilla.com/",
+			"XFreeHD" to "https://xfreehd.com/",
+			"Porndig" to "https://www.porndig.com/",
+			"WatchMyGF" to "https://www.watchmygf.xxx/",
+			"PornMegaLoad" to "https://www.pornmegaload.com/",
+			"Analdin" to "https://www.analdin.com/",
+			"Fux" to "https://www.fux.com/",
+			"XXXBunker" to "https://www.xxxbunker.com/",
+			"BravoTube" to "https://www.bravotube.net/",
+			"PornDoe" to "https://www.porndoe.com/",
+			"PornHat" to "https://www.pornhat.com/",
+			"JizzBunker" to "https://www.jizzbunker.com/",
+			"ExtremeTube" to "https://www.extremetube.com/",
+			"Spankwire" to "https://www.spankwire.com/",
+			"YourPorn" to "https://www.youporn.xxx/",
+			"PornXO" to "https://www.pornxo.com/",
+			"SexVid" to "https://sexvid.xxx/",
+			"FapTube" to "https://www.faptube.com/"
+		)
+
+		for ((name, url) in sites) {
+			val bookmark = BookmarkModel().apply {
+				bookmarkName = name
+				bookmarkUrl = url
+				bookmarkCreationDate = Date()
+			}
+			bookmarks.add(bookmark)
+		}
+
+		return bookmarks
+	}
+
 
 	/**
 	 * Saves bookmarks to binary format.

@@ -25,10 +25,8 @@ open class DownloadsFragment : BaseFragment() {
 
     private lateinit var fragmentLayoutView: View                   // Root layout view of this fragment
     open lateinit var fragmentViewPager: ViewPager                  // ViewPager to host child fragments
-    open var finishedTasksFragment: FinishedTasksFragment? =
-        null   // Reference to finished downloads fragment
-    open var activeTasksFragment: ActiveTasksFragment? =
-        null       // Reference to active downloads fragment
+    open var finishedTasksFragment: FinishedTasksFragment? = null   // Reference to finished downloads fragment
+    open var activeTasksFragment: ActiveTasksFragment? = null       // Reference to active downloads fragment
 
     /**
      * Returns the layout resource ID for this fragment.
