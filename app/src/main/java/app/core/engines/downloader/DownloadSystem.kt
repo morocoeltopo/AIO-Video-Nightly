@@ -53,6 +53,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	init {
 		initSystem()
 		aioTimer.register(this)
+		logger.d("DownloadSystem initialized & timer registered.")
 	}
 
 	/**
@@ -74,6 +75,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	override fun addDownload(downloadModel: DownloadDataModel, onAdded: () -> Unit) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			if (existsInActiveDownloadDataModelsList(downloadModel)) {
+				logger.d("Download already active, resuming: ${downloadModel.fileName}")
 				resumeDownload(downloadModel)
 				return@executeInBackground
 			}
@@ -85,11 +87,14 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 					ThreadsUtility.executeOnMain { onAdded() }
 
 					downloadsUIManager.addNewActiveUI(
-						downloadModel,
-						activeDownloadDataModels.indexOf(downloadModel)
+						downloadModel = downloadModel,
+						position = activeDownloadDataModels.indexOf(downloadModel)
 					)
+					logger.d("Added new download: ${downloadModel.fileName}")
 				}
 			}
+		}, errorHandler = {
+			logger.e("Failed to add download", it)
 		})
 	}
 
@@ -105,8 +110,11 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 					waitingDownloadTasks.add(downloadTask)
 					downloadsUIManager.updateActiveUI(downloadModel)
 					onResumed()
+					logger.d("Resumed download: ${downloadModel.fileName}")
 				}
 			}
+		}, errorHandler = {
+			logger.e("Failed to resume download", it)
 		})
 	}
 
@@ -117,17 +125,22 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 */
 	override fun pauseDownload(downloadModel: DownloadDataModel, onPaused: () -> Unit) {
 		CoroutineScope(Dispatchers.IO).launch {
-			if (canDownloadTaskBePaused(downloadModel)) {
-				val resultedTask = searchActiveDownloadTaskWith(downloadModel)
+			try {
+				if (canDownloadTaskBePaused(downloadModel)) {
+					val resultedTask = searchActiveDownloadTaskWith(downloadModel)
 
-				resultedTask?.let {
-					it.cancelDownload()
-					runningDownloadTasks.remove(it)
-					waitingDownloadTasks.remove(it)
-					onPaused()
+					resultedTask?.let {
+						it.cancelDownload()
+						runningDownloadTasks.remove(it)
+						waitingDownloadTasks.remove(it)
+						onPaused()
+						logger.d("Paused download: ${downloadModel.fileName}")
+					}
+
+					downloadsUIManager.updateActiveUI(downloadModel)
 				}
-
-				downloadsUIManager.updateActiveUI(downloadModel)
+			} catch (error: Exception) {
+				logger.e("Failed to pause download", error)
 			}
 		}
 	}
@@ -139,19 +152,24 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 */
 	override fun clearDownload(downloadModel: DownloadDataModel, onCleared: () -> Unit) {
 		CoroutineScope(Dispatchers.IO).launch {
-			pauseDownload(downloadModel)
-			downloadModel.isRemoved = true
-			downloadModel.deleteModelFromDisk()
-			activeDownloadDataModels.remove(downloadModel)
+			try {
+				pauseDownload(downloadModel)
+				downloadModel.isRemoved = true
+				downloadModel.deleteModelFromDisk()
+				activeDownloadDataModels.remove(downloadModel)
 
-			searchActiveDownloadTaskWith(downloadModel)?.let { downloadTask ->
-				runningDownloadTasks.remove(downloadTask)
-				waitingDownloadTasks.remove(downloadTask)
+				searchActiveDownloadTaskWith(downloadModel)?.let { downloadTask ->
+					runningDownloadTasks.remove(downloadTask)
+					waitingDownloadTasks.remove(downloadTask)
+				}
+
+				downloadNotification.updateNotification(downloadModel)
+				downloadsUIManager.updateActiveUI(downloadModel)
+				onCleared()
+				logger.d("Cleared download: ${downloadModel.fileName}")
+			} catch (error: Exception) {
+				logger.e("Failed to clear download", error)
 			}
-
-			downloadNotification.updateNotification(downloadModel)
-			downloadsUIManager.updateActiveUI(downloadModel)
-			onCleared()
 		}
 	}
 
@@ -162,28 +180,37 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 */
 	override fun deleteDownload(downloadModel: DownloadDataModel, onDone: () -> Unit) {
 		CoroutineScope(Dispatchers.IO).launch {
-			clearDownload(downloadModel)
-			downloadModel.isDeleted = true
-			downloadModel.deleteModelFromDisk()
-			downloadModel.getDestinationFile().delete()
-			onDone()
+			try {
+				clearDownload(downloadModel) {}
+				downloadModel.isDeleted = true
+				downloadModel.deleteModelFromDisk()
+				downloadModel.getDestinationFile().delete()
+				onDone()
+				logger.d("Deleted download: ${downloadModel.fileName}")
+			} catch (error: Exception) {
+				logger.e("Failed to delete download", error)
+			}
 		}
 	}
 
 	// Bulk operations
 	override fun resumeAllDownloads() {
+		logger.d("Resuming all downloads")
 		activeDownloadDataModels.forEach { resumeDownload(it) }
 	}
 
 	override fun pauseAllDownloads() {
+		logger.d("Pausing all downloads")
 		activeDownloadDataModels.forEach { pauseDownload(it) }
 	}
 
 	override fun clearAllDownloads() {
+		logger.d("Clearing all downloads")
 		activeDownloadDataModels.forEach { clearDownload(it) }
 	}
 
 	override fun deleteAllDownloads() {
+		logger.d("Deleting all downloads")
 		activeDownloadDataModels.forEach { deleteDownload(it) }
 	}
 
@@ -193,26 +220,33 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 */
 	override fun onStatusUpdate(downloadTaskInf: DownloadTaskInf) {
 		CoroutineScope(Dispatchers.IO).launch {
-			val downloadDataModel = downloadTaskInf.downloadDataModel
+			try {
 
-			if (downloadDataModel.isRunning && downloadDataModel.status == DOWNLOADING)
-				addToRunningDownloadTasksList(downloadTaskInf)
+				val downloadDataModel = downloadTaskInf.downloadDataModel
 
-			if (!downloadDataModel.isRunning && downloadDataModel.status == CLOSE)
-				removeFromRunningDownloadTasksList(downloadTaskInf)
+				if (downloadDataModel.isRunning && downloadDataModel.status == DOWNLOADING)
+					addToRunningDownloadTasksList(downloadTaskInf)
 
-			if (downloadDataModel.isComplete && downloadDataModel.status == COMPLETE) {
-				removeFromActiveDownloadDataModelsList(downloadDataModel)
-				withContext(Dispatchers.Main) { downloadsUIManager.updateActiveUI(downloadDataModel) }
-				updateFinishedDownloadDataModelsList(downloadDataModel)
-				withContext(Dispatchers.Main) {
-					downloadOnFinishListeners.forEach { finishUIListener ->
-						finishUIListener.onFinishUIDownload(downloadDataModel)
+				if (!downloadDataModel.isRunning && downloadDataModel.status == CLOSE)
+					removeFromRunningDownloadTasksList(downloadTaskInf)
+
+				if (downloadDataModel.isComplete && downloadDataModel.status == COMPLETE) {
+					removeFromActiveDownloadDataModelsList(downloadDataModel)
+					withContext(Dispatchers.Main) {
+						downloadsUIManager.updateActiveUI(downloadDataModel)
+					}
+
+					updateFinishedDownloadDataModelsList(downloadDataModel)
+					withContext(Dispatchers.Main) {
+						downloadOnFinishListeners.forEach { finishUIListener ->
+							finishUIListener.onFinishUIDownload(downloadDataModel)
+						}
 					}
 				}
+				updateUIAndNotification(downloadDataModel)
+			} catch (error: Exception) {
+				logger.e("Error in status update", error)
 			}
-
-			updateUIAndNotification(downloadDataModel)
 		}
 	}
 
@@ -257,7 +291,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 		try {
 			startDownloadTask(queuedTask)
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Failed to start queued task", error)
 			queuedTask.updateDownloadStatus(status = CLOSE)
 		}
 	}
@@ -269,8 +303,8 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {
 				downloadTaskInf.startDownload()
-			} catch (err: Exception) {
-				err.printStackTrace()
+			} catch (error: Exception) {
+				logger.e("Error starting task", error)
 				downloadTaskInf.updateDownloadStatus(status = CLOSE)
 			}
 		})
@@ -290,7 +324,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 				}
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error verifying leftover running tasks", error)
 		}
 	}
 
@@ -350,6 +384,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 * Cleans up system resources.
 	 */
 	fun cleanUp() {
+		logger.d("DownloadSystem cleaned up & timer unregistered.")
 		aioTimer.unregister(this)
 	}
 }

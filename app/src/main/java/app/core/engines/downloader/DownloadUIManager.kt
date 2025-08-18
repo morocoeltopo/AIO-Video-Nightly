@@ -11,6 +11,7 @@ import app.core.AIOApp
 import app.ui.main.fragments.downloads.fragments.active.ActiveTasksFragment
 import app.ui.main.fragments.downloads.fragments.finished.FinishedTasksFragment
 import com.aio.R
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 
 /**
@@ -28,11 +29,13 @@ import lib.process.ThreadsUtility
  * - DownloadSystem (for state information)
  */
 class DownloadUIManager(val downloadSystem: DownloadSystem) {
-	
+
+	private val logger = LogHelperUtils.from(javaClass)
+
 	// References to UI fragments
 	var activeTasksFragment: ActiveTasksFragment? = null
 	var finishedTasksFragment: FinishedTasksFragment? = null
-	
+
 	/**
 	 * Redraws all active download UI elements.
 	 *
@@ -52,7 +55,7 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 			})
 		})
 	}
-	
+
 	/**
 	 * Adds a new download item to the UI.
 	 *
@@ -71,7 +74,7 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 			})
 		})
 	}
-	
+
 	/**
 	 * Updates an existing download item in the UI.
 	 *
@@ -87,7 +90,7 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 			})
 		})
 	}
-	
+
 	/**
 	 * Creates a new view for a download item.
 	 *
@@ -110,7 +113,7 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 			this.layoutParams = layoutParams
 		}; return rowUI
 	}
-	
+
 	/**
 	 * Removes a download item from the UI.
 	 *
@@ -126,7 +129,7 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 					val parent = resultedRow.parent as ViewGroup
 					parent.removeView(resultedRow)
 				}
-				
+
 				activeDownloadListContainer.removeView(resultedRow)
 				ThreadsUtility.executeInBackground(codeBlock = {
 					ThreadsUtility.executeOnMain {
@@ -141,7 +144,7 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Configures an existing view with download data.
 	 *
