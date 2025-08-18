@@ -66,6 +66,7 @@ class DownloadNotification {
 	}
 
 	init {
+		logger.d("Initializing DownloadNotification → creating notification channel")
 		createNotificationChannelForSystem()
 	}
 
@@ -75,11 +76,17 @@ class DownloadNotification {
 	 * @param downloadDataModel The download model containing current state
 	 */
 	fun updateNotification(downloadDataModel: DownloadDataModel) {
-		if (shouldStopNotifying(downloadDataModel)) return
+		logger.d("updateNotification() called for id=${downloadDataModel.id}, file=${downloadDataModel.fileName}")
+		if (shouldStopNotifying(downloadDataModel)) {
+			logger.d("Notification suppressed for id=${downloadDataModel.id}")
+			return
+		}
 		if (shouldCancelNotification(downloadDataModel)) {
+			logger.d("Cancelling notification for id=${downloadDataModel.id}")
 			notificationManager.cancel(downloadDataModel.id)
 			return
-		}; updateDownloadProgress(downloadDataModel)
+		}
+		updateDownloadProgress(downloadDataModel)
 	}
 
 	/**
@@ -88,6 +95,7 @@ class DownloadNotification {
 	 * @param downloadDataModel The download model containing current progress
 	 */
 	private fun updateDownloadProgress(downloadDataModel: DownloadDataModel) {
+		logger.d("Updating progress notification for id=${downloadDataModel.id}, complete=${downloadDataModel.isComplete}")
 		val notificationId = downloadDataModel.id
 		val notificationBuilder = Builder(INSTANCE, CHANNEL_ID)
 
@@ -118,7 +126,7 @@ class DownloadNotification {
 		val pausedText = getText(R.string.text_download_has_been_paused)
 		val runningText = downloadDataModel.generateDownloadInfoInString()
 
-		return when {
+		val result = when {
 			downloadDataModel.isComplete -> completedText
 			downloadDataModel.isRunning -> runningText
 			else -> if (downloadDataModel.statusInfo.contains(
@@ -127,6 +135,8 @@ class DownloadNotification {
 			) pausedText
 			else downloadDataModel.statusInfo
 		}
+		logger.d("Generated notification text for id=${downloadDataModel.id}: $result")
+		return result
 	}
 
 	/**
@@ -136,7 +146,9 @@ class DownloadNotification {
 	 * @return true if notifications should be hidden, false otherwise
 	 */
 	private fun shouldStopNotifying(downloadModel: DownloadDataModel): Boolean {
-		return downloadModel.globalSettings.downloadHideNotification
+		val result = downloadModel.globalSettings.downloadHideNotification
+		logger.d("shouldStopNotifying() → $result for id=${downloadModel.id}")
+		return result
 	}
 
 	/**
@@ -146,7 +158,9 @@ class DownloadNotification {
 	 * @return true if the download was removed/deleted, false otherwise
 	 */
 	private fun shouldCancelNotification(downloadModel: DownloadDataModel): Boolean {
-		return downloadModel.isRemoved || downloadModel.isDeleted
+		val result = downloadModel.isRemoved || downloadModel.isDeleted
+		logger.d("shouldCancelNotification() → $result for id=${downloadModel.id}")
+		return result
 	}
 
 	/**
@@ -161,6 +175,7 @@ class DownloadNotification {
 		isDownloadCompleted: Boolean = false,
 		downloadModel: DownloadDataModel
 	): PendingIntent {
+		logger.d("Creating PendingIntent for id=${downloadModel.id}, isComplete=$isDownloadCompleted")
 		return if (isDownloadCompleted) {
 			getActivity(
 				INSTANCE, 0, generatePendingIntent(downloadModel),
@@ -185,6 +200,7 @@ class DownloadNotification {
 		val destFile = File("${downloadModel.fileDirectory}/${downloadModel.fileName}")
 		val downloadFile = fromFile(destFile)
 
+		logger.d("Generating PendingIntent → file=${destFile.path}")
 		return Intent(INSTANCE, getCorrespondingActivity(downloadFile)).apply {
 			flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 			putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.id)
@@ -202,13 +218,19 @@ class DownloadNotification {
 	 */
 	@OptIn(UnstableApi::class)
 	private fun getCorrespondingActivity(downloadedFile: DocumentFile) =
-		if (isVideo(downloadedFile) || isAudio(downloadedFile))
-			MediaPlayerActivity::class.java else MotherActivity::class.java
+		if (isVideo(downloadedFile) || isAudio(downloadedFile)) {
+			logger.d("File is media → routing to MediaPlayerActivity")
+			MediaPlayerActivity::class.java
+		} else {
+			logger.d("File is not media → routing to MotherActivity")
+			MotherActivity::class.java
+		}
 
 	/**
 	 * Creates the notification channel required for Android 8.0+.
 	 */
 	private fun createNotificationChannelForSystem() {
+		logger.d("Creating notification channel: $CHANNEL_ID / $CHANNEL_NAME")
 		val notificationChannel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE_LOW)
 		val nm = INSTANCE.getSystemService(NOTIFICATION_SERVICE)
 		notificationManager = nm as NotificationManager
