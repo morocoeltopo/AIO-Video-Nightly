@@ -20,6 +20,7 @@ import lib.networks.URLUtility.isValidURL
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.MsgDialogUtils.showMessageDialog
@@ -43,6 +44,8 @@ class SharedVideoURLIntercept(
 	private val userGivenVideoInfo: VideoInfo? = null,
 	private val onOpenBrowser: (() -> Unit?)? = null
 ) {
+
+	private val logger = LogHelperUtils.from(javaClass)
 
 	/** Safe reference to activity to avoid memory leaks */
 	private var safeBaseActivityRef = WeakReference(baseActivity).get()
