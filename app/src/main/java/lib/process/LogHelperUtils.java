@@ -4,6 +4,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.aio.BuildConfig;
+
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -39,7 +41,7 @@ public final class LogHelperUtils implements Serializable {
      */
     private LogHelperUtils(Class<?> class_) {
         this.class_ = class_;
-        this.isDebuggingMode = AIOApp.IS_DEBUG_MODE_ON;
+        this.isDebuggingMode = BuildConfig.IS_DEBUG_MODE_ON;
     }
 
     /**

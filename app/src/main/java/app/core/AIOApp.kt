@@ -53,7 +53,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		lateinit var INSTANCE: AIOApp
 
 		// App mode flags
-		val IS_DEBUG_MODE_ON = BuildConfig.DEBUG
+		const val IS_DEBUG_MODE_ON = BuildConfig.IS_DEBUG_MODE_ON
 		const val IS_ULTIMATE_VERSION_UNLOCKED = true
 		const val IS_PREMIUM_USER = true
 
