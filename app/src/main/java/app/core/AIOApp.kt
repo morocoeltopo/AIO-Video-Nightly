@@ -15,6 +15,7 @@ import app.core.engines.downloader.DownloadSystem
 import app.core.engines.services.AIOForegroundService
 import app.core.engines.settings.AIOSettings
 import app.core.engines.video_parser.parsers.YoutubeVidParser
+import com.aio.BuildConfig
 import com.anggrayudi.storage.file.DocumentFileCompat.fromPublicFolder
 import com.anggrayudi.storage.file.PublicDirectory.DOWNLOADS
 import com.google.gson.Gson
@@ -52,7 +53,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		lateinit var INSTANCE: AIOApp
 
 		// App mode flags
-		const val IS_DEBUG_MODE_ON = true
+		val IS_DEBUG_MODE_ON = BuildConfig.DEBUG
 		const val IS_ULTIMATE_VERSION_UNLOCKED = true
 		const val IS_PREMIUM_USER = true
 

@@ -24,16 +24,24 @@ android {
     }
 
     buildTypes {
+        debug {
+            debuggable true
+            minifyEnabled false
+            shrinkResources false
+            buildConfigField "boolean", "IS_DEBUG_MODE_ON", "true"
+        }
         release {
             minifyEnabled true
             shrinkResources true
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
+            buildConfigField "boolean", "IS_DEBUG_MODE_ON", "false"
         }
     }
 
     buildTypes.release.ndk.debugSymbolLevel = "FULL"
+    android.buildFeatures.buildConfig = true
 
     packagingOptions {
         exclude 'META-INF/LICENSE'
