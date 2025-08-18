@@ -15,11 +15,11 @@ import java.lang.ref.WeakReference
 /**
  * Dialog class for selecting the default download location.
  *
- * This class provides a user interface to choose between two download locations:
+ * Provides a UI to choose between:
  * - App's private folder
  * - System gallery
  *
- * The selected option is stored in aioSettings.defaultDownloadLocation and persisted in storage.
+ * The selected option is stored in [aioSettings.defaultDownloadLocation] and persisted.
  * If the dialog is canceled or dismissed without applying changes, the original setting is restored.
  *
  * @property baseActivity The activity context required for building the dialog.
@@ -33,16 +33,17 @@ class DownloadLocation(private val baseActivity: BaseActivity) {
 	/** Flag to track whether user has applied a new setting */
 	private var hasSettingApplied = false
 
-	/** Store the original location to restore in case changes are not applied */
+	/** Store the original location to restore if changes are not applied */
 	private val originalLocation = aioSettings.defaultDownloadLocation
 
 	/**
 	 * Lazily-initialized dialog for selecting download location.
 	 *
-	 * It provides options to choose the app's private folder or the system gallery,
+	 * Provides options to choose the app's private folder or the system gallery,
 	 * and applies the selected location only if the "Apply" button is pressed.
 	 */
 	private val dialog by lazy {
+		logger.d("Initializing Download Location dialog")
 		DialogBuilder(safeBaseActivity).apply {
 			setView(R.layout.dialog_default_location_1)
 			setCancelable(true)
@@ -57,16 +58,19 @@ class DownloadLocation(private val baseActivity: BaseActivity) {
 				updateRadioButtons(privateRadio, galleryRadio)
 
 				privateBtn.setOnClickListener {
+					logger.d("User selected: Private Folder")
 					aioSettings.defaultDownloadLocation = PRIVATE_FOLDER
 					updateRadioButtons(privateRadio, galleryRadio)
 				}
 
 				galleryBtn.setOnClickListener {
+					logger.d("User selected: System Gallery")
 					aioSettings.defaultDownloadLocation = SYSTEM_GALLERY
 					updateRadioButtons(privateRadio, galleryRadio)
 				}
 
 				applyBtn.setOnClickListener {
+					logger.d("Apply clicked, saving setting")
 					hasSettingApplied = true
 					aioSettings.updateInStorage()
 					safeBaseActivity?.doSomeVibration(50)
@@ -75,8 +79,14 @@ class DownloadLocation(private val baseActivity: BaseActivity) {
 				}
 			}
 
-			dialog.setOnCancelListener { restoreIfNotApplied() }
-			dialog.setOnDismissListener { restoreIfNotApplied() }
+			dialog.setOnCancelListener {
+				logger.d("Dialog cancelled, restoring original setting if needed")
+				restoreIfNotApplied()
+			}
+			dialog.setOnDismissListener {
+				logger.d("Dialog dismissed, restoring original setting if needed")
+				restoreIfNotApplied()
+			}
 		}
 	}
 
@@ -88,6 +98,7 @@ class DownloadLocation(private val baseActivity: BaseActivity) {
 	 */
 	private fun updateRadioButtons(privateRadio: ImageView, galleryRadio: ImageView) {
 		val isPrivate = aioSettings.defaultDownloadLocation == PRIVATE_FOLDER
+		logger.d("Updating radio buttons: current = ${if (isPrivate) "Private Folder" else "System Gallery"}")
 		privateRadio.setImageResource(
 			if (isPrivate) R.drawable.ic_button_checked_circle
 			else R.drawable.ic_button_unchecked_circle
@@ -103,18 +114,27 @@ class DownloadLocation(private val baseActivity: BaseActivity) {
 	 */
 	private fun restoreIfNotApplied() {
 		if (!hasSettingApplied) {
+			logger.d("Restoring original location: $originalLocation")
 			aioSettings.defaultDownloadLocation = originalLocation
 			aioSettings.updateInStorage()
+		} else {
+			logger.d("Setting already applied, no restore needed")
 		}
 	}
 
 	/**
 	 * Shows the dialog if it is not already showing.
 	 */
-	fun show() = takeIf { !dialog.isShowing }?.run { dialog.show() }
+	fun show() = takeIf { !dialog.isShowing }?.run {
+		logger.d("Showing dialog")
+		dialog.show()
+	}
 
 	/**
 	 * Closes the dialog if it is currently showing.
 	 */
-	fun close() = takeIf { dialog.isShowing }?.run { dialog.close() }
+	fun close() = takeIf { dialog.isShowing }?.run {
+		logger.d("Closing dialog")
+		dialog.close()
+	}
 }
