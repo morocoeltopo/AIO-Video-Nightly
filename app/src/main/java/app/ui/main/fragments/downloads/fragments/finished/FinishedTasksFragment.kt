@@ -103,6 +103,7 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 	
 	/** Handles long-click on a finished download by showing options. */
 	override fun onFinishedDownloadLongClick(downloadModel: DownloadDataModel) {
+		safeMotherActivityRef?.doSomeVibration(50)
 		finishTaskOptions.show(downloadModel)
 	}
 	
