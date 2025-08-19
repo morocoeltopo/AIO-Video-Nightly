@@ -64,6 +64,7 @@ import lib.process.IntentHelperUtils.openWhatsappApp
 import lib.process.IntentHelperUtils.openXApp
 import lib.process.IntentHelperUtils.openYouTubeApp
 import lib.process.IntentHelperUtils.openYouTubeMusicApp
+import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ActivityAnimator.animActivityFade
 import lib.ui.ViewUtility.getThumbnailFromFile
@@ -754,6 +755,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 
 			override fun onBindViewHolder(holder: RecentDownloadsViewHolder, position: Int) {
 				holder.setImageThumbnail(downloadsModels[position])
+				holder.setSiteImageFavicon(downloadsModels[position])
 				holder.setMediaDurationPreview(downloadsModels[position])
 				holder.setOnClickEvent(downloadsModels[position], safeMotherActivityRef)
 			}
@@ -780,6 +782,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	class RecentDownloadsViewHolder(private val holderLayoutView: View) :
 		RecyclerView.ViewHolder(holderLayoutView) {
 		val thumbnail: ImageView = holderLayoutView.findViewById(R.id.img_file_thumbnail)
+		val favicon: ImageView = holderLayoutView.findViewById(R.id.img_site_favicon)
 		val duration: TextView = holderLayoutView.findViewById(R.id.txt_media_duration)
 
 		/**
@@ -802,6 +805,10 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		 */
 		fun setImageThumbnail(downloadDataModel: DownloadDataModel) {
 			updateThumbnailInfo(downloadDataModel)
+		}
+
+		fun setSiteImageFavicon(downloadDataModel: DownloadDataModel) {
+			updateFaviconInfo(downloadDataModel)
 		}
 
 		/**
@@ -841,6 +848,32 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 					}
 				}
 			}
+		}
+
+		private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
+			val defaultFaviconDrawable =
+				getDrawable(INSTANCE.resources, R.drawable.ic_button_information, null)
+			if (isVideoThumbnailNotAllowed(downloadDataModel)) {
+				thumbnail.setImageDrawable(defaultFaviconDrawable)
+				return
+			}
+
+			ThreadsUtility.executeInBackground(codeBlock = {
+				val referralSite = downloadDataModel.siteReferrer
+				AIOApp.aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
+					val faviconImgFile = File(faviconFilePath)
+					if (!faviconImgFile.exists() || !faviconImgFile.isFile) return@executeInBackground
+					val faviconImgURI = faviconImgFile.toUri()
+					try {
+						favicon.setImageURI(faviconImgURI)
+					} catch (error: Exception) {
+						error.printStackTrace()
+						favicon.setImageResource(R.drawable.ic_button_information)
+					}
+				}
+			}, errorHandler = {
+				it.printStackTrace()
+			})
 		}
 
 		/**
