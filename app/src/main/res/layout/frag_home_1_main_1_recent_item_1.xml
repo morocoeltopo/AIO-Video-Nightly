@@ -31,11 +31,13 @@
 			tools:ignore="ImageContrastCheck" />
 
 		<ImageView
+			android:id="@+id/img_media_play_indicator"
 			android:layout_width="@dimen/_20"
 			android:layout_height="wrap_content"
 			android:layout_gravity="center"
 			android:adjustViewBounds="true"
 			android:alpha="0.8"
+			android:visibility="gone"
 			android:elevation="@dimen/_5"
 			android:importantForAccessibility="no"
 			android:src="@drawable/image_media_play"

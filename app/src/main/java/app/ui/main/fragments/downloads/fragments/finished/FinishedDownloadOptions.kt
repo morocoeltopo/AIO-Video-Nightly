@@ -56,19 +56,19 @@ import java.io.File
  * @param finishedTasksFragment The parent fragment that contains the finished downloads list
  */
 class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : OnClickListener {
-	
+
 	// Safe references to avoid memory leaks
 	private val safeFinishedTasksFragmentRef = finishedTasksFragment?.safeFinishTasksFragment
 	private val safeMotherActivityRef = safeFinishedTasksFragmentRef?.safeMotherActivityRef
-	
+
 	// Lazy initialization of dialog builder
 	private val dialogBuilder: DialogBuilder? by lazy { DialogBuilder(safeMotherActivityRef) }
-	
+
 	// Components for file operations
 	private lateinit var downloadFileRenamer: DownloadFileRenamer
 	private lateinit var downloadInfoTracker: DownloadInfoTracker
 	private var downloadDataModel: DownloadDataModel? = null
-	
+
 	init {
 		// Initialize dialog view and set click listeners for all option buttons
 		dialogBuilder?.let { dialogBuilder ->
@@ -89,7 +89,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			)
 		}
 	}
-	
+
 	/**
 	 * Shows the options dialog for a specific download.
 	 * @param dataModel The download data model to show options for
@@ -107,7 +107,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Sets the current download model to operate on.
 	 * @param model The download data model
@@ -115,7 +115,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	fun setDownloadModel(model: DownloadDataModel) {
 		this.downloadDataModel = model
 	}
-	
+
 	/**
 	 * Closes the options dialog if it's showing.
 	 */
@@ -124,7 +124,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			if (dialogBuilder.isShowing) dialogBuilder.close()
 		}
 	}
-	
+
 	/**
 	 * Handles click events for all option buttons.
 	 */
@@ -142,7 +142,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Updates the dialog's title and thumbnail views with download information.
 	 * @param downloadModel The download data model containing the information to display
@@ -153,19 +153,19 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				findViewById<TextView>(R.id.txt_file_url).apply {
 					text = downloadModel.fileURL
 				}
-				
+
 				findViewById<TextView>(R.id.txt_file_title).apply {
 					isSelected = true
 					text = downloadModel.fileName
 				}
-				
+
 				findViewById<ImageView>(R.id.img_file_thumbnail).apply {
 					updateThumbnail(this, downloadModel)
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Updates the thumbnail image for the download.
 	 * @param thumbImageView The ImageView to display the thumbnail in
@@ -175,10 +175,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 		val destinationFile = downloadModel.getDestinationFile()
 		val defaultThumb = downloadModel.getThumbnailDrawableID()
 		val defaultThumbDrawable = getDrawable(INSTANCE.resources, defaultThumb, null)
-		
+
 		// Try to load APK thumbnail first (returns if successful)
 		if (loadApkThumbnail(downloadModel, thumbImageView, defaultThumbDrawable)) return
-		
+
 		// Load thumbnail in background to avoid UI freezing
 		executeInBackground {
 			// Check if we have a cached thumbnail path
@@ -188,7 +188,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					loadBitmapWithGlide(thumbImageView, downloadModel.thumbPath, defaultThumb)
 				}; return@executeInBackground
 			}
-			
+
 			// Generate thumbnail from file or URL
 			val thumbnailUrl = downloadModel.videoInfo?.videoThumbnailUrl
 			val bitmap = getThumbnailFromFile(destinationFile, thumbnailUrl, 420)
@@ -198,7 +198,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				val rotatedBitmap = if (isPortrait) {
 					rotateBitmap(bitmap, 270f)
 				} else bitmap
-				
+
 				// Save thumbnail to file for caching
 				val thumbnailName = "${downloadModel.id}$THUMB_EXTENSION"
 				saveBitmapToFile(rotatedBitmap, thumbnailName)?.let { filePath ->
@@ -215,7 +215,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Loads a thumbnail image into an ImageView using Glide.
 	 * @param thumbImageView The ImageView to load the thumbnail into
@@ -235,7 +235,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			thumbImageView.setImageResource(defaultThumb)
 		}
 	}
-	
+
 	/**
 	 * Loads an APK file's icon as its thumbnail.
 	 * @param downloadModel The download data model containing APK information
@@ -256,7 +256,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 						imageViewHolder.setImageDrawable(defaultThumbDrawable)
 						return false
 					}
-					
+
 					val packageManager: PackageManager = safeMotherActivityRef.packageManager
 					return try {
 						val packageInfo: PackageInfo? = packageManager.getPackageArchiveInfo(
@@ -280,9 +280,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					}
 				}
 			}
-		};  return false
+		}; return false
 	}
-	
+
 	/**
 	 * Plays the media file associated with the download.
 	 * Uses MediaPlayerActivity for audio/video, falls back to openFile() for other types.
@@ -293,7 +293,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				dialogBuilder?.let { _ ->
 					downloadDataModel?.let {
-						if (isAudioByName(it.fileName) || isVideoByName(it.fileName) ){
+						if (isAudioByName(it.fileName) || isVideoByName(it.fileName)) {
 							// Start media player activity for audio/video files
 							safeMotherActivityRef.startActivity(
 								Intent(safeMotherActivityRef, MediaPlayerActivity::class.java).apply {
@@ -315,12 +315,12 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Opens the downloaded file using appropriate application.
 	 * Handles APK files specially with proper installation flow.
 	 */
-	private fun openFile() {
+	fun openFile() {
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeActivityRef ->
 				dialogBuilder?.let { _ ->
@@ -339,11 +339,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Shares the downloaded file with other applications.
 	 */
-	private fun shareFile() {
+	fun shareFile() {
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				close()
@@ -354,11 +354,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Clears the download from the list without deleting the file.
 	 */
-	private fun clearFromList() {
+	fun clearFromList() {
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				getMessageDialog(
@@ -386,11 +386,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Deletes the downloaded file from storage and removes it from the list.
 	 */
-	private fun deleteFile() {
+	fun deleteFile() {
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				getMessageDialog(
@@ -423,11 +423,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-	
+
 	/**
 	 * Shows a dialog to rename the downloaded file.
 	 */
-	private fun renameFile() {
+	fun renameFile() {
 		safeFinishedTasksFragmentRef?.let { safeFinishedDownloadFragmentRef ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				if (!::downloadFileRenamer.isInitialized) {
@@ -444,19 +444,19 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 							}
 						}
 				}
-				
+
 				// Show rename dialog with current model
 				downloadFileRenamer.downloadDataModel = downloadDataModel!!
 				downloadFileRenamer.show(downloadDataModel!!)
 			}
 		}
 	}
-	
+
 	/**
 	 * Opens the associated webpage for the download in browser.
 	 * Shows warning if no referrer link is available.
 	 */
-	private fun discoverMore() {
+	fun discoverMore() {
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			val siteReferrerLink = downloadDataModel!!.siteReferrer
 			if (siteReferrerLink.isEmpty()) {
@@ -471,11 +471,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					isNegativeButtonVisible = false
 				); return
 			}
-			
+
 			val referrerLink = downloadDataModel?.siteReferrer
 			val browserFragment = safeMotherActivityRef.browserFragment
 			val webviewEngine = browserFragment?.browserFragmentBody?.webviewEngine!!
-			
+
 			if (referrerLink.isNullOrEmpty()) {
 				// Fallback to download URL if referrer is missing
 				getMessageDialog(
@@ -496,21 +496,21 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					}
 				}?.show(); return
 			}
-			
+
 			this.close()
 			this@FinishedDownloadOptions.close()
-			
+
 			// Open the referrer link in browser
 			safeMotherActivityRef.sideNavigation
 				?.addNewBrowsingTab(referrerLink, webviewEngine)
 			safeMotherActivityRef.openBrowserFragment()
 		}
 	}
-	
+
 	/**
 	 * Shows detailed information about the download.
 	 */
-	private fun downloadInfo() {
+	fun downloadInfo() {
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				close()

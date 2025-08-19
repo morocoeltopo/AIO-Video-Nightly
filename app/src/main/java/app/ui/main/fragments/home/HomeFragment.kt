@@ -47,6 +47,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import lib.device.ShareUtility
+import lib.device.ShareUtility.openApkFile
+import lib.files.FileSystemUtility.endsWithExtension
 import lib.files.FileSystemUtility.isAudioByName
 import lib.files.FileSystemUtility.isVideo
 import lib.files.FileSystemUtility.isVideoByName
@@ -716,9 +719,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	 * @return List of recent DownloadDataModel objects
 	 */
 	private fun getRecentDownloadModels(): List<DownloadDataModel> {
-		return downloadSystem.finishedDownloadDataModels
-			.filter { isAudioByName(it.fileName) || isVideoByName(it.fileName) }
-			.take(9)
+		return downloadSystem.finishedDownloadDataModels.take(12)
 	}
 
 	/**
@@ -789,6 +790,9 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		/** The site favicon image view. */
 		val favicon: ImageView = holderLayoutView.findViewById(R.id.img_site_favicon)
 
+		/** The media file playback indicator */
+		val mediaIndicator: ImageView = holderLayoutView.findViewById(R.id.img_media_play_indicator)
+
 		/** The media duration text view. */
 		val duration: TextView = holderLayoutView.findViewById(R.id.txt_media_duration)
 
@@ -832,16 +836,20 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		 */
 		fun setMediaDurationPreview(downloadDataModel: DownloadDataModel) {
 			ThreadsUtility.executeInBackground(codeBlock = {
-				delay(500)
-				ThreadsUtility.executeOnMain(codeBlock = {
-					downloadDataModel.mediaFilePlaybackDuration.let {
-						val cleaned = it.replace("(", "").replace(")", "")
-						if (cleaned.isNotEmpty()) {
-							duration.text = cleaned
-							showView(durationContainer, true)
+				val downloadedFileName = downloadDataModel.fileName
+				if (isVideoByName(downloadedFileName) || isAudioByName(downloadedFileName)) {
+					delay(500)
+					ThreadsUtility.executeOnMain(codeBlock = {
+						downloadDataModel.mediaFilePlaybackDuration.let {
+							val cleaned = it.replace("(", "").replace(")", "")
+							if (cleaned.isNotEmpty()) {
+								duration.text = cleaned
+								showView(durationContainer, true)
+								showView(mediaIndicator, true)
+							}
 						}
-					}
-				})
+					})
+				}
 			})
 		}
 
@@ -857,9 +865,8 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		) {
 			safeMotherActivityRef?.let { _ ->
 				downloadDataModel.let { downloadDataModel ->
-					if (isAudioByName(downloadDataModel.fileName)
-						|| isVideoByName(downloadDataModel.fileName)
-					) {
+					val downloadedFileName = downloadDataModel.fileName
+					if (isVideoByName(downloadedFileName) || isAudioByName(downloadedFileName)) {
 						safeMotherActivityRef.startActivity(
 							Intent(safeMotherActivityRef, MediaPlayerActivity::class.java).apply {
 								flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
@@ -868,10 +875,32 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 								putExtra(WHERE_DID_YOU_COME_FROM, FROM_FINISHED_DOWNLOADS_LIST)
 							})
 						animActivityFade(safeMotherActivityRef)
+					} else {
+						// For non-media files, just open them
+						openFile(safeMotherActivityRef, downloadDataModel)
 					}
 				}
 			}
 		}
+
+		/**
+		 * Opens the downloaded file using appropriate application.
+		 * Handles APK files specially with proper installation flow.
+		 */
+		fun openFile(safeMotherActivityRef: MotherActivity, downloadDataModel: DownloadDataModel) {
+			val extensions = listOf("apk").toTypedArray()
+			val downloadedFile = downloadDataModel.getDestinationFile()
+			if (endsWithExtension(downloadDataModel.fileName, extensions)) {
+				// Special handling for APK files
+				val authority = "${safeMotherActivityRef.packageName}.provider"
+				val apkFile = downloadedFile
+				openApkFile(safeMotherActivityRef, apkFile, authority)
+			} else {
+				// Open other file types normally
+				ShareUtility.openFile(downloadedFile, safeMotherActivityRef)
+			}
+		}
+
 
 		/**
 		 * Loads and sets the favicon for the given download item.

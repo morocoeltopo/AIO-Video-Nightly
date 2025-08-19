@@ -97,7 +97,8 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 	
 	/** Called when a finished download is clicked. Delegates to long-click handler. */
 	override fun onFinishedDownloadClick(downloadModel: DownloadDataModel) {
-		onFinishedDownloadLongClick(downloadModel)
+		finishTaskOptions.setDownloadModel(downloadModel)
+		finishTaskOptions.playTheMedia()
 	}
 	
 	/** Handles long-click on a finished download by showing options. */

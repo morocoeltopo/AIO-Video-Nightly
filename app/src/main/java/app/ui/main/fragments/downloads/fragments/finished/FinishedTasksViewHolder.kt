@@ -12,6 +12,7 @@ import androidx.core.content.res.ResourcesCompat.getDrawable
 import androidx.core.net.toUri
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioFavicons
+import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import com.aio.R
@@ -50,6 +51,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	private val fileInfo: TextView by lazy { layout.findViewById(R.id.txt_file_info) }
 	private val duration: TextView by lazy { layout.findViewById(R.id.txt_media_duration) }
 	private val durationContainer: View by lazy { layout.findViewById(R.id.container_media_duration) }
+	private val mediaIndicator: View by lazy { layout.findViewById(R.id.img_media_play_indicator) }
 
 	/**
 	 * Binds the download data and sets up click listeners.
@@ -80,6 +82,7 @@ class FinishedTasksViewHolder(val layout: View) {
 					val playbackTimeString = mediaFilePlaybackDuration.replace("(", "").replace(")", "")
 					if (playbackTimeString.isNotEmpty()) {
 						ViewUtility.showView(durationContainer, true)
+						ViewUtility.showView(mediaIndicator, true)
 						duration.text = playbackTimeString
 					}
 				}
@@ -118,6 +121,7 @@ class FinishedTasksViewHolder(val layout: View) {
 					val playbackTimeString = mediaFilePlaybackDuration.replace("(", "").replace(")", "")
 					if (playbackTimeString.isNotEmpty()) {
 						ViewUtility.showView(durationContainer, true)
+						ViewUtility.showView(mediaIndicator, true)
 						duration.text = playbackTimeString
 					}
 				}
@@ -138,7 +142,11 @@ class FinishedTasksViewHolder(val layout: View) {
 		logger.d("Setting up click events for download ID: ${downloadDataModel.id}")
 		container.apply {
 			isClickable = true
-			setOnClickListener { onClick.onFinishedDownloadClick(downloadDataModel) }
+			setOnClickListener {
+				if (aioSettings.openDownloadedFileOnSingleClick) {
+					onClick.onFinishedDownloadClick(downloadDataModel)
+				} else onClick.onFinishedDownloadLongClick(downloadDataModel)
+			}
 			setOnLongClickListener(View.OnLongClickListener {
 				onClick.onFinishedDownloadLongClick(downloadDataModel)
 				return@OnLongClickListener true
