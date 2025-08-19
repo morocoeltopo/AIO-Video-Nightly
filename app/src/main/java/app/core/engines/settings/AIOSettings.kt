@@ -93,7 +93,7 @@ class AIOSettings : Serializable {
 
 	// Download performance settings
 	var downloadBufferSize: Int = 1024 * 8
-	var downloadMaxHttpReadingTimeout: Int = 1000 * 10
+	var downloadMaxHttpReadingTimeout: Int = 1000 * 30
 	var downloadDefaultThreadConnections: Int = 1
 	var downloadDefaultParallelConnections: Int = 10
 	var downloadVerifyChecksum: Boolean = false

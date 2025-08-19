@@ -18,6 +18,7 @@ import lib.device.IntentUtility.openLinkInSystemBrowser
 import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.getWebpageTitleOrDescription
 import lib.process.AsyncJobUtils.executeOnMainThread
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.process.ThreadsUtility.executeOnMain
 import lib.texts.CommonTextUtils.getText
@@ -46,296 +47,298 @@ import java.lang.ref.WeakReference
  * @property isDownloadFromBrowser Whether download originated from browser
  */
 class SingleResolutionPrompter(
-    private val baseActivity: BaseActivity,
-    private val singleResolutionName: String,
-    private val extractedVideoLink: String,
-    private val currentWebUrl: String? = null,
-    private val videoCookie: String? = null,
-    private var videoTitle: String? = null,
-    private val videoUrlReferer: String? = null,
-    private val isSocialMediaUrl: Boolean = false,
-    private val dontParseFBTitle: Boolean = false,
-    private val thumbnailUrlProvided: String? = null,
-    private val isDownloadFromBrowser: Boolean = false
+	private val baseActivity: BaseActivity,
+	private val singleResolutionName: String,
+	private val extractedVideoLink: String,
+	private val currentWebUrl: String? = null,
+	private val videoCookie: String? = null,
+	private var videoTitle: String? = null,
+	private val videoUrlReferer: String? = null,
+	private val isSocialMediaUrl: Boolean = false,
+	private val dontParseFBTitle: Boolean = false,
+	private val thumbnailUrlProvided: String? = null,
+	private val isDownloadFromBrowser: Boolean = false
 ) {
-    // Weak reference to prevent memory leaks
-    private val safeBaseActivity = WeakReference(baseActivity).get()
+	private val logger = LogHelperUtils.from(javaClass)
 
-    // Dialog builder for the resolution prompt
-    private val dialogBuilder: DialogBuilder = DialogBuilder(safeBaseActivity)
+	// Weak reference to prevent memory leaks
+	private val safeBaseActivity = WeakReference(baseActivity).get()
 
-    // Model to store download information
-    private val downloadModel = DownloadDataModel()
+	// Dialog builder for the resolution prompt
+	private val dialogBuilder: DialogBuilder = DialogBuilder(safeBaseActivity)
 
-    // Cache for video thumbnail URL
-    private var videoThumbnailUrl: String = ""
+	// Model to store download information
+	private val downloadModel = DownloadDataModel()
 
-    init {
-        // Initialize dialog view and setup components
-        dialogBuilder.setView(R.layout.dialog_single_m3u8_prompter_1)
-        dialogBuilder.view.apply {
-            setupTitleAndThumbnail()
-            setupDownloadButton()
-            setupCardInfoButton()
-        }
-    }
+	// Cache for video thumbnail URL
+	private var videoThumbnailUrl: String = ""
 
-    /**
-     * Shows the resolution prompt dialog if not already showing
-     */
-    fun show() {
-        if (!dialogBuilder.isShowing) {
-            dialogBuilder.show()
-        }
-    }
+	init {
+		// Initialize dialog view and setup components
+		dialogBuilder.setView(R.layout.dialog_single_m3u8_prompter_1)
+		dialogBuilder.view.apply {
+			setupTitleAndThumbnail()
+			setupDownloadButton()
+			setupCardInfoButton()
+		}
+	}
 
-    /**
-     * Closes the resolution prompt dialog if showing
-     */
-    fun close() {
-        if (dialogBuilder.isShowing) {
-            dialogBuilder.close()
-        }
-    }
+	/**
+	 * Shows the resolution prompt dialog if not already showing
+	 */
+	fun show() {
+		if (!dialogBuilder.isShowing) {
+			dialogBuilder.show()
+		}
+	}
 
-    /**
-     * Gets the dialog builder instance
-     * @return DialogBuilder instance
-     */
-    fun getDialogBuilder(): DialogBuilder {
-        return dialogBuilder
-    }
+	/**
+	 * Closes the resolution prompt dialog if showing
+	 */
+	fun close() {
+		if (dialogBuilder.isShowing) {
+			dialogBuilder.close()
+		}
+	}
 
-    /**
-     * Displays and fetches video title:
-     * - Uses provided title if available
-     * - Falls back to hostname + resolution
-     * - Fetches Facebook title asynchronously if needed
-     * @param layout The parent view containing title TextView
-     */
-    private fun showVideoTitleFromURL(layout: View) {
-        val videoTitleView = layout.findViewById<TextView>(R.id.txt_video_title)
+	/**
+	 * Gets the dialog builder instance
+	 * @return DialogBuilder instance
+	 */
+	fun getDialogBuilder(): DialogBuilder {
+		return dialogBuilder
+	}
 
-        // Use provided title if available
-        if (!videoTitle.isNullOrEmpty()) {
-            videoTitleView.isSelected = true
-            videoTitleView.text = videoTitle
+	/**
+	 * Displays and fetches video title:
+	 * - Uses provided title if available
+	 * - Falls back to hostname + resolution
+	 * - Fetches Facebook title asynchronously if needed
+	 * @param layout The parent view containing title TextView
+	 */
+	private fun showVideoTitleFromURL(layout: View) {
+		val videoTitleView = layout.findViewById<TextView>(R.id.txt_video_title)
 
-        } else {
-            // Fallback title format: "hostname_resolution"
-            val hostName = URLUtilityKT.getHostFromUrl(currentWebUrl)
-            val resolutionName = singleResolutionName
-            val finalTitle = "${hostName}_${resolutionName}"
-            videoTitleView.text = finalTitle
-        }
+		// Use provided title if available
+		if (!videoTitle.isNullOrEmpty()) {
+			videoTitleView.isSelected = true
+			videoTitleView.text = videoTitle
 
-        // Skip Facebook title parsing if requested
-        if (dontParseFBTitle) return
+		} else {
+			// Fallback title format: "hostname_resolution"
+			val hostName = URLUtilityKT.getHostFromUrl(currentWebUrl)
+			val resolutionName = singleResolutionName
+			val finalTitle = "${hostName}_${resolutionName}"
+			videoTitleView.text = finalTitle
+		}
 
-        // Special handling for Facebook URLs
-        if (currentWebUrl?.let { isFacebookUrl(it) } == true) {
-            ThreadsUtility.executeInBackground(codeBlock = {
-                // Show loading animation while fetching
-                executeOnMainThread { animateFadInOutAnim(videoTitleView) }
+		// Skip Facebook title parsing if requested
+		if (dontParseFBTitle) return
 
-                // Fetch webpage title asynchronously
-                getWebpageTitleOrDescription(currentWebUrl) { resultedTitle ->
-                    if (!resultedTitle.isNullOrEmpty()) {
-                        executeOnMainThread {
-                            closeAnyAnimation(videoTitleView)
-                            videoTitleView.text = resultedTitle
-                            videoTitle = resultedTitle // Cache the fetched title
-                        }
-                    }
-                }
-            })
-        }
-    }
+		// Special handling for Facebook URLs
+		if (currentWebUrl?.let { isFacebookUrl(it) } == true) {
+			ThreadsUtility.executeInBackground(codeBlock = {
+				// Show loading animation while fetching
+				executeOnMainThread { animateFadInOutAnim(videoTitleView) }
 
-    /**
-     * Displays video resolution information
-     * @param layout The parent view containing resolution TextView
-     */
-    private fun showVideoResolution(layout: View) {
-        safeBaseActivity?.let { safeMotherActivity ->
-            val videoResView = layout.findViewById<TextView>(R.id.text_video_resolution)
-            if (singleResolutionName.isNotEmpty()) {
-                val resId = R.string.text_resolution_info
-                videoResView.text = safeMotherActivity.getString(resId, singleResolutionName)
-            } else videoResView.text = getText(R.string.title_not_available)
-        }
-    }
+				// Fetch webpage title asynchronously
+				getWebpageTitleOrDescription(currentWebUrl) { resultedTitle ->
+					if (!resultedTitle.isNullOrEmpty()) {
+						executeOnMainThread {
+							closeAnyAnimation(videoTitleView)
+							videoTitleView.text = resultedTitle
+							videoTitle = resultedTitle // Cache the fetched title
+						}
+					}
+				}
+			})
+		}
+	}
 
-    /**
-     * Loads and displays video thumbnail:
-     * - Uses provided thumbnail if available
-     * - Fetches thumbnail from URL if needed
-     * @param layout The parent view containing thumbnail ImageView
-     */
-    private fun showVideoThumb(layout: View) {
-        // Use provided thumbnail if available
-        if (!thumbnailUrlProvided.isNullOrEmpty()) {
-            videoThumbnailUrl = thumbnailUrlProvided
-            val videoThumbnail = layout.findViewById<ImageView>(R.id.image_video_thumbnail)
-            loadThumbnailFromUrl(videoThumbnailUrl, videoThumbnail)
-            return
-        }
+	/**
+	 * Displays video resolution information
+	 * @param layout The parent view containing resolution TextView
+	 */
+	private fun showVideoResolution(layout: View) {
+		safeBaseActivity?.let { safeMotherActivity ->
+			val videoResView = layout.findViewById<TextView>(R.id.text_video_resolution)
+			if (singleResolutionName.isNotEmpty()) {
+				val resId = R.string.text_resolution_info
+				videoResView.text = safeMotherActivity.getString(resId, singleResolutionName)
+			} else videoResView.text = getText(R.string.title_not_available)
+		}
+	}
 
-        // Fetch thumbnail asynchronously
-        ThreadsUtility.executeInBackground(codeBlock = {
-            val websiteUrl = videoUrlReferer ?: currentWebUrl
-            if (websiteUrl.isNullOrEmpty()) return@executeInBackground
+	/**
+	 * Loads and displays video thumbnail:
+	 * - Uses provided thumbnail if available
+	 * - Fetches thumbnail from URL if needed
+	 * @param layout The parent view containing thumbnail ImageView
+	 */
+	private fun showVideoThumb(layout: View) {
+		// Use provided thumbnail if available
+		if (!thumbnailUrlProvided.isNullOrEmpty()) {
+			videoThumbnailUrl = thumbnailUrlProvided
+			val videoThumbnail = layout.findViewById<ImageView>(R.id.image_video_thumbnail)
+			loadThumbnailFromUrl(videoThumbnailUrl, videoThumbnail)
+			return
+		}
 
-            // Parse thumbnail URL from webpage
-            val thumbImageUrl = startParsingVideoThumbUrl(websiteUrl)
-            if (thumbImageUrl.isNullOrEmpty()) return@executeInBackground
+		// Fetch thumbnail asynchronously
+		ThreadsUtility.executeInBackground(codeBlock = {
+			val websiteUrl = videoUrlReferer ?: currentWebUrl
+			if (websiteUrl.isNullOrEmpty()) return@executeInBackground
 
-            // Load thumbnail on UI thread
-            executeOnMain {
-                videoThumbnailUrl = thumbImageUrl
-                val videoThumbnail = layout.findViewById<ImageView>(R.id.image_video_thumbnail)
-                loadThumbnailFromUrl(thumbImageUrl, videoThumbnail)
-            }
-        })
-    }
+			// Parse thumbnail URL from webpage
+			val thumbImageUrl = startParsingVideoThumbUrl(websiteUrl)
+			if (thumbImageUrl.isNullOrEmpty()) return@executeInBackground
 
-    /**
-     * Sets up title, resolution and thumbnail views
-     * @receiver The dialog content view
-     */
-    private fun View.setupTitleAndThumbnail() {
-        showVideoTitleFromURL(layout = this)
-        showVideoResolution(layout = this)
-        showVideoThumb(layout = this)
-    }
+			// Load thumbnail on UI thread
+			executeOnMain {
+				videoThumbnailUrl = thumbImageUrl
+				val videoThumbnail = layout.findViewById<ImageView>(R.id.image_video_thumbnail)
+				loadThumbnailFromUrl(thumbImageUrl, videoThumbnail)
+			}
+		})
+	}
 
-    /**
-     * Sets up info button to open video URL in browser
-     * @receiver The dialog content view
-     */
-    private fun View.setupCardInfoButton() {
-        val buttonCardInfo = findViewById<View>(R.id.btn_file_info_card)
-        buttonCardInfo.setOnClickListener { openVideoUrlInBrowser() }
-    }
+	/**
+	 * Sets up title, resolution and thumbnail views
+	 * @receiver The dialog content view
+	 */
+	private fun View.setupTitleAndThumbnail() {
+		showVideoTitleFromURL(layout = this)
+		showVideoResolution(layout = this)
+		showVideoThumb(layout = this)
+	}
 
-    /**
-     * Sets up download button with appropriate state:
-     * - Shows "Watch Ad to Download" after download threshold
-     * - Handles premium user state
-     * @receiver The dialog content view
-     */
-    private fun View.setupDownloadButton() {
-        val buttonDownload = findViewById<View>(R.id.btn_dialog_positive_container)
-        buttonDownload.setOnClickListener { addVideoFormatToDownloadSystem() }
+	/**
+	 * Sets up info button to open video URL in browser
+	 * @receiver The dialog content view
+	 */
+	private fun View.setupCardInfoButton() {
+		val buttonCardInfo = findViewById<View>(R.id.btn_file_info_card)
+		buttonCardInfo.setOnClickListener { openVideoUrlInBrowser() }
+	}
 
-        // Check if user exceeded free download limit
-        val numberOfDownloadsUserDid = aioSettings.numberOfDownloadsUserDid
-        val maxDownloadThreshold = aioSettings.numberOfMaxDownloadThreshold
-        if (numberOfDownloadsUserDid >= maxDownloadThreshold) {
-            if (!IS_PREMIUM_USER && !IS_ULTIMATE_VERSION_UNLOCKED) {
-                // Show "Watch Ad to Download" for free users over limit
-                val btnDownloadText = findViewById<TextView>(R.id.btn_dialog_positive)
-                btnDownloadText.let {
-                    it.setLeftSideDrawable(R.drawable.ic_button_video)
-                    it.setText(R.string.text_watch_ad_to_download)
-                }
-            }
-        }
-    }
+	/**
+	 * Sets up download button with appropriate state:
+	 * - Shows "Watch Ad to Download" after download threshold
+	 * - Handles premium user state
+	 * @receiver The dialog content view
+	 */
+	private fun View.setupDownloadButton() {
+		val buttonDownload = findViewById<View>(R.id.btn_dialog_positive_container)
+		buttonDownload.setOnClickListener { addVideoFormatToDownloadSystem() }
 
-    /**
-     * Opens video URL in system browser
-     */
-    private fun openVideoUrlInBrowser() {
-        safeBaseActivity?.let { safeMotherActivityRef ->
-            if (currentWebUrl.isNullOrEmpty()) return
-            openLinkInSystemBrowser(currentWebUrl, safeMotherActivityRef) {
-                // Handle browser open failure
-                safeMotherActivityRef.doSomeVibration(40)
-                showToast(getText(R.string.text_failed_open_the_video))
-            }
-        }
-    }
+		// Check if user exceeded free download limit
+		val numberOfDownloadsUserDid = aioSettings.numberOfDownloadsUserDid
+		val maxDownloadThreshold = aioSettings.numberOfMaxDownloadThreshold
+		if (numberOfDownloadsUserDid >= maxDownloadThreshold) {
+			if (!IS_PREMIUM_USER && !IS_ULTIMATE_VERSION_UNLOCKED) {
+				// Show "Watch Ad to Download" for free users over limit
+				val btnDownloadText = findViewById<TextView>(R.id.btn_dialog_positive)
+				btnDownloadText.let {
+					it.setLeftSideDrawable(R.drawable.ic_button_video)
+					it.setText(R.string.text_watch_ad_to_download)
+				}
+			}
+		}
+	}
 
-    /**
-     * Adds video format to download system and closes dialog
-     */
-    private fun addVideoFormatToDownloadSystem() {
-        addToDownloadSystem()
-        close()
-    }
+	/**
+	 * Opens video URL in system browser
+	 */
+	private fun openVideoUrlInBrowser() {
+		safeBaseActivity?.let { safeMotherActivityRef ->
+			if (currentWebUrl.isNullOrEmpty()) return
+			openLinkInSystemBrowser(currentWebUrl, safeMotherActivityRef) {
+				// Handle browser open failure
+				safeMotherActivityRef.doSomeVibration(40)
+				showToast(getText(R.string.text_failed_open_the_video))
+			}
+		}
+	}
 
-    /**
-     * Prepares and adds download task to download system
-     */
-    private fun addToDownloadSystem() {
-        ThreadsUtility.executeInBackground(codeBlock = {
-            safeBaseActivity?.let { safeBaseActivityRef ->
-                try {
-                    // Validate required URL
-                    if (currentWebUrl.isNullOrEmpty()) {
-                        executeOnMain {
-                            safeBaseActivityRef.doSomeVibration(50)
-                            showToast(msgId = R.string.text_something_went_wrong)
-                        }; return@executeInBackground
-                    }
+	/**
+	 * Adds video format to download system and closes dialog
+	 */
+	private fun addVideoFormatToDownloadSystem() {
+		addToDownloadSystem()
+		close()
+	}
 
-                    val videoCookie = videoCookie
-                    val videoTitle = videoTitle
-                    val videoThumbnailUrl = videoThumbnailUrl
-                    val videoUrlReferer = videoUrlReferer
-                    val videoThumbnailByReferer = true
-                    val videoFormats = arrayListOf(
-                        VideoFormat(
-                            formatId = safeBaseActivityRef.packageName,
-                            isFromSocialMedia = isSocialMediaUrl,
-                            formatResolution = singleResolutionName
-                        )
-                    )
+	/**
+	 * Prepares and adds download task to download system
+	 */
+	private fun addToDownloadSystem() {
+		ThreadsUtility.executeInBackground(codeBlock = {
+			safeBaseActivity?.let { safeBaseActivityRef ->
+				try {
+					// Validate required URL
+					if (currentWebUrl.isNullOrEmpty()) {
+						executeOnMain {
+							safeBaseActivityRef.doSomeVibration(50)
+							showToast(msgId = R.string.text_something_went_wrong)
+						}; return@executeInBackground
+					}
 
-                    // Prepare video info
-                    val videoInfo = VideoInfo(
-                        videoUrl = currentWebUrl,
-                        videoTitle = videoTitle,
-                        videoThumbnailUrl = videoThumbnailUrl,
-                        videoUrlReferer = videoUrlReferer,
-                        videoThumbnailByReferer = videoThumbnailByReferer,
-                        videoCookie = videoCookie,
-                        videoFormats = videoFormats
-                    )
+					val videoCookie = videoCookie
+					val videoTitle = videoTitle
+					val videoThumbnailUrl = videoThumbnailUrl
+					val videoUrlReferer = videoUrlReferer
+					val videoThumbnailByReferer = true
+					val videoFormats = arrayListOf(
+						VideoFormat(
+							formatId = safeBaseActivityRef.packageName,
+							isFromSocialMedia = isSocialMediaUrl,
+							formatResolution = singleResolutionName
+						)
+					)
 
-                    // Configure download model
-                    downloadModel.videoInfo = videoInfo
-                    downloadModel.videoFormat = videoFormats[0]
-                    downloadModel.isDownloadFromBrowser = isDownloadFromBrowser
+					// Prepare video info
+					val videoInfo = VideoInfo(
+						videoUrl = currentWebUrl,
+						videoTitle = videoTitle,
+						videoThumbnailUrl = videoThumbnailUrl,
+						videoUrlReferer = videoUrlReferer,
+						videoThumbnailByReferer = videoThumbnailByReferer,
+						videoCookie = videoCookie,
+						videoFormats = videoFormats
+					)
 
-                    if (videoUrlReferer != null) downloadModel.siteReferrer = videoUrlReferer
+					// Configure download model
+					downloadModel.videoInfo = videoInfo
+					downloadModel.videoFormat = videoFormats[0]
+					downloadModel.isDownloadFromBrowser = isDownloadFromBrowser
 
-                    val urlCookie = videoInfo.videoCookie
-                    if (!urlCookie.isNullOrEmpty()) downloadModel.siteCookieString = urlCookie
+					if (videoUrlReferer != null) downloadModel.siteReferrer = videoUrlReferer
 
-                    // Add download to system
-                    downloadSystem.addDownload(downloadModel) {
-                        executeOnMainThread {
-                            val toastMsgResId = R.string.text_download_added_successfully
-                            showToast(msgId = toastMsgResId)
-                        }
-                    }
+					val urlCookie = videoInfo.videoCookie
+					if (!urlCookie.isNullOrEmpty()) downloadModel.siteCookieString = urlCookie
 
-                    // Update download counters
-                    aioSettings.numberOfDownloadsUserDid++
-                    aioSettings.totalNumberOfSuccessfulDownloads++
-                    aioSettings.updateInStorage()
+					// Add download to system
+					downloadSystem.addDownload(downloadModel) {
+						executeOnMainThread {
+							val toastMsgResId = R.string.text_download_added_successfully
+							showToast(msgId = toastMsgResId)
+						}
+					}
 
-                } catch (error: Exception) {
-                    error.printStackTrace()
-                    val failedToAddResId = R.string.text_failed_to_add_download_task
-                    executeOnMain {
-                        safeBaseActivityRef.doSomeVibration(20)
-                        showToast(msgId = failedToAddResId)
-                    }
-                }
-            }
-        })
-    }
+					// Update download counters
+					aioSettings.numberOfDownloadsUserDid++
+					aioSettings.totalNumberOfSuccessfulDownloads++
+					aioSettings.updateInStorage()
+
+				} catch (error: Exception) {
+					error.printStackTrace()
+					val failedToAddResId = R.string.text_failed_to_add_download_task
+					executeOnMain {
+						safeBaseActivityRef.doSomeVibration(20)
+						showToast(msgId = failedToAddResId)
+					}
+				}
+			}
+		})
+	}
 }

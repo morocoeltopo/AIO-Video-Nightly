@@ -677,7 +677,6 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			request.addOption("--fragment-retries", 10)
 			request.addOption("--no-check-certificate")
 			request.addOption("--force-ipv4")
-			request.addOption("--socket-timeout", 30)
 			request.addOption("--source-address", "0.0.0.0")
 			
 			// Add cookie support if available
