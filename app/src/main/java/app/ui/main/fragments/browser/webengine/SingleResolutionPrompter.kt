@@ -246,9 +246,6 @@ class SingleResolutionPrompter(
 		}
 	}
 
-	/**
-	 * Opens video URL in system browser
-	 */
 	private fun openVideoUrlInBrowser() {
 		safeBaseActivity?.let { safeMotherActivityRef ->
 			if (currentWebUrl.isNullOrEmpty()) return
@@ -260,23 +257,17 @@ class SingleResolutionPrompter(
 		}
 	}
 
-	/**
-	 * Adds video format to download system and closes dialog
-	 */
 	private fun addVideoFormatToDownloadSystem() {
 		addToDownloadSystem()
 		close()
 	}
 
-	/**
-	 * Prepares and adds download task to download system
-	 */
 	private fun addToDownloadSystem() {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			safeBaseActivity?.let { safeBaseActivityRef ->
 				try {
 					// Validate required URL
-					if (currentWebUrl.isNullOrEmpty()) {
+					if (extractedVideoLink.isNullOrEmpty()) {
 						executeOnMain {
 							safeBaseActivityRef.doSomeVibration(50)
 							showToast(msgId = R.string.text_something_went_wrong)
@@ -298,7 +289,7 @@ class SingleResolutionPrompter(
 
 					// Prepare video info
 					val videoInfo = VideoInfo(
-						videoUrl = currentWebUrl,
+						videoUrl = extractedVideoLink,
 						videoTitle = videoTitle,
 						videoThumbnailUrl = videoThumbnailUrl,
 						videoUrlReferer = videoUrlReferer,
