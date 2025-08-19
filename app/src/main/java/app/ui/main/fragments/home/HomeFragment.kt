@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
+import app.core.AIOApp.Companion.aioFavicons
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOTimer
 import app.core.bases.BaseFragment
@@ -755,8 +756,8 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 
 			override fun onBindViewHolder(holder: RecentDownloadsViewHolder, position: Int) {
 				holder.setImageThumbnail(downloadsModels[position])
-				holder.setSiteImageFavicon(downloadsModels[position])
 				holder.setMediaDurationPreview(downloadsModels[position])
+				holder.setSiteImageFavicon(downloadsModels[position])
 				holder.setOnClickEvent(downloadsModels[position], safeMotherActivityRef)
 			}
 
@@ -781,9 +782,18 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	 */
 	class RecentDownloadsViewHolder(private val holderLayoutView: View) :
 		RecyclerView.ViewHolder(holderLayoutView) {
+
+		/** The media thumbnail image view. */
 		val thumbnail: ImageView = holderLayoutView.findViewById(R.id.img_file_thumbnail)
+
+		/** The site favicon image view. */
 		val favicon: ImageView = holderLayoutView.findViewById(R.id.img_site_favicon)
+
+		/** The media duration text view. */
 		val duration: TextView = holderLayoutView.findViewById(R.id.txt_media_duration)
+
+		/** The media duration container view. */
+		val durationContainer: View = holderLayoutView.findViewById(R.id.container_media_duration)
 
 		/**
 		 * Sets the click event for the download item.
@@ -807,6 +817,11 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			updateThumbnailInfo(downloadDataModel)
 		}
 
+		/**
+		 * Sets the site favicon image for the download item.
+		 *
+		 * @param downloadDataModel The download data model containing the site referrer.
+		 */
 		fun setSiteImageFavicon(downloadDataModel: DownloadDataModel) {
 			updateFaviconInfo(downloadDataModel)
 		}
@@ -816,10 +831,18 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		 * @param downloadDataModel The download data model
 		 */
 		fun setMediaDurationPreview(downloadDataModel: DownloadDataModel) {
-			downloadDataModel.mediaFilePlaybackDuration.let {
-				val cleaned = it.replace("(", "").replace(")", "")
-				if (cleaned.isNotEmpty()) duration.text = cleaned
-			}
+			ThreadsUtility.executeInBackground(codeBlock = {
+				delay(500)
+				ThreadsUtility.executeOnMain(codeBlock = {
+					downloadDataModel.mediaFilePlaybackDuration.let {
+						val cleaned = it.replace("(", "").replace(")", "")
+						if (cleaned.isNotEmpty()) {
+							duration.text = cleaned
+							showView(durationContainer, true)
+						}
+					}
+				})
+			})
 		}
 
 		/**
@@ -850,26 +873,37 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			}
 		}
 
+		/**
+		 * Loads and sets the favicon for the given download item.
+		 *
+		 * Attempts to load a favicon from cache (via AIOApp.aioFavicons). If unavailable,
+		 * falls back to a default drawable.
+		 *
+		 * @param downloadDataModel The download data model containing the site referrer.
+		 */
 		private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
-			val defaultFaviconDrawable =
-				getDrawable(INSTANCE.resources, R.drawable.ic_button_information, null)
+			val defaultFaviconResId = R.drawable.ic_button_information
+			val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 			if (isVideoThumbnailNotAllowed(downloadDataModel)) {
-				thumbnail.setImageDrawable(defaultFaviconDrawable)
+				favicon.setImageDrawable(defaultFaviconDrawable)
 				return
 			}
 
 			ThreadsUtility.executeInBackground(codeBlock = {
 				val referralSite = downloadDataModel.siteReferrer
-				AIOApp.aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
+				aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
 					val faviconImgFile = File(faviconFilePath)
 					if (!faviconImgFile.exists() || !faviconImgFile.isFile) return@executeInBackground
 					val faviconImgURI = faviconImgFile.toUri()
-					try {
-						favicon.setImageURI(faviconImgURI)
-					} catch (error: Exception) {
-						error.printStackTrace()
-						favicon.setImageResource(R.drawable.ic_button_information)
-					}
+					ThreadsUtility.executeOnMain(codeBlock = {
+						showView(favicon, true)
+						try {
+							favicon.setImageURI(faviconImgURI)
+						} catch (error: Exception) {
+							error.printStackTrace()
+							favicon.setImageResource(defaultFaviconResId)
+						}
+					})
 				}
 			}, errorHandler = {
 				it.printStackTrace()
