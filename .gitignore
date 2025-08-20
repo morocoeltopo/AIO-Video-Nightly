@@ -9,3 +9,4 @@
 .cxx
 local.properties
 release_signature.jks
+/app/src/main/res/values/strings_unit_ids.xml
