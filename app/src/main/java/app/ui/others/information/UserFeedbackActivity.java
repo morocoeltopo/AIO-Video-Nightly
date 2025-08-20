@@ -2,6 +2,7 @@ package app.ui.others.information;
 
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
+import static app.core.AIOApp.INSTANCE;
 import static lib.device.DeviceInfoUtils.getDeviceInformation;
 import static lib.process.CommonTimeUtils.delay;
 import static lib.ui.MsgDialogUtils.showMessageDialog;
@@ -17,7 +18,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import com.aio.R;
 
-import app.core.AIOApp;
 import app.core.bases.BaseActivity;
 import app.ui.main.MotherActivity;
 import lib.ui.builders.DialogBuilder;
@@ -119,7 +119,7 @@ public class UserFeedbackActivity extends BaseActivity {
                 return;
             }
 
-            AIOApp.INSTANCE.getAIOBackend().saveUserFeedback(messageToSend);
+            INSTANCE.getAIOBackend().saveUserFeedback(messageToSend);
             showToast(getString(R.string.text_feedbacks_sent_successfully), -1);
             resetFormFields();
         });

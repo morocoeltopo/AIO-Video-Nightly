@@ -108,8 +108,8 @@ class VideoToAudioConverter {
                 
                 logger.d("Audio extraction completed successfully: $outputFile")
                 safeListener.onSuccess(outputFile)
-            } catch (e: Exception) {
-                val errorMsg = "Conversion failed: ${e.message}"
+            } catch (error: Exception) {
+                val errorMsg = "Conversion failed: ${error.message}"
                 logger.d(errorMsg)
                 safeListener.onFailure(errorMsg)
             }

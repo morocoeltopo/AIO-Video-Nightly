@@ -110,8 +110,7 @@ object UserEmailFetcher {
 	): String? {
 		return if (SDK_INT >= Q) {
 			try {
-				val result = accountManager.getUserData(account, "display_name")
-				result?.toString()
+				accountManager.getUserData(account, "display_name")
 			} catch (error: Exception) {
 				error.printStackTrace()
 				null

@@ -198,6 +198,6 @@ class PopupBuilder(
 	private fun BaseActivityInf?.isValidForWindowManagement(): Boolean {
 		this?.getActivity()?.let { activity ->
 			return !activity.isFinishing && !activity.isDestroyed
-		} ?: run { return false }
+		}; return false
 	}
 }

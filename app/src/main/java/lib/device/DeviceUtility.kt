@@ -33,7 +33,7 @@ object DeviceUtility {
 			val displayMetrics = safeRef.resources.displayMetrics
 			val density = displayMetrics.density
 			return density
-		} ?: run { return 0.0f }
+		}; return 0.0f
 	}
 	
 	/**
@@ -56,7 +56,7 @@ object DeviceUtility {
 				else -> "ldpi"
 			}
 			return formattedDensity
-		} ?: run { return "" }
+		}; return ""
 	}
 	
 	/**

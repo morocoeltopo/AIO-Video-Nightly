@@ -1,15 +1,26 @@
+# Keep all classes and methods in Apache Commons Compress
 -keep class org.apache.commons.compress.** { *; }
+# Suppress warnings for Apache Commons Compress
 -dontwarn org.apache.commons.compress.**
+# Keep method signatures (needed for generics/reflection)
 -keepattributes Signature
+# Keep ZIP-related classes in Apache Commons Compress
 -keep class org.apache.commons.compress.archivers.zip.** { *; }
+
+# Keep Mozilla Rhino (JavaScript engine) classes
 -keep class org.mozilla.javascript.** { *; }
 -keep class org.mozilla.classfile.ClassFileWriter
+# Suppress warnings for Rhino tools package
 -dontwarn org.mozilla.javascript.tools.**
+
+# Suppress warnings for Java Beans APIs (some platforms don’t include them)
 -dontwarn java.beans.BeanDescriptor
 -dontwarn java.beans.BeanInfo
 -dontwarn java.beans.IntrospectionException
 -dontwarn java.beans.Introspector
 -dontwarn java.beans.PropertyDescriptor
+
+# Suppress warnings for Javax Scripting API (JSR-223)
 -dontwarn javax.script.AbstractScriptEngine
 -dontwarn javax.script.Bindings
 -dontwarn javax.script.Compilable
@@ -20,6 +31,8 @@
 -dontwarn javax.script.ScriptEngineFactory
 -dontwarn javax.script.ScriptException
 -dontwarn javax.script.SimpleBindings
+
+# Suppress warnings for Dynalink (used by Nashorn / JS engines in JDK)
 -dontwarn jdk.dynalink.CallSiteDescriptor
 -dontwarn jdk.dynalink.DynamicLinker
 -dontwarn jdk.dynalink.DynamicLinkerFactory
@@ -38,5 +51,9 @@
 -dontwarn jdk.dynalink.linker.support.CompositeTypeBasedGuardingDynamicLinker
 -dontwarn jdk.dynalink.linker.support.Guards
 -dontwarn jdk.dynalink.support.ChainedCallSite
+
+# Suppress warnings for internal Sun reflection classes
 -dontwarn sun.reflect.ReflectionFactory
+
+# Perform up to 7 optimization passes (default is usually 1 or 2)
 -optimizationpasses 7
