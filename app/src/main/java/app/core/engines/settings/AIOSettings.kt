@@ -54,7 +54,6 @@ class AIOSettings : Serializable {
 	var userSelectedUILanguage: String = ENGLISH
 
 	// Analytics / interaction counters
-	var totalClickCountOnRating = 0
 	var totalClickCountOnLanguageChange = 0
 	var totalClickCountOnMediaPlayback = 0
 	var totalClickCountOnHowToGuide = 0
