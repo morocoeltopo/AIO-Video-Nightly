@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.0"
+agp = "8.12.1"
 desugar_jdk_libs_nio = "2.1.5"
 fst = "3.0.3"
 kotlin = "2.2.0"
@@ -21,6 +21,7 @@ gson = "2.13.1"
 jsoup = "1.21.1"
 glide = "4.16.0"
 permissionx = "1.8.1"
+parse = "4.3.0"
 storage = "2.2.0"
 ytdlp = "0.17.4"
 
@@ -50,6 +51,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+parse = { module = "com.github.parse-community.Parse-SDK-Android:parse", version.ref = "parse" }
 permissionx = { module = "com.guolindev.permissionx:permissionx", version.ref = "permissionx" }
 saf_storage = { module = "com.anggrayudi:storage", version.ref = "storage" }
 ytdlp_ffmpeg = { module = "io.github.junkfood02.youtubedl-android:ffmpeg", version.ref = "ytdlp" }
