@@ -1,5 +1,6 @@
 package app.core.engines.downloader
 
+import app.core.AIOApp.Companion.aioBackend
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.aioTimer
 import app.core.AIOApp.Companion.idleForegroundService
@@ -231,6 +232,8 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 					removeFromRunningDownloadTasksList(downloadTaskInf)
 
 				if (downloadDataModel.isComplete && downloadDataModel.status == COMPLETE) {
+					aioBackend.saveDownloadLog(downloadDataModel)
+					
 					removeFromActiveDownloadDataModelsList(downloadDataModel)
 					withContext(Dispatchers.Main) {
 						downloadsUIManager.updateActiveUI(downloadDataModel)

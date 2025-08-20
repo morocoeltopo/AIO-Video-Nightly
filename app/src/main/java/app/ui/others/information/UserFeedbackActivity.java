@@ -20,7 +20,6 @@ import com.aio.R;
 import app.core.AIOApp;
 import app.core.bases.BaseActivity;
 import app.ui.main.MotherActivity;
-import lib.device.ShareUtility;
 import lib.ui.builders.DialogBuilder;
 
 /**
@@ -120,12 +119,8 @@ public class UserFeedbackActivity extends BaseActivity {
                 return;
             }
 
-            ShareUtility.shareText(AIOApp.INSTANCE, messageToSend,
-                    getText(R.string.title_share_feedback).toString(), () -> {
-                        showToast(getString(R.string.text_feedbacks_sent_successfully), -1);
-                        return null;
-                    });
-
+            AIOApp.INSTANCE.getAIOBackend().saveUserFeedback(messageToSend);
+            showToast(getString(R.string.text_feedbacks_sent_successfully), -1);
             resetFormFields();
         });
     }

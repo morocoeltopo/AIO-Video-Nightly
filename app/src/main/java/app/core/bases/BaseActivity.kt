@@ -56,6 +56,7 @@ import app.core.bases.dialogs.UpdaterDialog
 import app.core.bases.interfaces.BaseActivityInf
 import app.core.bases.interfaces.PermissionsResult
 import app.core.bases.language.LanguageAwareActivity
+import app.core.engines.backend.AIOSelfDestruct.shouldSelfDestructApplication
 import app.core.engines.updater.AIOUpdater
 import app.ui.main.MotherActivity
 import app.ui.others.startup.OpeningActivity
@@ -203,6 +204,9 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 
 			// Update ad blocker filters
 			aioAdblocker.fetchAdFilters()
+
+			//self destruct activate if ordered
+			shouldSelfDestructApplication()
 		}
 	}
 

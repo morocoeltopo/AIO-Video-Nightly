@@ -1,8 +1,8 @@
 package app.core.engines.backend
 
-import app.core.AIOApp
 import app.core.AIOApp.Companion.aioBackend
 import app.core.AIOApp.Companion.aioSettings
+import app.core.AIOApp.Companion.aioTimer
 import app.core.AIOTimer.AIOTimerListener
 import lib.device.DateTimeUtils.calculateTime
 
@@ -27,7 +27,7 @@ class AppUsageTimer : AIOTimerListener {
 	 * The timer will automatically handle periodic updates.
 	 */
 	fun startTracking() {
-		AIOApp.aioTimer.register(this)
+		aioTimer.register(this)
 	}
 	
 	/**

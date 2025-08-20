@@ -24,7 +24,7 @@ import java.util.Locale
  * network details, and battery status.
  */
 object DeviceInfoUtils {
-	
+
 	/**
 	 * Returns a formatted string containing complete device and app information.
 	 * This includes version info, device specs, screen resolution, locale, network,
@@ -39,11 +39,11 @@ object DeviceInfoUtils {
 			val sb = StringBuilder()
 			val pm = safeContextRef.packageManager
 			val packageInfo: PackageInfo = pm.getPackageInfo(safeContextRef.packageName, 0)
-			
+
 			// App details
 			sb.append("App Version: ${getApplicationVersionName()} (${getApplicationVersionCode()})\n")
 			sb.append("App Package Name: ${packageInfo.packageName}\n")
-			
+
 			// Device build info
 			sb.append("Device Model: ${Build.MODEL}\n")
 			sb.append("Device Manufacturer: ${Build.MANUFACTURER}\n")
@@ -57,37 +57,37 @@ object DeviceInfoUtils {
 			sb.append("Device Tags: ${Build.TAGS}\n")
 			sb.append("Device Type: ${Build.TYPE}\n")
 			sb.append("Device User: ${Build.USER}\n")
-			
+
 			// Screen metrics
 			val metrics = safeContextRef.resources.displayMetrics
 			sb.append("Screen Resolution: ${metrics.widthPixels}x${metrics.heightPixels}\n")
 			sb.append("Screen Density: ${metrics.densityDpi} dpi\n")
-			
+
 			// Storage
 			sb.append("Available Storage: ${getDeviceAvailableStorage()} bytes\n")
 			sb.append("Total Storage: ${getDeviceTotalStorage()} bytes\n")
-			
+
 			// Network
 			sb.append("Network Operator: ${getServiceProvider()}\n")
 			sb.append("Network Country: ${getDeviceNetworkCountry(safeContextRef)}\n")
 			sb.append("Sim Country: ${getDeviceSimCountry(safeContextRef)}\n")
 			sb.append("Sim Operator: ${getDeviceSimOperator(safeContextRef)}\n")
-			
+
 			// Locale
 			sb.append("Locale: ${Locale.getDefault().displayName}\n")
 			sb.append("Language: ${Locale.getDefault().language}\n")
 			sb.append("Country: ${Locale.getDefault().country}\n")
-			
+
 			// Battery
 			getDeviceBatteryStatus(safeContextRef)?.let {
 				sb.append("Battery Status: ${it.first}\n")
 				sb.append("Battery Level: ${it.second}%\n")
 			}
-			
+
 			return sb.toString()
-		} ?: run { return "" }
+		}; return ""
 	}
-	
+
 	/**
 	 * Gets the app's version name.
 	 */
@@ -95,7 +95,7 @@ object DeviceInfoUtils {
 	private fun getApplicationVersionName(): String? {
 		return AppVersionUtility.versionName
 	}
-	
+
 	/**
 	 * Gets the app's version code.
 	 */
@@ -103,7 +103,7 @@ object DeviceInfoUtils {
 	private fun getApplicationVersionCode(): String {
 		return AppVersionUtility.versionCode.toString()
 	}
-	
+
 	/**
 	 * Calculates and returns the device's total external storage in bytes.
 	 */
@@ -112,7 +112,7 @@ object DeviceInfoUtils {
 		val stat = StatFs(getExternalStorageDirectory().absolutePath)
 		return stat.blockCountLong * stat.blockSizeLong
 	}
-	
+
 	/**
 	 * Calculates and returns the device's available external storage in bytes.
 	 */
@@ -121,7 +121,7 @@ object DeviceInfoUtils {
 		val stat = StatFs(getExternalStorageDirectory().absolutePath)
 		return stat.availableBlocksLong * stat.blockSizeLong
 	}
-	
+
 	/**
 	 * Retrieves the current network country ISO from the TelephonyManager.
 	 */
@@ -129,11 +129,11 @@ object DeviceInfoUtils {
 	private fun getDeviceNetworkCountry(context: Context?): String {
 		WeakReference(context).get()?.let { safeRes ->
 			val telephonyService = safeRes.getSystemService(TELEPHONY_SERVICE)
-			val telephonyManager =  telephonyService as TelephonyManager
+			val telephonyManager = telephonyService as TelephonyManager
 			return telephonyManager.networkCountryIso
-		} ?: run { return "" }
+		}; return ""
 	}
-	
+
 	/**
 	 * Retrieves the SIM card's country ISO from the TelephonyManager.
 	 */
@@ -141,11 +141,11 @@ object DeviceInfoUtils {
 	private fun getDeviceSimCountry(context: Context?): String {
 		WeakReference(context).get()?.let { safeRes ->
 			val telephonyService = safeRes.getSystemService(TELEPHONY_SERVICE)
-			val telephonyManager =  telephonyService as TelephonyManager
+			val telephonyManager = telephonyService as TelephonyManager
 			return telephonyManager.simCountryIso
-		} ?: run { return "" }
+		}; return ""
 	}
-	
+
 	/**
 	 * Retrieves the SIM operator name from the TelephonyManager.
 	 */
@@ -155,9 +155,9 @@ object DeviceInfoUtils {
 			val telephonyService = safeRes.getSystemService(TELEPHONY_SERVICE)
 			val telephonyManager = telephonyService as TelephonyManager
 			return telephonyManager.simOperatorName
-		} ?: run { return "" }
+		}; return ""
 	}
-	
+
 	/**
 	 * Fetches the device's current battery status and battery percentage.
 	 *
@@ -181,6 +181,6 @@ object DeviceInfoUtils {
 				else -> "Unknown"
 			}
 			return Pair(statusString, batteryPct)
-		} ?: run { return null }
+		}; return null
 	}
 }

@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.os.Process.killProcess
+import app.core.engines.updater.AIOUpdater.Companion.GITHUB_UPDATE_INFO_URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import lib.process.AsyncJobUtils
@@ -23,7 +24,7 @@ object AIOSelfDestruct {
 	 * If set to true, plays a self-destruct audio and then exits the app.
 	 */
 	@JvmStatic
-	fun shouldSelfDestruct() {
+	fun shouldSelfDestructApplication() {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			readVersionInfoFromUrl()?.let { aioVersionInfo ->
 				if (aioVersionInfo.selfDestruct) {
@@ -54,8 +55,7 @@ object AIOSelfDestruct {
 	 */
 	suspend fun readVersionInfoFromUrl(): AIOVersionInfo? = withContext(Dispatchers.IO) {
 		try {
-			val rawUrl = "https://raw.githubusercontent.com/shibaFoss/" +
-					"aio_version/refs/heads/main/version_info"
+			val rawUrl = GITHUB_UPDATE_INFO_URL
 			
 			val content = URL(rawUrl).readText()
 			

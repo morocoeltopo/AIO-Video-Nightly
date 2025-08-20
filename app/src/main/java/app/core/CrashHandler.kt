@@ -1,5 +1,6 @@
 package app.core
 
+import app.core.AIOApp.Companion.aioBackend
 import app.core.AIOApp.Companion.aioSettings
 import com.aio.R
 import lib.process.LogHelperUtils
@@ -75,6 +76,9 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 				logger.d("Failed to save crash log: ${error.message}")
 				error.printStackTrace()
 			}
+
+			// Save crash information for later inspection
+			aioBackend.saveAppCrashedInfo(stackTrace)
 
 			// Mark crash state in settings
 			aioSettings.hasAppCrashedRecently = true

@@ -1,175 +1,188 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+	xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	<uses-permission android:name="android.permission.INTERNET" />
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+	<uses-permission android:name="android.permission.VIBRATE" />
 
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <uses-permission android:name="android.permission.FLAG_GRANT_READ_URI_PERMISSION" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"
-        tools:ignore="ScopedStorage" />
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+	<uses-permission android:name="android.permission.FLAG_GRANT_READ_URI_PERMISSION" />
+	<uses-permission
+		android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+		android:maxSdkVersion="32"
+		tools:ignore="ScopedStorage" />
+	<uses-permission
+		android:name="android.permission.READ_EXTERNAL_STORAGE"
+		android:maxSdkVersion="32" />
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+	<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
-    <application
-        android:name="app.core.AIOApp"
-        android:enableOnBackInvokedCallback="true"
-        android:extractNativeLibs="true"
-        android:hardwareAccelerated="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/title_app_name"
-        android:requestLegacyExternalStorage="true"
-        android:roundIcon="@mipmap/ic_launcher"
-        android:supportsRtl="false"
-        android:theme="@style/style.application"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="33">
+	<application
+		android:name="app.core.AIOApp"
+		android:enableOnBackInvokedCallback="true"
+		android:extractNativeLibs="true"
+		android:hardwareAccelerated="true"
+		android:icon="@mipmap/ic_launcher"
+		android:label="@string/title_app_name"
+		android:requestLegacyExternalStorage="true"
+		android:roundIcon="@mipmap/ic_launcher"
+		android:supportsRtl="false"
+		android:theme="@style/style.application"
+		android:usesCleartextTraffic="true"
+		tools:targetApi="33">
 
-        <activity
-            android:name="app.ui.others.startup.LauncherActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+		<activity
+			android:name="app.ui.others.startup.LauncherActivity"
+			android:exported="true">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
 
-        <activity
-            android:name="app.ui.others.startup.OpeningActivity"
-            android:excludeFromRecents="true"
-            android:launchMode="singleTop"
-            android:noHistory="true"
-            android:resizeableActivity="true"
-            android:taskAffinity=""
-            android:windowSoftInputMode="adjustResize" />
+		<activity
+			android:name="app.ui.others.startup.OpeningActivity"
+			android:excludeFromRecents="true"
+			android:launchMode="singleTop"
+			android:noHistory="true"
+			android:resizeableActivity="true"
+			android:taskAffinity=""
+			android:windowSoftInputMode="adjustResize" />
 
-        <activity
-            android:name="app.ui.others.information.IntentInterceptActivity"
-            android:clearTaskOnLaunch="true"
-            android:excludeFromRecents="true"
-            android:exported="true"
-            android:label="@string/text_empty_string"
-            android:launchMode="singleTop"
-            android:noHistory="true"
-            android:resizeableActivity="true"
-            android:taskAffinity=""
-            android:theme="@style/style.transparent_activity"
-            android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-        </activity>
+		<activity
+			android:name="app.ui.others.information.IntentInterceptActivity"
+			android:clearTaskOnLaunch="true"
+			android:excludeFromRecents="true"
+			android:exported="true"
+			android:label="@string/text_empty_string"
+			android:launchMode="singleTop"
+			android:noHistory="true"
+			android:resizeableActivity="true"
+			android:taskAffinity=""
+			android:theme="@style/style.transparent_activity"
+			android:windowSoftInputMode="adjustResize">
+			<intent-filter>
+				<action android:name="android.intent.action.SEND" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="text/plain" />
+			</intent-filter>
+		</activity>
 
-        <activity
-            android:name="app.ui.others.media_player.MediaPlayerActivity"
-            android:configChanges="orientation|screenSize|layoutDirection|
+		<activity
+			android:name="app.ui.others.media_player.MediaPlayerActivity"
+			android:configChanges="orientation|screenSize|layoutDirection|
 			screenLayout|smallestScreenSize|keyboardHidden|uiMode"
-            android:exported="false"
-            android:label="@string/title_aio_video_player"
-            android:launchMode="singleTop"
-            android:resizeableActivity="true"
-            android:supportsPictureInPicture="true"
-            android:theme="@style/style.application.video_player_activity"
-            android:windowSoftInputMode="adjustResize" />
+			android:exported="false"
+			android:label="@string/title_aio_video_player"
+			android:launchMode="singleTop"
+			android:resizeableActivity="true"
+			android:supportsPictureInPicture="true"
+			android:theme="@style/style.application.video_player_activity"
+			android:windowSoftInputMode="adjustResize" />
 
-        <activity
-            android:name="app.ui.main.MotherActivity"
-            android:alwaysRetainTaskState="true"
-            android:excludeFromRecents="false"
-            android:exported="false"
-            android:hardwareAccelerated="true"
-            android:launchMode="singleTop"
-            android:taskAffinity="com.aio.mother"
-            android:theme="@style/style.application"
-            android:windowSoftInputMode="adjustPan" />
+		<activity
+			android:name="app.ui.main.MotherActivity"
+			android:alwaysRetainTaskState="true"
+			android:excludeFromRecents="false"
+			android:exported="false"
+			android:hardwareAccelerated="true"
+			android:launchMode="singleTop"
+			android:taskAffinity="com.aio.mother"
+			android:theme="@style/style.application"
+			android:windowSoftInputMode="adjustPan" />
 
-        <activity
-            android:name="app.ui.others.information.UserFeedbackActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustPan" />
+		<activity
+			android:name="app.ui.others.information.UserFeedbackActivity"
+			android:exported="false"
+			android:launchMode="singleTop"
+			android:windowSoftInputMode="adjustPan" />
 
-        <activity
-            android:name="app.ui.main.fragments.browser.activities.BookmarksActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustPan" />
+		<activity
+			android:name="app.ui.main.fragments.browser.activities.BookmarksActivity"
+			android:exported="false"
+			android:launchMode="singleTop"
+			android:windowSoftInputMode="adjustPan" />
 
-        <activity
-            android:name="app.ui.main.fragments.browser.activities.HistoryActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustPan" />
+		<activity
+			android:name="app.ui.main.fragments.browser.activities.HistoryActivity"
+			android:exported="false"
+			android:launchMode="singleTop"
+			android:windowSoftInputMode="adjustPan" />
 
-        <activity
-            android:name="app.ui.others.startup.EmptyLayoutActivity"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:windowSoftInputMode="adjustPan" />
+		<activity
+			android:name="app.ui.others.startup.EmptyLayoutActivity"
+			android:exported="false"
+			android:launchMode="singleTop"
+			android:windowSoftInputMode="adjustPan" />
 
-        <service
-            android:name="app.core.engines.services.AIOForegroundService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
+		<service
+			android:name="app.core.engines.services.AIOForegroundService"
+			android:enabled="true"
+			android:exported="false"
+			android:foregroundServiceType="dataSync" />
 
-        <receiver
-            android:name="app.core.engines.services.RestartIdleServiceReceiver"
-            android:enabled="true"
-            android:exported="false" />
+		<receiver
+			android:name="app.core.engines.services.RestartIdleServiceReceiver"
+			android:enabled="true"
+			android:exported="false" />
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-    </application>
+		<provider
+			android:name="androidx.core.content.FileProvider"
+			android:authorities="${applicationId}.provider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/file_paths" />
+		</provider>
 
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.SEND" />
-            <data android:mimeType="message/rfc822" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="https" />
-        </intent>
+		<!-- Back4App (Parse server) configuration -->
+		<meta-data
+			android:name="com.parse.SERVER_URL"
+			android:value="@string/text_back4app_server_url" />
 
-        <package android:name="com.google.android.youtube" />
-        <package android:name="com.instagram.android" />
-        <package android:name="com.facebook.katana" />
-        <package android:name="com.whatsapp" />
-        <package android:name="com.ted.android" />
-        <package android:name="com.google.android.apps.youtube.music" />
-        <package android:name="com.soundcloud.android" />
-        <package android:name="com.pinterest" />
-        <package android:name="com.zhiliaoapp.musically" />
-        <package android:name="com.dailymotion.dailymotion" />
-        <package android:name="com.reddit.frontpage" />
-        <package android:name="com.twitter.android" />
+		<meta-data
+			android:name="com.parse.APPLICATION_ID"
+			android:value="@string/text_back4app_app_id" />
 
-    </queries>
+		<meta-data
+			android:name="com.parse.CLIENT_KEY"
+			android:value="@string/text_back4app_client_key" />
+	</application>
+
+	<queries>
+		<intent>
+			<action android:name="android.intent.action.SEND" />
+			<data android:mimeType="message/rfc822" />
+		</intent>
+		<intent>
+			<action android:name="android.intent.action.VIEW" />
+			<category android:name="android.intent.category.BROWSABLE" />
+			<data android:scheme="https" />
+		</intent>
+
+		<package android:name="com.google.android.youtube" />
+		<package android:name="com.instagram.android" />
+		<package android:name="com.facebook.katana" />
+		<package android:name="com.whatsapp" />
+		<package android:name="com.ted.android" />
+		<package android:name="com.google.android.apps.youtube.music" />
+		<package android:name="com.soundcloud.android" />
+		<package android:name="com.pinterest" />
+		<package android:name="com.zhiliaoapp.musically" />
+		<package android:name="com.dailymotion.dailymotion" />
+		<package android:name="com.reddit.frontpage" />
+		<package android:name="com.twitter.android" />
+
+	</queries>
 </manifest>

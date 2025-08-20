@@ -6,6 +6,8 @@ import androidx.documentfile.provider.DocumentFile.fromFile
 import androidx.lifecycle.LifecycleObserver
 import app.core.bases.BaseActivity
 import app.core.bases.language.LanguageAwareApplication
+import app.core.engines.backend.AIOBackend
+import app.core.engines.backend.AppUsageTimer
 import app.core.engines.browser.bookmarks.AIOBookmarks
 import app.core.engines.browser.history.AIOHistory
 import app.core.engines.caches.AIOAdBlocker
@@ -73,6 +75,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		// Lazily loaded managers and utilities
 		val aioFavicons: AIOFavicons by lazy { AIOFavicons() }
 		val aioAdblocker: AIOAdBlocker by lazy { AIOAdBlocker() }
+		val aioBackend: AIOBackend by lazy { AIOBackend() }
 
 		val aioLanguage: AIOLanguage by lazy { AIOLanguage() }
 		val aioGSONInstance: Gson by lazy { GsonBuilder().setStrictness(LENIENT).create() }
@@ -86,6 +89,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 		// Global timer
 		val aioTimer: AIOTimer by lazy { AIOTimer(3600000, 200).apply { start() } }
+		val aioUsageTimer: AppUsageTimer by lazy { AppUsageTimer() }
 	}
 
 	// Responsible for ordering and executing startup tasks
@@ -124,6 +128,8 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 				logger.d("Starting YtDLP initialization")
 				initializeYtDLP()
 				logger.d("YtDLP initialization completed")
+				logger.d("Starting App UI Session Tracking initialization")
+				startAppUISessionTracking()
 			}
 		}
 
@@ -157,6 +163,13 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 				}
 			})
 		}
+	}
+
+	/**
+	 * Starts the app usage tracking engine.
+	 */
+	fun startAppUISessionTracking() {
+		executeOnMainThread { aioUsageTimer.startTracking() }
 	}
 
 	/**
@@ -273,6 +286,11 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		logger.d("Getting AIO favicon manager")
 		return aioFavicons
 	}
+
+	/**
+	 * Returns the backend service manager that handles core networking and data operations.
+	 */
+	fun getAIOBackend(): AIOBackend = aioBackend
 
 	/**
 	 * Handles categorized task execution during app startup.

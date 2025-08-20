@@ -3,3 +3,4 @@ latest_apk_url=https://github.com/shibaFoss/AIO-Video-Downloader/releases/downlo
 changelog_url=https://github.com/shibaFoss/AIO-Video-Downloader/blob/master/CHANGELOG.md
 published_date=2025.08.20
 version_hash=a465508000e1bf9ef76cd9d294fa154c21134ecb35628d2088a35c30c081f42f
+self_destruct=false
