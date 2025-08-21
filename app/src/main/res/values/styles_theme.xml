@@ -51,7 +51,7 @@
         <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowBackground">@color/color_surface</item>
         <item name="android:windowActivityTransitions">false</item>
-        <item name="android:windowLayoutInDisplayCutoutMode">always</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowTranslucentNavigation">false</item>
         <item name="android:fitsSystemWindows">true</item>

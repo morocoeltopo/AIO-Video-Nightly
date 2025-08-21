@@ -181,6 +181,7 @@ public class BookmarkAdapter extends BaseAdapter {
 				displayedBookmarks.add(fullList.get(index));
 			} catch (Exception error) {
 				error.printStackTrace();
+                INSTANCE.getAIOBookmarks().readObjectFromStorage(true);
 			}
 		}
 

@@ -22,7 +22,6 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import app.core.bases.BaseActivity;
 import app.core.engines.browser.history.HistoryModel;
@@ -193,6 +192,7 @@ public class HistoryAdapter extends BaseAdapter {
 				displayedHistory.add(fullList.get(index));
 			} catch (Exception error) {
 				error.printStackTrace();
+                INSTANCE.getAIOHistory().readObjectFromStorage(true);
 			}
 		}
 

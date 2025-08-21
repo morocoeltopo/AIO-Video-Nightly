@@ -64,24 +64,29 @@ class AIOBookmarks : Serializable {
 	 * Attempts binary format first, falls back to JSON if binary is invalid.
 	 * Automatically selects optimal reading strategy based on file size.
 	 */
-	fun readObjectFromStorage() {
+	fun readObjectFromStorage(bypassBinaryFormat: Boolean = false) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {
 				var isBinaryFileValid = false
 				val internalDir = AIOApp.internalDataFolder
 				val bookmarkBinaryDataFile = internalDir.findFile(AIO_BOOKMARKS_FILE_NAME_BINARY)
-
-				if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
-					logger.d("Found binary bookmarks file, attempting load")
-					val absolutePath = bookmarkBinaryDataFile.getAbsolutePath(INSTANCE)
-					val objectInMemory = loadFromBinary(File(absolutePath))
-					if (objectInMemory != null) {
-						logger.d("Successfully loaded bookmarks from binary format")
-						aioBookmark = objectInMemory
-						aioBookmark.updateInStorage()
-						isBinaryFileValid = true
-					} else {
-						logger.d("Failed to load bookmarks from binary format")
+				if (bypassBinaryFormat == false) {
+					if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
+						logger.d("Found binary bookmarks file, attempting load")
+						val absolutePath = bookmarkBinaryDataFile.getAbsolutePath(INSTANCE)
+						val objectInMemory = loadFromBinary(File(absolutePath))
+						if (objectInMemory != null) {
+							logger.d("Successfully loaded bookmarks from binary format")
+							aioBookmark = objectInMemory
+							aioBookmark.updateInStorage()
+							isBinaryFileValid = true
+						} else {
+							logger.d("Failed to load bookmarks from binary format")
+						}
+					}
+				} else {
+					if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
+						bookmarkBinaryDataFile.delete()
 					}
 				}
 

@@ -65,24 +65,30 @@ class AIOHistory : Serializable {
 	 * Loads history data from internal storage and deserializes it into this class.
 	 * Uses different reading strategies based on file size to optimize performance.
 	 */
-	fun readObjectFromStorage() {
+	fun readObjectFromStorage(bypassBinaryFormat: Boolean = false) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {
 				var isBinaryFileValid = false
 				val internalDir = AIOApp.internalDataFolder
 				val historyBinaryDataFile = internalDir.findFile(AIO_HISTORY_FILE_NAME_BINARY)
 
-				if (historyBinaryDataFile != null && historyBinaryDataFile.exists()) {
-					logger.d("Found binary history file, attempting load")
-					val absolutePath = historyBinaryDataFile.getAbsolutePath(INSTANCE)
-					val objectInMemory = loadFromBinary(File(absolutePath))
-					if (objectInMemory != null) {
-						logger.d("Successfully loaded history from binary format")
-						aioHistory = objectInMemory
-						aioHistory.updateInStorage()
-						isBinaryFileValid = true
-					} else {
-						logger.d("Failed to load history from binary format")
+				if (bypassBinaryFormat == false){
+					if (historyBinaryDataFile != null && historyBinaryDataFile.exists()) {
+						logger.d("Found binary history file, attempting load")
+						val absolutePath = historyBinaryDataFile.getAbsolutePath(INSTANCE)
+						val objectInMemory = loadFromBinary(File(absolutePath))
+						if (objectInMemory != null) {
+							logger.d("Successfully loaded history from binary format")
+							aioHistory = objectInMemory
+							aioHistory.updateInStorage()
+							isBinaryFileValid = true
+						} else {
+							logger.d("Failed to load history from binary format")
+						}
+					}
+				} else {
+					if (historyBinaryDataFile != null && historyBinaryDataFile.exists()) {
+						historyBinaryDataFile.delete()
 					}
 				}
 
