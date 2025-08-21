@@ -15,7 +15,7 @@
 	<ListView
 		android:id="@+id/list_auto_complete_suggestion"
 		android:layout_width="match_parent"
-		android:layout_height="@dimen/_430"
+		android:layout_height="wrap_content"
 		android:layout_marginStart="@dimen/_5"
 		android:layout_marginEnd="@dimen/_5"
 		android:divider="@color/transparent"

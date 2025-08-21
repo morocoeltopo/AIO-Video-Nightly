@@ -51,7 +51,7 @@ class BrowserFragmentTop(val browserFragment: BrowserFragment) {
 	init {
 		logger.d("Initializing BrowserFragmentTop...")
 		initializeViews(browserFragment.safeFragmentLayoutRef)
-		setupWebSuggestions(browserFragment.safeFragmentLayoutRef)
+		//setupWebSuggestions(browserFragment.safeFragmentLayoutRef)
 		setupClicksEvents(browserFragment.safeFragmentLayoutRef)
 	}
 

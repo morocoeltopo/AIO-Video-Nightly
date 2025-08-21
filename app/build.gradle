@@ -26,7 +26,7 @@ android {
         targetSdk 36
 
         // App versioning
-        versionCode 75
+        versionCode 76
         versionName '2025.08.22'
 
         // Use vector drawables support

@@ -14,6 +14,7 @@ import android.widget.ListView
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.core.graphics.drawable.toDrawable
+import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioHistory
 import com.aio.R
 import lib.process.CommonTimeUtils
@@ -60,12 +61,20 @@ class SuggestionWatcher(
 				val titleContains = historyModel.historyTitle.contains(query, true)
 				val urlContains = historyModel.historyUrl.contains(query, true)
 				titleContains || urlContains
-			}.take(7)
+			}.take(5)
+
+			val bookmarkResults = aioBookmark.getBookmarkLibrary().filter { bookmarkModel ->
+				val titleContains = bookmarkModel.bookmarkName.contains(query, true)
+				val urlContains = bookmarkModel.bookmarkUrl.contains(query, true)
+				titleContains || urlContains
+			}.take(5)
 
 			val historySuggestions = historyResults.map { it.historyUrl }
+			val bookmarkSuggestions = bookmarkResults.map { it.bookmarkUrl }
 			val combinedSuggestions = ArrayList<String>().apply {
 				addAll(suggestions)
 				addAll(historySuggestions)
+				addAll(bookmarkSuggestions)
 			}
 
 			editTextField.post {
