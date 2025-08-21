@@ -7,9 +7,12 @@ import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.AIOApp.Companion.aioHistory
 import app.core.FSTBuilder.fstConfig
 import com.anggrayudi.storage.file.getAbsolutePath
+import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -59,11 +62,18 @@ class AIOHistory : Serializable {
 	}
 
 	/** List containing all recorded history entries. */
+	@SerializedName("historyLibrary")
 	private var historyLibrary: ArrayList<HistoryModel> = ArrayList()
 
 	/**
 	 * Loads history data from internal storage and deserializes it into this class.
 	 * Uses different reading strategies based on file size to optimize performance.
+	 *
+	 * Priority:
+	 *   1. Try binary format (fast, smaller, efficient).
+	 *   2. If binary is missing/corrupted OR bypassed, fall back to JSON format.
+	 *
+	 * @param bypassBinaryFormat If true, binary history is ignored and deleted.
 	 */
 	fun readObjectFromStorage(bypassBinaryFormat: Boolean = false) {
 		ThreadsUtility.executeInBackground(codeBlock = {
@@ -72,12 +82,16 @@ class AIOHistory : Serializable {
 				val internalDir = AIOApp.internalDataFolder
 				val historyBinaryDataFile = internalDir.findFile(AIO_HISTORY_FILE_NAME_BINARY)
 
-				if (bypassBinaryFormat == false){
+				// --- 1. Try loading from binary format ---
+				if (!bypassBinaryFormat) {
 					if (historyBinaryDataFile != null && historyBinaryDataFile.exists()) {
 						logger.d("Found binary history file, attempting load")
+
 						val absolutePath = historyBinaryDataFile.getAbsolutePath(INSTANCE)
 						val objectInMemory = loadFromBinary(File(absolutePath))
+
 						if (objectInMemory != null) {
+							// Successfully read history → keep it in memory & sync storage
 							logger.d("Successfully loaded history from binary format")
 							aioHistory = objectInMemory
 							aioHistory.updateInStorage()
@@ -87,34 +101,44 @@ class AIOHistory : Serializable {
 						}
 					}
 				} else {
+					// If bypass requested → delete binary file for a clean slate
 					if (historyBinaryDataFile != null && historyBinaryDataFile.exists()) {
 						historyBinaryDataFile.delete()
+						logger.d("Bypassed and deleted binary history file")
 					}
 				}
 
+				// --- 2. Fallback: JSON format ---
 				if (!isBinaryFileValid) {
 					logger.d("Attempting to load history from JSON format")
 					val configFile = File(INSTANCE.filesDir, AIO_HISTORY_FILE_NAME_JSON)
+
 					if (!configFile.exists()) {
+						// No JSON file either → start with empty library
 						aioHistory.historyLibrary = ArrayList()
 						logger.d("No history file found, starting with empty library")
 						return@executeInBackground
 					}
 
+					// Log file size for debugging & select best reader
 					val fileSizeMb = configFile.length().toDouble() / (1024 * 1024)
 					logger.d("History file size: ${"%.2f".format(fileSizeMb)} MB")
 
 					val json = when {
-						fileSizeMb <= 0.5 -> readSmallFile(configFile)
-						fileSizeMb <= 5.0 -> readMediumFile(configFile)
-						else -> readLargeFile(configFile)
+						fileSizeMb <= 0.5 -> readSmallFile(configFile)   // Quick read
+						fileSizeMb <= 5.0 -> readMediumFile(configFile) // Balanced read
+						else -> readLargeFile(configFile)               // Streaming read
 					}
 
 					if (json.isNotEmpty()) {
-						convertJSONStringToClass(json).let { historyClass ->
-							logger.d("Successfully loaded ${historyClass.historyLibrary.size} history")
-							aioHistory.updateInStorage()
-						}
+						val historyClass = convertJSONStringToClass(json)
+
+						// Keep the loaded history in memory & resync storage
+						logger.d("Successfully loaded ${historyClass.historyLibrary.size} history entries")
+						aioHistory = historyClass
+						aioHistory.updateInStorage()
+					} else {
+						logger.d("History JSON file was empty")
 					}
 				}
 			} catch (error: Exception) {
@@ -125,9 +149,13 @@ class AIOHistory : Serializable {
 	}
 
 	/**
-	 * Saves history to binary format for fast loading.
+	 * Saves the current history object to a binary file for fast loading later.
 	 *
-	 * @param fileName Name of the binary file to save to
+	 * - Uses FST (Fast Serialization) for efficient object-to-binary conversion.
+	 * - Synchronized so multiple threads don’t write at the same time.
+	 * - Binary format is preferred over JSON for performance.
+	 *
+	 * @param fileName The target file name inside app's internal storage.
 	 */
 	@Synchronized
 	private fun saveToBinary(fileName: String) {
@@ -226,7 +254,17 @@ class AIOHistory : Serializable {
 	 */
 	private fun convertJSONStringToClass(data: String): AIOHistory {
 		logger.d("Converting JSON to history object")
-		return aioGSONInstance.fromJson(data, AIOHistory::class.java)
+
+		// Parse the wrapper first
+		val history = aioGSONInstance.fromJson(data, AIOHistory::class.java)
+
+		// Parse the list properly with type info
+		val type = object : TypeToken<ArrayList<HistoryModel>>() {}.type
+		val historyLibraryJSON = JSONObject(data).getString("historyLibrary")
+		val parsedList: ArrayList<HistoryModel> = aioGSONInstance.fromJson(historyLibraryJSON, type)
+
+		history.historyLibrary = parsedList
+		return history
 	}
 
 	/**

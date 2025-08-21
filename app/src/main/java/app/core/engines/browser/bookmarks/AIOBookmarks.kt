@@ -7,9 +7,12 @@ import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioGSONInstance
 import app.core.FSTBuilder.fstConfig
 import com.anggrayudi.storage.file.getAbsolutePath
+import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -56,13 +59,19 @@ class AIOBookmarks : Serializable {
 		const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
 	}
 
-	// Main bookmark storage
+	/** List containing all recorded bookmark entries. */
+	@SerializedName("bookmarkLibrary")
 	private var bookmarkLibrary: ArrayList<BookmarkModel> = ArrayList()
 
 	/**
 	 * Reads bookmarks from persistent storage.
-	 * Attempts binary format first, falls back to JSON if binary is invalid.
-	 * Automatically selects optimal reading strategy based on file size.
+	 *
+	 * - Attempts to load from binary format first (faster, smaller).
+	 * - If binary is missing, invalid, or bypassed → fall back to JSON.
+	 * - Chooses optimal reading strategy (small/medium/large) based on file size.
+	 * - Ensures aioBookmark is always initialized (either loaded or preloaded).
+	 *
+	 * @param bypassBinaryFormat If true, binary file is ignored and deleted, forcing JSON load.
 	 */
 	fun readObjectFromStorage(bypassBinaryFormat: Boolean = false) {
 		ThreadsUtility.executeInBackground(codeBlock = {
@@ -70,58 +79,75 @@ class AIOBookmarks : Serializable {
 				var isBinaryFileValid = false
 				val internalDir = AIOApp.internalDataFolder
 				val bookmarkBinaryDataFile = internalDir.findFile(AIO_BOOKMARKS_FILE_NAME_BINARY)
-				if (bypassBinaryFormat == false) {
+
+				// --- 1. Try to load from binary format ---
+				if (!bypassBinaryFormat) {
 					if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
 						logger.d("Found binary bookmarks file, attempting load")
+
 						val absolutePath = bookmarkBinaryDataFile.getAbsolutePath(INSTANCE)
 						val objectInMemory = loadFromBinary(File(absolutePath))
+
 						if (objectInMemory != null) {
+							// Successfully restored bookmarks from binary
 							logger.d("Successfully loaded bookmarks from binary format")
 							aioBookmark = objectInMemory
 							aioBookmark.updateInStorage()
 							isBinaryFileValid = true
 						} else {
+							// Corrupted or unreadable binary
 							logger.d("Failed to load bookmarks from binary format")
 						}
 					}
 				} else {
+					// If bypass flag is true → force delete binary file
 					if (bookmarkBinaryDataFile != null && bookmarkBinaryDataFile.exists()) {
 						bookmarkBinaryDataFile.delete()
+						logger.d("Bypassed and deleted binary bookmarks file")
 					}
 				}
 
+				// --- 2. Fall back to JSON format if binary was invalid or bypassed ---
 				if (!isBinaryFileValid) {
 					logger.d("Attempting to load bookmarks from JSON format")
 					val configFile = File(INSTANCE.filesDir, AIO_BOOKMARKS_FILE_NAME_JSON)
+
 					if (!configFile.exists()) {
+						// No JSON file available → start with preloaded defaults
 						aioBookmark.bookmarkLibrary = getPreloadedBookmarks()
 						logger.d("No bookmarks file found, starting with preloaded library")
 						return@executeInBackground
 					}
 
+					// Log file size and decide which reader to use
 					val fileSizeMb = configFile.length().toDouble() / (1024 * 1024)
 					logger.d("Bookmarks file size: ${"%.2f".format(fileSizeMb)} MB")
 
 					val json = when {
-						fileSizeMb <= 0.5 -> readSmallFile(configFile)
-						fileSizeMb <= 5.0 -> readMediumFile(configFile)
-						else -> readLargeFile(configFile)
+						fileSizeMb <= 0.5 -> readSmallFile(configFile)   // Simple load
+						fileSizeMb <= 5.0 -> readMediumFile(configFile) // Buffered load
+						else -> readLargeFile(configFile)               // Streamed load
 					}
 
+					// Deserialize JSON → Kotlin class
 					if (json.isNotEmpty()) {
 						convertJSONStringToClass(json).let { bookmarkClass ->
 							logger.d("Successfully loaded ${bookmarkClass.bookmarkLibrary.size} bookmarks")
 							aioBookmark = bookmarkClass
 							aioBookmark.updateInStorage()
 						}
+					} else {
+						logger.d("Bookmarks JSON file was empty")
 					}
 				}
 			} catch (error: Exception) {
+				// Catch-all safeguard to prevent crashes
 				logger.d("Error reading bookmarks: ${error.message}")
 				error.printStackTrace()
 			}
 		})
 	}
+
 
 	/**
 	 * Creates and returns a list of preloaded bookmarks.
@@ -362,7 +388,16 @@ class AIOBookmarks : Serializable {
 	 */
 	private fun convertJSONStringToClass(data: String): AIOBookmarks {
 		logger.d("Converting JSON to bookmarks object")
-		return aioGSONInstance.fromJson(data, AIOBookmarks::class.java)
+		// Parse the wrapper first
+		val bookmarks = aioGSONInstance.fromJson(data, AIOBookmarks::class.java)
+
+		// Parse the list properly with type info
+		val type = object : TypeToken<ArrayList<BookmarkModel>>() {}.type
+		val bookmarksLibraryJSON = JSONObject(data).getString("bookmarkLibrary")
+		val parsedList: ArrayList<BookmarkModel> = aioGSONInstance.fromJson(bookmarksLibraryJSON, type)
+
+		bookmarks.bookmarkLibrary = parsedList
+		return bookmarks
 	}
 
 	/**
