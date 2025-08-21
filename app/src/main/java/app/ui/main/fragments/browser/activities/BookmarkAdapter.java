@@ -22,7 +22,6 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import app.core.bases.BaseActivity;
 import app.core.engines.browser.bookmarks.AIOBookmarks;
@@ -46,7 +45,7 @@ public class BookmarkAdapter extends BaseAdapter {
     private final OnBookmarkItemClick onBookmarkItemClick;
     private final OnBookmarkItemLongClick onBookmarkItemLongClick;
     private int currentIndex = 0;
-    private final List<BookmarkModel> displayedBookmarks = new ArrayList<>();
+    private final ArrayList<BookmarkModel> displayedBookmarks = new ArrayList<>();
 
     /**
      * Constructs a new {@link BookmarkAdapter}.
@@ -177,8 +176,13 @@ public class BookmarkAdapter extends BaseAdapter {
         int itemsToLoad = Math.min(50, fullList.size() - currentIndex);
         int endIndex = currentIndex + itemsToLoad;
 
-        for (int index = currentIndex; index < endIndex; index++)
-            displayedBookmarks.add(fullList.get(index));
+        for (int index = currentIndex; index < endIndex; index++) {
+			try {
+				displayedBookmarks.add(fullList.get(index));
+			} catch (Exception error) {
+				error.printStackTrace();
+			}
+		}
 
         currentIndex = endIndex;
         logger.d("Loaded " + itemsToLoad + " bookmarks. Current index: " + currentIndex);

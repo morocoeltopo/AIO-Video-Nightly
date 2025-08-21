@@ -56,7 +56,7 @@ public class HistoryAdapter extends BaseAdapter {
     /**
      * Holds the currently displayed history entries.
      */
-    private final List<HistoryModel> displayedHistory = new ArrayList<>();
+    private final ArrayList<HistoryModel> displayedHistory = new ArrayList<>();
 
     /**
      * Constructs a {@link HistoryAdapter}.
@@ -188,8 +188,13 @@ public class HistoryAdapter extends BaseAdapter {
         int itemsToLoad = Math.min(50, fullList.size() - currentIndex);
         int endIndex = currentIndex + itemsToLoad;
 
-        for (int index = currentIndex; index < endIndex; index++)
-            displayedHistory.add(fullList.get(index));
+        for (int index = currentIndex; index < endIndex; index++) {
+			try {
+				displayedHistory.add(fullList.get(index));
+			} catch (Exception error) {
+				error.printStackTrace();
+			}
+		}
 
         currentIndex = endIndex;
         logger.d("Loaded " + itemsToLoad + " more history items, total now: " + displayedHistory.size());

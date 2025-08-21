@@ -107,7 +107,6 @@ class AIOHistory : Serializable {
 					if (json.isNotEmpty()) {
 						convertJSONStringToClass(json).let { historyClass ->
 							logger.d("Successfully loaded ${historyClass.historyLibrary.size} history")
-							aioHistory.historyLibrary = historyClass.historyLibrary
 							aioHistory.updateInStorage()
 						}
 					}
