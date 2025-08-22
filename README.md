@@ -5,7 +5,6 @@
 
 ### 📥 Powerful Video/Audio Downloader for Android — Open Source, Ad-Free, and Built on yt-dlp for a Seamless, User-Centric Experience
 
-[![GitHub all releases](https://img.shields.io/github/downloads/shibafoss/AIO-Video-Downloader/total?label=Downloads&logo=github)](https://github.com/shibafoss/AIO-Video-Downloader/releases/)
 [![Download AIO Video Downloader](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/aio-video-downloader/files/latest/download)
 
 ![AIO Video Downloader Logo](others/graphics/feature_cover.png)
