@@ -5,29 +5,23 @@
 
 ### 📥 Powerful Video/Audio Downloader for Android — Open Source, Ad-Free, and Built on yt-dlp for a Seamless, User-Centric Experience
 
-[![Keep a Changelog](https://img.shields.io/badge/Changelog-lightgray?style=flat&color=gray&logo=keep-a-changelog)](https://github.com/shibaFoss/AIO-Video-Downloader/blob/master/CHANGELOG.md)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/shibaFoss/AIO-Video-Downloader?color=black&label=Stable&logo=github)](https://github.com/shibaFoss/AIO-Video-Downloader/releases/latest/)
 [![GitHub all releases](https://img.shields.io/github/downloads/shibafoss/AIO-Video-Downloader/total?label=Downloads&logo=github)](https://github.com/shibafoss/AIO-Video-Downloader/releases/)
-[![Download AIO-Video-Downloader](https://img.shields.io/sourceforge/dm/aio-video-downloader.svg)](https://sourceforge.net/projects/aio-video-downloader/files/latest/download)
+[![Download AIO Video Downloader](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/aio-video-downloader/files/latest/download)
 
 ![AIO Video Downloader Logo](others/graphics/feature_cover.png)
 </div>
 
 ## 📌 Introduction
 
-AIO Video Downloader is a clean, open-source Android application designed as an alternative to
-VidMate and
-SnapTube, offering a simplified yet powerful video downloading experience. Developed in India with
-privacy and user experience in mind, AIO Video Downloader removes all the clutter and ads found in
-similar apps
-while maintaining all the essential features.
+AIO Video Downloader is an open-source Android application built on on the robust
+**[yt-dlp](https://github.com/yt-dlp/yt-dlp)** backend with the help
+of [youtubedl-android](https://github.com/yausername/youtubedl-android),
+aiming to become the most powerful download manager available. Unlike VidMate or SnapTube, AIO
+avoids unnecessary complexity and ad-heavy bloat, offering a clean and efficient interface while
+unlocking advanced downloading capabilities with minimal setup.
 
-Built on the robust **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** backend with the help
-of [youtubedl-android](https://github.com/yausername/youtubedl-android), AIO Video Downloader
-supports
-downloading from **1000+ websites** including YouTube, Facebook, Instagram, Twitter, Dailymotion,
-and many more. Enjoy your favorite videos offline without compromising on quality or dealing with
-intrusive advertisements.
+With support for 1000+ sites and virtually any downloadable content across the web, AIO is designed
+to deliver a seamless yet powerful experience that balances speed, flexibility, and simplicity.
 
 ## 📱 Screenshots
 
@@ -59,29 +53,6 @@ intrusive advertisements.
 - **Built-in Browser**: Securely browse supported sites within the app
 - **Open Source**: Transparent codebase you can audit and contribute to
 - **Made in India**: Developed with pride by Indian developers
-
-## 📥 Installation
-Download the latest APK from our **[GitHub Releases page](https://github.com/shibaFoss/AIO-Video-Downloader/releases/)** Or
-straight [Download the lastest apk here](https://github.com/shibaFoss/AIO-Video-Downloader/releases/download/v2025.08.18/app-arm64-v8a-release.apk)
-
-## 📜 License
-
-AIO Video Downloader is released under the **GNU AFFERO GENERAL PUBLIC LICENSE**.
-See [LICENSE](LICENSE) for
-full details.
-
-## 📞 Contact & Support
-
-For support, feature requests, or general inquiries:
-
-- **GitHub Issues**: [Open an issue](https://github.com/shibafoss/AIO-Video-Downloader/issues)
-- **Email**: shiba.spj@hotmail.com
-
-## 🙏 Acknowledgments
-
-- The **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** team for their incredible work
-- All our contributors and testers
-- The open-source community for inspiration and support
 
 ---
 
