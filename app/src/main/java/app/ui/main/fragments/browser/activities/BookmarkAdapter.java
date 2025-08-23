@@ -39,189 +39,190 @@ import lib.process.LogHelperUtils;
  */
 public class BookmarkAdapter extends BaseAdapter {
 
-    private final LogHelperUtils logger = LogHelperUtils.from(getClass());
+	private final LogHelperUtils logger = LogHelperUtils.from(getClass());
 
-    private final WeakReference<BaseActivity> safeBaseActivityRef;
-    private final OnBookmarkItemClick onBookmarkItemClick;
-    private final OnBookmarkItemLongClick onBookmarkItemLongClick;
-    private int currentIndex = 0;
-    private final ArrayList<BookmarkModel> displayedBookmarks = new ArrayList<>();
+	private final WeakReference<BaseActivity> safeBaseActivityRef;
+	private final OnBookmarkItemClick onBookmarkItemClick;
+	private final OnBookmarkItemLongClick onBookmarkItemLongClick;
+	private int currentIndex = 0;
+	private final ArrayList<BookmarkModel> displayedBookmarks = new ArrayList<>();
 
-    /**
-     * Constructs a new {@link BookmarkAdapter}.
-     *
-     * @param bookmarkActivity      optional activity reference for inflating views.
-     * @param onBookmarkItemClick   callback for click events.
-     * @param onBookmarkItemLongClick callback for long-click events.
-     */
-    public BookmarkAdapter(@Nullable BookmarksActivity bookmarkActivity,
-                           @Nullable OnBookmarkItemClick onBookmarkItemClick,
-                           @Nullable OnBookmarkItemLongClick onBookmarkItemLongClick) {
-        this.safeBaseActivityRef = new WeakReference<>(bookmarkActivity);
-        this.onBookmarkItemClick = onBookmarkItemClick;
-        this.onBookmarkItemLongClick = onBookmarkItemLongClick;
-        logger.d("BookmarkAdapter initialized. Loading initial bookmarks...");
-        loadMoreBookmarks();
-    }
+	/**
+	 * Constructs a new {@link BookmarkAdapter}.
+	 *
+	 * @param bookmarkActivity        optional activity reference for inflating views.
+	 * @param onBookmarkItemClick     callback for click events.
+	 * @param onBookmarkItemLongClick callback for long-click events.
+	 */
+	public BookmarkAdapter(@Nullable BookmarksActivity bookmarkActivity,
+						   @Nullable OnBookmarkItemClick onBookmarkItemClick,
+						   @Nullable OnBookmarkItemLongClick onBookmarkItemLongClick) {
+		this.safeBaseActivityRef = new WeakReference<>(bookmarkActivity);
+		this.onBookmarkItemClick = onBookmarkItemClick;
+		this.onBookmarkItemLongClick = onBookmarkItemLongClick;
+		logger.d("BookmarkAdapter initialized. Loading initial bookmarks...");
+		loadMoreBookmarks();
+	}
 
-    @Override
-    public int getCount() {
-        return displayedBookmarks.size();
-    }
+	@Override
+	public int getCount() {
+		return displayedBookmarks.size();
+	}
 
-    @Nullable
-    @Override
-    public BookmarkModel getItem(int position) {
-        if (position >= 0 && position < displayedBookmarks.size()) {
-            return displayedBookmarks.get(position);
-        }
-        logger.d("Invalid position requested in getItem: " + position);
-        return null;
-    }
+	@Nullable
+	@Override
+	public BookmarkModel getItem(int position) {
+		if (position >= 0 && position < displayedBookmarks.size()) {
+			return displayedBookmarks.get(position);
+		}
+		logger.d("Invalid position requested in getItem: " + position);
+		return null;
+	}
 
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
+	@Override
+	public long getItemId(int position) {
+		return position;
+	}
 
-    /**
-     * Inflates or reuses a list row view and binds bookmark data into it.
-     *
-     * @param position    position of the item.
-     * @param convertView recycled view, if available.
-     * @param parent      parent view group.
-     * @return a populated row view.
-     */
-    @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        BaseActivity activity = this.safeBaseActivityRef.get();
-        if (activity == null) {
-            logger.d("Activity reference lost. Returning fallback view.");
-            return convertView != null ? convertView : new View(parent.getContext());
-        }
+	/**
+	 * Inflates or reuses a list row view and binds bookmark data into it.
+	 *
+	 * @param position    position of the item.
+	 * @param convertView recycled view, if available.
+	 * @param parent      parent view group.
+	 * @return a populated row view.
+	 */
+	@Override
+	public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+		BaseActivity activity = this.safeBaseActivityRef.get();
+		if (activity == null) {
+			logger.d("Activity reference lost. Returning fallback view.");
+			return convertView != null ? convertView : new View(parent.getContext());
+		}
 
-        ViewHolder holder;
+		ViewHolder holder;
 
-        if (convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(activity);
-            convertView = inflater.inflate(R.layout.activity_bookmarks_1_row_1, parent, false);
+		if (convertView == null) {
+			LayoutInflater inflater = LayoutInflater.from(activity);
+			convertView = inflater.inflate(R.layout.activity_bookmarks_1_row_1, parent, false);
 
-            holder = new ViewHolder();
-            holder.bookmarkFavicon = convertView.findViewById(R.id.bookmark_url_favicon_indicator);
-            holder.bookmarkTitle = convertView.findViewById(R.id.bookmark_url_title);
-            holder.bookmarkDate = convertView.findViewById(R.id.bookmark_url_date);
-            holder.bookmarkUrl = convertView.findViewById(R.id.bookmark_url);
+			holder = new ViewHolder();
+			holder.bookmarkFavicon = convertView.findViewById(R.id.bookmark_url_favicon_indicator);
+			holder.bookmarkTitle = convertView.findViewById(R.id.bookmark_url_title);
+			holder.bookmarkDate = convertView.findViewById(R.id.bookmark_url_date);
+			holder.bookmarkUrl = convertView.findViewById(R.id.bookmark_url);
 
-            convertView.setTag(holder);
-            logger.d("Created new ViewHolder for position " + position);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
+			convertView.setTag(holder);
+			logger.d("Created new ViewHolder for position " + position);
+		} else {
+			holder = (ViewHolder) convertView.getTag();
+		}
 
-        BookmarkModel bookmarkModel = getItem(position);
-        if (bookmarkModel != null) {
-            logger.d("Binding bookmark: " + bookmarkModel.getBookmarkName());
+		BookmarkModel bookmarkModel = getItem(position);
+		if (bookmarkModel != null) {
+			logger.d("Binding bookmark: " + bookmarkModel.getBookmarkName());
 
-            holder.bookmarkTitle.setText(bookmarkModel.getBookmarkName());
-            holder.bookmarkUrl.setText(removeWwwFromUrl(bookmarkModel.getBookmarkUrl()));
+			holder.bookmarkTitle.setText(bookmarkModel.getBookmarkName());
+			holder.bookmarkUrl.setText(removeWwwFromUrl(bookmarkModel.getBookmarkUrl()));
 
-            Date visitedDate = bookmarkModel.getBookmarkCreationDate();
-            String formattedDate = DateTimeUtils.formatDateWithSuffix(visitedDate);
-            holder.bookmarkDate.setText(formattedDate);
+			Date visitedDate = bookmarkModel.getBookmarkCreationDate();
+			String formattedDate = DateTimeUtils.formatDateWithSuffix(visitedDate);
+			holder.bookmarkDate.setText(formattedDate);
 
-            convertView.setOnClickListener(view -> {
-                logger.d("Bookmark clicked: " + bookmarkModel.getBookmarkUrl());
-                if (onBookmarkItemClick != null) {
-                    onBookmarkItemClick.onBookmarkClick(bookmarkModel);
-                }
-            });
+			convertView.setOnClickListener(view -> {
+				logger.d("Bookmark clicked: " + bookmarkModel.getBookmarkUrl());
+				if (onBookmarkItemClick != null) {
+					onBookmarkItemClick.onBookmarkClick(bookmarkModel);
+				}
+			});
 
-            convertView.setOnLongClickListener(view -> {
-                logger.d("Bookmark long-clicked: " + bookmarkModel.getBookmarkUrl());
-                if (onBookmarkItemLongClick != null) {
-                    onBookmarkItemLongClick.onBookmarkLongClick(bookmarkModel, position, view);
-                }
-                return true;
-            });
+			convertView.setOnLongClickListener(view -> {
+				logger.d("Bookmark long-clicked: " + bookmarkModel.getBookmarkUrl());
+				if (onBookmarkItemLongClick != null) {
+					onBookmarkItemLongClick.onBookmarkLongClick(bookmarkModel, position, view);
+				}
+				return true;
+			});
 
-            executeInBackground(() -> {
-                AIOFavicons aioFavicon = INSTANCE.getAIOFavicon();
-                String faviconCachedPath = aioFavicon.getFavicon(bookmarkModel.getBookmarkUrl());
-                if (faviconCachedPath != null && !faviconCachedPath.isEmpty()) {
-                    File faviconImg = new File(faviconCachedPath);
-                    if (faviconImg.exists()) {
-                        executeOnMainThread(() -> {
-                            holder.bookmarkFavicon.setImageURI(Uri.fromFile(faviconImg));
-                            logger.d("Favicon loaded for: " + bookmarkModel.getBookmarkUrl());
-                        });
-                    }
-                }
-            });
-        }
+			executeInBackground(() -> {
+				AIOFavicons aioFavicon = INSTANCE.getAIOFavicon();
+				String faviconCachedPath = aioFavicon.getFavicon(bookmarkModel.getBookmarkUrl());
+				if (faviconCachedPath != null && !faviconCachedPath.isEmpty()) {
+					File faviconImg = new File(faviconCachedPath);
+					if (faviconImg.exists()) {
+						executeOnMainThread(() -> {
+							holder.bookmarkFavicon.setImageURI(Uri.fromFile(faviconImg));
+							logger.d("Favicon loaded for: " + bookmarkModel.getBookmarkUrl());
+						});
+					}
+				}
+			});
+		}
 
-        return convertView;
-    }
+		return convertView;
+	}
 
-    /**
-     * Loads the next batch of bookmarks (50 items at a time) into the adapter.
-     */
-    public void loadMoreBookmarks() {
-        AIOBookmarks aioBookmarks = INSTANCE.getAIOBookmarks();
-        ArrayList<BookmarkModel> fullList = aioBookmarks.getBookmarkLibrary();
-        if (currentIndex >= fullList.size()) {
-            logger.d("No more bookmarks to load.");
-            return;
-        }
+	/**
+	 * Loads the next batch of bookmarks (400 items at a time) into the adapter.
+	 */
+	public void loadMoreBookmarks(@Nullable String searchTerms) {
+		AIOBookmarks aioBookmarks = INSTANCE.getAIOBookmarks();
+		ArrayList<BookmarkModel> fullList = aioBookmarks.getBookmarkLibrary();
+		if (currentIndex >= fullList.size()) {
+			logger.d("No more bookmarks to load.");
+			return;
+		}
 
-        int itemsToLoad = Math.min(50, fullList.size() - currentIndex);
-        int endIndex = currentIndex + itemsToLoad;
+		int itemsToLoad = Math.min(400, fullList.size() - currentIndex);
+		int endIndex = currentIndex + itemsToLoad;
 
-        for (int index = currentIndex; index < endIndex; index++) {
+		for (int index = currentIndex; index < endIndex; index++) {
 			try {
 				displayedBookmarks.add(fullList.get(index));
 			} catch (Exception error) {
 				error.printStackTrace();
-                INSTANCE.getAIOBookmarks().readObjectFromStorage(true);
+				INSTANCE.getAIOBookmarks().readObjectFromStorage(true);
 			}
 		}
 
-        currentIndex = endIndex;
-        logger.d("Loaded " + itemsToLoad + " bookmarks. Current index: " + currentIndex);
-        notifyDataSetChanged();
-    }
+		currentIndex = endIndex;
+		logger.d("Loaded " + itemsToLoad + " bookmarks. Current index: " + currentIndex);
+		notifyDataSetChanged();
+	}
 
-    /**
-     * Resets the adapter state by clearing bookmarks and resetting index.
-     */
-    public void resetBookmarkAdapter() {
-        logger.d("Resetting BookmarkAdapter. Clearing " + displayedBookmarks.size() + " items.");
-        currentIndex = 0;
-        displayedBookmarks.clear();
-        notifyDataSetChanged();
-    }
+	/**
+	 * Resets the adapter state by clearing bookmarks and resetting index.
+	 */
+	public void resetBookmarkAdapter() {
+		logger.d("Resetting BookmarkAdapter. Clearing " + displayedBookmarks.size() + " items.");
+		currentIndex = 0;
+		displayedBookmarks.clear();
+		notifyDataSetChanged();
+	}
 
-    /**
-     * Callback interface for bookmark item clicks.
-     */
-    public interface OnBookmarkItemClick {
-        void onBookmarkClick(@NonNull BookmarkModel bookmarkModel);
-    }
+	/**
+	 * Callback interface for bookmark item clicks.
+	 */
+	public interface OnBookmarkItemClick {
+		void onBookmarkClick(@NonNull BookmarkModel bookmarkModel);
+	}
 
-    /**
-     * Callback interface for bookmark item long-clicks.
-     */
-    public interface OnBookmarkItemLongClick {
-        void onBookmarkLongClick(@NonNull BookmarkModel bookmarkModel,
-                                 int position, @NonNull View listView);
-    }
+	/**
+	 * Callback interface for bookmark item long-clicks.
+	 */
+	public interface OnBookmarkItemLongClick {
+		void onBookmarkLongClick(@NonNull BookmarkModel bookmarkModel,
+								 int position, @NonNull View listView);
+	}
 
-    /**
-     * ViewHolder pattern for caching row views.
-     */
-    private static class ViewHolder {
-        ImageView bookmarkFavicon;
-        TextView bookmarkTitle;
-        TextView bookmarkUrl;
-        TextView bookmarkDate;
-    }
+
+	/**
+	 * ViewHolder pattern for caching row views.
+	 */
+	private static class ViewHolder {
+		ImageView bookmarkFavicon;
+		TextView bookmarkTitle;
+		TextView bookmarkUrl;
+		TextView bookmarkDate;
+	}
 }
