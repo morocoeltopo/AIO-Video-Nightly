@@ -36,23 +36,35 @@ import lib.process.LogHelperUtils;
  * - Binds {@link BookmarkModel} data (title, URL, favicon, creation date) to list rows.
  * - Handles item click and long-click events via callback interfaces.
  * - Supports lazy-loading of bookmarks in chunks for performance.
+ * - Manages favicon loading asynchronously.
+ * - Supports search functionality with fuzzy matching.
  */
 public class BookmarkAdapter extends BaseAdapter {
 
+	/** Logger instance for tracking adapter events and debugging */
 	private final LogHelperUtils logger = LogHelperUtils.from(getClass());
 
+	/** Weak reference to the parent activity to prevent memory leaks */
 	private final WeakReference<BaseActivity> safeBaseActivityRef;
+
+	/** Callback interface for handling bookmark click events */
 	private final OnBookmarkItemClick onBookmarkItemClick;
+
+	/** Callback interface for handling bookmark long-click events */
 	private final OnBookmarkItemLongClick onBookmarkItemLongClick;
+
+	/** Current index position for pagination when loading bookmarks */
 	private int currentIndex = 0;
+
+	/** List of bookmark models currently displayed in the adapter */
 	private final ArrayList<BookmarkModel> displayedBookmarks = new ArrayList<>();
 
 	/**
 	 * Constructs a new {@link BookmarkAdapter}.
 	 *
-	 * @param bookmarkActivity        optional activity reference for inflating views.
-	 * @param onBookmarkItemClick     callback for click events.
-	 * @param onBookmarkItemLongClick callback for long-click events.
+	 * @param bookmarkActivity        optional activity reference for inflating views and context operations.
+	 * @param onBookmarkItemClick     callback for handling click events on bookmark items.
+	 * @param onBookmarkItemLongClick callback for handling long-click events on bookmark items.
 	 */
 	public BookmarkAdapter(@Nullable BookmarksActivity bookmarkActivity,
 						   @Nullable OnBookmarkItemClick onBookmarkItemClick,
@@ -64,11 +76,22 @@ public class BookmarkAdapter extends BaseAdapter {
 		loadMoreBookmarks(null);
 	}
 
+	/**
+	 * Returns the number of items currently displayed in the adapter.
+	 *
+	 * @return the count of displayed bookmarks.
+	 */
 	@Override
 	public int getCount() {
 		return displayedBookmarks.size();
 	}
 
+	/**
+	 * Retrieves the bookmark item at the specified position.
+	 *
+	 * @param position the position of the item in the adapter's data set.
+	 * @return the {@link BookmarkModel} at the specified position, or null if position is invalid.
+	 */
 	@Nullable
 	@Override
 	public BookmarkModel getItem(int position) {
@@ -79,18 +102,26 @@ public class BookmarkAdapter extends BaseAdapter {
 		return null;
 	}
 
+	/**
+	 * Returns the stable ID for the item at the specified position.
+	 * In this implementation, the position is used as the ID.
+	 *
+	 * @param position the position of the item within the adapter's data set.
+	 * @return the item's ID at the specified position.
+	 */
 	@Override
 	public long getItemId(int position) {
 		return position;
 	}
 
 	/**
-	 * Inflates or reuses a list row view and binds bookmark data into it.
+	 * Gets a View that displays the data at the specified position in the data set.
+	 * Either creates a new View or reuses an existing one (convertView).
 	 *
-	 * @param position    position of the item.
-	 * @param convertView recycled view, if available.
-	 * @param parent      parent view group.
-	 * @return a populated row view.
+	 * @param position    the position of the item within the adapter's data set.
+	 * @param convertView the old view to reuse, if possible.
+	 * @param parent      the parent that this view will eventually be attached to.
+	 * @return a View corresponding to the data at the specified position.
 	 */
 	@Override
 	public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -115,7 +146,7 @@ public class BookmarkAdapter extends BaseAdapter {
 			holder.bookmarkDate = convertView.findViewById(R.id.bookmark_url_date);
 			holder.bookmarkUrl = convertView.findViewById(R.id.bookmark_url);
 
-			// Store the holder inside the view’s tag for reuse
+			// Store the holder inside the view's tag for reuse
 			convertView.setTag(holder);
 			logger.d("Created new ViewHolder for position " + position);
 		} else {
@@ -177,39 +208,56 @@ public class BookmarkAdapter extends BaseAdapter {
 	}
 
 	/**
-	 * Loads the next batch of bookmarks (400 items at a time) into the adapter.
+	 * Loads more bookmarks into the adapter's displayed list.
+	 * - Supports optional fuzzy search filtering.
+	 * - Loads up to 400 bookmarks per call to avoid UI lag.
+	 * - Updates adapter state and notifies UI when done.
+	 *
+	 * @param searchTerms Optional search query. If null/empty, loads all bookmarks.
 	 */
 	public void loadMoreBookmarks(@Nullable String searchTerms) {
 		AIOBookmarks aioBookmarks = INSTANCE.getAIOBookmarks();
 		ArrayList<BookmarkModel> fullList;
+
+		// If a search term exists, use fuzzy search; otherwise load full bookmark library
 		if (searchTerms != null && !searchTerms.isEmpty()) {
 			fullList = new ArrayList<>(aioBookmarks.searchBookmarksFuzzy(searchTerms));
-		} else fullList = aioBookmarks.getBookmarkLibrary();
+		} else {
+			fullList = aioBookmarks.getBookmarkLibrary();
+		}
 
+		// If we've already loaded all bookmarks, exit early
 		if (currentIndex >= fullList.size()) {
 			logger.d("No more bookmarks to load.");
 			return;
 		}
 
+		// Determine how many items to load in this batch (max 400 per call)
 		int itemsToLoad = Math.min(400, fullList.size() - currentIndex);
 		int endIndex = currentIndex + itemsToLoad;
 
+		// Add bookmarks from the source list into displayed list
 		for (int index = currentIndex; index < endIndex; index++) {
 			try {
 				displayedBookmarks.add(fullList.get(index));
 			} catch (Exception error) {
+				// If something went wrong while accessing data, reload storage
 				error.printStackTrace();
 				INSTANCE.getAIOBookmarks().readObjectFromStorage(true);
 			}
 		}
 
+		// Update the current index marker for next load
 		currentIndex = endIndex;
+
+		// Log status and notify UI adapter to refresh the list view
 		logger.d("Loaded " + itemsToLoad + " bookmarks. Current index: " + currentIndex);
 		notifyDataSetChanged();
 	}
 
 	/**
-	 * Resets the adapter state by clearing bookmarks and resetting index.
+	 * Resets the adapter state by clearing all displayed bookmarks and resetting the current index.
+	 * This is typically called when search criteria change or when data needs to be refreshed.
 	 */
 	public void resetBookmarkAdapter() {
 		logger.d("Resetting BookmarkAdapter. Clearing " + displayedBookmarks.size() + " items.");
@@ -219,28 +267,56 @@ public class BookmarkAdapter extends BaseAdapter {
 	}
 
 	/**
-	 * Callback interface for bookmark item clicks.
+	 * Checks if the adapter is currently empty (no bookmarks displayed).
+	 *
+	 * @return true if no bookmarks are displayed, false otherwise.
+	 */
+	public boolean isEmpty() {
+		return displayedBookmarks.isEmpty();
+	}
+
+	/**
+	 * Callback interface for bookmark item click events.
 	 */
 	public interface OnBookmarkItemClick {
+		/**
+		 * Called when a bookmark item is clicked.
+		 *
+		 * @param bookmarkModel the bookmark model that was clicked.
+		 */
 		void onBookmarkClick(@NonNull BookmarkModel bookmarkModel);
 	}
 
 	/**
-	 * Callback interface for bookmark item long-clicks.
+	 * Callback interface for bookmark item long-click events.
 	 */
 	public interface OnBookmarkItemLongClick {
+		/**
+		 * Called when a bookmark item is long-clicked.
+		 *
+		 * @param bookmarkModel the bookmark model that was long-clicked.
+		 * @param position      the position of the item in the list.
+		 * @param listView      the ListView containing the item.
+		 */
 		void onBookmarkLongClick(@NonNull BookmarkModel bookmarkModel,
 								 int position, @NonNull View listView);
 	}
 
-
 	/**
-	 * ViewHolder pattern for caching row views.
+	 * ViewHolder pattern class for caching view references in list items.
+	 * Improves performance by avoiding frequent findViewById calls.
 	 */
 	private static class ViewHolder {
+		/** ImageView for displaying the bookmark's favicon */
 		ImageView bookmarkFavicon;
+
+		/** TextView for displaying the bookmark title */
 		TextView bookmarkTitle;
+
+		/** TextView for displaying the bookmark URL */
 		TextView bookmarkUrl;
+
+		/** TextView for displaying the bookmark creation/visit date */
 		TextView bookmarkDate;
 	}
 }

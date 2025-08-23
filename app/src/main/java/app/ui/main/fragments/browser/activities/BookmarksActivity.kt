@@ -1,6 +1,8 @@
 package app.ui.main.fragments.browser.activities
 
 import android.content.Intent
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.view.View.GONE
 import android.widget.EditText
@@ -206,6 +208,7 @@ class BookmarksActivity : BaseActivity(),
 			editTextSearchField = findViewById<EditText>(R.id.edit_search_keywords_text)
 			containerSearchEditField = findViewById(R.id.edit_search_keywords_container)
 			containerSearchLayout.visibility = GONE
+			initSearchKeywordsWatcher(editTextSearchField)
 
 			emptyBookmarksIndicator = findViewById(R.id.empty_bookmarks_indicator)
 			bookmarkListView = findViewById(R.id.list_bookmarks)
@@ -231,6 +234,12 @@ class BookmarksActivity : BaseActivity(),
 			toggleSearchEditFieldVisibility()
 		}
 
+		containerSearchEditField.setOnClickListener {
+			editTextSearchField.focusable
+			editTextSearchField.selectAll()
+			showOnScreenKeyboard(safeBookmarksActivityRef, editTextSearchField)
+		}
+
 		findViewById<View>(R.id.btn_left_actionbar)
 			.setOnClickListener {
 				logger.d("Left actionbar button clicked: navigating back")
@@ -245,9 +254,27 @@ class BookmarksActivity : BaseActivity(),
 
 		buttonLoadMoreBookmarks.setOnClickListener {
 			logger.d("Load More button clicked: loading additional bookmarks")
-			bookmarksAdapter.loadMoreBookmarks()
+			bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
 			showToast(msgId = R.string.text_loaded_successfully)
 		}
+	}
+
+	private fun initSearchKeywordsWatcher(editTextSearchField: EditText) {
+		editTextSearchField.addTextChangedListener(object : TextWatcher {
+			override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+			override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+			override fun afterTextChanged(editableField: Editable?) {
+				val searchTerms = editableField?.toString()
+				if (searchTerms.isNullOrEmpty()) {
+					bookmarksAdapter.resetBookmarkAdapter()
+					bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
+					return
+				}
+				bookmarksAdapter.resetBookmarkAdapter()
+				bookmarksAdapter.loadMoreBookmarks(searchTerms)
+			}
+		})
 	}
 
 	/**
@@ -284,6 +311,7 @@ class BookmarksActivity : BaseActivity(),
 	 */
 	private fun hideSearchContainer() {
 		logger.d("hideSearchContainer: hiding search interface")
+		editTextSearchField.setText("")
 		hideView(containerSearchLayout, true)
 		hideOnScreenKeyboard(safeBookmarksActivityRef, editTextSearchField)
 		buttonActionbarSearchImg.setImageResource(R.drawable.ic_button_actionbar_search)
@@ -339,7 +367,7 @@ class BookmarksActivity : BaseActivity(),
 	fun updateBookmarkListAdapter() {
 		logger.d("updateBookmarkListAdapter: refreshing bookmark data")
 		bookmarksAdapter.resetBookmarkAdapter()
-		bookmarksAdapter.loadMoreBookmarks()
+		bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
 	}
 
 	/**
