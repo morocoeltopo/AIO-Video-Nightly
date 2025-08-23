@@ -239,7 +239,7 @@
 
 
 	<string name="title_load_more_browser_bookmarks">Load More Bookmarks</string>
-	<string name="text_bookmarks_empty">Your bookmarks collection is empty.</string>
+	<string name="text_your_bookmark_collection_empty">Your bookmarks collection is empty.</string>
 	<string name="title_bookmarks">Bookmarks</string>
 
 	<string name="text_delete_bookmarks_confirmation">Deleting bookmarks is permanent and cannot be undone. <b>Do you want to continue?</b></string>
@@ -494,5 +494,6 @@
 	<string name="text_search_something">Search something…</string>
 	<string name="text_downloading_m3u8_manifest">Downloading M3U8 Manifest…</string>
 	<string name="text_edit_the_bookmark">Edit bookmark</string>
+	<string name="text_no_bookmark_matched_with_search">No bookmarks matched your search query.</string>
 
 </resources>

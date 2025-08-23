@@ -470,17 +470,22 @@ class AIOBookmarks : Serializable {
 
 	/**
 	 * Fuzzy search bookmarks by name or URL.
-	 * - Case-insensitive.
-	 * - Returns results ranked by similarity (lower distance = higher rank).
-	 * - Matches both bookmark name and URL.
 	 *
-	 * @param query Search term
-	 * @return List of matching bookmarks ranked by relevance
+	 * Behavior:
+	 * - Case-insensitive.
+	 * - Supports multi-term queries (all terms must appear somewhere).
+	 * - Uses a mix of exact matching, substring matching, and Jaro-Winkler similarity for typo tolerance.
+	 * - Results are ranked by relevance: exact matches first, then higher similarity scores.
+	 *
+	 * @param query The search input string.
+	 * @return A ranked list of matching bookmarks.
 	 */
 	fun searchBookmarksFuzzy(query: String): List<BookmarkModel> {
+		// Normalize search string (trim + lowercase) for case-insensitive comparison
 		val normalizedQuery = query.trim().lowercase()
 		if (normalizedQuery.isEmpty()) return emptyList()
 
+		// Split query into words for multi-term support
 		val queryTerms = normalizedQuery.split("\\s+".toRegex()).filter { it.isNotEmpty() }
 
 		return bookmarkLibrary
@@ -488,22 +493,24 @@ class AIOBookmarks : Serializable {
 				val name = bookmark.bookmarkName.lowercase()
 				val url = bookmark.bookmarkUrl.lowercase()
 
+				// Strongest match: name or URL exactly equals query
 				val exactMatch = (name == normalizedQuery || url == normalizedQuery)
 
-				// Jaro-Winkler (typo tolerant)
+				// Fuzzy similarity using Jaro-Winkler (tolerates typos)
 				val jwScore = maxOf(
 					jaroWinklerSimilarity(normalizedQuery, name),
 					jaroWinklerSimilarity(normalizedQuery, url)
 				)
 
-				// Simple contains check
+				// Medium strength: query appears as substring in name or URL
 				val contains = name.contains(normalizedQuery) || url.contains(normalizedQuery)
 
-				// Multi-term support: all terms should appear somewhere
+				// Multi-term matching: all terms must appear in either name or URL
 				val allTermsMatch = queryTerms.all { term ->
 					name.contains(term) || url.contains(term)
 				}
 
+				// Assign a relevance score
 				val score = when {
 					exactMatch -> 1.0
 					contains -> 0.9
@@ -513,14 +520,21 @@ class AIOBookmarks : Serializable {
 
 				bookmark to (score to exactMatch)
 			}
+			// Drop weak matches (below threshold)
 			.filter { (_, scoreInfo) -> scoreInfo.first >= 0.75 }
+			// Sort: exact matches first, then by score
 			.sortedWith(
-				compareByDescending<Pair<BookmarkModel, Pair<Double, Boolean>>> { it.second.second } // exact first
-					.thenByDescending { it.second.first } // then best score
+				compareByDescending<Pair<BookmarkModel, Pair<Double, Boolean>>> { it.second.second }
+					.thenByDescending { it.second.first }
 			)
 			.map { it.first }
 	}
 
+	/**
+	 * Computes Jaro-Winkler similarity between two strings.
+	 * - Returns 1.0 for identical strings, 0.0 for no similarity.
+	 * - Prioritizes common prefixes and transpositions.
+	 */
 	private fun jaroWinklerSimilarity(s1: String, s2: String): Double {
 		if (s1 == s2) return 1.0
 
@@ -531,6 +545,7 @@ class AIOBookmarks : Serializable {
 		val s1Matches = BooleanArray(s1.length)
 		val s2Matches = BooleanArray(s2.length)
 
+		// Identify matching characters within the allowable distance
 		for (i in s1.indices) {
 			val start = maxOf(0, i - matchDistance)
 			val end = minOf(i + matchDistance + 1, s2.length)
@@ -547,6 +562,7 @@ class AIOBookmarks : Serializable {
 
 		if (matches == 0) return 0.0
 
+		// Count transpositions (characters matched out of order)
 		var k = 0
 		for (i in s1.indices) {
 			if (s1Matches[i]) {
@@ -560,6 +576,7 @@ class AIOBookmarks : Serializable {
 				matches / s2.length.toDouble() +
 				(matches - transpositions / 2.0) / matches) / 3.0
 
+		// Winkler bonus for common prefix (up to 4 chars)
 		val prefixLimit = minOf(4, minOf(s1.length, s2.length))
 		var prefix = 0
 		while (prefix < prefixLimit && s1[prefix] == s2[prefix]) {

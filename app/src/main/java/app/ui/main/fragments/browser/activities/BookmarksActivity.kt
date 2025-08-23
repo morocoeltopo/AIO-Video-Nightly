@@ -8,6 +8,7 @@ import android.view.View.GONE
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
+import android.widget.TextView
 import androidx.core.view.isVisible
 import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioTimer
@@ -18,6 +19,9 @@ import app.core.engines.browser.bookmarks.BookmarkModel
 import app.ui.main.fragments.browser.activities.BookmarkAdapter.OnBookmarkItemClick
 import app.ui.main.fragments.browser.activities.BookmarkAdapter.OnBookmarkItemLongClick
 import com.aio.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
 import lib.process.LogHelperUtils
@@ -373,11 +377,18 @@ class BookmarksActivity : BaseActivity(),
 	 * Clears any search terms and resets the search interface to initial state.
 	 */
 	private fun hideSearchContainer() {
-		logger.d("Hiding search container and clearing search terms")
-		editTextSearchField.setText("")
-		hideView(containerSearchLayout, true)
-		hideOnScreenKeyboard(safeBookmarksActivityRef, editTextSearchField)
-		buttonActionbarSearchImg.setImageResource(R.drawable.ic_button_actionbar_search)
+		CoroutineScope(Dispatchers.Main).launch {
+			logger.d("Hiding empty box indicator is visible")
+			if (emptyBookmarksIndicator.isVisible) {
+				emptyBookmarksIndicator.visibility = GONE
+			}
+
+			logger.d("Hiding search container and clearing search terms")
+			editTextSearchField.setText("")
+			hideView(containerSearchLayout, true)
+			hideOnScreenKeyboard(safeBookmarksActivityRef, editTextSearchField)
+			buttonActionbarSearchImg.setImageResource(R.drawable.ic_button_actionbar_search)
+		}
 	}
 
 	/**
@@ -468,7 +479,18 @@ class BookmarksActivity : BaseActivity(),
 	 * Called periodically and after data changes to maintain consistent UI state.
 	 */
 	private fun updateLoadMoreButtonVisibility() {
-		val bookmarkSize = aioBookmark.getBookmarkLibrary().size
+		logger.d("Search operation is currently active, hiding the load more button")
+		if (containerSearchLayout.isVisible) {
+			hideView(buttonLoadMoreBookmarks, true)
+			findViewById<TextView>(R.id.txt_empty_bookmark_indicator)
+				.text = getText(R.string.text_no_bookmark_matched_with_search)
+		} else {
+			findViewById<TextView>(R.id.txt_empty_bookmark_indicator)
+				.text = getText(R.string.text_your_bookmark_collection_empty)
+		}
+
+		val bookmarkSize = if (containerSearchLayout.isVisible) bookmarksAdapter.count
+		else aioBookmark.getBookmarkLibrary().size
 		logger.d("Updating UI state: adapterCount=${bookmarksAdapter.count}, totalBookmarks=$bookmarkSize")
 
 		// Load More button visibility logic
