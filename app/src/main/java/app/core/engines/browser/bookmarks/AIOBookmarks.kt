@@ -148,7 +148,6 @@ class AIOBookmarks : Serializable {
 		})
 	}
 
-
 	/**
 	 * Creates and returns a list of preloaded bookmarks.
 	 *
@@ -282,7 +281,6 @@ class AIOBookmarks : Serializable {
 		return bookmarks
 	}
 
-
 	/**
 	 * Saves bookmarks to binary format.
 	 * @param fileName Name of the binary file to save to
@@ -394,7 +392,8 @@ class AIOBookmarks : Serializable {
 		// Parse the list properly with type info
 		val type = object : TypeToken<ArrayList<BookmarkModel>>() {}.type
 		val bookmarksLibraryJSON = JSONObject(data).getString("bookmarkLibrary")
-		val parsedList: ArrayList<BookmarkModel> = aioGSONInstance.fromJson(bookmarksLibraryJSON, type)
+		val parsedList: ArrayList<BookmarkModel> =
+			aioGSONInstance.fromJson(bookmarksLibraryJSON, type)
 
 		bookmarks.bookmarkLibrary = parsedList
 		return bookmarks
@@ -462,11 +461,70 @@ class AIOBookmarks : Serializable {
 	 * @param query Search term
 	 * @return List of matching bookmarks (case-insensitive)
 	 */
-	fun searchBookmarks(query: String): List<BookmarkModel> {
+	fun searchBookmarksNormal(query: String): List<BookmarkModel> {
 		return bookmarkLibrary.filter {
 			it.bookmarkName.contains(query, ignoreCase = true) ||
 					it.bookmarkUrl.contains(query, ignoreCase = true)
 		}
+	}
+
+	/**
+	 * Fuzzy search bookmarks by name or URL.
+	 * - Case-insensitive.
+	 * - Returns results ranked by similarity (lower distance = higher rank).
+	 * - Matches both bookmark name and URL.
+	 *
+	 * @param query Search term
+	 * @return List of matching bookmarks ranked by relevance
+	 */
+	fun searchBookmarksFuzzy(query: String): List<BookmarkModel> {
+		val normalizedQuery = query.trim()
+		if (normalizedQuery.isEmpty()) return emptyList()
+
+		return bookmarkLibrary
+			.map { bookmark ->
+				val nameScore = levenshteinDistance(
+					normalizedQuery.lowercase(),
+					bookmark.bookmarkName.lowercase()
+				)
+				val urlScore = levenshteinDistance(
+					normalizedQuery.lowercase(),
+					bookmark.bookmarkUrl.lowercase()
+				)
+				// Pick the best score between name and URL
+				val score = minOf(nameScore, urlScore)
+				bookmark to score
+			}
+			// Sort so best matches come first
+			.sortedBy { it.second }
+			.map { it.first }
+	}
+
+	/**
+	 * Computes Levenshtein edit distance between two strings.
+	 * Smaller = more similar.
+	 */
+	private fun levenshteinDistance(a: String, b: String): Int {
+		if (a == b) return 0
+		if (a.isEmpty()) return b.length
+		if (b.isEmpty()) return a.length
+
+		val dp = Array(a.length + 1) { IntArray(b.length + 1) }
+
+		for (i in 0..a.length) dp[i][0] = i
+		for (j in 0..b.length) dp[0][j] = j
+
+		for (i in 1..a.length) {
+			for (j in 1..b.length) {
+				val cost = if (a[i - 1] == b[j - 1]) 0 else 1
+				dp[i][j] = minOf(
+					dp[i - 1][j] + 1,        // deletion
+					dp[i][j - 1] + 1,        // insertion
+					dp[i - 1][j - 1] + cost  // substitution
+				)
+			}
+		}
+		return dp[a.length][b.length]
 	}
 
 	/**

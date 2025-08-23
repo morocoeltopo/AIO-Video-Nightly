@@ -61,7 +61,7 @@ public class BookmarkAdapter extends BaseAdapter {
 		this.onBookmarkItemClick = onBookmarkItemClick;
 		this.onBookmarkItemLongClick = onBookmarkItemLongClick;
 		logger.d("BookmarkAdapter initialized. Loading initial bookmarks...");
-		loadMoreBookmarks();
+		loadMoreBookmarks(null);
 	}
 
 	@Override
@@ -96,39 +96,48 @@ public class BookmarkAdapter extends BaseAdapter {
 	public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 		BaseActivity activity = this.safeBaseActivityRef.get();
 		if (activity == null) {
+			// If activity reference is lost, safely return an existing or empty view
 			logger.d("Activity reference lost. Returning fallback view.");
 			return convertView != null ? convertView : new View(parent.getContext());
 		}
 
 		ViewHolder holder;
 
+		// Reuse convertView if available, else inflate a new one
 		if (convertView == null) {
 			LayoutInflater inflater = LayoutInflater.from(activity);
 			convertView = inflater.inflate(R.layout.activity_bookmarks_1_row_1, parent, false);
 
+			// Create a new ViewHolder to cache subview references
 			holder = new ViewHolder();
 			holder.bookmarkFavicon = convertView.findViewById(R.id.bookmark_url_favicon_indicator);
 			holder.bookmarkTitle = convertView.findViewById(R.id.bookmark_url_title);
 			holder.bookmarkDate = convertView.findViewById(R.id.bookmark_url_date);
 			holder.bookmarkUrl = convertView.findViewById(R.id.bookmark_url);
 
+			// Store the holder inside the view’s tag for reuse
 			convertView.setTag(holder);
 			logger.d("Created new ViewHolder for position " + position);
 		} else {
+			// Retrieve cached ViewHolder to avoid redundant findViewById calls
 			holder = (ViewHolder) convertView.getTag();
 		}
 
+		// Get current bookmark for this list position
 		BookmarkModel bookmarkModel = getItem(position);
 		if (bookmarkModel != null) {
 			logger.d("Binding bookmark: " + bookmarkModel.getBookmarkName());
 
+			// Bind bookmark title and URL (stripping "www")
 			holder.bookmarkTitle.setText(bookmarkModel.getBookmarkName());
 			holder.bookmarkUrl.setText(removeWwwFromUrl(bookmarkModel.getBookmarkUrl()));
 
+			// Format and bind bookmark creation/visited date
 			Date visitedDate = bookmarkModel.getBookmarkCreationDate();
 			String formattedDate = DateTimeUtils.formatDateWithSuffix(visitedDate);
 			holder.bookmarkDate.setText(formattedDate);
 
+			// Handle single-click: open bookmark
 			convertView.setOnClickListener(view -> {
 				logger.d("Bookmark clicked: " + bookmarkModel.getBookmarkUrl());
 				if (onBookmarkItemClick != null) {
@@ -136,17 +145,21 @@ public class BookmarkAdapter extends BaseAdapter {
 				}
 			});
 
+			// Handle long-click: show bookmark options
 			convertView.setOnLongClickListener(view -> {
 				logger.d("Bookmark long-clicked: " + bookmarkModel.getBookmarkUrl());
 				if (onBookmarkItemLongClick != null) {
 					onBookmarkItemLongClick.onBookmarkLongClick(bookmarkModel, position, view);
 				}
-				return true;
+				return true; // consume event
 			});
 
+			// Load favicon asynchronously (background thread)
 			executeInBackground(() -> {
 				AIOFavicons aioFavicon = INSTANCE.getAIOFavicon();
 				String faviconCachedPath = aioFavicon.getFavicon(bookmarkModel.getBookmarkUrl());
+
+				// If favicon exists on disk, update ImageView on main thread
 				if (faviconCachedPath != null && !faviconCachedPath.isEmpty()) {
 					File faviconImg = new File(faviconCachedPath);
 					if (faviconImg.exists()) {
@@ -159,6 +172,7 @@ public class BookmarkAdapter extends BaseAdapter {
 			});
 		}
 
+		// Return the prepared/reused view
 		return convertView;
 	}
 
@@ -167,7 +181,11 @@ public class BookmarkAdapter extends BaseAdapter {
 	 */
 	public void loadMoreBookmarks(@Nullable String searchTerms) {
 		AIOBookmarks aioBookmarks = INSTANCE.getAIOBookmarks();
-		ArrayList<BookmarkModel> fullList = aioBookmarks.getBookmarkLibrary();
+		ArrayList<BookmarkModel> fullList;
+		if (searchTerms != null && !searchTerms.isEmpty()) {
+			fullList = new ArrayList<>(aioBookmarks.searchBookmarksFuzzy(searchTerms));
+		} else fullList = aioBookmarks.getBookmarkLibrary();
+
 		if (currentIndex >= fullList.size()) {
 			logger.d("No more bookmarks to load.");
 			return;
