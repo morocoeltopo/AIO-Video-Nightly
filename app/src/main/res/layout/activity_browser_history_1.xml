@@ -137,7 +137,7 @@
 		android:id="@+id/list_history"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_above="@+id/bottom_section"
+		android:layout_above="@+id/bottom_container_load_more"
 		android:layout_below="@+id/top_actionbar_section"
 		android:layout_marginStart="@dimen/_0"
 		android:layout_marginTop="@dimen/_8"
@@ -147,7 +147,7 @@
 		android:visibility="visible" />
 
 	<LinearLayout
-		android:id="@+id/bottom_section"
+		android:id="@+id/bottom_container_load_more"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"

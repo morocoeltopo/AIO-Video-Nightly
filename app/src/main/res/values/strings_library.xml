@@ -491,5 +491,7 @@
 	<string name="text_checking_for_new_update">Checking for new update, Please wait…</string>
 	<string name="text_you_are_using_the_latest_version">You\'re using the latest version.</string>
 	<string name="title_user_information">User Information</string>
+	<string name="text_search_something">Search something…</string>
+	<string name="text_downloading_m3u8_manifest">Downloading M3U8 Manifest...</string>
 
 </resources>

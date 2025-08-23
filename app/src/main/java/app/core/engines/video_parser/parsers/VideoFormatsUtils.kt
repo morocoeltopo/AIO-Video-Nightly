@@ -598,7 +598,8 @@ object VideoFormatsUtils {
             "Fixing MPEG-TS in MP4 container" to R.string.text_fixing_mpeg_ts_in_mp4_container,
             "Downloading webpage" to R.string.text_downloading_webpage,
             "tv client config" to R.string.text_downloading_client_config,
-            "player" to R.string.text_extracting_player_api
+            "player" to R.string.text_extracting_player_api,
+            "Downloading m3u8 manifest" to R.string.text_downloading_m3u8_manifest,
         )
         return map.entries.firstOrNull { input.contains(it.key, true) }
             ?.let { getText(it.value) }

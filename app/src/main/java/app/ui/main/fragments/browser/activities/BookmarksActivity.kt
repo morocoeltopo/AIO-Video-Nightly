@@ -3,7 +3,10 @@ package app.ui.main.fragments.browser.activities
 import android.content.Intent
 import android.view.View
 import android.view.View.GONE
+import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ListView
+import androidx.core.view.isVisible
 import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioTimer
 import app.core.AIOKeyStrings.ACTIVITY_RESULT_KEY
@@ -13,12 +16,14 @@ import app.core.engines.browser.bookmarks.BookmarkModel
 import app.ui.main.fragments.browser.activities.BookmarkAdapter.OnBookmarkItemClick
 import app.ui.main.fragments.browser.activities.BookmarkAdapter.OnBookmarkItemLongClick
 import com.aio.R
-import lib.process.CommonTimeUtils
 import lib.process.CommonTimeUtils.OnTaskFinishListener
+import lib.process.CommonTimeUtils.delay
 import lib.process.LogHelperUtils
 import lib.ui.MsgDialogUtils
+import lib.ui.ViewUtility.hideOnScreenKeyboard
 import lib.ui.ViewUtility.hideView
 import lib.ui.ViewUtility.setLeftSideDrawable
+import lib.ui.ViewUtility.showOnScreenKeyboard
 import lib.ui.ViewUtility.showView
 import lib.ui.builders.ToastView.Companion.showToast
 import java.lang.ref.WeakReference
@@ -42,6 +47,12 @@ class BookmarksActivity : BaseActivity(),
 	private val safeBookmarksActivityRef = safeSelfReference.get()
 
 	// UI elements
+	private lateinit var buttonActionbarSearch: View
+	private lateinit var buttonActionbarSearchImg: ImageView
+	private lateinit var containerSearchLayout: View
+	private lateinit var containerSearchEditField: View
+	private lateinit var editTextSearchField: EditText
+	private lateinit var buttonSearchAction: View
 	private lateinit var emptyBookmarksIndicator: View
 	private lateinit var bookmarkListView: ListView
 	private lateinit var buttonLoadMoreBookmarks: View
@@ -143,6 +154,13 @@ class BookmarksActivity : BaseActivity(),
 	private fun initializeViews() {
 		logger.d("initializeViews: setting up UI components")
 		safeBookmarksActivityRef?.let {
+			buttonActionbarSearch = findViewById(R.id.btn_actionbar_search)
+			buttonActionbarSearchImg = findViewById(R.id.btn_actionbar_search_img)
+			containerSearchLayout = findViewById(R.id.top_searchbar_container)
+			editTextSearchField = findViewById<EditText>(R.id.edit_search_keywords_text)
+			containerSearchEditField = findViewById(R.id.edit_search_keywords_container)
+			containerSearchLayout.visibility = GONE
+
 			emptyBookmarksIndicator = findViewById(R.id.empty_bookmarks_indicator)
 			bookmarkListView = findViewById(R.id.list_bookmarks)
 			buttonLoadMoreBookmarks = findViewById(R.id.btn_load_more_bookmarks)
@@ -159,6 +177,8 @@ class BookmarksActivity : BaseActivity(),
 	/** Attach listeners to buttons */
 	private fun initializeViewsOnClickEvents() {
 		logger.d("initializeViewsOnClickEvents: attaching listeners")
+		buttonActionbarSearch.setOnClickListener { toggleSearchEditFieldVisibility() }
+
 		findViewById<View>(R.id.btn_left_actionbar)
 			.setOnClickListener { onBackPressActivity() }
 
@@ -169,6 +189,22 @@ class BookmarksActivity : BaseActivity(),
 			logger.d("Load More button clicked")
 			bookmarksAdapter.loadMoreBookmarks()
 			showToast(msgId = R.string.text_loaded_successfully)
+		}
+	}
+
+	/** Show search edit field on search icon button click */
+	private fun toggleSearchEditFieldVisibility() {
+		if (containerSearchLayout.isVisible) {
+			hideView(containerSearchLayout, true)
+			hideOnScreenKeyboard(safeBookmarksActivityRef, editTextSearchField)
+			buttonActionbarSearchImg.setImageResource(R.drawable.ic_button_actionbar_search)
+		} else {
+			buttonActionbarSearchImg.setImageResource(R.drawable.ic_button_actionbar_cancel)
+			showView(containerSearchLayout, true)
+			delay(200, object : OnTaskFinishListener {
+				override fun afterDelay() =
+					showOnScreenKeyboard(safeBookmarksActivityRef, editTextSearchField)
+			})
 		}
 	}
 
@@ -228,7 +264,7 @@ class BookmarksActivity : BaseActivity(),
 			showView(emptyBookmarksIndicator, true)
 		} else {
 			hideView(emptyBookmarksIndicator, true).let {
-				CommonTimeUtils.delay(500, object : OnTaskFinishListener {
+				delay(500, object : OnTaskFinishListener {
 					override fun afterDelay() {
 						showView(bookmarkListView, true)
 					}
