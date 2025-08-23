@@ -100,7 +100,7 @@
 					android:layout_centerInParent="true"
 					android:adjustViewBounds="true"
 					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_actionbar_menu"
+					android:src="@drawable/ic_button_clear"
 					android:tint="@color/color_secondary"
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>

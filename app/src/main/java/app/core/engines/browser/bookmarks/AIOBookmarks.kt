@@ -478,53 +478,95 @@ class AIOBookmarks : Serializable {
 	 * @return List of matching bookmarks ranked by relevance
 	 */
 	fun searchBookmarksFuzzy(query: String): List<BookmarkModel> {
-		val normalizedQuery = query.trim()
+		val normalizedQuery = query.trim().lowercase()
 		if (normalizedQuery.isEmpty()) return emptyList()
+
+		val queryTerms = normalizedQuery.split("\\s+".toRegex()).filter { it.isNotEmpty() }
 
 		return bookmarkLibrary
 			.map { bookmark ->
-				val nameScore = levenshteinDistance(
-					normalizedQuery.lowercase(),
-					bookmark.bookmarkName.lowercase()
+				val name = bookmark.bookmarkName.lowercase()
+				val url = bookmark.bookmarkUrl.lowercase()
+
+				val exactMatch = (name == normalizedQuery || url == normalizedQuery)
+
+				// Jaro-Winkler (typo tolerant)
+				val jwScore = maxOf(
+					jaroWinklerSimilarity(normalizedQuery, name),
+					jaroWinklerSimilarity(normalizedQuery, url)
 				)
-				val urlScore = levenshteinDistance(
-					normalizedQuery.lowercase(),
-					bookmark.bookmarkUrl.lowercase()
-				)
-				// Pick the best score between name and URL
-				val score = minOf(nameScore, urlScore)
-				bookmark to score
+
+				// Simple contains check
+				val contains = name.contains(normalizedQuery) || url.contains(normalizedQuery)
+
+				// Multi-term support: all terms should appear somewhere
+				val allTermsMatch = queryTerms.all { term ->
+					name.contains(term) || url.contains(term)
+				}
+
+				val score = when {
+					exactMatch -> 1.0
+					contains -> 0.9
+					allTermsMatch -> 0.85
+					else -> jwScore
+				}
+
+				bookmark to (score to exactMatch)
 			}
-			// Sort so best matches come first
-			.sortedBy { it.second }
+			.filter { (_, scoreInfo) -> scoreInfo.first >= 0.75 }
+			.sortedWith(
+				compareByDescending<Pair<BookmarkModel, Pair<Double, Boolean>>> { it.second.second } // exact first
+					.thenByDescending { it.second.first } // then best score
+			)
 			.map { it.first }
 	}
 
-	/**
-	 * Computes Levenshtein edit distance between two strings.
-	 * Smaller = more similar.
-	 */
-	private fun levenshteinDistance(a: String, b: String): Int {
-		if (a == b) return 0
-		if (a.isEmpty()) return b.length
-		if (b.isEmpty()) return a.length
+	private fun jaroWinklerSimilarity(s1: String, s2: String): Double {
+		if (s1 == s2) return 1.0
 
-		val dp = Array(a.length + 1) { IntArray(b.length + 1) }
+		val matchDistance = maxOf(s1.length, s2.length) / 2 - 1
+		var matches = 0
+		var transpositions = 0
 
-		for (i in 0..a.length) dp[i][0] = i
-		for (j in 0..b.length) dp[0][j] = j
+		val s1Matches = BooleanArray(s1.length)
+		val s2Matches = BooleanArray(s2.length)
 
-		for (i in 1..a.length) {
-			for (j in 1..b.length) {
-				val cost = if (a[i - 1] == b[j - 1]) 0 else 1
-				dp[i][j] = minOf(
-					dp[i - 1][j] + 1,        // deletion
-					dp[i][j - 1] + 1,        // insertion
-					dp[i - 1][j - 1] + cost  // substitution
-				)
+		for (i in s1.indices) {
+			val start = maxOf(0, i - matchDistance)
+			val end = minOf(i + matchDistance + 1, s2.length)
+
+			for (j in start until end) {
+				if (!s2Matches[j] && s1[i] == s2[j]) {
+					s1Matches[i] = true
+					s2Matches[j] = true
+					matches++
+					break
+				}
 			}
 		}
-		return dp[a.length][b.length]
+
+		if (matches == 0) return 0.0
+
+		var k = 0
+		for (i in s1.indices) {
+			if (s1Matches[i]) {
+				while (!s2Matches[k]) k++
+				if (s1[i] != s2[k]) transpositions++
+				k++
+			}
+		}
+
+		val jaro = (matches / s1.length.toDouble() +
+				matches / s2.length.toDouble() +
+				(matches - transpositions / 2.0) / matches) / 3.0
+
+		val prefixLimit = minOf(4, minOf(s1.length, s2.length))
+		var prefix = 0
+		while (prefix < prefixLimit && s1[prefix] == s2[prefix]) {
+			prefix++
+		}
+
+		return jaro + (prefix * 0.1 * (1 - jaro))
 	}
 
 	/**

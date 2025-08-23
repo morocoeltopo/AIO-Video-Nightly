@@ -719,7 +719,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	 * @return List of recent DownloadDataModel objects
 	 */
 	private fun getRecentDownloadModels(): List<DownloadDataModel> {
-		return downloadSystem.finishedDownloadDataModels.take(12)
+		return downloadSystem.finishedDownloadDataModels.take(9)
 	}
 
 	/**
