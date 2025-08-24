@@ -497,10 +497,14 @@
 	<string name="text_no_bookmark_matched_with_search">No bookmarks matched your search query.</string>
 	<string name="title_update_bookmark_info">Update Bookmark Info</string>
 	<string name="text_enter_updated_bookmark_title">Enter updated bookmark title</string>
+	<string name="text_enter_updated_history_title">Enter updated history title</string>
 	<string name="text_enter_updated_bookmark_url">Enter updated bookmark URL</string>
+	<string name="text_enter_updated_history_url">Enter updated history URL</string>
 	<string name="text_bookmark_update_msg"><b>Update bookmarks when URLs change</b>, or names need clearer meaning.</string>
+	<string name="text_history_update_msg"><b>Update history entry when URLs change</b>, or names need clearer meaning.</string>
 	<string name="text_bookmark_name_can_not_be_empty">Bookname name can not be empty.</string>
 	<string name="text_bookmark_url_can_not_be_empty">Bookname url can not be empty.</string>
 	<string name="text_bookmark_url_not_valid">Bookname url is not valid.</string>
+	<string name="title_update_history_info">Update Browser History</string>
 
 </resources>
