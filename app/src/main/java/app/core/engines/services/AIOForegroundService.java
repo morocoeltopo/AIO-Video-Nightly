@@ -67,6 +67,8 @@ public class AIOForegroundService extends Service {
         instance = null;
         isServiceRunning = false;
 
+        stopForeground(true); // Ensure notification is removed promptly
+
         // Restart service automatically if killed by the system.
         sendBroadcast(new Intent(this, RestartIdleServiceReceiver.class));
     }
@@ -82,9 +84,13 @@ public class AIOForegroundService extends Service {
      * Stops the service and removes the foreground notification.
      */
     public void stopService() {
-        Intent serviceIntent = new Intent(INSTANCE, AIOForegroundService.class);
-        INSTANCE.stopService(serviceIntent);
-        isServiceRunning = false;
+        try {
+            stopForeground(true); // Remove notification immediately
+            stopSelf();           // Stop service
+            isServiceRunning = false;
+        } catch (Exception error) {
+            error.printStackTrace();
+        }
     }
 
     /**
