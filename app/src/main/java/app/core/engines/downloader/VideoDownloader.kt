@@ -59,22 +59,22 @@ import java.io.RandomAccessFile
  * Implements [DownloadTaskInf] interface for download task management.
  */
 class VideoDownloader(override val downloadDataModel: DownloadDataModel) : DownloadTaskInf {
-	
+
 	// Configuration from the download model
 	private val downloadDataModelConfig = downloadDataModel.globalSettings
-	
+
 	// Destination file where the download will be saved
 	private var destinationFile = downloadDataModel.getDestinationFile()
-	
+
 	// Timer for retrying downloads when network issues occur
 	private var retryingDownloadTimer: CountDownTimer? = null
-	
+
 	// Listener for download status updates
 	override var statusListener: DownloadTaskListener? = null
-	
+
 	// Flag to track if WebView is currently loading (for cookie extraction)
 	private var isWebViewLoading = false
-	
+
 	/**
 	 * Initiates the download task by performing necessary setup in a background thread.
 	 * - Initializes the download data model.
@@ -88,7 +88,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			updateDownloadStatus()
 		}
 	}
-	
+
 	/**
 	 * Starts the download process.
 	 * - Updates the status to 'preparing'.
@@ -103,7 +103,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		if (isSocialMediaUrl(downloadDataModel.fileURL)) startSocialMediaDownload()
 		else startRegularDownload()
 	}
-	
+
 	/**
 	 * Cancels the ongoing download and updates the status accordingly.
 	 *
@@ -118,7 +118,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			error.printStackTrace()
 		}
 	}
-	
+
 	/**
 	 * Initializes the `downloadDataModel` with default values and resets temporary state.
 	 */
@@ -131,7 +131,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		initBasicDownloadModelInfo()
 		downloadDataModel.updateInStorage()
 	}
-	
+
 	/**
 	 * Starts a repeating timer that periodically checks network availability.
 	 * If waiting for network, it attempts to restart the download every 5 seconds.
@@ -144,14 +144,14 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 						executeInBackground(::restartDownload)
 					}
 				}
-				
+
 				override fun onFinish() {
 					if (downloadDataModel.isWaitingForNetwork) start()
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Applies all necessary configurations to the download model:
 	 * - YTDLP settings
@@ -165,7 +165,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		configureDownloadAutoRemoveSettings()
 		configureDownloadPartRange()
 	}
-	
+
 	/**
 	 * Configures YTDLP-specific settings and prepares the temp file destination path.
 	 * Ensures a valid random filename is created and stored in the internal directory.
@@ -176,28 +176,28 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		if (!downloadDataModel.isSmartCategoryDirProcessed) {
 			updateSmartCatalogDownloadDir(downloadDataModel)
 			renameIfDownloadFileExistsWithSameName(downloadDataModel)
-			
+
 			var randomFileName = sanitizeFileNameExtreme(generateRandomString(10))
 			val internalDirPath = internalDataFolder.getAbsolutePath(INSTANCE)
 			while (File(internalDirPath, randomFileName).exists()) {
 				randomFileName = sanitizeFileNameExtreme(generateRandomString(10))
 			}
-			
+
 			val sanitizedTempName = validateExistedDownloadedFileName(internalDirPath, randomFileName)
 			val ytTempDownloadFile = File(internalDirPath, sanitizedTempName)
-			
+
 			downloadDataModel.tempYtdlpDestinationFilePath = ytTempDownloadFile.absolutePath
 			destinationFile = downloadDataModel.getDestinationFile()
 			downloadDataModel.isSmartCategoryDirProcessed = true
 		}
-		
+
 		downloadDataModel.executionCommand = getYtdlpExecutionCommand(videoFormat)
 		downloadDataModel.isYtdlpHavingProblem = false
 		downloadDataModel.ytdlpProblemMsg = ""
 		downloadDataModel.updateInStorage()
 		println("Ytdlp execution command set to: ${downloadDataModel.executionCommand}")
 	}
-	
+
 	/**
 	 * Extracts the vertical resolution (height in pixels) from a resolution string.
 	 *
@@ -221,16 +221,16 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			// Pattern 4: Standalone number
 			Regex("""^(\d{3,4})$""")
 		)
-		
+
 		for (regex in patterns) {
 			val match = regex.find(resolutionStr) ?: continue
 			// Return the last numeric group (height)
 			return match.groupValues.last { it.isNotEmpty() && it.all(Char::isDigit) }.toIntOrNull()
 		}
-		
+
 		return null
 	}
-	
+
 	/**
 	 * Initializes the download model with basic YTDLP-related values.
 	 *
@@ -248,37 +248,37 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		val videoFormat = downloadDataModel.videoFormat!!
 		val formatResolution = videoFormat.formatResolution.lowercase()
 		val fileExtension: String = (if (formatResolution.contains("audio", false)) "mp3" else "mp4")
-		
+
 		if (videoInfo.videoTitle.isNullOrEmpty()) {
 			val titleFromURL = getVideoTitleFromURL(videoInfo.videoUrl)
 			videoInfo.videoTitle =
 				titleFromURL.ifEmpty(::madeUpTitleFromSelectedVideoFormat)
 		}
-		
+
 		downloadDataModel.fileURL = videoInfo.videoUrl
 		downloadDataModel.siteReferrer = videoInfo.videoUrlReferer ?: videoInfo.videoUrl
 		downloadDataModel.fileName =
 			"${getSanitizedTitle(videoInfo, videoFormat)}" + ".$fileExtension"
-		
+
 		if (!isFileNameValid(downloadDataModel.fileName))
 			downloadDataModel.fileName =
 				"${getSanitizedTitle(videoInfo, videoFormat, true)}" + ".$fileExtension"
-		
+
 		// Set basic model flags and info
 		downloadDataModel.isUnknownFileSize = false
 		downloadDataModel.isMultiThreadSupported = false
 		downloadDataModel.isResumeSupported = true
 		downloadDataModel.globalSettings.downloadDefaultThreadConnections = 1
-		
+
 		// Timestamp
 		System.currentTimeMillis().apply {
 			downloadDataModel.startTimeDate = this
 			downloadDataModel.startTimeDateInFormat = millisToDateTimeString(this)
 		}
-		
+
 		downloadDataModel.isBasicYtdlpModelInitialized = true
 	}
-	
+
 	/**
 	 * Generates a fallback title string using the current video format details.
 	 *
@@ -294,7 +294,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				"${getBaseDomain(downloadDataModel.videoInfo!!.videoUrl)}"
 		return madeUpTitle
 	}
-	
+
 	/**
 	 * Constructs the YTDLP execution command string based on the selected video format.
 	 *
@@ -313,20 +313,22 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				"bestvideo[height<=2400]" +
 						"+bestaudio/best[height<=2400]/best"
 			} else {
-				val commonPattern = "bestvideo[height<=$resolutionNumber]" +
-						"+bestaudio/best[height<=$resolutionNumber]/best"
-				
+				val commonPattern = if (resolutionNumber != null) {
+					"bestvideo[height<=$resolutionNumber]" +
+							"+bestaudio/best[height<=$resolutionNumber]/best"
+				} else "bestvideo+bestaudio/best"
+
 				if (isYouTubeUrl(downloadDataModel.fileURL)) {
 					val isAudio = videoFormat.formatResolution.contains("audio", true)
 					if (isAudio) "bestaudio" else commonPattern
-					
+
 				} else commonPattern
 			}
 		} else {
 			videoFormat.formatId
 		}
 	}
-	
+
 	/**
 	 * Configures auto-resume settings for a download.
 	 * If the smart category processing has not yet been done,
@@ -338,7 +340,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				downloadDataModelConfig.downloadAutoResumeMaxErrors = 0
 		}
 	}
-	
+
 	/**
 	 * Configures auto-remove settings for completed download tasks.
 	 * If the smart category directory has not been processed and auto-remove is disabled,
@@ -350,7 +352,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				downloadDataModelConfig.downloadAutoRemoveTaskAfterNDays = 0
 		}
 	}
-	
+
 	/**
 	 * Initializes the range of download parts based on the number of thread connections.
 	 * Only performed if the smart category directory hasn't already been processed.
@@ -362,7 +364,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			downloadDataModel.partProgressPercentage = IntArray(numberOfThreads)
 		}
 	}
-	
+
 	/**
 	 * Updates the download progress in a synchronized block.
 	 * It performs all necessary steps such as recalculating progress, checking connectivity,
@@ -374,7 +376,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		checkNetworkConnectionAndRetryDownload()
 		updateDownloadStatus()
 	}
-	
+
 	/**
 	 * Updates the status of the download and notifies the registered listener (if any).
 	 *
@@ -392,7 +394,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			statusListener?.onStatusUpdate(classRef)
 		}
 	}
-	
+
 	/**
 	 * Calculates download progress metrics such as bytes downloaded, percentage,
 	 * and time spent, and persists these updates into storage.
@@ -404,14 +406,14 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		updateLastModificationDate()
 		downloadDataModel.updateInStorage()
 	}
-	
+
 	/**
 	 * Checks network connectivity and resumes the download if conditions are favorable.
 	 * It handles waiting state, retries, and calls the download executor if ready.
 	 */
 	private fun checkNetworkConnectionAndRetryDownload() {
 		if (!verifyNetworkConnection()) closeYTDLProgress()
-		
+
 		if (downloadDataModel.isWaitingForNetwork) {
 			if (isNetworkAvailable() && isInternetConnected()) {
 				if (downloadDataModelConfig.downloadWifiOnly && !isWifiEnabled()) return
@@ -421,7 +423,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			}
 		}
 	}
-	
+
 	/**
 	 * Forcefully closes the temporary YTDL progress process related to the current download.
 	 */
@@ -429,7 +431,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		getInstance().destroyProcessById(downloadDataModel.id.toString())
 		println("YTDL progress closed for download task ID: ${downloadDataModel.id}")
 	}
-	
+
 	/**
 	 * Verifies network conditions to determine whether the download can proceed.
 	 *
@@ -439,7 +441,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		val isWifiOnly = downloadDataModelConfig.downloadWifiOnly
 		return !(!isNetworkAvailable() || (isWifiOnly && !isWifiEnabled()))
 	}
-	
+
 	/**
 	 * Calculates the total time spent on downloading, excluding network wait periods,
 	 * and updates the formatted time string in the model.
@@ -447,12 +449,12 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	private fun calculateTotalDownloadedTime() {
 		if (!downloadDataModel.isWaitingForNetwork)
 			downloadDataModel.timeSpentInMilliSec += 500
-		
+
 		val timeSpentMillis = downloadDataModel.timeSpentInMilliSec.toFloat()
 		val format = calculateTime(timeSpentMillis, getText(R.string.text_spent))
 		downloadDataModel.timeSpentInFormat = format
 	}
-	
+
 	/**
 	 * Calculates the total number of bytes downloaded so far and formats the size
 	 * in human-readable format. Also updates the corresponding part progress.
@@ -462,7 +464,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			val ytTempDownloadFile = downloadDataModel.tempYtdlpDestinationFilePath
 			val ytTempFileNamePrefix = File(ytTempDownloadFile).name
 			val internalDir = internalDataFolder
-			
+
 			internalDir.listFiles().filter { file ->
 				file.isFile &&
 						file.name!!.startsWith(ytTempFileNamePrefix) &&
@@ -475,7 +477,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					error.printStackTrace()
 				}
 			}
-			
+
 			val downloadedByte = downloadDataModel.downloadedByte
 			downloadDataModel.downloadedByteInFormat = getHumanReadableFormat(downloadedByte)
 			downloadDataModel.partsDownloadedByte[0] = downloadedByte
@@ -483,7 +485,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			error.printStackTrace()
 		}
 	}
-	
+
 	/**
 	 * Calculates the overall download progress percentage.
 	 * Updates both the numeric percentage and the formatted string.
@@ -497,7 +499,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			error.printStackTrace()
 		}
 	}
-	
+
 	/**
 	 * Updates the download model's last modification timestamp
 	 * and converts it into a formatted date-time string.
@@ -507,7 +509,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		downloadDataModel.lastModifiedTimeDateInFormat =
 			millisToDateTimeString(downloadDataModel.lastModifiedTimeDate)
 	}
-	
+
 	/**
 	 * Creates an empty destination file for the download if it doesn't already exist.
 	 * This file acts as a placeholder and ensures disk access is working correctly.
@@ -528,7 +530,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			}
 		}
 	}
-	
+
 	/**
 	 * Starts the download process for social media content.
 	 * This typically involves checking if the download is initiated from a browser.
@@ -552,7 +554,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			})
 		}
 	}
-	
+
 	/**
 	 * Initiates the standard download procedure, typically used when no browser involvement is needed.
 	 * This method supports retries up to two times, falling back to direct execution on failure.
@@ -568,10 +570,10 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			executeInBackground { executeDownloadProcess() }
 			return
 		}
-		
+
 		updateDownloadStatus(getText(R.string.title_started_downloading), DOWNLOADING)
 		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_getting_cookie)
-		
+
 		Handler(Looper.getMainLooper()).post {
 			val webView = WebView(INSTANCE).apply {
 				settings.javaScriptEnabled = true
@@ -582,14 +584,14 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 							destroy()
 						}
 					}
-					
+
 					@Deprecated("Deprecated in Java")
 					override fun onReceivedError(
 						view: WebView?, errorCode: Int,
 						description: String?, failingUrl: String?
 					) = retryOrFail(retryCount)
 				}
-				
+
 				webChromeClient = object : WebChromeClient() {
 					override fun onReceivedTitle(view: WebView?, title: String?) {
 						super.onReceivedTitle(view, title)
@@ -599,11 +601,11 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 						}
 					}
 				}
-				
+
 				loadUrl(downloadDataModel.fileURL)
 				isWebViewLoading = true
 			}
-			
+
 			Handler(Looper.getMainLooper()).postDelayed({
 				if (isWebViewLoading) {
 					webView.destroy()
@@ -612,7 +614,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			}, 10_000)
 		}
 	}
-	
+
 	/**
 	 * Called when the WebView has finished loading the target page.
 	 * Extracts cookies from the loaded URL and saves them into the data model.
@@ -632,12 +634,12 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				saveCookiesIfAvailable(shouldOverride = true)
 			}
 		}
-		
+
 		executeInBackground {
 			executeDownloadProcess()
 		}
 	}
-	
+
 	/**
 	 * Handles retrying of the WebView-based download initialization.
 	 * If retry count is within limit, restarts the download using the regular path.
@@ -650,7 +652,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			startRegularDownload(currentRetry + 1)
 		}
 	}
-	
+
 	/**
 	 * Executes the actual download command using yt-dlp.
 	 * Builds and runs the YoutubeDLRequest with various custom options.
@@ -659,12 +661,12 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	private fun executeDownloadProcess() {
 		updateDownloadStatus(getText(R.string.title_started_downloading), DOWNLOADING)
 		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_connecting_to_the_server)
-		
+
 		val response: YoutubeDLResponse?
 		try {
 			var lastUpdateTime = System.currentTimeMillis()
 			val request = YoutubeDLRequest(filterYoutubeUrlWithoutPlaylist(downloadDataModel.fileURL))
-			
+
 			// Add standard options
 			request.addOption("--continue")
 			request.addOption("-f", downloadDataModel.executionCommand)
@@ -678,7 +680,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			request.addOption("--no-check-certificate")
 			request.addOption("--force-ipv4")
 			request.addOption("--source-address", "0.0.0.0")
-			
+
 			// Add cookie support if available
 			downloadDataModel.getCookieFilePathIfAvailable()?.let {
 				val cookieFile = File(it)
@@ -687,7 +689,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					request.addOption("--cookies", cookieFile.absolutePath)
 				}
 			}
-			
+
 			// Add download speed throttling if configured
 			if (downloadDataModelConfig.downloadMaxNetworkSpeed > 0) {
 				val downloadMaxNetworkSpeed = downloadDataModelConfig.downloadMaxNetworkSpeed
@@ -697,7 +699,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					println("ytDlpSpeedLimit=$ytDlpSpeedLimit")
 				}
 			}
-			
+
 			// Execute yt-dlp request with progress updates
 			response = getInstance().execute(
 				request = request,
@@ -706,21 +708,21 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				if (progress > 0) downloadDataModel.progressPercentage = progress.toLong()
 				downloadDataModel.tempYtdlpStatusInfo = cleanYtdlpLoggingSting(status)
 				println(downloadDataModel.tempYtdlpStatusInfo)
-				
+
 				val currentTime = System.currentTimeMillis()
 				if (currentTime - lastUpdateTime >= 500) {
 					lastUpdateTime = currentTime
 					updateDownloadProgress()
 				}
 			}
-			
+
 			// Handle yt-dlp completion or failure
 			if (response.exitCode != 0) onYtdlpDownloadFailed(response.out) else {
 				moveToUserSelectedDestination()
-				
+
 				if (downloadDataModelConfig.downloadPlayNotificationSound)
 					AudioPlayerUtils(INSTANCE).play(R.raw.sound_download_finished)
-				
+
 				downloadDataModel.isRunning = false
 				downloadDataModel.isComplete = true
 				updateDownloadStatus(getText(R.string.text_completed), COMPLETE)
@@ -729,7 +731,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			}
 		} catch (error: Exception) {
 			error.printStackTrace()
-			
+
 			if (isRetryingAllowed()) {
 				onYtdlpDownloadFailed(error.message)
 			} else {
@@ -738,7 +740,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			}
 		}
 	}
-	
+
 	/**
 	 * Handles various failure scenarios of yt-dlp.
 	 * Parses the output to detect critical issues and decides whether to cancel or retry.
@@ -755,12 +757,12 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					cancelDownload(pausedMsg)
 					return@executeInBackground
 				}
-				
+
 				if (downloadDataModel.isFileUrlExpired) {
 					cancelDownload(getText(R.string.title_link_expired))
 					return@executeInBackground
 				}
-				
+
 				if (downloadDataModel.isDestinationFileNotExisted) {
 					cancelDownload(getText(R.string.title_file_deleted_paused))
 					return@executeInBackground
@@ -768,19 +770,19 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			} else if (!response.isNullOrEmpty()) {
 				updateDownloadStatus(getText(R.string.title_download_failed))
 				cancelDownload(getText(R.string.title_download_failed))
-				
+
 			} else {
 				restartDownload()
 				retryingDownloadTimer?.start()
 			}
-			
+
 			downloadDataModel.updateInStorage()
 			if (!downloadDataModel.isRemoved && downloadDataModel.isDeleted) {
 				if (destinationFile.exists()) destinationFile.delete()
 			}
 		})
 	}
-	
+
 	/**
 	 * Checks if the download has failed due to any critical issues.
 	 * Updates appropriate flags in the downloadDataModel and persists the state.
@@ -798,20 +800,20 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			downloadDataModel.updateInStorage()
 			return true
 		}
-		
+
 		if (isUrlExpired(downloadDataModel.fileURL)) {
 			downloadDataModel.isFileUrlExpired = true
 			return true
 		}
-		
+
 		if (!destinationFile.exists()) {
 			downloadDataModel.isDestinationFileNotExisted = true
 			return true
 		}
-		
+
 		return false
 	}
-	
+
 	/**
 	 * Identifies if the given yt-dlp response contains any known fatal issues.
 	 * Sets a human-readable message to `ytdlpProblemMsg` accordingly.
@@ -839,7 +841,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			)
 		}
 	}
-	
+
 	/**
 	 * Attempts to restart the download based on current network conditions and retry limits.
 	 * Updates download status accordingly or resumes the download if network is available.
@@ -852,32 +854,32 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				println("Network not available. Waiting for network.")
 				return
 			}
-			
+
 			if (downloadDataModelConfig.downloadWifiOnly && !isWifiEnabled()) {
 				downloadDataModel.isWaitingForNetwork = true
 				updateDownloadStatus(getText(R.string.text_waiting_for_wifi))
 				println("Wi-Fi is not enabled. Waiting for Wi-Fi.")
 				return
 			}
-			
+
 			if (!isInternetConnected()) {
 				downloadDataModel.isWaitingForNetwork = true
 				updateDownloadStatus(getText(R.string.text_waiting_for_internet))
 				println("Internet connection is not available. Waiting for internet.")
 				return
 			}
-			
+
 			if (downloadDataModel.isWaitingForNetwork) {
 				downloadDataModel.isWaitingForNetwork = false
 				updateDownloadStatus(getText(R.string.title_started_downloading))
 				println("Network or Wi-Fi is now available. Restarting download.")
 				executeDownloadProcess()
 			}
-			
+
 			downloadDataModel.totalConnectionRetries++
 		}
 	}
-	
+
 	/**
 	 * Determines whether the download should be retried based on retry count and status.
 	 *
@@ -889,7 +891,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				downloadDataModel.totalConnectionRetries < maxErrorAllowed
 		return retryAllowed
 	}
-	
+
 	/**
 	 * Moves the downloaded temporary file to the user-selected destination.
 	 * Handles overwrites and updates related metadata fields.
@@ -899,25 +901,25 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			internalDir = File(internalDataFolder.getAbsolutePath(INSTANCE)),
 			namePrefix = File(downloadDataModel.tempYtdlpDestinationFilePath).name
 		)
-		
+
 		inputFile?.let {
 			try {
 				val outputFile = downloadDataModel.getDestinationFile()
 				it.copyTo(outputFile, overwrite = true)
 				it.delete()
-				
+
 				downloadDataModel.fileSize = outputFile.length()
 				downloadDataModel.fileSizeInFormat =
 					getHumanReadableFormat(downloadDataModel.fileSize)
-				
+
 				downloadDataModel.downloadedByte = downloadDataModel.fileSize
 				downloadDataModel.downloadedByteInFormat =
 					getHumanReadableFormat(downloadDataModel.downloadedByte)
-				
+
 				downloadDataModel.progressPercentage = 100
 				downloadDataModel.partsDownloadedByte[0] = downloadDataModel.downloadedByte
 				downloadDataModel.partProgressPercentage[0] = 100
-				
+
 			} catch (error: Exception) {
 				error.printStackTrace()
 				val outputFile = downloadDataModel.getDestinationFile()
@@ -930,7 +932,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			}
 		}
 	}
-	
+
 	/**
 	 * Copies the specified file to the user's selected download location.
 	 * Also deletes the cookie temp file if available and updates model metadata.
@@ -941,7 +943,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		val outputFile = downloadDataModel.getDestinationFile()
 		it.copyTo(outputFile, overwrite = true)
 		it.delete()
-		
+
 		downloadDataModel.fileSize = outputFile.length()
 		downloadDataModel.clearCachedThumbnailFile()
 		downloadDataModel.mediaFilePlaybackDuration = getAudioPlaybackTimeIfAvailable(downloadDataModel)
@@ -950,5 +952,5 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			if (tempCookieFile.isFile && tempCookieFile.exists()) tempCookieFile.delete()
 		}; downloadDataModel.updateInStorage()
 	}
-	
+
 }

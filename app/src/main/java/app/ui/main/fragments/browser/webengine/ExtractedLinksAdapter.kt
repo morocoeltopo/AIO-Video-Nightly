@@ -41,17 +41,11 @@ class ExtractedLinksAdapter(
     /** Reference to the safe [MotherActivity] from the WebViewEngine. */
     private val safeMotherActivityRef = WeakReference(webviewEngine.safeMotherActivityRef).get()
 
-    override fun getCount(): Int {
-        return listOfVideoUrlInfos.size
-    }
+    override fun getCount(): Int = listOfVideoUrlInfos.size
 
-    override fun getItem(position: Int): VideoUrlInfo {
-        return listOfVideoUrlInfos[position]
-    }
+    override fun getItem(position: Int): VideoUrlInfo = listOfVideoUrlInfos[position]
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+    override fun getItemId(position: Int): Long = position.toLong()
 
     /**
      * Binds view for each video item in the list.
@@ -79,7 +73,9 @@ class ExtractedLinksAdapter(
                 updateView(extractedVideoLink)
                 itemLayout.tag = this
             }
-        } else itemLayout.tag as ViewHolder
+        } else {
+            itemLayout.tag as ViewHolder
+        }
 
         return itemLayout
     }
@@ -140,34 +136,31 @@ class ExtractedLinksAdapter(
                     }
 
                     m3U8InfoExtractor.extractResolutions(
-                        videoUrlInfo.fileUrl,
-                        object : InfoCallback {
-                            override fun onResolutions(resolutions: List<String>) {
-                                closeAnyAnimation(linkItemInfo)
-                                if (resolutions.size > 1) {
-                                    val stringResId =
-                                        R.string.type_video_type_m3u8_available_resolutions
-                                    val infoText =
-                                        motherActivity.getString(stringResId, "${resolutions.size}")
-                                    linkItemInfo.text = infoText
-                                } else {
-                                    val stringResId = R.string.text_video_type_m3u8_resolution
-                                    val infoText =
-                                        motherActivity.getString(stringResId, resolutions[0])
-                                    linkItemInfo.text = infoText
-                                }
+						m3u8Url = videoUrlInfo.fileUrl,
+						callback = object : InfoCallback {
+							override fun onResolutions(resolutions: List<String>) {
+								closeAnyAnimation(linkItemInfo)
+								if (resolutions.size > 1) {
+									val stringResId = R.string.type_video_type_m3u8_available_resolutions
+									val infoText = motherActivity.getString(stringResId, "${resolutions.size}")
+									linkItemInfo.text = infoText
+								} else {
+									val stringResId = R.string.text_video_type_m3u8_resolution
+									val infoText = motherActivity.getString(stringResId, resolutions[0])
+									linkItemInfo.text = infoText
+								}
 
-                                textLinkItemInfo = linkItemInfo.text.toString()
-                                videoUrlInfo.infoCached = textLinkItemInfo
-                                videoUrlInfo.fileResolution = resolutions[0]
-                                videoUrlInfo.totalResolutions = resolutions.size
-                                videoUrlInfo.isM3U8 = true
-                            }
+								textLinkItemInfo = linkItemInfo.text.toString()
+								videoUrlInfo.infoCached = textLinkItemInfo
+								videoUrlInfo.fileResolution = resolutions[0]
+								videoUrlInfo.totalResolutions = resolutions.size
+								videoUrlInfo.isM3U8 = true
+							}
 
-                            override fun onError(errorMessage: String) {
-                                layoutView.visibility = GONE
-                            }
-                        })
+							override fun onError(errorMessage: String) {
+								layoutView.visibility = GONE
+							}
+						})
                 })
             }
         }
