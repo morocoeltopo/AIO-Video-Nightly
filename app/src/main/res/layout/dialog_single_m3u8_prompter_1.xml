@@ -75,7 +75,7 @@
 						android:layout_height="wrap_content"
 						android:layout_marginStart="@dimen/_5"
 						android:layout_marginBottom="@dimen/_3"
-						android:layout_toStartOf="@+id/img_url_favicon"
+						android:layout_toStartOf="@+id/img_open_options"
 						android:ellipsize="marquee"
 						android:focusable="true"
 						android:focusableInTouchMode="true"
@@ -92,7 +92,7 @@
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
 						android:layout_below="@+id/txt_video_title"
-						android:layout_toStartOf="@+id/img_url_favicon"
+						android:layout_toStartOf="@+id/img_open_options"
 						android:alpha="0.5"
 						android:background="@drawable/rounded_transparent_white_f5"
 						android:orientation="vertical">
@@ -116,7 +116,7 @@
 					</LinearLayout>
 
 					<ImageView
-						android:id="@+id/img_url_favicon"
+						android:id="@+id/img_open_options"
 						android:layout_width="@dimen/_30"
 						android:layout_height="@dimen/_30"
 						android:layout_alignParentEnd="true"
@@ -126,7 +126,7 @@
 						android:adjustViewBounds="true"
 						android:importantForAccessibility="no"
 						android:scaleType="fitCenter"
-						android:src="@drawable/ic_button_open_v2"
+						android:src="@drawable/ic_button_edit_text"
 						android:tint="@color/color_on_secondary"
 						android:visibility="visible"
 						tools:ignore="ImageContrastCheck" />
