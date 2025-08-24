@@ -88,6 +88,7 @@ class BookmarkOptionPopup(
 	private fun initializePopupButtons(popupView: View?) {
 		popupView?.apply {
 			mapOf(
+				R.id.btn_edit_bookmark to ::editBookmarkInfo,
 				R.id.btn_open_bookmark to ::openBookmarkInBrowser,
 				R.id.btn_share_bookmark to ::shareBookmarkLink,
 				R.id.btn_copy_bookmark to ::copyBookmarkInClipboard,
@@ -105,6 +106,27 @@ class BookmarkOptionPopup(
 		action?.invoke()
 		cleanup()
 		logger.d("Popup cleaned up after action")
+	}
+
+	private fun editBookmarkInfo() {
+		safeBookmarksActivityRef?.let { activity ->
+			try {
+				UpdateBookmarkDialog(
+					bookmarkActivity = activity,
+					onApply = { result ->
+						if (result) {
+							activity.updateBookmarkListAdapter()
+							showToast(msgId = R.string.title_successful)
+						} else {
+							activity.doSomeVibration(50)
+							showToast(msgId = R.string.text_something_went_wrong)
+						}
+					}).show(bookmarkModel)
+			} catch (error: Exception) {
+				activity.doSomeVibration(50)
+				showToast(msgId = R.string.text_something_went_wrong)
+			}
+		}
 	}
 
 	/** Copies bookmark URL to clipboard */

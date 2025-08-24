@@ -193,6 +193,7 @@ class BookmarksActivity : BaseActivity(),
 	override fun onBookmarkClick(bookmarkModel: BookmarkModel) {
 		logger.d("Bookmark clicked: Preparing to open URL - ${bookmarkModel.bookmarkUrl}")
 		openBookmarkInBrowser(bookmarkModel)
+		closeActivityWithFadeAnimation(shouldAnimate = true)
 	}
 
 	/**
@@ -210,6 +211,7 @@ class BookmarksActivity : BaseActivity(),
 		logger.d("Bookmark long-clicked at position $position: Showing options menu")
 		safeBookmarksActivityRef?.let { safeBookmarkActivityRef ->
 			try {
+				safeBookmarkActivityRef.doSomeVibration(50)
 				bookmarkOptionPopup = BookmarkOptionPopup(
 					bookmarksActivity = safeBookmarkActivityRef,
 					bookmarkModel = bookmarkModel,
@@ -427,7 +429,14 @@ class BookmarksActivity : BaseActivity(),
 	fun updateBookmarkListAdapter() {
 		logger.d("Refreshing bookmark list adapter with current data")
 		bookmarksAdapter.resetBookmarkAdapter()
-		bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
+		if (containerSearchLayout.isVisible) {
+			val enteredSearchTerms = editTextSearchField.text.toString()
+			if (enteredSearchTerms.isNotEmpty()) {
+				bookmarksAdapter.loadMoreBookmarks(enteredSearchTerms)
+			}
+		} else {
+			bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
+		}
 	}
 
 	/**
@@ -439,7 +448,6 @@ class BookmarksActivity : BaseActivity(),
 	private fun openBookmarkInBrowser(bookmarkModel: BookmarkModel) {
 		logger.d("Opening bookmark in browser: ${bookmarkModel.bookmarkUrl}")
 		sendResultBackToBrowserFragment(bookmarkModel.bookmarkUrl)
-		onBackPressActivity()
 	}
 
 	/**

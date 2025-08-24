@@ -13,6 +13,7 @@ import app.core.AIOApp.Companion.INSTANCE
 import com.aio.R.id
 import com.aio.R.layout
 import lib.networks.URLUtility.isValidURL
+import lib.texts.CommonTextUtils.getText
 import java.lang.ref.WeakReference
 
 /**
@@ -61,8 +62,8 @@ class ToastView(context: Context) : Toast(context) {
 		 * @param msgId The resource ID of the message string.
 		 */
 		private fun showResourceToast(msgId: Int) {
-			val message = INSTANCE.getText(msgId)
-			if (isValidURL(message.toString())) return
+			val message = getText(msgId)
+			if (isValidURL(message)) return
 			makeText(INSTANCE, message).show()
 		}
 		
