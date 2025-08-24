@@ -18,16 +18,20 @@ import lib.ui.builders.ToastView.Companion.showToast
 import java.lang.ref.WeakReference
 
 /**
- * [BookmarkOptionPopup] provides a contextual popup menu for bookmark items.
+ * [BookmarkOptionPopup] provides a contextual popup menu for managing bookmark entries.
  *
- * The popup allows the user to:
+ * This popup allows the user to:
+ * - Edit the bookmark (change name or URL)
  * - Open the bookmark in the browser
- * - Share the bookmark link
- * - Copy the bookmark URL to clipboard
+ * - Share the bookmark link with others
+ * - Copy the bookmark URL to the clipboard
  * - Delete the bookmark from the library
  *
- * This class also observes the lifecycle of the parent activity to ensure
- * proper cleanup of resources when destroyed.
+ * Implementation details:
+ * - Uses [PopupBuilder] to build the popup menu UI.
+ * - Holds [WeakReference]s to avoid leaking the activity and list view.
+ * - Observes lifecycle via [DefaultLifecycleObserver] for automatic cleanup.
+ * - Provides debug logging via [LogHelperUtils].
  */
 class BookmarkOptionPopup(
 	private val bookmarksActivity: BookmarksActivity,
@@ -37,40 +41,47 @@ class BookmarkOptionPopup(
 
 	private val logger = LogHelperUtils.from(javaClass)
 
-	/** Weak reference to the activity hosting the bookmarks */
+	/** Weak reference to the parent activity hosting the bookmarks */
 	private val safeBookmarksActivityRef = WeakReference(bookmarksActivity).get()
 
-	/** Weak reference to the bookmark list view item */
+	/** Weak reference to the bookmark list item view */
 	private val safeBookmarkListViewRef = WeakReference(listView).get()
 
 	/** Holds the popup builder instance */
 	private var popupBuilder: PopupBuilder? = null
 
 	init {
+		// Attach lifecycle observer to clean resources when activity is destroyed
 		safeBookmarksActivityRef?.lifecycle?.addObserver(this)
+
+		// Initialize the popup UI
 		initializePopup()
+
 		logger.d("BookmarkOptionPopup initialized for: ${bookmarkModel.bookmarkUrl}")
 	}
 
-	/** Show the popup menu */
+	/** Displays the popup menu */
 	fun show() {
 		popupBuilder?.show()
 		logger.d("Popup shown for bookmark: ${bookmarkModel.bookmarkUrl}")
 	}
 
-	/** Close the popup menu */
+	/** Hides the popup menu */
 	fun close() {
 		popupBuilder?.close()
 		logger.d("Popup closed for bookmark: ${bookmarkModel.bookmarkUrl}")
 	}
 
-	/** Cleanup when lifecycle owner is destroyed */
+	/** Cleans up when the lifecycle owner is destroyed */
 	override fun onDestroy(owner: LifecycleOwner) {
 		logger.d("Lifecycle destroyed, cleaning up popup resources")
 		cleanup()
 	}
 
-	/** Initializes the popup UI and attaches it to the bookmark item */
+	/**
+	 * Initializes the popup UI and binds it to the bookmark item.
+	 * Uses [PopupBuilder] with a predefined layout and anchor view.
+	 */
 	private fun initializePopup() {
 		safeBookmarksActivityRef?.let { activityRef ->
 			safeBookmarkListViewRef?.let { listViewRef ->
@@ -78,13 +89,18 @@ class BookmarkOptionPopup(
 					activityInf = activityRef,
 					popupLayoutId = R.layout.activity_bookmarks_1_option_1,
 					popupAnchorView = listViewRef.findViewById(R.id.bookmark_url_open_indicator)
-				).apply { initializePopupButtons(getPopupView()) }
+				).apply {
+					initializePopupButtons(getPopupView())
+				}
 				logger.d("Popup initialized for bookmark: ${bookmarkModel.bookmarkUrl}")
 			}
 		}
 	}
 
-	/** Configures popup buttons with their corresponding click actions */
+	/**
+	 * Configures popup buttons with their respective actions:
+	 * - Edit, Open, Share, Copy, Delete
+	 */
 	private fun initializePopupButtons(popupView: View?) {
 		popupView?.apply {
 			mapOf(
@@ -94,20 +110,30 @@ class BookmarkOptionPopup(
 				R.id.btn_copy_bookmark to ::copyBookmarkInClipboard,
 				R.id.btn_delete_bookmark to ::deleteBookmarkFromLibrary
 			).forEach { (id, action) ->
-				findViewById<View>(id).setOnClickListener { closeAndCleanup { action() } }
+				findViewById<View>(id).setOnClickListener {
+					logger.d("Button clicked: $id for bookmark: ${bookmarkModel.bookmarkUrl}")
+					closeAndCleanup { action() }
+				}
 			}
-			logger.d("Popup buttons initialized")
+			logger.d("Popup buttons initialized for bookmark: ${bookmarkModel.bookmarkUrl}")
 		}
 	}
 
-	/** Helper to close popup, perform action, and cleanup */
+	/**
+	 * Helper to close popup, execute an action, and perform cleanup.
+	 */
 	private fun closeAndCleanup(action: (() -> Unit)? = null) {
+		logger.d("Closing popup for bookmark: ${bookmarkModel.bookmarkUrl}")
 		close()
 		action?.invoke()
 		cleanup()
-		logger.d("Popup cleaned up after action")
+		logger.d("Popup closed and cleaned after action for: ${bookmarkModel.bookmarkUrl}")
 	}
 
+	/**
+	 * Opens a dialog to edit bookmark details (URL or name).
+	 * Updates the bookmark list if changes are successfully applied.
+	 */
 	private fun editBookmarkInfo() {
 		safeBookmarksActivityRef?.let { activity ->
 			try {
@@ -117,19 +143,24 @@ class BookmarkOptionPopup(
 						if (result) {
 							activity.updateBookmarkListAdapter()
 							showToast(msgId = R.string.title_successful)
+							logger.d("Bookmark updated successfully: ${bookmarkModel.bookmarkUrl}")
 						} else {
 							activity.doSomeVibration(50)
 							showToast(msgId = R.string.text_something_went_wrong)
+							logger.d("Bookmark update failed for: ${bookmarkModel.bookmarkUrl}")
 						}
 					}).show(bookmarkModel)
 			} catch (error: Exception) {
 				activity.doSomeVibration(50)
 				showToast(msgId = R.string.text_something_went_wrong)
+				logger.d("Exception while editing bookmark: ${error.message}")
 			}
 		}
 	}
 
-	/** Copies bookmark URL to clipboard */
+	/**
+	 * Copies the bookmark URL into the system clipboard.
+	 */
 	private fun copyBookmarkInClipboard() {
 		safeBookmarksActivityRef?.let { activity ->
 			copyTextToClipboard(activity, bookmarkModel.bookmarkUrl)
@@ -138,13 +169,17 @@ class BookmarkOptionPopup(
 		}
 	}
 
-	/** Opens the bookmark in the browser */
+	/**
+	 * Opens the bookmark in the default browser.
+	 */
 	private fun openBookmarkInBrowser() {
 		safeBookmarksActivityRef?.onBookmarkClick(bookmarkModel)
 		logger.d("Opened bookmark in browser: ${bookmarkModel.bookmarkUrl}")
 	}
 
-	/** Deletes the bookmark from the library */
+	/**
+	 * Deletes the bookmark from the library and updates storage.
+	 */
 	private fun deleteBookmarkFromLibrary() {
 		safeBookmarksActivityRef?.let { safeMotherActivityRef ->
 			try {
@@ -161,7 +196,9 @@ class BookmarkOptionPopup(
 		}
 	}
 
-	/** Shares the bookmark link via system share intent */
+	/**
+	 * Shares the bookmark URL using a system share intent.
+	 */
 	private fun shareBookmarkLink() {
 		safeBookmarksActivityRef?.let { safeMotherActivityRef ->
 			try {
@@ -184,9 +221,11 @@ class BookmarkOptionPopup(
 		}
 	}
 
-	/** Cleans up popup resources */
+	/**
+	 * Cleans up popup resources by releasing references.
+	 */
 	private fun cleanup() {
 		popupBuilder = null
-		logger.d("Popup resources cleaned up")
+		logger.d("Popup resources cleaned up for bookmark: ${bookmarkModel.bookmarkUrl}")
 	}
 }
