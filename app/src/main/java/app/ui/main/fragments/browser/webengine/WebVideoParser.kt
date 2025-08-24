@@ -10,12 +10,10 @@ import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrlPattern
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
-import app.core.engines.video_parser.parsers.VideoThumbGrabber.getCurrentOgImage
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
 import app.ui.main.fragments.downloads.intercepter.SharedVideoURLIntercept
 import com.aio.R
 import com.airbnb.lottie.LottieAnimationView
-import lib.networks.URLUtilityKT.extractHostUrl
 import lib.networks.URLUtilityKT.isHostOnly
 import lib.process.AsyncJobUtils
 import lib.process.ThreadsUtility
@@ -55,17 +53,8 @@ object WebVideoParser {
 		// Handle YTDLP supported URLs
 		if (isYtdlpSupportedUrl(webpageUrl) && !isHostOnly(webpageUrl)) {
 			ThreadsUtility.executeInBackground(codeBlock = {
-				val isYoutubeMusicPage = extractHostUrl(webpageUrl).contains("music.youtube", true)
-
-				var thumbnailUrl: String? = null
-				webviewEngine.currentWebView?.getCurrentOgImage { thumbnailUrl = it ?: "" }
-				if (thumbnailUrl.isNullOrEmpty()) thumbnailUrl =
-					startParsingVideoThumbUrl(webpageUrl)
-
-				if (!thumbnailUrl.isNullOrEmpty() ||
-					isYoutubeMusicPage ||
-					isYtdlpSupportedUrlPattern(webpageUrl)
-				) {
+				val thumbnailUrl = startParsingVideoThumbUrl(webpageUrl)
+				if (!thumbnailUrl.isNullOrEmpty() || isYtdlpSupportedUrlPattern(webpageUrl)) {
 					ThreadsUtility.executeOnMain {
 						videoGrabberButton.setAnimation(R.raw.animation_videos_found)
 
@@ -84,9 +73,10 @@ object WebVideoParser {
 								).show()
 							} else {
 								val userGivenVideoInfo = VideoInfo(
-									videoTitle = if (isYoutubeMusicPage) webviewEngine.currentWebView?.title else null,
+									videoTitle = if (isYtdlpSupportedUrlPattern(webpageUrl))
+										webviewEngine.currentWebView?.title else null,
 									videoUrlReferer = webpageUrl,
-									videoThumbnailUrl = thumbnailUrl,
+									videoThumbnailUrl = thumbnailUrl?.ifEmpty { null },
 									videoCookie = webviewEngine.getCurrentWebViewCookies()
 								)
 								val baseActivity = webviewEngine.safeMotherActivityRef
