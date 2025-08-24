@@ -14,7 +14,6 @@ import app.core.engines.caches.AIOAdBlocker
 import app.core.engines.caches.AIOFavicons
 import app.core.engines.caches.AIORawFiles
 import app.core.engines.downloader.DownloadSystem
-import app.core.engines.services.AIOForegroundService
 import app.core.engines.settings.AIOSettings
 import app.core.engines.video_parser.parsers.YoutubeVidParser
 import com.aio.BuildConfig
@@ -79,9 +78,6 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 		val aioLanguage: AIOLanguage by lazy { AIOLanguage() }
 		val aioGSONInstance: Gson by lazy { GsonBuilder().setStrictness(LENIENT).create() }
-
-		// Persistent background service
-		val idleForegroundService by lazy { AIOForegroundService().apply { updateService() } }
 
 		// Download engines & manager
 		val downloadSystem: DownloadSystem by lazy { DownloadSystem() }

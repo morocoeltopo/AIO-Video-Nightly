@@ -3,7 +3,6 @@ package app.core.engines.services
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import app.core.AIOApp
 
 /**
  * RestartIdleServiceReceiver is a BroadcastReceiver that listens for system or app-specific
@@ -25,6 +24,6 @@ class RestartIdleServiceReceiver : BroadcastReceiver() {
 	 */
 	override fun onReceive(context: Context, intent: Intent) {
 		// Trigger an update or restart of the idle foreground service
-		AIOApp.idleForegroundService.updateService()
+		AIOForegroundService.updateService()
 	}
 }

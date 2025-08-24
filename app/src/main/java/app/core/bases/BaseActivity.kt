@@ -50,13 +50,13 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioAdblocker
 import app.core.AIOApp.Companion.aioLanguage
 import app.core.AIOApp.Companion.aioSettings
-import app.core.AIOApp.Companion.idleForegroundService
 import app.core.CrashHandler
 import app.core.bases.dialogs.UpdaterDialog
 import app.core.bases.interfaces.BaseActivityInf
 import app.core.bases.interfaces.PermissionsResult
 import app.core.bases.language.LanguageAwareActivity
 import app.core.engines.backend.AIOSelfDestruct.shouldSelfDestructApplication
+import app.core.engines.services.AIOForegroundService
 import app.core.engines.updater.AIOUpdater
 import app.ui.main.MotherActivity
 import app.ui.others.startup.OpeningActivity
@@ -188,7 +188,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			requestForPermissionIfRequired()
 
 			// Update foreground service state
-			idleForegroundService.updateService()
+			AIOForegroundService.updateService()
 
 			// Validate user selected folder
 			aioSettings.validateUserSelectedFolder()
@@ -221,7 +221,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		super.onDestroy()
 		isActivityRunning = false
 		// Cancel any ongoing vibration
-		vibrator.cancel()
+		if (vibrator.hasVibrator()) vibrator.cancel()
 	}
 
 	/**

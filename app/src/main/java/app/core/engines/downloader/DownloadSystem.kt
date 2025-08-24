@@ -3,11 +3,11 @@ package app.core.engines.downloader
 import app.core.AIOApp.Companion.aioBackend
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.aioTimer
-import app.core.AIOApp.Companion.idleForegroundService
 import app.core.AIOTimer.AIOTimerListener
 import app.core.engines.downloader.DownloadStatus.CLOSE
 import app.core.engines.downloader.DownloadStatus.COMPLETE
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
+import app.core.engines.services.AIOForegroundService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -64,7 +64,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	override fun onAIOTimerTick(loopCount: Double) {
 		CoroutineScope(Dispatchers.IO).launch {
 			startPendingTasksFromWaitingList()
-			idleForegroundService.updateService()
+			AIOForegroundService.updateService()
 		}
 	}
 

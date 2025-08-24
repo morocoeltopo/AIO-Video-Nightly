@@ -29,12 +29,13 @@ public class AIOForegroundService extends Service {
 
     private Notification notification;
     private boolean isServiceRunning = false;
-    private static AIOForegroundService instance;
+    @Nullable private static AIOForegroundService instance;
 
     /**
      * Returns the current instance of the service.
      * @return singleton instance of AIOForegroundService, or null if not yet initialized.
      */
+    @Nullable
     public static AIOForegroundService getInstance() {
         return instance;
     }
@@ -96,25 +97,13 @@ public class AIOForegroundService extends Service {
     /**
      * Starts the service only if it is not already running.
      */
-    public void updateService() {
+    public static void updateService() {
         try {
-            if (!isServiceRunning) {
-                isServiceRunning = true;
-                Intent service = new Intent(INSTANCE, AIOForegroundService.class);
-                INSTANCE.startForegroundService(service);
-            }
+            Intent serviceIntent = new Intent(INSTANCE, AIOForegroundService.class);
+            INSTANCE.startForegroundService(serviceIntent);
         } catch (Exception err) {
             err.printStackTrace();
         }
-    }
-
-    /**
-     * Forcefully starts the service even if it's already running.
-     */
-    public void forceStartService() {
-        Intent serviceIntent = new Intent(INSTANCE, AIOForegroundService.class);
-        INSTANCE.startForegroundService(serviceIntent);
-        isServiceRunning = true;
     }
 
     /**
