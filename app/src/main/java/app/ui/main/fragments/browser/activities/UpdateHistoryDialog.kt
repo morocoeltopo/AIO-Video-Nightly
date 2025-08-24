@@ -12,6 +12,12 @@ import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
 import java.lang.ref.WeakReference
 
+/**
+ * Dialog for updating an existing browser history entry (title & URL).
+ *
+ * This class shows a dialog with editable fields, validates input,
+ * and applies changes to the given [HistoryModel].
+ */
 class UpdateHistoryDialog(
 	private val historyActivity: HistoryActivity,
 	private val onApply: (Boolean) -> Unit = {}
@@ -22,7 +28,7 @@ class UpdateHistoryDialog(
 	private val safeHistoryActivity = WeakReference(historyActivity).get()
 	private var historyModel: HistoryModel? = null
 
-	/** Lazily created dialog with input fields for editing bookmark name & URL */
+	/** Lazily created dialog with input fields for editing history title & URL */
 	private val dialog by lazy {
 		DialogBuilder(safeHistoryActivity).apply {
 			setView(R.layout.dialog_browser_history_edit_1)
@@ -34,13 +40,13 @@ class UpdateHistoryDialog(
 
 				// Request focus for URL input field
 				findViewById<View>(R.id.container_edit_field_url).setOnClickListener {
-					logger.d("URL container clicked, requesting focus.")
+					logger.d("URL field container clicked, requesting focus.")
 					requestFocusOnEditTextField(editFieldUrl)
 				}
 
 				// Request focus for Name input field
 				findViewById<View>(R.id.container_edit_field_name).setOnClickListener {
-					logger.d("Name container clicked, requesting focus.")
+					logger.d("Name field container clicked, requesting focus.")
 					requestFocusOnEditTextField(editFieldName)
 				}
 
@@ -50,7 +56,7 @@ class UpdateHistoryDialog(
 
 					val enteredHistoryName = editFieldName.text.toString()
 					if (enteredHistoryName.isEmpty()) {
-						logger.d("Validation failed: bookmark name is empty.")
+						logger.d("Validation failed: history title is empty.")
 						safeHistoryActivity?.doSomeVibration(50)
 						showToast(msgId = R.string.text_bookmark_name_can_not_be_empty)
 						return@setOnClickListener
@@ -58,21 +64,21 @@ class UpdateHistoryDialog(
 
 					val enteredHistoryUrl = editFieldUrl.text.toString()
 					if (enteredHistoryUrl.isEmpty()) {
-						logger.d("Validation failed: bookmark URL is empty.")
+						logger.d("Validation failed: history URL is empty.")
 						safeHistoryActivity?.doSomeVibration(50)
 						showToast(msgId = R.string.text_bookmark_url_can_not_be_empty)
 						return@setOnClickListener
 					}
 
 					if (!isValidURL(enteredHistoryUrl)) {
-						logger.d("Validation failed: invalid bookmark URL = $enteredHistoryUrl")
+						logger.d("Validation failed: invalid history URL = $enteredHistoryUrl")
 						safeHistoryActivity?.doSomeVibration(50)
 						showToast(msgId = R.string.text_bookmark_url_not_valid)
 						return@setOnClickListener
 					}
 
-					// Apply changes to the bookmark model
-					logger.d("Updating bookmark: name='$enteredHistoryName', url='$enteredHistoryUrl'")
+					// Apply changes to the history model
+					logger.d("Updating history entry: title='$enteredHistoryName', url='$enteredHistoryUrl'")
 					historyModel?.historyTitle = enteredHistoryName
 					historyModel?.historyUrl = enteredHistoryUrl
 					aioBookmark.updateInStorage()
@@ -86,32 +92,32 @@ class UpdateHistoryDialog(
 	}
 
 	/**
-	 * Requests focus and shows keyboard for the given EditText field.
+	 * Requests focus and shows the keyboard for the given EditText field.
 	 */
-	private fun requestFocusOnEditTextField(editFieldUrl: EditText?) {
-		logger.d("Requesting focus on EditText field: $editFieldUrl")
-		editFieldUrl?.focusable
-		editFieldUrl?.selectAll()
-		showOnScreenKeyboard(safeHistoryActivity, editFieldUrl)
+	private fun requestFocusOnEditTextField(editField: EditText?) {
+		logger.d("Requesting focus on EditText field: $editField")
+		editField?.focusable
+		editField?.selectAll()
+		showOnScreenKeyboard(safeHistoryActivity, editField)
 	}
 
 	/**
-	 * Displays the dialog for editing a given bookmark.
+	 * Displays the dialog for editing a given history entry.
 	 *
-	 * @param historyModel The bookmark to edit.
+	 * @param historyModel The history entry to edit.
 	 */
 	fun show(historyModel: HistoryModel) {
 		try {
-			logger.d("Preparing to show UpdateBookmarkDialog for: ${historyModel.historyUrl}")
-			setBookmarkModel(historyModel)
+			logger.d("Preparing to show UpdateHistoryDialog for: ${historyModel.historyUrl}")
+			setHistoryModel(historyModel)
 			if (dialog.isShowing == false &&
 				safeHistoryActivity?.isActivityRunning() == true
 			) {
-				logger.d("Showing UpdateBookmarkDialog.")
+				logger.d("Showing UpdateHistoryDialog.")
 				dialog.show()
 			}
 		} catch (error: Exception) {
-			logger.e("Can't show Bookmark Update Dialog:", error)
+			logger.e("Can't show History Update Dialog:", error)
 			safeHistoryActivity?.doSomeVibration(50)
 			showToast(msgId = R.string.text_something_went_wrong)
 		}
@@ -125,23 +131,23 @@ class UpdateHistoryDialog(
 			if (dialog.isShowing &&
 				safeHistoryActivity?.isActivityRunning() == true
 			) {
-				logger.d("Closing UpdateBookmarkDialog.")
+				logger.d("Closing UpdateHistoryDialog.")
 				dialog.close()
 			}
 		} catch (error: Exception) {
-			logger.e("Can't close bookmark update dialog:", error)
+			logger.e("Can't close History Update Dialog:", error)
 			safeHistoryActivity?.doSomeVibration(50)
 			showToast(msgId = R.string.text_something_went_wrong)
 		}
 	}
 
 	/**
-	 * Initializes the dialog fields with the provided bookmark data.
+	 * Initializes the dialog fields with the provided history entry data.
 	 *
-	 * @param historyModel Bookmark to edit
+	 * @param historyModel History entry to edit
 	 */
-	fun setBookmarkModel(historyModel: HistoryModel) {
-		logger.d("Setting bookmark model in dialog: ${historyModel.historyUrl}")
+	fun setHistoryModel(historyModel: HistoryModel) {
+		logger.d("Setting history model in dialog: ${historyModel.historyUrl}")
 		this.historyModel = historyModel
 		this.dialog.view.apply {
 			val editFieldUrl = findViewById<EditText>(R.id.edit_field_url)
