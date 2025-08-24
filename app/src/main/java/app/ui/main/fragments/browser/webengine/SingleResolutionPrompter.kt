@@ -267,7 +267,7 @@ class SingleResolutionPrompter(
 			safeBaseActivity?.let { safeBaseActivityRef ->
 				try {
 					// Validate required URL
-					if (extractedVideoLink.isNullOrEmpty()) {
+					if (extractedVideoLink.isEmpty()) {
 						executeOnMain {
 							safeBaseActivityRef.doSomeVibration(50)
 							showToast(msgId = R.string.text_something_went_wrong)

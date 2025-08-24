@@ -157,4 +157,33 @@ object SupportedURLs {
                 url.contains(".m3u8", ignoreCase = true) ||
                 url.contains("m3u8", ignoreCase = true)
     }
+
+	fun isYtdlpSupportedUrlPattern(webpageUrl: String): Boolean {
+		val patterns = listOf(
+			// Instagram Reel
+			Regex("""^https?://(www\.)?instagram\.com/reel/[A-Za-z0-9_-]+/?.*""", RegexOption.IGNORE_CASE),
+
+			// YouTube Watch
+			Regex("""^https?://(www\.)?youtube\.com/watch\?v=[A-Za-z0-9_-]+.*""", RegexOption.IGNORE_CASE),
+
+			// YouTube Shorts
+			Regex("""^https?://(www\.)?youtube\.com/shorts/[A-Za-z0-9_-]+""", RegexOption.IGNORE_CASE),
+
+			// YouTube Music
+			Regex("""^https?://music\.youtube\.com/watch\?v=[A-Za-z0-9_-]+.*""", RegexOption.IGNORE_CASE),
+
+			// YouTube Share (youtu.be)
+			Regex("""^https?://youtu\.be/[A-Za-z0-9_-]+""", RegexOption.IGNORE_CASE),
+
+			// Twitter/X
+			Regex("""^https?://(www\.)?(twitter|x)\.com/[^/]+/status/\d+""", RegexOption.IGNORE_CASE),
+
+			// TikTok
+			Regex("""^https?://(www\.)?tiktok\.com/@[^/]+/video/\d+""", RegexOption.IGNORE_CASE)
+		)
+
+		return patterns.any { it.matches(webpageUrl) }
+	}
+
+
 }
