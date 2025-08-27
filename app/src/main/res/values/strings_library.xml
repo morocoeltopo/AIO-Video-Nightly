@@ -506,5 +506,11 @@
 	<string name="text_bookmark_url_can_not_be_empty">Bookname url can not be empty.</string>
 	<string name="text_bookmark_url_not_valid">Bookname url is not valid.</string>
 	<string name="title_update_history_info">Update Browser History</string>
+	<string name="title_your_full_name">Your Full Name</string>
+	<string name="title_downloads">Downloads</string>
+	<string name="title_subscriptions">Subscriptions</string>
+	<string name="title_web_history">Web History</string>
+	<string name="title_connect_with_youtube">Connect With YouTube</string>
+	<string name="text_connect_with_youtube_explainer"><b>Connect AIO with YouTube </b>to sync your library, history, subscriptions, and Watch Later seamlessly.</string>
 
 </resources>
