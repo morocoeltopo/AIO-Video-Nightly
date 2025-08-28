@@ -529,5 +529,8 @@
 	<string name="title_reset_settings">Reset Settings</string>
 	<string name="title_reset_browser_settings">Reset Browser Settings</string>
 	<string name="text_reset_browser_settings">Reset your browser settings to their default state. This will remove any custom changes.</string>
+	<string name="text_enable_private_mode">Enable private mode</string>
+	<string name="text_export_browser_bookmark">Export bookmarks/history</string>
+	<string name="text_import_browser_bookmark">Import bookmarks/history</string>
 
 </resources>
