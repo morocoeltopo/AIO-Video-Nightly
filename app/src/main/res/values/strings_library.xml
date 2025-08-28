@@ -510,7 +510,20 @@
 	<string name="title_downloads">Downloads</string>
 	<string name="title_subscriptions">Subscriptions</string>
 	<string name="title_web_history">Web History</string>
-	<string name="title_connect_with_youtube">Connect With YouTube</string>
-	<string name="text_connect_with_youtube_explainer"><b>Connect AIO with YouTube </b>to sync your library, history, subscriptions, and Watch Later seamlessly.</string>
+	<string name="title_sign_in_register">Sign In / Register</string>
+	<string name="text_connect_with_aio_cloud"><u><b>Connect with AIO Cloud</b></u> to effortlessly sync your settings, bookmarks, history, and subscriptions.</string>
+	<string name="text_enable_browser_javascript">Enable javascript</string>
+	<string name="text_enable_browser_adblock">Enable adblocker</string>
+	<string name="text_show_image_on_webpage">Show web images</string>
+	<string name="text_browser_useragent">Browser user-agent</string>
+	<string name="title_browser_settings">Browser Settings</string>
+	<string name="title_download_settings">Download Settings</string>
+	<string name="text_clear_browser_caches">Clear browser caches</string>
+	<string name="text_sample_email">youremailaddress@email.com</string>
+	<string name="title_sample_username">Your Name</string>
+	<string name="text_enable_startup_splash">Enable startup splash</string>
+	<string name="text_download_folder">Default download folder</string>
+	<string name="text_enable_daily_suggestions">Enable daily suggestions</string>
+	<string name="text_content_location">Default content location</string>
 
 </resources>

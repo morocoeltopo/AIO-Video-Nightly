@@ -170,7 +170,7 @@ class SettingsFragment : BaseFragment() {
 			R.id.btn_enable_video_grabber to { settingsOnClickLogic?.toggleBrowserVideoGrabber() },
 			R.id.btn_browser_homepage to { settingsOnClickLogic?.setBrowserDefaultHomepage() },
 			R.id.btn_language_picker to { settingsOnClickLogic?.showApplicationLanguageChanger() },
-			R.id.btn_default_download_folder to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() }
+			R.id.btn_default_download_location to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() }
 		)
 
 		// Apply all click listeners
