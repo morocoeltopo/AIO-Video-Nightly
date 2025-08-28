@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!-- Main container for browser settings screen -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -8,6 +8,7 @@
 	android:orientation="vertical"
 	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint,VisualLintBounds">
 
+	<!-- Top action bar with back button and title -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/top_actionbar_section"
 		android:layout_width="match_parent"
@@ -24,6 +25,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="match_parent">
 
+			<!-- Back button container -->
 			<RelativeLayout
 				android:id="@+id/btn_left_actionbar"
 				android:layout_width="@dimen/_50"
@@ -44,6 +46,7 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
+			<!-- Screen title -->
 			<TextView
 				android:id="@+id/txt_actionbar"
 				android:layout_width="match_parent"
@@ -64,6 +67,7 @@
 		</RelativeLayout>
 	</androidx.cardview.widget.CardView>
 
+	<!-- Scrollable content area below action bar -->
 	<ScrollView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -77,6 +81,7 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
+			<!-- Main browser settings card -->
 			<androidx.cardview.widget.CardView
 				android:id="@+id/container_browser_settings"
 				android:layout_width="match_parent"
@@ -94,6 +99,7 @@
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 
+					<!-- Homepage setting -->
 					<LinearLayout
 						android:id="@+id/btn_browser_homepage"
 						android:layout_width="match_parent"
@@ -122,6 +128,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- JavaScript toggle -->
 					<LinearLayout
 						android:id="@+id/btn_enable_javascript"
 						android:layout_width="match_parent"
@@ -150,6 +157,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Adblock toggle -->
 					<LinearLayout
 						android:id="@+id/btn_enable_adblock"
 						android:layout_width="match_parent"
@@ -178,6 +186,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Divider -->
 					<View
 						android:layout_width="match_parent"
 						android:layout_height="@dimen/_1"
@@ -187,6 +196,7 @@
 						android:layout_marginBottom="@dimen/_5"
 						android:background="@color/transparent_dark" />
 
+					<!-- Show images toggle -->
 					<LinearLayout
 						android:id="@+id/btn_show_image_on_web"
 						android:layout_width="match_parent"
@@ -215,6 +225,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Video grabber toggle -->
 					<LinearLayout
 						android:id="@+id/btn_enable_video_grabber"
 						android:layout_width="match_parent"
@@ -243,6 +254,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Popup blocker toggle -->
 					<LinearLayout
 						android:id="@+id/btn_enable_popup_blocker"
 						android:layout_width="match_parent"
@@ -271,6 +283,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Divider -->
 					<View
 						android:layout_width="match_parent"
 						android:layout_height="@dimen/_1"
@@ -280,6 +293,7 @@
 						android:layout_marginBottom="@dimen/_5"
 						android:background="@color/transparent_dark" />
 
+					<!-- Desktop mode toggle -->
 					<LinearLayout
 						android:id="@+id/btn_enable_desktop_mode"
 						android:layout_width="match_parent"
@@ -308,6 +322,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Private mode toggle -->
 					<LinearLayout
 						android:id="@+id/btn_enable_private_mode"
 						android:layout_width="match_parent"
@@ -336,6 +351,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- User agent setting -->
 					<LinearLayout
 						android:id="@+id/btn_browser_useragent"
 						android:layout_width="match_parent"
@@ -364,6 +380,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Clear cache button -->
 					<LinearLayout
 						android:id="@+id/btn_clear_browser_caches"
 						android:layout_width="match_parent"
@@ -392,6 +409,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Divider -->
 					<View
 						android:layout_width="match_parent"
 						android:layout_height="@dimen/_1"
@@ -401,6 +419,7 @@
 						android:layout_marginBottom="@dimen/_5"
 						android:background="@color/transparent_dark" />
 
+					<!-- Import bookmarks -->
 					<LinearLayout
 						android:id="@+id/btn_import_browser_bookmarks"
 						android:layout_width="match_parent"
@@ -429,6 +448,7 @@
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
 
+					<!-- Export bookmarks -->
 					<LinearLayout
 						android:id="@+id/btn_export_browser_bookmarks"
 						android:layout_width="match_parent"
@@ -460,6 +480,7 @@
 				</LinearLayout>
 			</androidx.cardview.widget.CardView>
 
+			<!-- Reset settings card -->
 			<androidx.cardview.widget.CardView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -483,6 +504,7 @@
 						android:orientation="vertical"
 						tools:ignore="TooManyViews">
 
+						<!-- Reset settings title -->
 						<TextView
 							android:id="@+id/txt_reset_browser_settings"
 							android:layout_width="match_parent"
@@ -498,6 +520,7 @@
 							android:textStyle="bold" />
 					</LinearLayout>
 
+					<!-- Reset settings description -->
 					<TextView
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
@@ -513,6 +536,7 @@
 						android:textStyle="italic"
 						tools:ignore="TextContrastCheck" />
 
+					<!-- Reset settings button -->
 					<RelativeLayout
 						android:id="@+id/btn_reset_browser_settings"
 						android:layout_width="match_parent"
