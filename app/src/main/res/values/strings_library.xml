@@ -525,5 +525,9 @@
 	<string name="text_download_folder">Default download folder</string>
 	<string name="text_enable_daily_suggestions">Enable daily suggestions</string>
 	<string name="text_content_location">Default content location</string>
+	<string name="text_enable_desktop_mode">Enable desktop mode</string>
+	<string name="title_reset_settings">Reset Settings</string>
+	<string name="title_reset_browser_settings">Reset Browser Settings</string>
+	<string name="text_reset_browser_settings">Reset your browser settings to their default state. This will remove any custom changes.</string>
 
 </resources>
