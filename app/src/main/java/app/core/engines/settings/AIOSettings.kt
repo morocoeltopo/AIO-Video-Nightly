@@ -113,10 +113,10 @@ class AIOSettings : Serializable {
 	// Browser-specific settings
 	var browserDefaultHomepage: String = getText(string.text_https_google_com)
 	var browserDesktopBrowsing: Boolean = false
-	var browserEnableAdblocker: Boolean = false
+	var browserEnableAdblocker: Boolean = true
 	var browserEnableJavascript: Boolean = true
-	var browserEnableHideImages: Boolean = false
-	var browserEnablePopupBlocker: Boolean = false
+	var browserEnableImages: Boolean = true
+	var browserEnablePopupBlocker: Boolean = true
 	var browserEnableVideoGrabber: Boolean = true
 	var browserHttpUserAgent: String =
 		getText(string.text_browser_default_mobile_http_user_agent)
