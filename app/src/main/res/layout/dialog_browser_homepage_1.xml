@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Dialog layout for homepage URL input -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -7,6 +8,7 @@
 	android:layout_height="wrap_content"
 	tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
 
+	<!-- Main dialog card container -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -23,6 +25,7 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
+			<!-- Current homepage display -->
 			<TextView
 				android:id="@+id/txt_current_homepage"
 				style="@style/style_dialog.message"
@@ -39,6 +42,7 @@
 				android:textIsSelectable="true"
 				android:textSize="@dimen/message_text_size" />
 
+			<!-- Divider line -->
 			<View
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/_2"
@@ -47,6 +51,7 @@
 				android:layout_marginBottom="@dimen/_5"
 				android:background="@color/transparent_dark" />
 
+			<!-- URL input field container -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -57,11 +62,15 @@
 				android:background="@drawable/rounded_surface_color"
 				android:orientation="vertical">
 
+				<!-- URL input field with favicon -->
 				<EditText
 					android:id="@+id/edit_field_url"
 					style="@style/style_dialog.message"
 					android:layout_margin="@dimen/_8"
 					android:background="@color/transparent"
+					android:drawableStart="@drawable/ic_button_browser_favicon"
+					android:drawablePadding="@dimen/_5"
+					android:drawableTint="@color/color_secondary"
 					android:gravity="center_vertical"
 					android:hint="@string/text_enter_the_url"
 					android:importantForAutofill="no"
@@ -75,6 +84,7 @@
 					tools:ignore="TextContrastCheck,TouchTargetSizeCheck,VisualLintTextFieldSize" />
 			</LinearLayout>
 
+			<!-- Apply changes button -->
 			<RelativeLayout
 				android:id="@+id/btn_dialog_positive_container"
 				android:layout_width="match_parent"
@@ -105,6 +115,7 @@
 					android:textStyle="bold" />
 			</RelativeLayout>
 
+			<!-- Restart required notice -->
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"

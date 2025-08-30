@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- List item layout for browser tab in tabs dialog -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
+	android:background="@color/transparent"
 	android:orientation="vertical"
 	tools:ignore="UseAppTint">
 
+	<!-- Tab info container (clickable area) -->
 	<RelativeLayout
 		android:id="@+id/browser_tab_info"
 		android:layout_width="match_parent"
@@ -21,6 +24,7 @@
 		android:elevation="@dimen/_1"
 		tools:ignore="TouchTargetSizeCheck">
 
+		<!-- Website favicon -->
 		<ImageView
 			android:id="@+id/btn_tab_favicon"
 			android:layout_width="@dimen/_25"
@@ -34,6 +38,7 @@
 			android:src="@drawable/ic_button_information"
 			android:visibility="visible" />
 
+		<!-- Text container for title and URL -->
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
@@ -45,6 +50,7 @@
 			android:layout_toEndOf="@+id/btn_tab_favicon"
 			android:orientation="vertical">
 
+			<!-- Tab title (website name) -->
 			<TextView
 				android:id="@+id/browser_tab_title"
 				android:layout_width="match_parent"
@@ -58,6 +64,7 @@
 				android:textSize="@dimen/message_text_size"
 				android:textStyle="bold" />
 
+			<!-- Tab URL (website address) -->
 			<TextView
 				android:id="@+id/browser_tab_url"
 				android:layout_width="match_parent"
@@ -75,6 +82,7 @@
 		</LinearLayout>
 	</RelativeLayout>
 
+	<!-- Close tab button (X icon) -->
 	<ImageView
 		android:id="@+id/btn_browser_tab_close"
 		android:layout_width="wrap_content"

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Media player activity layout with ExoPlayer integration -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -9,6 +10,7 @@
 	tools:context="app.ui.others.media_player.MediaPlayerActivity"
 	tools:ignore="UseAppTint">
 
+	<!-- ExoPlayer video surface -->
 	<androidx.media3.ui.PlayerView
 		android:id="@+id/video_player_view"
 		android:layout_width="match_parent"
@@ -22,6 +24,7 @@
 		app:surface_type="surface_view"
 		app:use_controller="false" />
 
+	<!-- Audio album art (visible for audio-only playback) -->
 	<ImageView
 		android:id="@+id/img_audio_album_art"
 		android:layout_width="match_parent"
@@ -31,12 +34,14 @@
 		android:src="@drawable/image_audio_thumb"
 		android:visibility="gone" />
 
+	<!-- Dark overlay for night mode -->
 	<View
 		android:id="@+id/night_mode_invisible_area"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:background="@color/transparent_dark" />
 
+	<!-- Invisible touch area for detecting user interactions -->
 	<View
 		android:id="@+id/invisible_touch_area"
 		android:layout_width="match_parent"
@@ -44,6 +49,7 @@
 		android:clickable="true"
 		tools:ignore="SpeakableTextPresentCheck" />
 
+	<!-- Quick info toast (e.g., zoom status) -->
 	<RelativeLayout
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -66,11 +72,13 @@
 			android:visibility="gone" />
 	</RelativeLayout>
 
+	<!-- Player controls container -->
 	<RelativeLayout
 		android:id="@+id/container_player_controller"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
 
+		<!-- Padding for device cutout (notch) area -->
 		<View
 			android:id="@+id/device_cutout_padding_view"
 			android:layout_width="match_parent"
@@ -78,6 +86,7 @@
 			android:layout_alignParentTop="true"
 			android:background="@color/color_pure_black" />
 
+		<!-- Action bar at the top -->
 		<include
 			android:id="@+id/action_bar"
 			layout="@layout/activity_player_1_ab"
@@ -85,6 +94,7 @@
 			android:layout_height="@dimen/actionbar_height_size"
 			android:layout_below="@id/device_cutout_padding_view" />
 
+		<!-- Bottom player controls card -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/player_controller_container"
 			android:layout_width="match_parent"
@@ -105,13 +115,14 @@
 				android:layout_marginBottom="@dimen/_8"
 				android:orientation="vertical">
 
+				<!-- Player control components -->
 				<include layout="@layout/activity_player_2_con_01" />
-
 				<include layout="@layout/activity_player_2_con_02" />
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 	</RelativeLayout>
 
+	<!-- Unlock overlay button (for fullscreen/lock toggle) -->
 	<ImageView
 		android:id="@+id/btn_video_unlock_overlay"
 		android:layout_width="@dimen/_50"
