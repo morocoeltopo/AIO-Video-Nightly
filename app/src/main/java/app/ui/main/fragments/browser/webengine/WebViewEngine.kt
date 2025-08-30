@@ -208,12 +208,12 @@ class WebViewEngine(val browserFragment: BrowserFragment) {
 			javaScriptCanOpenWindowsAutomatically = true
 			setSupportMultipleWindows(true)
 			
-			if (aioSettings.browserEnableHideImages) {
-				blockNetworkImage = true
-				loadsImagesAutomatically = false
-			} else {
+			if (aioSettings.browserEnableImages) {
 				blockNetworkImage = false
 				loadsImagesAutomatically = true
+			} else {
+				blockNetworkImage = true
+				loadsImagesAutomatically = false
 			}
 			
 			javaScriptEnabled = aioSettings.browserEnableJavascript

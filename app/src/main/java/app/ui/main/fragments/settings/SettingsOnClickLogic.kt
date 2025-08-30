@@ -10,6 +10,7 @@ import androidx.core.net.toUri
 import app.core.AIOApp
 import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.updater.AIOUpdater
+import app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActivity
 import app.ui.main.fragments.settings.dialogs.DownloadLocation
 import app.ui.others.information.UserFeedbackActivity
 import app.ui.others.startup.LanguagePickerDialog
@@ -83,6 +84,20 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
+	fun changeDefaultContentRegion() {
+		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+			doSomeVibration(50)
+			showToast(msgId = R.string.text_feature_isnt_available_yet)
+		}
+	}
+
+	fun enableDailyContentSuggestions() {
+		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+			doSomeVibration(50)
+			showToast(msgId = R.string.text_feature_isnt_available_yet)
+		}
+	}
+
 	/** Displays a dialog to set the default homepage for the in-app browser */
 	fun setBrowserDefaultHomepage() {
 		logger.d("Opening Browser Homepage dialog")
@@ -132,6 +147,18 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
+	fun toggleBrowserBrowserAdBlocker() {
+		try {
+			aioSettings.browserEnableAdblocker = !aioSettings.browserEnableAdblocker
+			aioSettings.updateInStorage()
+			logger.d("Browser Ad Blocker toggled: ${aioSettings.browserEnableAdblocker}")
+			updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.d("Error toggling browser ad blocker: ${error.message}")
+			error.printStackTrace()
+		}
+	}
+
 	/** Toggle popup blocker setting in browser */
 	fun toggleBrowserPopupAdBlocker() {
 		try {
@@ -141,6 +168,18 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			updateSettingStateUI()
 		} catch (error: Exception) {
 			logger.d("Error toggling popup blocker: ${error.message}")
+			error.printStackTrace()
+		}
+	}
+
+	fun toggleBrowserWebImages() {
+		try {
+			aioSettings.browserEnableImages = !aioSettings.browserEnableImages
+			aioSettings.updateInStorage()
+			logger.d("Popup browser enable images: ${aioSettings.browserEnableImages}")
+			updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.d("Error toggling browser enable images: ${error.message}")
 			error.printStackTrace()
 		}
 	}
@@ -155,6 +194,13 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		} catch (error: Exception) {
 			logger.d("Error toggling video grabber: ${error.message}")
 			error.printStackTrace()
+		}
+	}
+
+	fun changeDefaultDownloadFolder(){
+		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+			doSomeVibration(50)
+			showToast(msgId = R.string.text_feature_isnt_available_yet)
 		}
 	}
 
@@ -198,8 +244,8 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	}
 
 	/** Opens advanced settings placeholder (currently shows not available message). */
-	fun openAdvanceApplicationSettings() {
-		logger.d("Opening Advanced Settings (not implemented)")
+	fun openAdvanceDownloadsSettings() {
+		logger.d("Opening Advanced Downloads Settings (not implemented)")
 		safeSettingsFragmentRef?.safeMotherActivityRef.let {
 			it?.doSomeVibration(50)
 			MsgDialogUtils.showMessageDialog(
@@ -211,6 +257,16 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				}, isNegativeButtonVisible = false
 			)
 		}
+	}
+
+	/** Opens advanced settings placeholder (currently shows not available message). */
+	fun openAdvanceBrowserSettings() {
+		logger.d("Opening Advanced Settings For Browser")
+		safeSettingsFragmentRef?.safeMotherActivityRef
+			?.openActivity(
+				activity = AdvBrowserSettingsActivity::class.java,
+				shouldAnimate = true
+			)
 	}
 
 	/** Navigate to Terms & Conditions screen */
@@ -329,12 +385,20 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 					isEnabled = aioSettings.downloadHideNotification
 				),
 				SettingViewConfig(
-					viewId = R.id.txt_enable_video_grabber,
-					isEnabled = aioSettings.browserEnableVideoGrabber
+					viewId = R.id.txt_enable_adblock,
+					isEnabled = aioSettings.browserEnableAdblocker
 				),
 				SettingViewConfig(
 					viewId = R.id.txt_enable_popup_blocker,
 					isEnabled = aioSettings.browserEnablePopupBlocker
+				),
+				SettingViewConfig(
+					viewId = R.id.txt_show_image_on_web,
+					isEnabled = aioSettings.browserEnableImages
+				),
+				SettingViewConfig(
+					viewId = R.id.txt_enable_video_grabber,
+					isEnabled = aioSettings.browserEnableVideoGrabber
 				),
 			).forEach { config ->
 				layout.findViewById<TextView>(config.viewId)?.updateEndDrawable(config.isEnabled)

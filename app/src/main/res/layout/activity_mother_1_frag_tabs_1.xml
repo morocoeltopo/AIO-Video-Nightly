@@ -4,7 +4,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@color/color_surface"
+	android:background="@color/transparent"
 	android:orientation="vertical"
 	tools:context="app.ui.main.fragments.browser.activities.BookmarksActivity"
 	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint">

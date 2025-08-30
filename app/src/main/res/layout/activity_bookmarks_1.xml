@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Main container for Bookmarks Activity with gradient background -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@color/color_surface"
+	android:background="@drawable/ic_background_gradient"
 	android:orientation="vertical"
 	tools:context="app.ui.main.fragments.browser.activities.BookmarksActivity"
 	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint,VisualLintBounds">
 
+	<!-- Top action bar with navigation and action buttons -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/top_actionbar_section"
 		android:layout_width="match_parent"
@@ -25,6 +27,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="match_parent">
 
+			<!-- Back button -->
 			<RelativeLayout
 				android:id="@+id/btn_left_actionbar"
 				android:layout_width="@dimen/_50"
@@ -45,6 +48,7 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
+			<!-- Screen title -->
 			<TextView
 				android:id="@+id/txt_actionbar"
 				android:layout_width="match_parent"
@@ -63,6 +67,7 @@
 				android:textSize="@dimen/title_text_size"
 				android:textStyle="bold" />
 
+			<!-- Search button -->
 			<RelativeLayout
 				android:id="@+id/btn_actionbar_search"
 				android:layout_width="@dimen/_50"
@@ -84,6 +89,7 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
+			<!-- Clear/action button -->
 			<RelativeLayout
 				android:id="@+id/btn_right_actionbar"
 				android:layout_width="@dimen/_50"
@@ -107,6 +113,7 @@
 		</RelativeLayout>
 	</androidx.cardview.widget.CardView>
 
+	<!-- Search bar container (initially hidden) -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/top_searchbar_container"
 		android:layout_width="match_parent"
@@ -130,6 +137,7 @@
 			android:layout_marginBottom="@dimen/_5"
 			android:orientation="vertical">
 
+			<!-- Search input field -->
 			<LinearLayout
 				android:id="@+id/edit_search_keywords_container"
 				android:layout_width="match_parent"
@@ -165,6 +173,7 @@
 		</RelativeLayout>
 	</androidx.cardview.widget.CardView>
 
+	<!-- Empty state indicator when no bookmarks -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/empty_bookmarks_indicator"
 		android:layout_width="match_parent"
@@ -185,6 +194,7 @@
 			android:orientation="vertical"
 			tools:ignore="UseCompoundDrawables">
 
+			<!-- Empty state illustration -->
 			<ImageView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
@@ -195,6 +205,7 @@
 				android:importantForAccessibility="no"
 				android:src="@drawable/image_empty_box" />
 
+			<!-- Empty state message -->
 			<TextView
 				android:id="@+id/txt_empty_bookmark_indicator"
 				android:layout_width="wrap_content"
@@ -212,6 +223,7 @@
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>
 
+	<!-- Main bookmarks list view -->
 	<ListView
 		android:id="@+id/list_bookmarks"
 		android:layout_width="match_parent"
@@ -225,6 +237,7 @@
 		android:divider="@color/transparent"
 		android:visibility="visible" />
 
+	<!-- Load more button at bottom -->
 	<LinearLayout
 		android:id="@+id/bottom_container_load_more"
 		android:layout_width="match_parent"
@@ -232,6 +245,7 @@
 		android:layout_alignParentBottom="true"
 		android:orientation="vertical">
 
+		<!-- Load more bookmarks button -->
 		<RelativeLayout
 			android:id="@+id/btn_load_more_bookmarks"
 			android:layout_width="match_parent"

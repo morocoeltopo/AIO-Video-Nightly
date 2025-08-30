@@ -4,7 +4,7 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@color/color_surface"
+	android:background="@drawable/ic_background_gradient"
 	android:orientation="vertical"
 	tools:context="app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActivity"
 	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint,VisualLintBounds">
@@ -73,7 +73,6 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_below="@+id/top_actionbar_section"
-		android:background="@color/color_surface"
 		android:orientation="vertical"
 		tools:ignore="UseCompatTextViewDrawableXml,UseAppTint,TooManyViews">
 

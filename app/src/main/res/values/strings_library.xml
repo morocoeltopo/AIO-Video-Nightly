@@ -511,7 +511,7 @@
 	<string name="title_subscriptions">Subscriptions</string>
 	<string name="title_web_history">Web History</string>
 	<string name="title_sign_in_register">Sign In / Register</string>
-	<string name="text_connect_with_aio_cloud"><u><b>Connect with AIO Cloud</b></u> to effortlessly sync your settings, bookmarks, history, and subscriptions.</string>
+	<string name="text_connect_with_aio_cloud"><b>Connect with AIO Cloud</b> to effortlessly sync your settings, bookmarks, history, and subscriptions.</string>
 	<string name="text_enable_browser_javascript">Enable javascript</string>
 	<string name="text_enable_browser_adblock">Enable adblocker</string>
 	<string name="text_show_image_on_webpage">Show web images</string>

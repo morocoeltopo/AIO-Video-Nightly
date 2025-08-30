@@ -155,22 +155,39 @@ class SettingsFragment : BaseFragment() {
 
 		// Map of view IDs to their corresponding click actions
 		val clickActions = mapOf(
-			R.id.btn_restart_application to { settingsOnClickLogic?.restartApplication() },
-			R.id.btn_check_new_update to { settingsOnClickLogic?.checkForNewApkVersion() },
+			// Application settings
+			R.id.btn_default_download_location to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() },
+			R.id.btn_language_picker to { settingsOnClickLogic?.showApplicationLanguageChanger() },
+			R.id.btn_content_location to { settingsOnClickLogic?.changeDefaultContentRegion() },
+			R.id.btn_daily_suggestions to { settingsOnClickLogic?.enableDailyContentSuggestions() },
+
+			//Downloads settings
+			R.id.btn_default_download_folder to { settingsOnClickLogic?.changeDefaultDownloadFolder() },
+			R.id.btn_hide_task_notifications to { settingsOnClickLogic?.toggleHideDownloadNotification() },
+			R.id.btn_wifi_only_downloads to { settingsOnClickLogic?.toggleWifiOnlyDownload() },
+			R.id.btn_play_notification_sound to { settingsOnClickLogic?.toggleDownloadNotificationSound() },
+			R.id.btn_adv_downloads_settings to { settingsOnClickLogic?.openAdvanceDownloadsSettings() },
+
+			//Browser settings
+			R.id.btn_browser_homepage to { settingsOnClickLogic?.setBrowserDefaultHomepage() },
+			R.id.btn_enable_adblock to { settingsOnClickLogic?.toggleBrowserBrowserAdBlocker() },
+			R.id.btn_enable_popup_blocker to { settingsOnClickLogic?.toggleBrowserPopupAdBlocker() },
+			R.id.btn_show_image_on_web to { settingsOnClickLogic?.toggleBrowserWebImages() },
+			R.id.btn_enable_video_grabber to { settingsOnClickLogic?.toggleBrowserVideoGrabber() },
+			R.id.btn_adv_browser_settings to { settingsOnClickLogic?.openAdvanceBrowserSettings() },
+
+			//Custom service
 			R.id.btn_share_with_friends to { settingsOnClickLogic?.shareApplicationWithFriends() },
-			R.id.btn_open_about_info to { settingsOnClickLogic?.openApplicationInformation() },
 			R.id.btn_open_feedback to { settingsOnClickLogic?.openUserFeedbackActivity() },
+			R.id.btn_open_about_info to { settingsOnClickLogic?.openApplicationInformation() },
 			R.id.btn_open_privacy_policy to { settingsOnClickLogic?.showPrivacyPolicyActivity() },
 			R.id.btn_open_terms_condition to { settingsOnClickLogic?.showTermsConditionActivity() },
-			R.id.btn_advance_settings to { settingsOnClickLogic?.openAdvanceApplicationSettings() },
-			R.id.btn_play_notification_sound to { settingsOnClickLogic?.toggleDownloadNotificationSound() },
-			R.id.btn_wifi_only_downloads to { settingsOnClickLogic?.toggleWifiOnlyDownload() },
-			R.id.btn_hide_task_notifications to { settingsOnClickLogic?.toggleHideDownloadNotification() },
-			R.id.btn_enable_popup_blocker to { settingsOnClickLogic?.toggleBrowserPopupAdBlocker() },
-			R.id.btn_enable_video_grabber to { settingsOnClickLogic?.toggleBrowserVideoGrabber() },
-			R.id.btn_browser_homepage to { settingsOnClickLogic?.setBrowserDefaultHomepage() },
-			R.id.btn_language_picker to { settingsOnClickLogic?.showApplicationLanguageChanger() },
-			R.id.btn_default_download_location to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() }
+
+			//Check for new versions
+			R.id.btn_check_new_update to { settingsOnClickLogic?.checkForNewApkVersion() },
+
+			//Acknowledgements
+			R.id.btn_restart_application to { settingsOnClickLogic?.restartApplication() },
 		)
 
 		// Apply all click listeners
