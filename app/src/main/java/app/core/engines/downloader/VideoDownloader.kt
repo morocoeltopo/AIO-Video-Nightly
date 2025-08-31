@@ -32,6 +32,7 @@ import lib.device.DateTimeUtils.calculateTime
 import lib.device.DateTimeUtils.millisToDateTimeString
 import lib.files.FileSystemUtility.findFileStartingWith
 import lib.files.FileSystemUtility.isFileNameValid
+import lib.files.FileSystemUtility.isVideoByName
 import lib.files.FileSystemUtility.sanitizeFileNameExtreme
 import lib.networks.DownloaderUtils.getAudioPlaybackTimeIfAvailable
 import lib.networks.DownloaderUtils.getFormattedPercentage
@@ -809,15 +810,15 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			request.addOption("--playlist-items", "1")
 			request.addOption("--user-agent", downloadDataModelConfig.downloadHttpUserAgent)
 			request.addOption("--retries", downloadDataModelConfig.downloadAutoResumeMaxErrors)
-			request.addOption(
-				"--socket-timeout",
-				downloadDataModelConfig.downloadMaxHttpReadingTimeout
-			)
+			request.addOption("--socket-timeout", downloadDataModelConfig.downloadMaxHttpReadingTimeout)
 			request.addOption("--concurrent-fragments", 10)
 			request.addOption("--fragment-retries", 10)
 			request.addOption("--no-check-certificate")
 			request.addOption("--force-ipv4")
 			request.addOption("--source-address", "0.0.0.0")
+			if (isVideoByName(downloadDataModel.fileName)) {
+				request.addOption("--merge-output-format", "mp4")
+			}
 
 			// Add cookie support if available
 			downloadDataModel.getCookieFilePathIfAvailable()?.let {

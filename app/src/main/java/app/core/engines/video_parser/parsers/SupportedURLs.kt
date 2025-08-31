@@ -154,6 +154,17 @@ object SupportedURLs {
 		}
 	}
 
+	/** Checks whether the given URL is from Pinterest. */
+	fun isPinterestUrl(url: String): Boolean {
+		return try {
+			val host = URL(url).host.lowercase()
+			host.contains("pinterest.com") || host.contains("pin.it")
+		} catch (error: Exception) {
+			error.printStackTrace()
+			false
+		}
+	}
+
 	/**
 	 * Checks whether the given URL is from a supported social media platform
 	 * (Facebook, Instagram, TikTok, YouTube).
@@ -162,7 +173,10 @@ object SupportedURLs {
 	 * @return True if the URL matches any known social media domain.
 	 */
 	fun isSocialMediaUrl(url: String): Boolean {
-		return isInstagramUrl(url) || isFacebookUrl(url) || isTiktokUrl(url)
+		return isInstagramUrl(url) ||
+				isFacebookUrl(url) ||
+				isTiktokUrl(url) ||
+				isPinterestUrl(url)
 	}
 
 	/**
