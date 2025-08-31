@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Settings screen layout with multiple sections for user preferences -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -13,6 +14,7 @@
 		android:layout_height="wrap_content"
 		android:orientation="vertical">
 
+		<!-- User profile information section -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/container_user_info"
 			android:layout_width="match_parent"
@@ -30,6 +32,7 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
 
+				<!-- User avatar and basic info row -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
@@ -39,6 +42,7 @@
 					android:gravity="center_vertical"
 					android:orientation="horizontal">
 
+					<!-- Circular user avatar image -->
 					<de.hdodenhof.circleimageview.CircleImageView
 						android:id="@+id/img_user_avatar"
 						android:layout_width="@dimen/_50"
@@ -49,6 +53,7 @@
 						android:layout_marginBottom="@dimen/_2"
 						android:src="@drawable/image_default_avatar" />
 
+					<!-- User name and email info container -->
 					<LinearLayout
 						android:id="@+id/btn_user_info"
 						android:layout_width="match_parent"
@@ -57,6 +62,7 @@
 						android:clickable="true"
 						android:orientation="vertical">
 
+						<!-- User name with edit icon -->
 						<TextView
 							android:id="@+id/txt_user_name"
 							android:layout_width="match_parent"
@@ -75,6 +81,7 @@
 							android:textStyle="bold"
 							tools:ignore="TouchTargetSizeCheck" />
 
+						<!-- User email address -->
 						<TextView
 							android:id="@+id/txt_user_email"
 							android:layout_width="match_parent"
@@ -93,11 +100,13 @@
 
 				</LinearLayout>
 
+				<!-- Cloud connection section -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 
+					<!-- Cloud service suggestion text -->
 					<TextView
 						android:id="@+id/txt_suggest_for_sign_up"
 						android:layout_width="match_parent"
@@ -112,6 +121,7 @@
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/small_text_size" />
 
+					<!-- YouTube connection button -->
 					<RelativeLayout
 						android:id="@+id/btn_connect_to_youtube"
 						android:layout_width="match_parent"
@@ -125,6 +135,7 @@
 						android:elevation="@dimen/_2"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- Sign in/register button text -->
 						<TextView
 							android:id="@+id/txt_connect_to_youtube"
 							android:layout_width="wrap_content"
@@ -146,6 +157,7 @@
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
+		<!-- Application general settings section -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/container_application_settings"
 			android:layout_width="match_parent"
@@ -163,6 +175,7 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
 
+				<!-- Settings section header -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -184,6 +197,7 @@
 						android:textStyle="bold" />
 				</LinearLayout>
 
+				<!-- Download location setting button -->
 				<LinearLayout
 					android:id="@+id/btn_default_download_location"
 					android:layout_width="match_parent"
@@ -212,6 +226,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Language picker setting button -->
 				<LinearLayout
 					android:id="@+id/btn_language_picker"
 					android:layout_width="match_parent"
@@ -240,6 +255,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Divider line -->
 				<View
 					android:layout_width="match_parent"
 					android:layout_height="@dimen/_1"
@@ -249,6 +265,7 @@
 					android:layout_marginBottom="@dimen/_5"
 					android:background="@color/transparent_dark" />
 
+				<!-- Content location setting button -->
 				<LinearLayout
 					android:id="@+id/btn_content_location"
 					android:layout_width="match_parent"
@@ -277,6 +294,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Daily suggestions toggle button -->
 				<LinearLayout
 					android:id="@+id/btn_daily_suggestions"
 					android:layout_width="match_parent"
@@ -308,6 +326,7 @@
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
+		<!-- Download-specific settings section -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/container_download_settings"
 			android:layout_width="match_parent"
@@ -325,6 +344,7 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
 
+				<!-- Download settings header -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -346,6 +366,7 @@
 						android:textStyle="bold" />
 				</LinearLayout>
 
+				<!-- Default download folder setting -->
 				<LinearLayout
 					android:id="@+id/btn_default_download_folder"
 					android:layout_width="match_parent"
@@ -374,6 +395,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Hide task notifications toggle -->
 				<LinearLayout
 					android:id="@+id/btn_hide_task_notifications"
 					android:layout_width="match_parent"
@@ -402,6 +424,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- WiFi only downloads toggle -->
 				<LinearLayout
 					android:id="@+id/btn_wifi_only_downloads"
 					android:layout_width="match_parent"
@@ -430,6 +453,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Play notification sound toggle -->
 				<LinearLayout
 					android:id="@+id/btn_play_notification_sound"
 					android:layout_width="match_parent"
@@ -459,6 +483,7 @@
 						tools:ignore="TextContrastCheck" />
 				</LinearLayout>
 
+				<!-- Divider line -->
 				<View
 					android:layout_width="match_parent"
 					android:layout_height="@dimen/_1"
@@ -468,6 +493,7 @@
 					android:layout_marginBottom="@dimen/_5"
 					android:background="@color/transparent_dark" />
 
+				<!-- Advanced download settings button -->
 				<LinearLayout
 					android:id="@+id/btn_adv_downloads_settings"
 					android:layout_width="match_parent"
@@ -499,6 +525,7 @@
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
+		<!-- Browser settings section -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/container_browser_settings"
 			android:layout_width="match_parent"
@@ -516,6 +543,7 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
 
+				<!-- Browser settings header -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -537,6 +565,7 @@
 						android:textStyle="bold" />
 				</LinearLayout>
 
+				<!-- Browser homepage setting -->
 				<LinearLayout
 					android:id="@+id/btn_browser_homepage"
 					android:layout_width="match_parent"
@@ -565,6 +594,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Adblock toggle setting -->
 				<LinearLayout
 					android:id="@+id/btn_enable_adblock"
 					android:layout_width="match_parent"
@@ -593,6 +623,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Popup blocker toggle setting -->
 				<LinearLayout
 					android:id="@+id/btn_enable_popup_blocker"
 					android:layout_width="match_parent"
@@ -621,6 +652,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Divider line -->
 				<View
 					android:layout_width="match_parent"
 					android:layout_height="@dimen/_1"
@@ -630,6 +662,7 @@
 					android:layout_marginBottom="@dimen/_5"
 					android:background="@color/transparent_dark" />
 
+				<!-- Show images on web toggle -->
 				<LinearLayout
 					android:id="@+id/btn_show_image_on_web"
 					android:layout_width="match_parent"
@@ -658,6 +691,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Video grabber toggle setting -->
 				<LinearLayout
 					android:id="@+id/btn_enable_video_grabber"
 					android:layout_width="match_parent"
@@ -686,6 +720,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Divider line -->
 				<View
 					android:layout_width="match_parent"
 					android:layout_height="@dimen/_1"
@@ -695,6 +730,7 @@
 					android:layout_marginBottom="@dimen/_5"
 					android:background="@color/transparent_dark" />
 
+				<!-- Advanced browser settings button -->
 				<LinearLayout
 					android:id="@+id/btn_adv_browser_settings"
 					android:layout_width="match_parent"
@@ -726,6 +762,7 @@
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
+		<!-- Customer service and policies section -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/container_customer_service"
 			android:layout_width="match_parent"
@@ -743,6 +780,7 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
 
+				<!-- Policies header -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -764,6 +802,7 @@
 						android:textStyle="bold" />
 				</LinearLayout>
 
+				<!-- Share with friends button -->
 				<LinearLayout
 					android:id="@+id/btn_share_with_friends"
 					android:layout_width="match_parent"
@@ -792,6 +831,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Feedback button -->
 				<LinearLayout
 					android:id="@+id/btn_open_feedback"
 					android:layout_width="match_parent"
@@ -820,6 +860,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- About info button -->
 				<LinearLayout
 					android:id="@+id/btn_open_about_info"
 					android:layout_width="match_parent"
@@ -848,6 +889,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Divider line -->
 				<View
 					android:layout_width="match_parent"
 					android:layout_height="@dimen/_1"
@@ -857,6 +899,7 @@
 					android:layout_marginBottom="@dimen/_5"
 					android:background="@color/transparent_dark" />
 
+				<!-- Privacy policy button -->
 				<LinearLayout
 					android:id="@+id/btn_open_privacy_policy"
 					android:layout_width="match_parent"
@@ -885,6 +928,7 @@
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
+				<!-- Terms and conditions button -->
 				<LinearLayout
 					android:id="@+id/btn_open_terms_condition"
 					android:layout_width="match_parent"
@@ -916,6 +960,7 @@
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
+		<!-- Application version info section -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/container_application_version"
 			android:layout_width="match_parent"
@@ -933,6 +978,7 @@
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
 
+				<!-- Version header -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -954,6 +1000,7 @@
 						android:textStyle="bold" />
 				</LinearLayout>
 
+				<!-- Version info text -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -975,6 +1022,7 @@
 						android:textSize="@dimen/message_text_size" />
 				</LinearLayout>
 
+				<!-- Check for updates button -->
 				<RelativeLayout
 					android:id="@+id/btn_check_new_update"
 					android:layout_width="match_parent"
@@ -1007,6 +1055,7 @@
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
+		<!-- Acknowledgements and restart section -->
 		<androidx.cardview.widget.CardView
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
@@ -1023,6 +1072,7 @@
 				android:layout_height="match_parent"
 				android:orientation="vertical">
 
+				<!-- Acknowledgements header -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -1045,6 +1095,7 @@
 						android:textStyle="bold" />
 				</LinearLayout>
 
+				<!-- Thank you message -->
 				<TextView
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
@@ -1059,6 +1110,7 @@
 					android:textSize="@dimen/small_text_size"
 					android:textStyle="italic" />
 
+				<!-- Restart application button -->
 				<TextView
 					android:id="@+id/btn_restart_application"
 					android:layout_width="match_parent"
