@@ -5,6 +5,7 @@ import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrl
 import lib.networks.URLUtilityKT.getBaseDomain
 import lib.process.LogHelperUtils
 import java.net.URL
+import kotlin.text.RegexOption.IGNORE_CASE
 
 /**
  * Utility object for identifying and filtering supported video URLs for parsing.
@@ -221,40 +222,31 @@ object SupportedURLs {
 	fun isYtdlpSupportedUrlPattern(webpageUrl: String): Boolean {
 		val patterns = listOf(
 			// Instagram Reel
-			Regex(
-				"""^https?://(www\.)?instagram\.com/(reel|p|tv|stories)/[A-Za-z0-9_.-]+/?.*""",
-				RegexOption.IGNORE_CASE
-			),
+			Regex("""^https?://(www\.)?instagram\.com/(reel|p|tv|stories)/[A-Za-z0-9_.-]+/?.*""", IGNORE_CASE),
 
 			// YouTube Watch page
-			Regex(
-				"""^https?://(www\.)?youtube\.com/watch\?v=[A-Za-z0-9_-]+.*""",
-				RegexOption.IGNORE_CASE
-			),
+			Regex("""^https?://(www\.)?youtube\.com/watch\?v=[A-Za-z0-9_-]+.*""", IGNORE_CASE),
 
 			// YouTube Shorts
-			Regex(
-				"""^https?://(www\.)?youtube\.com/shorts/[A-Za-z0-9_-]+""",
-				RegexOption.IGNORE_CASE
-			),
+			Regex("""^https?://(www\.)?youtube\.com/shorts/[A-Za-z0-9_-]+""", IGNORE_CASE),
 
 			// YouTube Music
-			Regex(
-				"""^https?://music\.youtube\.com/watch\?v=[A-Za-z0-9_-]+.*""",
-				RegexOption.IGNORE_CASE
-			),
+			Regex("""^https?://music\.youtube\.com/watch\?v=[A-Za-z0-9_-]+.*""", IGNORE_CASE),
 
 			// YouTube Shortened link (youtu.be)
-			Regex("""^https?://youtu\.be/[A-Za-z0-9_-]+""", RegexOption.IGNORE_CASE),
+			Regex("""^https?://youtu\.be/[A-Za-z0-9_-]+""", IGNORE_CASE),
 
 			// Twitter / X status links
-			Regex(
-				"""^https?://(www\.)?(twitter|x)\.com/[^/]+/status/\d+""",
-				RegexOption.IGNORE_CASE
-			),
+			Regex("""^https?://(www\.)?(twitter|x)\.com/[^/]+/status/\d+""", IGNORE_CASE),
+
+			// Pinterest pin
+			Regex("""^https?://([a-z]+\.)?pinterest\.com/pin/\d+/?""", IGNORE_CASE),
+
+			// Pinterest short links (pin.it)
+			Regex("""^https?://(www\.)?pin\.it/[A-Za-z0-9]+/?""", IGNORE_CASE),
 
 			// TikTok video
-			Regex("""^https?://(www\.)?tiktok\.com/@[^/]+/video/\d+""", RegexOption.IGNORE_CASE)
+			Regex("""^https?://(www\.)?tiktok\.com/@[^/]+/video/\d+""", IGNORE_CASE)
 		)
 
 		return patterns.any { it.matches(webpageUrl) }
