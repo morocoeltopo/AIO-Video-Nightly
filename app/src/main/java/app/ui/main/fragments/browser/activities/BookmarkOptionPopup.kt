@@ -8,8 +8,11 @@ import android.view.View
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import app.core.AIOApp.Companion.aioBookmark
+import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.browser.bookmarks.BookmarkModel
 import com.aio.R
+import lib.networks.URLUtility.ensureHttps
+import lib.networks.URLUtility.isValidURL
 import lib.process.LogHelperUtils
 import lib.texts.ClipboardUtils.copyTextToClipboard
 import lib.texts.CommonTextUtils.getText
@@ -105,6 +108,7 @@ class BookmarkOptionPopup(
 		popupView?.apply {
 			mapOf(
 				R.id.btn_edit_bookmark to ::editBookmarkInfo,
+				R.id.btn_browser_homepage to ::makeDefaultHomepage,
 				R.id.btn_open_bookmark to ::openBookmarkInBrowser,
 				R.id.btn_share_bookmark to ::shareBookmarkLink,
 				R.id.btn_copy_bookmark to ::copyBookmarkInClipboard,
@@ -154,6 +158,27 @@ class BookmarkOptionPopup(
 				activity.doSomeVibration(50)
 				showToast(msgId = R.string.text_something_went_wrong)
 				logger.d("Exception while editing bookmark: ${error.message}")
+			}
+		}
+	}
+
+	/**
+	 * Make the current web address as the default browser homepage.
+	 */
+	private fun makeDefaultHomepage() {
+		safeBookmarksActivityRef?.let { activity ->
+			val bookmarkUrl = bookmarkModel.bookmarkUrl
+			logger.d("User entered homepage: $bookmarkUrl")
+			if (isValidURL(bookmarkUrl)) {
+				val finalNormalizedURL = ensureHttps(bookmarkUrl) ?: bookmarkUrl
+				aioSettings.browserDefaultHomepage = finalNormalizedURL
+				aioSettings.updateInStorage()
+				logger.d("Homepage updated: $finalNormalizedURL")
+				showToast(msgId = R.string.title_successful)
+			} else {
+				logger.d("Invalid homepage URL entered")
+				activity.doSomeVibration(50)
+				showToast(msgId = R.string.text_invalid_url)
 			}
 		}
 	}

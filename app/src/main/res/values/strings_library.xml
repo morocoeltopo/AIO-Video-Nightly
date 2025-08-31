@@ -493,7 +493,7 @@
 	<string name="title_user_information">User Information</string>
 	<string name="text_search_something">Search something…</string>
 	<string name="text_downloading_m3u8_manifest">Downloading M3U8 Manifest…</string>
-	<string name="text_edit_the_bookmark">Edit bookmark</string>
+	<string name="text_edit_the_bookmark_info">Edit bookmark</string>
 	<string name="text_no_bookmark_matched_with_search">No bookmarks matched your search query.</string>
 	<string name="title_update_bookmark_info">Update Bookmark Info</string>
 	<string name="text_enter_updated_bookmark_title">Enter updated bookmark title</string>
@@ -532,5 +532,6 @@
 	<string name="text_enable_private_mode">Enable private mode</string>
 	<string name="text_export_browser_bookmark">Export bookmarks/history</string>
 	<string name="text_import_browser_bookmark">Import bookmarks/history</string>
+	<string name="text_make_default_homepage">Default homepage</string>
 
 </resources>

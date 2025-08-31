@@ -19,6 +19,8 @@ import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
+import lib.texts.ClipboardUtils.copyTextToClipboard
+import lib.ui.builders.ToastView
 import java.io.File
 
 /**
@@ -32,24 +34,24 @@ class WebTabListAdapter(
 	val browserFragment: BrowserFragment,
 	val listOfWebViews: ArrayList<WebView>
 ) : BaseAdapter() {
-	
+
 	val browserFragmentTop: BrowserFragmentTop = browserFragment.browserFragmentTop
 	val browserFragmentBody: BrowserFragmentBody = browserFragment.browserFragmentBody
 	val motherActivity: MotherActivity = browserFragment.safeMotherActivityRef
 	val leftSideNavigation = motherActivity.sideNavigation
-	
+
 	override fun getCount(): Int {
 		return listOfWebViews.size
 	}
-	
+
 	override fun getItem(position: Int): Any {
 		return listOfWebViews[position]
 	}
-	
+
 	override fun getItemId(position: Int): Long {
 		return position.toLong()
 	}
-	
+
 	/**
 	 * Returns the view corresponding to a tab item at a given position.
 	 *
@@ -65,34 +67,34 @@ class WebTabListAdapter(
 			val layoutResId = R.layout.activity_mother_3_left_nav_item
 			correspondingView = inflate(motherActivity, layoutResId, null)
 		}
-		
+
 		val tabItemViewHolder = if (correspondingView!!.tag == null) {
 			ViewHolder(position, correspondingView, motherActivity)
 				.apply { correspondingView.tag = this }
 		} else {
 			(correspondingView.tag as ViewHolder)
 		}
-		
+
 		tabItemViewHolder.updateView(correspondingWebView)
 		return correspondingView
 	}
-	
+
 	/**
 	 * Custom method to notify data set changes, ensuring any associated video
 	 * libraries are updated and synchronized with the current list of WebViews.
 	 */
 	fun notifyDataSetChangedOnSort() {
 		super.notifyDataSetChanged()
-		
+
 		val webViewEngine = browserFragment.getBrowserWebEngine()
 		val listOfVideosLibrary = webViewEngine.listOfWebVideosLibrary
-		
+
 		val webViewIds = listOfWebViews.map { it.id }
 		webViewEngine.listOfWebVideosLibrary = listOfVideosLibrary.filter { library ->
 			library.webViewId in webViewIds
 		} as ArrayList<WebVideosLibrary>
 	}
-	
+
 	/**
 	 * ViewHolder class to cache and manage views for each browser tab item.
 	 *
@@ -104,13 +106,13 @@ class WebTabListAdapter(
 		val position: Int, val layoutView: View,
 		val safeMotherActivityRef: MotherActivity
 	) {
-		
+
 		var itemClickableContainer: View = layoutView.findViewById(R.id.browser_tab_info)
 		var browserFavicon: ImageView = layoutView.findViewById(R.id.btn_tab_favicon)
 		var browserTabTitle: TextView = layoutView.findViewById(R.id.browser_tab_title)
 		var browserTabUrl: TextView = layoutView.findViewById(R.id.browser_tab_url)
 		var browserTabCloseButton: View = layoutView.findViewById(R.id.btn_browser_tab_close)
-		
+
 		/**
 		 * Updates the tab view contents based on the given [WebView].
 		 *
@@ -128,13 +130,30 @@ class WebTabListAdapter(
 						}
 					})
 				}
-				
+
+				// Set on click listener to open the tab
+				itemClickableContainer.setOnLongClickListener {
+					try {
+						val currentWebUrl = targetWebview.url.toString()
+						if (currentWebUrl.isNotEmpty()) {
+							copyTextToClipboard(safeMotherActivityRef, currentWebUrl)
+							safeMotherActivityRef?.doSomeVibration(50)
+							ToastView.showToast(msgId = R.string.text_copied_url_to_clipboard)
+						}
+					} catch (error: Exception) {
+						error.printStackTrace()
+						safeMotherActivityRef?.doSomeVibration(50)
+						ToastView.showToast(msgId = R.string.text_something_went_wrong)
+					}
+					return@setOnLongClickListener true
+				}
+
 				// Set click listener to close the tab
 				browserTabCloseButton.setOnClickListener {
 					closeWebViewTab(position, targetWebview)
 				}
 			}
-			
+
 			targetWebview.apply {
 				val webpageUrl = targetWebview.url.toString()
 				browserTabUrl.text = removeWwwFromUrl(webpageUrl)
@@ -142,7 +161,7 @@ class WebTabListAdapter(
 				else browserTabTitle.text = webpageUrl.ifEmpty {
 					context.getString(R.string.text_waiting_for_server_to_respond)
 				}
-				
+
 				// Load favicon asynchronously
 				executeInBackground {
 					val faviconCachedPath = aioFavicons.getFavicon(webpageUrl)
