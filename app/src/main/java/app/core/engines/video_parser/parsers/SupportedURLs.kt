@@ -246,7 +246,19 @@ object SupportedURLs {
 			Regex("""^https?://(www\.)?pin\.it/[A-Za-z0-9]+/?""", IGNORE_CASE),
 
 			// TikTok video
-			Regex("""^https?://(www\.)?tiktok\.com/@[^/]+/video/\d+""", IGNORE_CASE)
+			Regex("""^https?://(www\.)?tiktok\.com/@[^/]+/video/\d+""", IGNORE_CASE),
+
+			// Facebook video post
+			Regex("""^https?://(www\.)?facebook\.com/.*/videos/\d+/?""", IGNORE_CASE),
+
+			// Facebook watch page
+			Regex("""^https?://(www\.)?facebook\.com/watch/\?v=\d+.*""", IGNORE_CASE),
+
+			// Facebook reels
+			Regex("""^https?://(www\.)?facebook\.com/reel/\d+/?""", IGNORE_CASE),
+
+			// Facebook short links (fb.watch)
+			Regex("""^https?://(www\.)?fb\.watch/[A-Za-z0-9_-]+/?""", IGNORE_CASE)
 		)
 
 		return patterns.any { it.matches(webpageUrl) }
