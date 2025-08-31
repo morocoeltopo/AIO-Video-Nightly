@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dialog layout showing a step-by-step how-to guide for web video downloading -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -6,6 +8,7 @@
 	android:layout_height="wrap_content"
 	tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
 
+	<!-- Main card container with rounded corners and shadow -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -17,17 +20,20 @@
 		app:cardCornerRadius="@dimen/_10"
 		app:cardElevation="@dimen/_5">
 
+		<!-- Vertical layout for organizing guide content -->
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
+			<!-- Header section with surface background -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				android:background="@color/color_surface"
 				android:orientation="vertical">
 
+				<!-- Dialog title -->
 				<TextView
 					android:id="@+id/txt_dialog_title"
 					android:layout_width="match_parent"
@@ -43,11 +49,13 @@
 					android:textStyle="bold" />
 			</LinearLayout>
 
+			<!-- Scrollable area for the step-by-step guide -->
 			<ScrollView
 				android:layout_width="match_parent"
 				android:layout_height="0dp"
 				android:layout_weight="1">
 
+				<!-- Container for guide steps (images + descriptions) -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
@@ -57,6 +65,7 @@
 					android:orientation="vertical"
 					tools:ignore="UseCompoundDrawables">
 
+					<!-- Step 1: Image in card with rounded corners -->
 					<androidx.cardview.widget.CardView
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
@@ -73,6 +82,7 @@
 							tools:ignore="ImageContrastCheck" />
 					</androidx.cardview.widget.CardView>
 
+					<!-- Step 1 description text -->
 					<TextView
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
@@ -86,6 +96,7 @@
 						android:textStyle="italic"
 						tools:ignore="VisualLintLongText" />
 
+					<!-- Step 2: Image in card -->
 					<androidx.cardview.widget.CardView
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
@@ -101,6 +112,7 @@
 							android:src="@drawable/ic_web_how_to_guide_2" />
 					</androidx.cardview.widget.CardView>
 
+					<!-- Step 2 description text -->
 					<TextView
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
@@ -113,6 +125,7 @@
 						android:textSize="@dimen/message_text_size"
 						android:textStyle="italic" />
 
+					<!-- Step 3: Image in card with adjusted margins -->
 					<androidx.cardview.widget.CardView
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
@@ -131,6 +144,7 @@
 							android:src="@drawable/ic_web_how_to_guide_3" />
 					</androidx.cardview.widget.CardView>
 
+					<!-- Step 3 description text -->
 					<TextView
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
@@ -143,12 +157,14 @@
 						android:textSize="@dimen/message_text_size"
 						android:textStyle="italic" />
 
+					<!-- Spacer at the bottom of the scroll view -->
 					<Space
 						android:layout_width="match_parent"
 						android:layout_height="@dimen/_8" />
 				</LinearLayout>
 			</ScrollView>
 
+			<!-- Confirmation/OK button at the bottom -->
 			<RelativeLayout
 				android:id="@+id/btn_dialog_positive_container"
 				android:layout_width="match_parent"
@@ -162,6 +178,7 @@
 				android:elevation="@dimen/_2"
 				tools:ignore="TouchTargetSizeCheck">
 
+				<!-- OK button with checkmark icon -->
 				<TextView
 					android:id="@+id/btn_dialog_positive"
 					android:layout_width="wrap_content"

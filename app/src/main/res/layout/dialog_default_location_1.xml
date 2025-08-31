@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Dialog layout for download location selection -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -7,6 +8,7 @@
 	android:layout_height="wrap_content"
 	tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
 
+	<!-- Main dialog card container -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -23,6 +25,7 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
+			<!-- Hidden title section (currently not visible) -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
@@ -45,6 +48,7 @@
 					android:textStyle="bold" />
 			</LinearLayout>
 
+			<!-- Radio button group for location options -->
 			<LinearLayout
 				android:id="@+id/radio_group"
 				android:layout_width="match_parent"
@@ -55,6 +59,7 @@
 				android:layout_marginBottom="@dimen/_5"
 				android:orientation="vertical">
 
+				<!-- Private folder option -->
 				<LinearLayout
 					android:id="@+id/button_app_private_folder"
 					android:layout_width="match_parent"
@@ -67,6 +72,7 @@
 					android:clickable="true"
 					android:orientation="horizontal">
 
+					<!-- Radio button indicator (checked state) -->
 					<ImageView
 						android:id="@+id/btn_app_private_folder_radio"
 						android:layout_width="wrap_content"
@@ -79,6 +85,7 @@
 						android:tint="@color/color_secondary"
 						tools:ignore="ImageContrastCheck" />
 
+					<!-- Text content for private folder option -->
 					<LinearLayout
 						android:layout_width="0dp"
 						android:layout_height="wrap_content"
@@ -99,6 +106,7 @@
 							android:textStyle="bold" />
 
 						<TextView
+							android:id="@+id/txt_private_folder_description"
 							android:layout_width="match_parent"
 							android:layout_height="wrap_content"
 							android:layout_marginStart="@dimen/_0"
@@ -112,6 +120,7 @@
 					</LinearLayout>
 				</LinearLayout>
 
+				<!-- System gallery option -->
 				<LinearLayout
 					android:id="@+id/btn_system_gallery"
 					android:layout_width="match_parent"
@@ -124,6 +133,7 @@
 					android:clickable="true"
 					android:orientation="horizontal">
 
+					<!-- Radio button indicator (unchecked state) -->
 					<ImageView
 						android:id="@+id/button_system_gallery_radio"
 						android:layout_width="wrap_content"
@@ -136,6 +146,7 @@
 						android:tint="@color/color_secondary"
 						tools:ignore="ImageContrastCheck" />
 
+					<!-- Text content for system gallery option -->
 					<LinearLayout
 						android:layout_width="0dp"
 						android:layout_height="wrap_content"
@@ -156,6 +167,7 @@
 							android:textStyle="bold" />
 
 						<TextView
+							android:id="@+id/txt_system_gallery_description"
 							android:layout_width="match_parent"
 							android:layout_height="wrap_content"
 							android:layout_marginStart="@dimen/_0"
@@ -170,6 +182,7 @@
 				</LinearLayout>
 			</LinearLayout>
 
+			<!-- Apply changes button -->
 			<RelativeLayout
 				android:id="@+id/btn_dialog_positive_container"
 				android:layout_width="match_parent"
@@ -200,6 +213,7 @@
 					android:textStyle="bold" />
 			</RelativeLayout>
 
+			<!-- Informational footnote -->
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"

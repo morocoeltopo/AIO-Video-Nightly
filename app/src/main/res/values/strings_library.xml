@@ -370,13 +370,13 @@
 	<string name="title_history">History</string>
 	<string name="text_open_downloads_for_recent_downloads"><b>Open Tasks</b> for all downloads</string>
 	<string name="title_recent_downloads">Recent Downloads</string>
-	<string name="text_fb_how_to_guide_1"><b><u>Tap the Share button</u></b> under the video, then <b><u>select Copy link</u></b> to save the video or reel’s web address into the clipboard.</string>
+	<string name="text_fb_how_to_guide_1">Tap the <b><u>Share button</u></b> below the video or reel you want, then <b><u>select Copy link</u></b> to copy its web address to your clipboard.</string>
 	<string name="text_yt_how_to_guide_1"><b><u>Tap the Share button</u></b> below the video, then <b><u>scroll horizontally</u></b> to find the <b><u>More option</u></b>.</string>
-	<string name="text_fb_how_to_guide_2"><b><u>Return to AIO app</u></b>, then paste the copied link into <b><u>the top search box</u></b>, and press <b><u>download icon</u></b> to save the video.</string>
+	<string name="text_fb_how_to_guide_2"><b><u>Return to AIO app</u></b>, then paste the copied link into <b><u>the top search box</u></b>, and press <b><u>download</u></b>.</string>
 	<string name="text_yt_how_to_guide_2">Scroll the options to the left to reveal more. <b><u>Tap More to view AIO</u></b> along with other apps.</string>
-	<string name="text_fb_how_to_guide_3"><b><u>After pasting the video link</u></b> into the app’s input field, tap the <b><u>download icon</u></b> to see the available download options.</string>
+	<string name="text_fb_how_to_guide_3"><b><u>After pasting the video link</u></b> into the input field, tap the <b><u>download icon</u></b> to see the available videos resolutions to download.</string>
 	<string name="text_yt_how_to_guide_3">Once the <b><u>list of available apps appears</u></b>, find <b><u>AIO Video Downloader</u></b> in the list and select it.</string>
-	<string name="text_fb_how_to_guide_4">Simply tap the <b><u>Download button</u></b> to save the Facebook video or reel directly to <b><u>your phone’s storage</u></b> for offline viewing.</string>
+	<string name="text_fb_how_to_guide_4">Simply tap the <b><u>Download button</u></b> to save the video or reel directly to <b><u>your phone’s storage</u></b> for offline viewing.</string>
 	<string name="text_yt_how_to_guide_4">Simply tap the <b><u>Download button</u></b> to save the YouTube video <b><u>on your phone’s storage</u></b>.</string>
 	<string name="title_pick_video_hosting_platform">Select Video Sharing Platform</string>
 	<string name="title_copied_link">Copied Link</string>

@@ -1,12 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!-- Layout for empty downloads state with option to learn how to download -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:background="@color/transparent"
 	android:orientation="vertical"
 	tools:ignore="UseCompatTextViewDrawableXml">
 
+	<!-- ListView for completed downloads (initially hidden) -->
 	<ListView
 		android:id="@+id/container_download_tasks_finished"
 		android:layout_width="match_parent"
@@ -18,6 +20,7 @@
 		android:divider="@color/transparent"
 		android:visibility="gone" />
 
+	<!-- Empty state card shown when no downloads exist -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/container_empty_downloads"
 		android:layout_width="match_parent"
@@ -37,6 +40,7 @@
 			android:layout_height="match_parent"
 			android:orientation="vertical">
 
+			<!-- Empty box illustration -->
 			<ImageView
 				android:id="@+id/img_empty_downloads"
 				android:layout_width="wrap_content"
@@ -48,6 +52,7 @@
 				android:importantForAccessibility="no"
 				android:src="@drawable/image_empty_box" />
 
+			<!-- Informational text about empty downloads -->
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
@@ -62,6 +67,7 @@
 				android:textColor="@color/color_text_primary"
 				android:textSize="@dimen/message_text_size" />
 
+			<!-- Button to show download instructions -->
 			<RelativeLayout
 				android:id="@+id/btn_how_to_download"
 				android:layout_width="match_parent"
@@ -75,6 +81,7 @@
 				android:elevation="@dimen/_2"
 				tools:ignore="TouchTargetSizeCheck">
 
+				<!-- How to download button with question icon -->
 				<TextView
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
@@ -94,6 +101,7 @@
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>
 
+	<!-- Floating button to view active downloads (initially hidden) -->
 	<LinearLayout
 		android:id="@+id/btn_open_active_downloads"
 		android:layout_width="wrap_content"
@@ -109,6 +117,7 @@
 		android:orientation="vertical"
 		android:visibility="gone">
 
+		<!-- Animated icon for active downloads -->
 		<com.airbnb.lottie.LottieAnimationView
 			android:id="@+id/img_open_active_downloads"
 			android:layout_width="@dimen/_50"

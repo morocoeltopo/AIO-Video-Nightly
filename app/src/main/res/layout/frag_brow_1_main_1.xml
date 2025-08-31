@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Main browser layout with action bar, URL editing, and webview container -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -7,13 +8,15 @@
 	android:orientation="vertical"
 	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint">
 
+	<!-- Top action bar section (visible by default) -->
 	<RelativeLayout
 		android:id="@+id/top_actionbar_section"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:background="@color/color_surface"
+		android:background="@color/transparent"
 		android:orientation="vertical">
 
+		<!-- Action bar card with rounded corners -->
 		<androidx.cardview.widget.CardView
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/_50"
@@ -29,6 +32,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent">
 
+				<!-- Navigation menu button (hamburger icon) -->
 				<RelativeLayout
 					android:id="@+id/btn_open_navigation"
 					android:layout_width="@dimen/_50"
@@ -49,6 +53,7 @@
 						tools:ignore="ImageContrastCheck" />
 				</RelativeLayout>
 
+				<!-- URL/search container with favicon and reload button -->
 				<RelativeLayout
 					android:id="@+id/container_edit_browser_url"
 					android:layout_width="match_parent"
@@ -60,6 +65,7 @@
 					android:elevation="@dimen/_5"
 					android:orientation="horizontal">
 
+					<!-- Website favicon indicator -->
 					<ImageView
 						android:id="@+id/img_browser_favicon"
 						android:layout_width="@dimen/_24"
@@ -73,6 +79,7 @@
 						android:visibility="visible"
 						tools:ignore="ImageContrastCheck" />
 
+					<!-- URL/search text display with marquee scrolling -->
 					<TextView
 						android:id="@+id/edit_search_suggestion"
 						android:layout_width="match_parent"
@@ -98,6 +105,7 @@
 						android:textStyle="bold"
 						tools:ignore="TextContrastCheck" />
 
+					<!-- Reload/refresh button -->
 					<ImageView
 						android:id="@+id/btn_browser_reload"
 						android:layout_width="@dimen/_26"
@@ -115,6 +123,7 @@
 						tools:ignore="ImageContrastCheck,TouchTargetSizeCheck" />
 				</RelativeLayout>
 
+				<!-- Browser options/menu button -->
 				<RelativeLayout
 					android:id="@+id/btn_browser_options"
 					android:layout_width="@dimen/_50"
@@ -140,6 +149,7 @@
 		</androidx.cardview.widget.CardView>
 	</RelativeLayout>
 
+	<!-- URL editing section (hidden by default, shown when editing URL) -->
 	<RelativeLayout
 		android:id="@+id/top_url_edit_section"
 		android:layout_width="match_parent"
@@ -148,6 +158,7 @@
 		android:orientation="vertical"
 		android:visibility="gone">
 
+		<!-- URL edit card with rounded corners -->
 		<androidx.cardview.widget.CardView
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/_50"
@@ -164,6 +175,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent">
 
+				<!-- Back button to return to main action bar -->
 				<RelativeLayout
 					android:id="@+id/btn_actionbar_back"
 					android:layout_width="@dimen/_40"
@@ -186,6 +198,7 @@
 						android:tint="@color/color_secondary" />
 				</RelativeLayout>
 
+				<!-- URL input field container -->
 				<RelativeLayout
 					android:id="@+id/edit_field_url_container"
 					android:layout_width="match_parent"
@@ -201,6 +214,7 @@
 					android:elevation="@dimen/_5"
 					android:orientation="vertical">
 
+					<!-- URL input text field -->
 					<EditText
 						android:id="@+id/edit_field_url"
 						android:layout_width="match_parent"
@@ -225,6 +239,7 @@
 						android:textStyle="bold" />
 				</RelativeLayout>
 
+				<!-- Clear URL input button -->
 				<RelativeLayout
 					android:id="@+id/btn_clear_url_edit_field"
 					android:layout_width="@dimen/_40"
@@ -249,6 +264,7 @@
 						android:tint="@color/color_secondary" />
 				</RelativeLayout>
 
+				<!-- Load/enter URL button -->
 				<RelativeLayout
 					android:id="@+id/btn_load_url_to_browser"
 					android:layout_width="@dimen/_40"
@@ -275,6 +291,7 @@
 		</androidx.cardview.widget.CardView>
 	</RelativeLayout>
 
+	<!-- Main webview container with progress bar and floating action button -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/webview_container_layout"
 		android:layout_width="match_parent"
@@ -287,12 +304,14 @@
 		app:cardBackgroundColor="@color/color_background"
 		app:cardCornerRadius="@dimen/_10">
 
+		<!-- Container for the WebView -->
 		<LinearLayout
 			android:id="@+id/browser_webview_container"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:orientation="vertical" />
 
+		<!-- WebView loading progress bar -->
 		<ProgressBar
 			android:id="@+id/webview_progress_bar"
 			style="@style/style_webview_loading"
@@ -302,6 +321,7 @@
 			android:alpha="1"
 			android:progress="20" />
 
+		<!-- Quick info/status text at bottom of webview -->
 		<TextView
 			android:id="@+id/txt_browser_quick_info"
 			android:layout_width="match_parent"
@@ -329,6 +349,7 @@
 			android:visibility="visible"
 			tools:ignore="TextContrastCheck,TextSizeCheck" />
 
+		<!-- Floating action button for video grabbing/downloading -->
 		<com.airbnb.lottie.LottieAnimationView
 			android:id="@+id/btn_video_grabber"
 			android:layout_width="@dimen/_50"

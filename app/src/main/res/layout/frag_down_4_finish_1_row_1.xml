@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Layout for a completed download item row with thumbnail and file info -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/button_finish_download_row"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
+	android:background="@color/transparent"
 	android:clickable="true"
 	tools:ignore="UseAppTint, UselessParent">
 
+	<!-- Main container with background selector and elevation -->
 	<RelativeLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
@@ -19,6 +22,7 @@
 		android:elevation="@dimen/_1"
 		android:orientation="vertical">
 
+		<!-- Thumbnail container with rounded corners -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/container_img_thumbnail"
 			android:layout_width="@dimen/_90"
@@ -30,6 +34,7 @@
 			app:cardBackgroundColor="@color/color_background"
 			app:cardCornerRadius="@dimen/_5">
 
+			<!-- File thumbnail image with fallback -->
 			<ImageView
 				android:id="@+id/img_file_thumbnail"
 				android:layout_width="match_parent"
@@ -41,6 +46,7 @@
 				android:src="@drawable/image_no_thumb_available"
 				tools:ignore="ImageContrastCheck" />
 
+			<!-- Play indicator overlay for media files (hidden by default) -->
 			<ImageView
 				android:id="@+id/img_media_play_indicator"
 				android:layout_width="@dimen/_20"
@@ -55,6 +61,7 @@
 				android:visibility="gone"
 				tools:ignore="ImageContrastCheck" />
 
+			<!-- Site favicon indicator (hidden by default) -->
 			<ImageView
 				android:id="@+id/img_site_favicon"
 				android:layout_width="@dimen/_20"
@@ -69,6 +76,7 @@
 				android:visibility="gone"
 				tools:ignore="ImageContrastCheck" />
 
+			<!-- Media duration indicator container (hidden by default) -->
 			<LinearLayout
 				android:id="@+id/container_media_duration"
 				android:layout_width="wrap_content"
@@ -82,6 +90,7 @@
 				android:orientation="vertical"
 				android:visibility="gone">
 
+				<!-- Media duration text -->
 				<TextView
 					android:id="@+id/txt_media_duration"
 					android:layout_width="wrap_content"
@@ -101,6 +110,7 @@
 
 		</androidx.cardview.widget.CardView>
 
+		<!-- Container for file info (name and details) -->
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
@@ -109,10 +119,12 @@
 			android:layout_toEndOf="@id/container_img_thumbnail"
 			android:orientation="vertical">
 
+			<!-- File name and open button row -->
 			<RelativeLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content">
 
+				<!-- File name with max 2 lines -->
 				<TextView
 					android:id="@+id/txt_file_name"
 					android:layout_width="match_parent"
@@ -127,6 +139,7 @@
 					android:textColor="@color/color_text_primary"
 					android:textSize="@dimen/normal_text_size_small" />
 
+				<!-- Open file button -->
 				<ImageView
 					android:id="@+id/btn_open_download_file"
 					android:layout_width="wrap_content"
@@ -142,6 +155,7 @@
 
 			</RelativeLayout>
 
+			<!-- File information container with rounded background -->
 			<RelativeLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -149,6 +163,7 @@
 				android:background="@drawable/rounded_surface_color"
 				android:orientation="horizontal">
 
+				<!-- File info text (size, date, etc.) -->
 				<TextView
 					android:id="@+id/txt_file_info"
 					android:layout_width="match_parent"

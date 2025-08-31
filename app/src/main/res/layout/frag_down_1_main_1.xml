@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Main fragment container layout with action bar and view pager -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@color/color_surface"
+	android:background="@color/transparent"
 	android:orientation="vertical"
 	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint">
 
+	<!-- Top action bar with navigation and action buttons -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/top_actionbar_section"
 		android:layout_width="match_parent"
@@ -24,6 +26,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="match_parent">
 
+			<!-- Back button for navigation -->
 			<RelativeLayout
 				android:id="@+id/btn_actionbar_back"
 				android:layout_width="@dimen/_50"
@@ -44,6 +47,7 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
+			<!-- Current fragment title display -->
 			<TextView
 				android:id="@+id/txt_current_frag_name"
 				android:layout_width="match_parent"
@@ -62,6 +66,7 @@
 				android:textSize="@dimen/title_text_size"
 				android:textStyle="bold" />
 
+			<!-- Search button (initially hidden) -->
 			<RelativeLayout
 				android:id="@+id/btn_actionbar_search"
 				android:layout_width="@dimen/_50"
@@ -84,6 +89,7 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
+			<!-- Add new download button -->
 			<RelativeLayout
 				android:id="@+id/btn_actionbar_add_download"
 				android:layout_width="@dimen/_50"
@@ -108,10 +114,12 @@
 		</RelativeLayout>
 	</androidx.cardview.widget.CardView>
 
+	<!-- Container for the view pager that holds different fragments -->
 	<RelativeLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
 
+		<!-- Non-swappable view pager for fragment navigation -->
 		<lib.ui.builders.NonSwappableViewPager
 			android:id="@+id/fragment_viewpager"
 			android:layout_width="match_parent"

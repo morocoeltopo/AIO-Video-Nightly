@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dialog layout for language selection with app restart notice -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -6,6 +8,7 @@
 	android:layout_height="wrap_content"
 	tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
 
+	<!-- Main dialog card container -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -22,6 +25,7 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
+			<!-- Scrollable area for language options -->
 			<ScrollView
 				android:id="@+id/middle_languages_section"
 				android:layout_width="match_parent"
@@ -33,6 +37,7 @@
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 
+					<!-- Radio group for language selection options -->
 					<RadioGroup
 						android:id="@+id/language_options_container"
 						android:layout_width="match_parent"
@@ -47,6 +52,7 @@
 				</LinearLayout>
 			</ScrollView>
 
+			<!-- Apply changes button container -->
 			<RelativeLayout
 				android:id="@+id/btn_dialog_positive_container"
 				android:layout_width="match_parent"
@@ -60,6 +66,7 @@
 				android:elevation="@dimen/_2"
 				tools:ignore="TouchTargetSizeCheck">
 
+				<!-- Apply changes button with settings icon -->
 				<TextView
 					android:id="@+id/btn_dialog_positive"
 					android:layout_width="wrap_content"
@@ -77,6 +84,7 @@
 					android:textStyle="bold" />
 			</RelativeLayout>
 
+			<!-- Informational text about app restart requirement -->
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"

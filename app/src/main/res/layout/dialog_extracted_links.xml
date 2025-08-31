@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Dialog layout for displaying grabbed video URLs -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -7,6 +8,7 @@
 	android:layout_height="wrap_content"
 	tools:ignore="UseAppTint,UseCompatTextViewDrawableXml,VisualLintBounds">
 
+	<!-- Main dialog card container -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -23,6 +25,7 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
+			<!-- Dialog title section -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
@@ -45,6 +48,7 @@
 
 			</LinearLayout>
 
+			<!-- List view to display extracted video URLs -->
 			<ListView
 				android:id="@+id/list_extracted_video_urls"
 				android:layout_width="match_parent"
@@ -52,6 +56,7 @@
 				android:layout_weight="1"
 				android:divider="@color/transparent" />
 
+			<!-- Close button container -->
 			<RelativeLayout
 				android:id="@+id/btn_dialog_positive_container"
 				android:layout_width="match_parent"
@@ -66,6 +71,7 @@
 				android:elevation="@dimen/_2"
 				tools:ignore="TouchTargetSizeCheck">
 
+				<!-- Close button with check icon -->
 				<TextView
 					android:id="@+id/btn_dialog_positive"
 					android:layout_width="wrap_content"
@@ -85,6 +91,7 @@
 					android:textStyle="bold" />
 			</RelativeLayout>
 
+			<!-- Informational footnote about task progress -->
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"

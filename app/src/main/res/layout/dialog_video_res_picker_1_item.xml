@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Layout for a video format/resolution option item with border -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
+	android:background="@color/transparent"
 	android:orientation="vertical">
 
+	<!-- Main container with bordered background and elevation -->
 	<LinearLayout
 		android:id="@+id/main_layout"
 		android:layout_width="match_parent"
@@ -16,6 +19,7 @@
 		android:orientation="vertical"
 		tools:ignore="UselessParent">
 
+		<!-- Resolution text (e.g., "1080p", "720p") -->
 		<TextView
 			android:id="@+id/txt_resolution"
 			android:layout_width="match_parent"
@@ -32,6 +36,7 @@
 			android:textSize="@dimen/sub_heading_text_size"
 			android:textStyle="bold" />
 
+		<!-- File size text (semi-transparent) -->
 		<TextView
 			android:id="@+id/txt_file_size"
 			android:layout_width="match_parent"

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Container layout for displaying download tasks queue with scrollable content -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@color/color_surface"
-	android:orientation="vertical">
+	android:background="@color/transparent"
+	android:orientation="vertical"
+	tools:ignore="SpeakableTextPresentCheck">
 
+	<!-- Container for download task items arranged vertically -->
 	<LinearLayout
 		android:id="@+id/container_download_tasks_queue"
 		android:layout_width="match_parent"
