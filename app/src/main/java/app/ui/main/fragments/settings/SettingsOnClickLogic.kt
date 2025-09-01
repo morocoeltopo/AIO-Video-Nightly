@@ -11,6 +11,7 @@ import app.core.AIOApp
 import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.updater.AIOUpdater
 import app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActivity
+import app.ui.main.fragments.settings.dialogs.ContentRegionSelector
 import app.ui.main.fragments.settings.dialogs.DownloadLocation
 import app.ui.others.information.UserFeedbackActivity
 import app.ui.others.startup.LanguagePickerDialog
@@ -86,15 +87,27 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	fun changeDefaultContentRegion() {
 		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
-			doSomeVibration(50)
-			showToast(msgId = R.string.text_feature_isnt_available_yet)
+			ContentRegionSelector(this).apply {
+				getDialogBuilder().setCancelable(true)
+				onApplyListener = {
+					close()
+					restartApp(shouldKillProcess = true)
+				}
+			}.show()
 		}
 	}
 
 	fun enableDailyContentSuggestions() {
 		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
-			doSomeVibration(50)
-			showToast(msgId = R.string.text_feature_isnt_available_yet)
+			try {
+				aioSettings.enableDailyContentSuggestion = !aioSettings.enableDailyContentSuggestion
+				aioSettings.updateInStorage()
+				logger.d("Daily content suggestions: ${aioSettings.enableDailyContentSuggestion}")
+				updateSettingStateUI()
+			} catch (error: Exception) {
+				logger.d("Error toggling daily content suggestions: ${error.message}")
+				error.printStackTrace()
+			}
 		}
 	}
 
@@ -197,10 +210,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	fun changeDefaultDownloadFolder(){
+	fun changeDefaultDownloadFolder() {
 		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
 			doSomeVibration(50)
-			showToast(msgId = R.string.text_feature_isnt_available_yet)
+			showToast(msgId = R.string.title_experimental_feature)
 		}
 	}
 
@@ -372,6 +385,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		logger.d("Updating Setting State UI")
 		safeSettingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
 			listOf(
+				SettingViewConfig(
+					viewId = R.id.txt_daily_suggestions,
+					isEnabled = aioSettings.enableDailyContentSuggestion
+				),
 				SettingViewConfig(
 					viewId = R.id.txt_play_notification_sound,
 					isEnabled = aioSettings.downloadPlayNotificationSound

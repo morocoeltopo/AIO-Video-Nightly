@@ -50,8 +50,12 @@ class AIOSettings : Serializable {
 	// Default download location
 	var defaultDownloadLocation = SYSTEM_GALLERY
 
-	// Language settings
+	// Language & regions settings
 	var userSelectedUILanguage: String = ENGLISH
+	var userSelectedContentRegion: String = "IN"
+
+	// Other settings
+	var enableDailyContentSuggestion: Boolean = true
 
 	// Analytics / interaction counters
 	var totalClickCountOnLanguageChange = 0

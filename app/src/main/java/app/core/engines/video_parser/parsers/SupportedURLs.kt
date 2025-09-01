@@ -166,6 +166,29 @@ object SupportedURLs {
 		}
 	}
 
+	/** Checks whether the given URL is from Twitter or X.com. */
+	fun isTwitterOrXUrl(url: String): Boolean {
+		return try {
+			val host = URL(url).host.lowercase()
+			host.contains("twitter.com") || host.contains("x.com")
+		} catch (error: Exception) {
+			error.printStackTrace()
+			false
+		}
+	}
+
+	/** Checks whether the given URL is from Snapchat. */
+	fun isSnapchatUrl(url: String): Boolean {
+		return try {
+			val host = URL(url).host.lowercase()
+			host.contains("snapchat.com")
+		} catch (error: Exception) {
+			error.printStackTrace()
+			false
+		}
+	}
+
+
 	/**
 	 * Checks whether the given URL is from a supported social media platform
 	 * (Facebook, Instagram, TikTok, YouTube).
@@ -177,7 +200,9 @@ object SupportedURLs {
 		return isInstagramUrl(url) ||
 				isFacebookUrl(url) ||
 				isTiktokUrl(url) ||
-				isPinterestUrl(url)
+				isPinterestUrl(url) ||
+				isTwitterOrXUrl(url) ||
+				isSnapchatUrl(url)
 	}
 
 	/**
@@ -239,6 +264,18 @@ object SupportedURLs {
 			// Twitter / X status links
 			Regex("""^https?://(www\.)?(twitter|x)\.com/[^/]+/status/\d+""", IGNORE_CASE),
 
+			// Twitter status links (with optional query params)
+			Regex("""^https?://(www\.)?twitter\.com/[^/]+/status/\d+.*""", IGNORE_CASE),
+
+			// X.com status links (with optional query params)
+			Regex("""^https?://(www\.)?x\.com/[^/]+/status/\d+.*""", IGNORE_CASE),
+
+			// Mobile Twitter links (with optional query params)
+			Regex("""^https?://(mobile\.)?twitter\.com/[^/]+/status/\d+.*""", IGNORE_CASE),
+
+			// Twitter "i/status" embed links
+			Regex("""^https?://(www\.)?(twitter|x)\.com/i/status/\d+.*""", IGNORE_CASE),
+
 			// Pinterest pin
 			Regex("""^https?://([a-z]+\.)?pinterest\.com/pin/\d+/?""", IGNORE_CASE),
 
@@ -258,7 +295,14 @@ object SupportedURLs {
 			Regex("""^https?://(www\.)?facebook\.com/reel/\d+/?""", IGNORE_CASE),
 
 			// Facebook short links (fb.watch)
-			Regex("""^https?://(www\.)?fb\.watch/[A-Za-z0-9_-]+/?""", IGNORE_CASE)
+			Regex("""^https?://(www\.)?fb\.watch/[A-Za-z0-9_-]+/?""", IGNORE_CASE),
+
+			// Snapchat Spotlight video
+			Regex("""^https?://(www\.)?snapchat\.com/@[^/]+/spotlight/[A-Za-z0-9_-]+""", IGNORE_CASE),
+
+			// Snapchat Spotlight video (optional flexible)
+			Regex("""^https?://(www\.)?snapchat\.com/@[^/]+/(spotlight|story|video)/[A-Za-z0-9_-]+""", IGNORE_CASE)
+
 		)
 
 		return patterns.any { it.matches(webpageUrl) }
