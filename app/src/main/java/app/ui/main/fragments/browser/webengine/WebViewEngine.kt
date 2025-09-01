@@ -257,7 +257,7 @@ class WebViewEngine(val browserFragment: BrowserFragment) {
 		if (currentWebView != null) {
 			if (!currentWebView!!.url.isNullOrEmpty()) {
 				val cookieManager = android.webkit.CookieManager.getInstance()
-				val cookies = cookieManager.getCookie(currentWebView!!.url) ?: null
+				val cookies = cookieManager.getCookie(currentWebView!!.url)
 				return cookies
 			}
 		}; return null
