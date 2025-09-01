@@ -10,11 +10,13 @@ import app.core.AIOApp.Companion.aioSettings
 import app.core.bases.BaseActivity
 import app.ui.main.fragments.settings.dialogs.ContentRegionsList.regionsList
 import com.aio.R
+import lib.process.LogHelperUtils
 import lib.ui.builders.DialogBuilder
 import java.lang.ref.WeakReference
 
 class ContentRegionSelector(private val baseActivity: BaseActivity) {
 
+	private val logger = LogHelperUtils.from(javaClass)
 	private val safeBaseActivityRef by lazy { WeakReference(baseActivity).get() }
 
 	private val contentRegionSelectionDialog by lazy {
@@ -55,34 +57,52 @@ class ContentRegionSelector(private val baseActivity: BaseActivity) {
 
 	private fun setAvailableRegions(dialogLayoutView: View) {
 		safeBaseActivityRef?.let { safeActivityRef ->
+			val radioGroup = getRegionsRadioGroupView(dialogLayoutView)
 			removeAllRadioSelectionViews(dialogLayoutView)
 
-			regionsList.forEachIndexed { index, (_, name) ->
-				inflate(safeActivityRef, R.layout.dialog_content_regions_item_1, null).apply {
-					(this as RadioButton).apply {
-						id = index
-						text = name
+			val batchSize = 10   // how many RadioButtons to add per frame
+			var currentIndex = 0
 
-						// Set the height of the RadioButton
-						val radioButtonHeight = resources.getDimensionPixelSize(R.dimen._40)
-						layoutParams = LayoutParams(MATCH_PARENT, radioButtonHeight)
+			fun addBatch() {
+				val end = (currentIndex + batchSize).coerceAtMost(regionsList.size)
+				for (i in currentIndex until end) {
+					val (_, name) = regionsList[i]
+					inflate(safeActivityRef, R.layout.dialog_content_regions_item_1, null).apply {
+						(this as RadioButton).apply {
+							id = i
+							text = name
 
-						// Set padding inside the RadioButton for visual spacing
-						val horizontalPadding = resources.getDimensionPixelSize(R.dimen._5)
-						val verticalPadding = resources.getDimensionPixelSize(R.dimen._5)
-						setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+							val radioButtonHeight = resources.getDimensionPixelSize(R.dimen._40)
+							layoutParams = LayoutParams(MATCH_PARENT, radioButtonHeight)
+
+							val horizontalPadding = resources.getDimensionPixelSize(R.dimen._5)
+							val verticalPadding = resources.getDimensionPixelSize(R.dimen._5)
+							setPadding(
+								horizontalPadding,
+								verticalPadding,
+								horizontalPadding,
+								verticalPadding
+							)
+						}
+						radioGroup.addView(this)
 					}
-					getRegionsRadioGroupView(dialogLayoutView).addView(this)
+				}
+				currentIndex = end
+				if (currentIndex < regionsList.size) {
+					// Post next batch to the UI thread queue
+					radioGroup.post { addBatch() }
+				} else {
+					// After all added → highlight selected region
+					val currentRegionCode = aioSettings.userSelectedContentRegion
+					val selectedIndex = regionsList.indexOfFirst { it.first == currentRegionCode }
+					if (selectedIndex >= 0) {
+						radioGroup.findViewById<RadioButton>(selectedIndex)?.isChecked = true
+					}
 				}
 			}
 
-			// Highlight the currently selected language
-			val currentRegionCode = aioSettings.userSelectedContentRegion
-			val selectedIndex = regionsList.indexOfFirst { it.first == currentRegionCode }
-			if (selectedIndex >= 0) {
-				getRegionsRadioGroupView(dialogLayoutView)
-					.findViewById<RadioButton>(selectedIndex)?.isChecked = true
-			}
+			// start first batch
+			addBatch()
 		}
 	}
 
@@ -99,7 +119,6 @@ class ContentRegionSelector(private val baseActivity: BaseActivity) {
 			setOnClickListener { applySelectedApplicationContentRegion(dialogLayoutView) }
 		}
 	}
-
 
 	private fun applySelectedApplicationContentRegion(dialogLayoutView: View) {
 		val contentRegionRadioGroup = getRegionsRadioGroupView(dialogLayoutView)

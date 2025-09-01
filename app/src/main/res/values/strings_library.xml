@@ -524,7 +524,7 @@
 	<string name="text_enable_startup_splash">Enable startup splash</string>
 	<string name="text_download_folder">Default download folder</string>
 	<string name="text_enable_daily_suggestions">Enable daily suggestions</string>
-	<string name="text_content_location">Default content location</string>
+	<string name="text_content_region">Default content region</string>
 	<string name="text_enable_desktop_mode">Enable desktop mode</string>
 	<string name="title_reset_settings">Reset Settings</string>
 	<string name="title_reset_browser_settings">Reset Browser Settings</string>
@@ -533,5 +533,6 @@
 	<string name="text_export_browser_bookmark">Export bookmarks/history</string>
 	<string name="text_import_browser_bookmark">Import bookmarks/history</string>
 	<string name="text_make_default_homepage">Default homepage</string>
+	<string name="title_your_content_region">Your Content Region</string>
 
 </resources>
