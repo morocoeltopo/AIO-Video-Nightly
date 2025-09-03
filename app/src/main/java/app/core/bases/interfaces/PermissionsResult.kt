@@ -10,12 +10,12 @@ interface PermissionsResult {
      * Called when the result of a permission request is available.
      *
      * @param isGranted `true` if all requested permissions were granted, `false` otherwise.
-     * @param grantedLs A list of permissions that were granted, or `null` if none.
-     * @param deniedLs A list of permissions that were denied, or `null` if none.
+     * @param grantedList A list of permissions that were granted, or `null` if none.
+     * @param deniedList A list of permissions that were denied, or `null` if none.
      */
     fun onPermissionResultFound(
-        isGranted: Boolean,
-        grantedLs: List<String>?,
-        deniedLs: List<String>?
+		isGranted: Boolean,
+		grantedList: List<String>?,
+		deniedList: List<String>?
     )
 }

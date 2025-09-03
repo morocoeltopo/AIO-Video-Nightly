@@ -198,7 +198,7 @@
 	<string name="title_download_now">Download Now</string>
 	<string name="text_failed_open_the_video">Failed open the video.</string>
 	<string name="title_allow_now">Allow Now</string>
-	<string name="text_allow_permission_in_setting">You need to allow necessary permissions in Settings manually.</string>
+	<string name="text_allow_permission_in_setting">You need to allow necessary permissions in the settings manually.</string>
 	<string name="text_allow_the_permissions">Allow the permissions</string>
 	<string name="text_press_back_button_to_exit">Press back once more to exit.</string>
 	<string name="text_unknown_video_title">Unknown Video Title</string>

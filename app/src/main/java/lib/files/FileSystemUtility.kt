@@ -71,8 +71,8 @@ object FileSystemUtility {
 				}
 				context.startActivity(intent)
 			}
-		} catch (e: Exception) {
-			e.printStackTrace()
+		} catch (error: Exception) {
+			error.printStackTrace()
 			// Fallback: open general app settings
 			val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
 				data = "package:${context.packageName}".toUri()

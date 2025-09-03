@@ -332,8 +332,8 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 					isUserPermissionCheckingActive = false
 					permissionCheckListener?.onPermissionResultFound(
 						isGranted = allGranted,
-						grantedLs = grantedList,
-						deniedLs = deniedList
+						grantedList = grantedList,
+						deniedList = deniedList
 					)
 				}; isUserPermissionCheckingActive = true
 		}
@@ -522,9 +522,9 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 						if (permissions.isNotEmpty() && !isGranted(safeActivityRef, permissions[0]))
 							launchPermissionRequest(getRequiredPermissionsBySDKVersion()) else
 							permissionCheckListener?.onPermissionResultFound(
-								true,
-								permissions,
-								null
+								isGranted = true,
+								grantedList = permissions,
+								deniedList = null
 							)
 					}
 				})
