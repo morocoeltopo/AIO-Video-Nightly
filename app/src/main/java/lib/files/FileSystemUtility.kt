@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.OpenableColumns.DISPLAY_NAME
+import android.provider.Settings
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -48,6 +49,39 @@ import java.util.Locale
 object FileSystemUtility {
 
 	/**
+	 * Opens the settings screen where the user can grant "All Files Access" permission.
+	 *
+	 * On Android 11 (API 30) and above, this opens the special "All files access" permission screen.
+	 * On lower versions, it falls back to the standard app settings screen.
+	 *
+	 * @param context The context used to start the settings activity.
+	 */
+	@JvmStatic
+	fun openAllFilesAccessSettings(context: Context) {
+		try {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+				val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+					data = "package:${context.packageName}".toUri()
+				}
+				context.startActivity(intent)
+			} else {
+				// For Android 10 and below, open the app's settings page
+				val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+					data = "package:${context.packageName}".toUri()
+				}
+				context.startActivity(intent)
+			}
+		} catch (e: Exception) {
+			e.printStackTrace()
+			// Fallback: open general app settings
+			val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+				data = "package:${context.packageName}".toUri()
+			}
+			context.startActivity(intent)
+		}
+	}
+
+	/**
 	 * Checks whether the application has full access to the device's file system.
 	 *
 	 * Behavior differs based on the Android version:
@@ -71,6 +105,7 @@ object FileSystemUtility {
 	 * @see android.Manifest.permission.READ_EXTERNAL_STORAGE
 	 * @see android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 	 */
+	@JvmStatic
 	fun hasFullFileSystemAccess(context: Context): Boolean {
 		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
 			// For Android 11 (API 30) and above
