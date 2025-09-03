@@ -24,7 +24,7 @@ import java.lang.ref.WeakReference
  *
  * @property baseActivity The activity context required for building the dialog.
  */
-class DownloadLocation(private val baseActivity: BaseActivity) {
+class DownloadLocationSelector(private val baseActivity: BaseActivity) {
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/** Weak reference to avoid memory leaks with the base activity */

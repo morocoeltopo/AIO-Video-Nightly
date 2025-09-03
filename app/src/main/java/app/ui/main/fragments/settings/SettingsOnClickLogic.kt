@@ -12,14 +12,14 @@ import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.updater.AIOUpdater
 import app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActivity
 import app.ui.main.fragments.settings.dialogs.ContentRegionSelector
-import app.ui.main.fragments.settings.dialogs.DownloadLocation
+import app.ui.main.fragments.settings.dialogs.DownloadLocationSelector
 import app.ui.others.information.UserFeedbackActivity
 import app.ui.others.startup.LanguagePickerDialog
 import com.aio.R
 import kotlinx.coroutines.delay
 import lib.device.ShareUtility
 import lib.networks.URLUtility.ensureHttps
-import lib.networks.URLUtility.isValidDomain
+import lib.networks.URLUtility.isValidURL
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
 import lib.process.LogHelperUtils
@@ -49,7 +49,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	fun setDefaultDownloadLocationPicker() {
 		logger.d("Opening Download Location Picker")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivity ->
-			DownloadLocation(baseActivity = safeMotherActivity).show()
+			DownloadLocationSelector(baseActivity = safeMotherActivity).show()
 		}
 	}
 
@@ -132,7 +132,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				dialogBuilder.setOnClickForPositiveButton {
 					val userEnteredURL = editTextURL.text.toString()
 					logger.d("User entered homepage: $userEnteredURL")
-					if (isValidDomain(userEnteredURL)) {
+					if (isValidURL(userEnteredURL)) {
 						val finalNormalizedURL = ensureHttps(userEnteredURL) ?: userEnteredURL
 						aioSettings.browserDefaultHomepage = finalNormalizedURL
 						aioSettings.updateInStorage()
