@@ -12,6 +12,7 @@ import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.updater.AIOUpdater
 import app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActivity
 import app.ui.main.fragments.settings.dialogs.ContentRegionSelector
+import app.ui.main.fragments.settings.dialogs.CustomDownloadFolderSelector
 import app.ui.main.fragments.settings.dialogs.DownloadLocationSelector
 import app.ui.others.information.UserFeedbackActivity
 import app.ui.others.startup.LanguagePickerDialog
@@ -44,6 +45,8 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	// Weak reference to avoid leaks
 	private val safeSettingsFragmentRef = WeakReference(settingsFragment).get()
+
+	// application settings
 
 	/** Show a dialog to select default download location */
 	fun setDefaultDownloadLocationPicker() {
@@ -110,6 +113,71 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			}
 		}
 	}
+
+	// download settings
+
+	fun changeDefaultDownloadFolder() {
+		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+			CustomDownloadFolderSelector(this).show()
+		}
+	}
+
+	/** Toggle visibility of download notification */
+	fun toggleHideDownloadNotification() {
+		try {
+			aioSettings.downloadHideNotification = !aioSettings.downloadHideNotification
+			aioSettings.updateInStorage()
+			logger.d("Download Notification Hidden: ${aioSettings.downloadHideNotification}")
+			updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.d("Error toggling download notification: ${error.message}")
+			error.printStackTrace()
+		}
+	}
+
+	/** Toggle "Wi-Fi only" mode for downloads */
+	fun toggleWifiOnlyDownload() {
+		try {
+			aioSettings.downloadWifiOnly = !aioSettings.downloadWifiOnly
+			aioSettings.updateInStorage()
+			logger.d("Wi-Fi only downloads: ${aioSettings.downloadWifiOnly}")
+			updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.d("Error toggling Wi-Fi only downloads: ${error.message}")
+			error.printStackTrace()
+		}
+	}
+
+	/** Toggle sound played when a download completes */
+	fun toggleDownloadNotificationSound() {
+		try {
+			aioSettings.downloadPlayNotificationSound = !aioSettings.downloadPlayNotificationSound
+			aioSettings.updateInStorage()
+			logger.d("Download Sound Enabled: ${aioSettings.downloadPlayNotificationSound}")
+			updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.d("Error toggling download sound: ${error.message}")
+			error.printStackTrace()
+		}
+	}
+
+	/** Opens advanced settings placeholder (currently shows not available message). */
+	fun openAdvanceDownloadsSettings() {
+		logger.d("Opening Advanced Downloads Settings (not implemented)")
+		safeSettingsFragmentRef?.safeMotherActivityRef.let {
+			it?.doSomeVibration(50)
+			MsgDialogUtils.showMessageDialog(
+				baseActivityInf = it,
+				isTitleVisible = true,
+				titleText = getText(R.string.text_feature_isnt_implemented),
+				messageTextViewCustomize = { msgTextView ->
+					msgTextView.setText(R.string.text_feature_isnt_available_yet)
+				}, isNegativeButtonVisible = false
+			)
+		}
+	}
+
+	// browser settings
 
 	/** Displays a dialog to set the default homepage for the in-app browser */
 	fun setBrowserDefaultHomepage() {
@@ -210,68 +278,6 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	fun changeDefaultDownloadFolder() {
-		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
-			doSomeVibration(50)
-			showToast(msgId = R.string.title_experimental_feature)
-		}
-	}
-
-	/** Toggle visibility of download notification */
-	fun toggleHideDownloadNotification() {
-		try {
-			aioSettings.downloadHideNotification = !aioSettings.downloadHideNotification
-			aioSettings.updateInStorage()
-			logger.d("Download Notification Hidden: ${aioSettings.downloadHideNotification}")
-			updateSettingStateUI()
-		} catch (error: Exception) {
-			logger.d("Error toggling download notification: ${error.message}")
-			error.printStackTrace()
-		}
-	}
-
-	/** Toggle "Wi-Fi only" mode for downloads */
-	fun toggleWifiOnlyDownload() {
-		try {
-			aioSettings.downloadWifiOnly = !aioSettings.downloadWifiOnly
-			aioSettings.updateInStorage()
-			logger.d("Wi-Fi only downloads: ${aioSettings.downloadWifiOnly}")
-			updateSettingStateUI()
-		} catch (error: Exception) {
-			logger.d("Error toggling Wi-Fi only downloads: ${error.message}")
-			error.printStackTrace()
-		}
-	}
-
-	/** Toggle sound played when a download completes */
-	fun toggleDownloadNotificationSound() {
-		try {
-			aioSettings.downloadPlayNotificationSound = !aioSettings.downloadPlayNotificationSound
-			aioSettings.updateInStorage()
-			logger.d("Download Sound Enabled: ${aioSettings.downloadPlayNotificationSound}")
-			updateSettingStateUI()
-		} catch (error: Exception) {
-			logger.d("Error toggling download sound: ${error.message}")
-			error.printStackTrace()
-		}
-	}
-
-	/** Opens advanced settings placeholder (currently shows not available message). */
-	fun openAdvanceDownloadsSettings() {
-		logger.d("Opening Advanced Downloads Settings (not implemented)")
-		safeSettingsFragmentRef?.safeMotherActivityRef.let {
-			it?.doSomeVibration(50)
-			MsgDialogUtils.showMessageDialog(
-				baseActivityInf = it,
-				isTitleVisible = true,
-				titleText = getText(R.string.text_feature_isnt_implemented),
-				messageTextViewCustomize = { msgTextView ->
-					msgTextView.setText(R.string.text_feature_isnt_available_yet)
-				}, isNegativeButtonVisible = false
-			)
-		}
-	}
-
 	/** Opens advanced settings placeholder (currently shows not available message). */
 	fun openAdvanceBrowserSettings() {
 		logger.d("Opening Advanced Settings For Browser")
@@ -282,19 +288,30 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			)
 	}
 
-	/** Navigate to Terms & Conditions screen */
-	fun showTermsConditionActivity() {
-		logger.d("Opening Terms & Conditions")
-		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
-			try {
-				val uri = getText(R.string.text_aio_official_terms_conditions_url).toString()
-				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
-			} catch (error: Exception) {
-				logger.d("Error opening Terms: ${error.message}")
-				error.printStackTrace()
-				showToast(msgId = R.string.text_please_install_web_browser)
-			}
-		}
+	//customer service
+
+	/** Share the app with others via system sharing intent */
+	fun shareApplicationWithFriends() {
+		logger.d("Sharing application")
+		ShareUtility.shareText(
+			context = safeSettingsFragmentRef?.safeMotherActivityRef,
+			title = getText(R.string.text_share_with_others),
+			text = getShareText(AIOApp.INSTANCE)
+		)
+	}
+
+	/** Navigate to user feedback screen */
+	fun openUserFeedbackActivity() {
+		logger.d("Opening User Feedback Activity")
+		safeSettingsFragmentRef?.safeMotherActivityRef?.openActivity(
+			UserFeedbackActivity::class.java, shouldAnimate = false
+		)
+	}
+
+	/** Open application details screen in Android settings */
+	fun openApplicationInformation() {
+		logger.d("Opening Application Info")
+		safeSettingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting()
 	}
 
 	/** Navigate to Privacy Policy screen */
@@ -312,36 +329,19 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Navigate to user feedback screen */
-	fun openUserFeedbackActivity() {
-		logger.d("Opening User Feedback Activity")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.openActivity(
-			UserFeedbackActivity::class.java, shouldAnimate = false
-		)
-	}
-
-	/** Open application details screen in Android settings */
-	fun openApplicationInformation() {
-		logger.d("Opening Application Info")
-		safeSettingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting()
-	}
-
-	/** Share the app with others via system sharing intent */
-	fun shareApplicationWithFriends() {
-		logger.d("Sharing application")
-		ShareUtility.shareText(
-			context = safeSettingsFragmentRef?.safeMotherActivityRef,
-			title = getText(R.string.text_share_with_others),
-			text = getShareText(AIOApp.INSTANCE)
-		)
-	}
-
-	/** Constructs the Play Store sharing message */
-	private fun getShareText(context: Context): String {
-		val appName = context.getString(R.string.title_aio_video_downloader)
-		val githubOfficialPage = context.getString(R.string.text_aio_official_page_url)
-		return context.getString(R.string.text_sharing_app_msg, appName, githubOfficialPage)
-			.trimIndent()
+	/** Navigate to Terms & Conditions screen */
+	fun showTermsConditionActivity() {
+		logger.d("Opening Terms & Conditions")
+		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
+			try {
+				val uri = getText(R.string.text_aio_official_terms_conditions_url).toString()
+				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
+			} catch (error: Exception) {
+				logger.d("Error opening Terms: ${error.message}")
+				error.printStackTrace()
+				showToast(msgId = R.string.text_please_install_web_browser)
+			}
+		}
 	}
 
 	/** Check for new version update */
@@ -423,18 +423,6 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Update the end drawable (checkmark or empty circle) based on the setting state */
-	private fun TextView.updateEndDrawable(isEnabled: Boolean) {
-		val endDrawableRes = if (isEnabled) {
-			R.drawable.ic_button_checked_circle_small
-		} else {
-			R.drawable.ic_button_unchecked_circle_small
-		}
-		val current = compoundDrawables
-		val checkedDrawable = getDrawable(context, endDrawableRes)
-		setCompoundDrawablesWithIntrinsicBounds(current[0], current[1], checkedDrawable, current[3])
-	}
-
 	/**
 	 * Restarts the application after user confirmation.
 	 * Useful for applying major changes or recovering from unexpected states.
@@ -456,6 +444,26 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				}
 			)?.apply { setOnClickForPositiveButton { processedToRestart() } }?.show()
 		}
+	}
+
+	/** Update the end drawable (checkmark or empty circle) based on the setting state */
+	private fun TextView.updateEndDrawable(isEnabled: Boolean) {
+		val endDrawableRes = if (isEnabled) {
+			R.drawable.ic_button_checked_circle_small
+		} else {
+			R.drawable.ic_button_unchecked_circle_small
+		}
+		val current = compoundDrawables
+		val checkedDrawable = getDrawable(context, endDrawableRes)
+		setCompoundDrawablesWithIntrinsicBounds(current[0], current[1], checkedDrawable, current[3])
+	}
+
+	/** Constructs the Play Store sharing message */
+	private fun getShareText(context: Context): String {
+		val appName = context.getString(R.string.title_aio_video_downloader)
+		val githubOfficialPage = context.getString(R.string.text_aio_official_page_url)
+		return context.getString(R.string.text_sharing_app_msg, appName, githubOfficialPage)
+			.trimIndent()
 	}
 
 	/** Executes the actual restart by relaunching the main activity and exiting process */
