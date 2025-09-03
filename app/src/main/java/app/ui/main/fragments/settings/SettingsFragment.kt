@@ -156,6 +156,8 @@ class SettingsFragment : BaseFragment() {
 		// Map of view IDs to their corresponding click actions
 		val clickActions = mapOf(
 			// Application settings
+
+			R.id.btn_login_register_to_cloud to { settingsOnClickLogic?.showLoginOrRegistrationDialog() },
 			R.id.btn_default_download_location to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() },
 			R.id.btn_language_picker to { settingsOnClickLogic?.showApplicationLanguageChanger() },
 			R.id.btn_content_location to { settingsOnClickLogic?.changeDefaultContentRegion() },

@@ -123,7 +123,7 @@
 
 					<!-- YouTube connection button -->
 					<RelativeLayout
-						android:id="@+id/btn_connect_to_youtube"
+						android:id="@+id/btn_login_register_to_cloud"
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
 						android:layout_marginStart="@dimen/_10"

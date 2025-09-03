@@ -38,25 +38,48 @@ import java.lang.ref.WeakReference
 /**
  * Handles the logic for Settings screen interactions (toggles, dialogs, navigation).
  * Uses [logger] for debugging flow across actions.
+ *
+ * This class manages all user interactions within the Settings fragment including:
+ * - Application settings management
+ * - Download configuration
+ * - Browser preferences
+ * - Customer service features
+ * - UI state updates
  */
 class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
+	// Logger instance for debugging and tracking user interactions
 	private val logger = LogHelperUtils.from(javaClass)
 
-	// Weak reference to avoid leaks
+	// Weak reference to avoid memory leaks with the fragment
 	private val safeSettingsFragmentRef = WeakReference(settingsFragment).get()
 
-	// application settings
+	// Application settings section
 
-	/** Show a dialog to select default download location */
+	/**
+	 * Launches the application sign-in or register prompt dialog to the user.
+	 */
+	fun showLoginOrRegistrationDialog() {
+
+	}
+
+	/**
+	 * Shows a dialog to select the default download location
+	 * This allows users to choose where downloaded files will be saved
+	 */
 	fun setDefaultDownloadLocationPicker() {
-		logger.d("Opening Download Location Picker")
+		logger.d("Opening Download Location Picker dialog")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivity ->
 			DownloadLocationSelector(baseActivity = safeMotherActivity).show()
+		} ?: run {
+			logger.d("Failed to open Download Location Picker: safeMotherActivityRef is null")
 		}
 	}
 
-	/** Launches the language picker and restarts the app upon change */
+	/**
+	 * Launches the language picker dialog and restarts the app upon language change
+	 * Shows a warning about experimental feature before proceeding
+	 */
 	fun showApplicationLanguageChanger() {
 		logger.d("Opening Language Picker Dialog")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
@@ -74,33 +97,49 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				}
 			)?.apply {
 				setOnClickForPositiveButton {
-					logger.d("Language change confirmed → restarting app")
+					logger.d("Language change confirmed → showing LanguagePickerDialog")
 					close()
 					LanguagePickerDialog(safeMotherActivityRef).apply {
 						getDialogBuilder().setCancelable(true)
 						onApplyListener = {
+							logger.d("Language selected → restarting application")
 							close()
 							restartApp(shouldKillProcess = true)
 						}
 					}.show()
 				}
 			}?.show()
+		} ?: run {
+			logger.d("Failed to open Language Picker: safeMotherActivityRef is null")
 		}
 	}
 
+	/**
+	 * Changes the default content region for the application
+	 * Shows a region selector dialog and restarts the app upon selection
+	 */
 	fun changeDefaultContentRegion() {
+		logger.d("Opening Content Region Selector")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
 			ContentRegionSelector(this).apply {
 				getDialogBuilder().setCancelable(true)
 				onApplyListener = {
+					logger.d("Content region selected → restarting application")
 					close()
 					restartApp(shouldKillProcess = true)
 				}
 			}.show()
+		} ?: run {
+			logger.d("Failed to open Content Region Selector: safeMotherActivityRef is null")
 		}
 	}
 
+	/**
+	 * Toggles the daily content suggestions feature
+	 * Updates the setting in storage and refreshes the UI
+	 */
 	fun enableDailyContentSuggestions() {
+		logger.d("Toggling Daily Content Suggestions")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
 			try {
 				aioSettings.enableDailyContentSuggestion = !aioSettings.enableDailyContentSuggestion
@@ -111,19 +150,32 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				logger.d("Error toggling daily content suggestions: ${error.message}")
 				error.printStackTrace()
 			}
+		} ?: run {
+			logger.d("Failed to toggle Daily Content Suggestions: safeMotherActivityRef is null")
 		}
 	}
 
-	// download settings
+	// Download settings section
 
+	/**
+	 * Changes the default download folder
+	 * Shows a dialog to select a custom folder for downloads
+	 */
 	fun changeDefaultDownloadFolder() {
+		logger.d("Opening Custom Download Folder Selector")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
 			CustomDownloadFolderSelector(this).show()
+		} ?: run {
+			logger.d("Failed to open Custom Download Folder Selector: safeMotherActivityRef is null")
 		}
 	}
 
-	/** Toggle visibility of download notification */
+	/**
+	 * Toggles the visibility of download notifications
+	 * Updates the setting in storage and refreshes the UI
+	 */
 	fun toggleHideDownloadNotification() {
+		logger.d("Toggling Download Notification Visibility")
 		try {
 			aioSettings.downloadHideNotification = !aioSettings.downloadHideNotification
 			aioSettings.updateInStorage()
@@ -135,8 +187,12 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Toggle "Wi-Fi only" mode for downloads */
+	/**
+	 * Toggles "Wi-Fi only" mode for downloads
+	 * When enabled, downloads will only occur when connected to Wi-Fi
+	 */
 	fun toggleWifiOnlyDownload() {
+		logger.d("Toggling Wi-Fi Only Download mode")
 		try {
 			aioSettings.downloadWifiOnly = !aioSettings.downloadWifiOnly
 			aioSettings.updateInStorage()
@@ -148,8 +204,12 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Toggle sound played when a download completes */
+	/**
+	 * Toggles the sound played when a download completes
+	 * Updates the setting in storage and refreshes the UI
+	 */
 	fun toggleDownloadNotificationSound() {
+		logger.d("Toggling Download Notification Sound")
 		try {
 			aioSettings.downloadPlayNotificationSound = !aioSettings.downloadPlayNotificationSound
 			aioSettings.updateInStorage()
@@ -161,7 +221,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Opens advanced settings placeholder (currently shows not available message). */
+	/**
+	 * Opens advanced download settings (placeholder implementation)
+	 * Currently shows a "not available" message as this feature isn't implemented
+	 */
 	fun openAdvanceDownloadsSettings() {
 		logger.d("Opening Advanced Downloads Settings (not implemented)")
 		safeSettingsFragmentRef?.safeMotherActivityRef.let {
@@ -174,12 +237,17 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 					msgTextView.setText(R.string.text_feature_isnt_available_yet)
 				}, isNegativeButtonVisible = false
 			)
+		} ?: run {
+			logger.d("Failed to show Advanced Downloads dialog: safeMotherActivityRef is null")
 		}
 	}
 
-	// browser settings
+	// Browser settings section
 
-	/** Displays a dialog to set the default homepage for the in-app browser */
+	/**
+	 * Displays a dialog to set the default homepage for the in-app browser
+	 * Validates the URL input and updates the setting if valid
+	 */
 	fun setBrowserDefaultHomepage() {
 		logger.d("Opening Browser Homepage dialog")
 		try {
@@ -199,16 +267,16 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 				dialogBuilder.setOnClickForPositiveButton {
 					val userEnteredURL = editTextURL.text.toString()
-					logger.d("User entered homepage: $userEnteredURL")
+					logger.d("User entered homepage URL: $userEnteredURL")
 					if (isValidURL(userEnteredURL)) {
 						val finalNormalizedURL = ensureHttps(userEnteredURL) ?: userEnteredURL
 						aioSettings.browserDefaultHomepage = finalNormalizedURL
 						aioSettings.updateInStorage()
-						logger.d("Homepage updated: $finalNormalizedURL")
+						logger.d("Homepage updated to: $finalNormalizedURL")
 						dialogBuilder.close()
 						showToast(msgId = R.string.title_successful)
 					} else {
-						logger.d("Invalid homepage URL entered")
+						logger.d("Invalid homepage URL entered: $userEnteredURL")
 						safeActivityRef.doSomeVibration(50)
 						showToast(msgId = R.string.text_invalid_url)
 					}
@@ -216,19 +284,27 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				dialogBuilder.show()
 				delay(200, object : OnTaskFinishListener {
 					override fun afterDelay() {
+						logger.d("Showing on-screen keyboard for URL input")
 						editTextURL.requestFocus()
 						showOnScreenKeyboard(safeActivityRef, editTextURL)
 					}
 				})
+			} ?: run {
+				logger.d("Failed to open Browser Homepage dialog: safeActivityRef is null")
 			}
 		} catch (error: Exception) {
-			logger.d("Error setting homepage: ${error.message}")
+			logger.d("Error setting browser homepage: ${error.message}")
 			error.printStackTrace()
 			showToast(msgId = R.string.text_something_went_wrong)
 		}
 	}
 
+	/**
+	 * Toggles the browser ad blocker feature
+	 * Updates the setting in storage and refreshes the UI
+	 */
 	fun toggleBrowserBrowserAdBlocker() {
+		logger.d("Toggling Browser Ad Blocker")
 		try {
 			aioSettings.browserEnableAdblocker = !aioSettings.browserEnableAdblocker
 			aioSettings.updateInStorage()
@@ -240,8 +316,12 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Toggle popup blocker setting in browser */
+	/**
+	 * Toggles the browser popup blocker feature
+	 * Updates the setting in storage and refreshes the UI
+	 */
 	fun toggleBrowserPopupAdBlocker() {
+		logger.d("Toggling Browser Popup Blocker")
 		try {
 			aioSettings.browserEnablePopupBlocker = !aioSettings.browserEnablePopupBlocker
 			aioSettings.updateInStorage()
@@ -253,11 +333,16 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
+	/**
+	 * Toggles web images loading in the browser
+	 * Updates the setting in storage and refreshes the UI
+	 */
 	fun toggleBrowserWebImages() {
+		logger.d("Toggling Browser Web Images")
 		try {
 			aioSettings.browserEnableImages = !aioSettings.browserEnableImages
 			aioSettings.updateInStorage()
-			logger.d("Popup browser enable images: ${aioSettings.browserEnableImages}")
+			logger.d("Browser enable images: ${aioSettings.browserEnableImages}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
 			logger.d("Error toggling browser enable images: ${error.message}")
@@ -265,8 +350,12 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Toggle video grabber feature in browser */
+	/**
+	 * Toggles the video grabber feature in the browser
+	 * Updates the setting in storage and refreshes the UI
+	 */
 	fun toggleBrowserVideoGrabber() {
+		logger.d("Toggling Browser Video Grabber")
 		try {
 			aioSettings.browserEnableVideoGrabber = !aioSettings.browserEnableVideoGrabber
 			aioSettings.updateInStorage()
@@ -278,77 +367,113 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/** Opens advanced settings placeholder (currently shows not available message). */
+	/**
+	 * Opens advanced browser settings activity
+	 * Navigates to a dedicated screen for advanced browser configurations
+	 */
 	fun openAdvanceBrowserSettings() {
 		logger.d("Opening Advanced Settings For Browser")
 		safeSettingsFragmentRef?.safeMotherActivityRef
 			?.openActivity(
 				activity = AdvBrowserSettingsActivity::class.java,
 				shouldAnimate = true
-			)
+			) ?: run {
+			logger.d("Failed to open Advanced Browser Settings: safeMotherActivityRef is null")
+		}
 	}
 
-	//customer service
+	// Customer service section
 
-	/** Share the app with others via system sharing intent */
+	/**
+	 * Shares the app with others via system sharing intent
+	 * Constructs a share message with app name and official page URL
+	 */
 	fun shareApplicationWithFriends() {
-		logger.d("Sharing application")
-		ShareUtility.shareText(
-			context = safeSettingsFragmentRef?.safeMotherActivityRef,
-			title = getText(R.string.text_share_with_others),
-			text = getShareText(AIOApp.INSTANCE)
-		)
+		logger.d("Sharing application with friends")
+		safeSettingsFragmentRef?.safeMotherActivityRef?.let { context ->
+			ShareUtility.shareText(
+				context = context,
+				title = getText(R.string.text_share_with_others),
+				text = getApplicationShareText(context)
+			)
+		} ?: run {
+			logger.d("Failed to share application: safeMotherActivityRef is null")
+		}
 	}
 
-	/** Navigate to user feedback screen */
+	/**
+	 * Navigates to user feedback screen
+	 * Opens the activity where users can provide feedback
+	 */
 	fun openUserFeedbackActivity() {
 		logger.d("Opening User Feedback Activity")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.openActivity(
 			UserFeedbackActivity::class.java, shouldAnimate = false
-		)
+		) ?: run {
+			logger.d("Failed to open User Feedback Activity: safeMotherActivityRef is null")
+		}
 	}
 
-	/** Open application details screen in Android settings */
+	/**
+	 * Opens application details screen in Android settings
+	 * Shows system app info for the current application
+	 */
 	fun openApplicationInformation() {
-		logger.d("Opening Application Info")
-		safeSettingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting()
+		logger.d("Opening Application Info in system settings")
+		safeSettingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting() ?: run {
+			logger.d("Failed to open Application Info: safeBaseActivityRef is null")
+		}
 	}
 
-	/** Navigate to Privacy Policy screen */
+	/**
+	 * Navigates to Privacy Policy screen
+	 * Opens the privacy policy in a web browser
+	 */
 	fun showPrivacyPolicyActivity() {
-		logger.d("Opening Privacy Policy")
+		logger.d("Opening Privacy Policy in browser")
 		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
 			try {
 				val uri = getText(R.string.text_aio_official_privacy_policy_url).toString()
+				logger.d("Privacy Policy URL: $uri")
 				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 			} catch (error: Exception) {
 				logger.d("Error opening Privacy Policy: ${error.message}")
 				error.printStackTrace()
 				showToast(msgId = R.string.text_please_install_web_browser)
 			}
+		} ?: run {
+			logger.d("Failed to open Privacy Policy: safeBaseActivityRef is null")
 		}
 	}
 
-	/** Navigate to Terms & Conditions screen */
+	/**
+	 * Navigates to Terms & Conditions screen
+	 * Opens the terms and conditions in a web browser
+	 */
 	fun showTermsConditionActivity() {
-		logger.d("Opening Terms & Conditions")
+		logger.d("Opening Terms & Conditions in browser")
 		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
 			try {
 				val uri = getText(R.string.text_aio_official_terms_conditions_url).toString()
+				logger.d("Terms & Conditions URL: $uri")
 				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 			} catch (error: Exception) {
-				logger.d("Error opening Terms: ${error.message}")
+				logger.d("Error opening Terms & Conditions: ${error.message}")
 				error.printStackTrace()
 				showToast(msgId = R.string.text_please_install_web_browser)
 			}
+		} ?: run {
+			logger.d("Failed to open Terms & Conditions: safeBaseActivityRef is null")
 		}
 	}
 
-	/** Check for new version update */
+	/**
+	 * Checks for new application version updates
+	 * Shows a waiting dialog while checking and provides appropriate feedback
+	 */
 	fun checkForNewApkVersion() {
 		logger.d("Checking for new APK version")
 		safeSettingsFragmentRef?.safeBaseActivityRef?.let { safeBaseActivityRef ->
-
 			ThreadsUtility.executeInBackground(codeBlock = {
 				var waitingDialog: WaitingDialog? = null
 				ThreadsUtility.executeOnMain {
@@ -377,10 +502,15 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				safeBaseActivityRef.doSomeVibration(50)
 				showToast(msgId = R.string.text_something_went_wrong)
 			})
+		} ?: run {
+			logger.d("Failed to check for updates: safeBaseActivityRef is null")
 		}
 	}
 
-	/** Update the end icon of each setting option based on current settings */
+	/**
+	 * Updates the end icon of each setting option based on current settings
+	 * This refreshes the UI to reflect the current state of all toggleable settings
+	 */
 	fun updateSettingStateUI() {
 		logger.d("Updating Setting State UI")
 		safeSettingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
@@ -420,15 +550,17 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			).forEach { config ->
 				layout.findViewById<TextView>(config.viewId)?.updateEndDrawable(config.isEnabled)
 			}
+		} ?: run {
+			logger.d("Failed to update UI: safeFragmentLayoutRef is null")
 		}
 	}
 
 	/**
-	 * Restarts the application after user confirmation.
-	 * Useful for applying major changes or recovering from unexpected states.
+	 * Restarts the application after user confirmation
+	 * Useful for applying major changes or recovering from unexpected states
 	 */
 	fun restartApplication() {
-		logger.d("Restart Application dialog opened")
+		logger.d("Showing Restart Application confirmation dialog")
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
 			MsgDialogUtils.getMessageDialog(
 				baseActivityInf = safeMotherActivityRef,
@@ -442,11 +574,22 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				messageTextViewCustomize = { msgTextView ->
 					msgTextView.setText(R.string.text_cation_msg_of_restarting_application)
 				}
-			)?.apply { setOnClickForPositiveButton { processedToRestart() } }?.show()
+			)?.apply {
+				setOnClickForPositiveButton {
+					logger.d("User confirmed application restart")
+					processedToRestart()
+				}
+			}?.show()
+		} ?: run {
+			logger.d("Failed to show restart dialog: safeMotherActivityRef is null")
 		}
 	}
 
-	/** Update the end drawable (checkmark or empty circle) based on the setting state */
+	/**
+	 * Updates the end drawable (checkmark or empty circle) based on the setting state
+	 *
+	 * @param isEnabled Whether the setting is enabled (show checkmark) or disabled (show empty circle)
+	 */
 	private fun TextView.updateEndDrawable(isEnabled: Boolean) {
 		val endDrawableRes = if (isEnabled) {
 			R.drawable.ic_button_checked_circle_small
@@ -458,15 +601,23 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		setCompoundDrawablesWithIntrinsicBounds(current[0], current[1], checkedDrawable, current[3])
 	}
 
-	/** Constructs the Play Store sharing message */
-	private fun getShareText(context: Context): String {
+	/**
+	 * Constructs the Play Store sharing message
+	 *
+	 * @param context The application context
+	 * @return The formatted share text containing app name and official page URL
+	 */
+	private fun getApplicationShareText(context: Context): String {
 		val appName = context.getString(R.string.title_aio_video_downloader)
 		val githubOfficialPage = context.getString(R.string.text_aio_official_page_url)
 		return context.getString(R.string.text_sharing_app_msg, appName, githubOfficialPage)
 			.trimIndent()
 	}
 
-	/** Executes the actual restart by relaunching the main activity and exiting process */
+	/**
+	 * Executes the actual application restart
+	 * Relaunches the main activity and exits the current process
+	 */
 	private fun processedToRestart() {
 		logger.d("Processing application restart")
 		val context = AIOApp.INSTANCE
@@ -477,6 +628,11 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		Runtime.getRuntime().exit(0)
 	}
 
-	/** Holds mapping of setting TextView and its state */
+	/**
+	 * Data class holding mapping of setting TextView and its state
+	 *
+	 * @property viewId The resource ID of the TextView
+	 * @property isEnabled Whether the setting is enabled or disabled
+	 */
 	data class SettingViewConfig(@field:IdRes val viewId: Int, val isEnabled: Boolean)
 }
