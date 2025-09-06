@@ -79,6 +79,9 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	// Flag to track if WebView is currently loading (for cookie extraction)
 	private var isWebViewLoading = false
 
+	// Stores the timestamp of the last update to track download progress and detect stalls
+	private var lastUpdateTime = System.currentTimeMillis()
+
 	/**
 	 * Initiates the download task by performing necessary setup in a background thread.
 	 * - Initializes the download data model.
@@ -142,8 +145,16 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 */
 	private fun initDownloadTaskTimer() {
 		executeOnMainThread {
+			if (retryingDownloadTimer != null) return@executeOnMainThread
 			retryingDownloadTimer = object : CountDownTimer((1000 * 60), 5000) {
 				override fun onTick(millisUntilFinished: Long) {
+					val currentTime = System.currentTimeMillis()
+					if (currentTime - lastUpdateTime >= (1000 * 5)) {
+						lastUpdateTime = currentTime
+						executeInBackground(::restartDownload)
+						return
+					}
+
 					if (downloadDataModel.isWaitingForNetwork) {
 						executeInBackground(::restartDownload)
 					}
@@ -798,9 +809,10 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		updateDownloadStatus(getText(R.string.title_started_downloading), DOWNLOADING)
 		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_connecting_to_the_server)
 
+		retryingDownloadTimer?.cancel()
 		val response: YoutubeDLResponse?
 		try {
-			var lastUpdateTime = System.currentTimeMillis()
+			lastUpdateTime = System.currentTimeMillis()
 			val urlWithoutPlaylist = filterYoutubeUrlWithoutPlaylist(downloadDataModel.fileURL)
 			val request = YoutubeDLRequest(urlWithoutPlaylist)
 
@@ -842,6 +854,10 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				}
 			}
 
+			// Execute restarting downloading timer
+			initDownloadTaskTimer()
+			retryingDownloadTimer?.start()
+
 			// Execute yt-dlp request with progress updates
 			response = getInstance().execute(
 				request = request,
@@ -868,6 +884,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				downloadDataModel.isRunning = false
 				downloadDataModel.isComplete = true
 				updateDownloadStatus(getText(R.string.text_completed), COMPLETE)
+				retryingDownloadTimer?.cancel()
+
 				println("Download status updated to COMPLETE.")
 				println("Download completed successfully in ${response.elapsedTime} ms.")
 			}
