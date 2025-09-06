@@ -8,6 +8,7 @@ import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.internalDataFolder
 import app.core.engines.downloader.DownloadStatus.CLOSE
@@ -805,6 +806,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 			// Add standard options
 			request.addOption("--continue")
+			request.addOption("--no-post-overwrites")
+			request.addOption("--hls-prefer-native")
 			request.addOption("-f", downloadDataModel.executionCommand)
 			request.addOption("-o", downloadDataModel.tempYtdlpDestinationFilePath)
 			request.addOption("--playlist-items", "1")
@@ -816,9 +819,9 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			request.addOption("--no-check-certificate")
 			request.addOption("--force-ipv4")
 			request.addOption("--source-address", "0.0.0.0")
-			if (isVideoByName(downloadDataModel.fileName)) {
-				request.addOption("--merge-output-format", "mp4")
-			}
+
+			if (isVideoByName(downloadDataModel.fileName)) request.addOption("--merge-output-format", "mp4")
+			if (AIOApp.IS_DEBUG_MODE_ON)  request.addOption("-v")
 
 			// Add cookie support if available
 			downloadDataModel.getCookieFilePathIfAvailable()?.let {
