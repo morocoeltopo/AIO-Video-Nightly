@@ -123,6 +123,7 @@ class DownloadDataModel : Serializable {
 
 	// Progress tracking
 	var totalConnectionRetries: Int = 0           // Number of retry attempts
+	var totalUnresetConnectionRetries: Int = 0    // Number of retry attempts
 	var progressPercentage: Long = 0L             // Completion percentage (0-100)
 	var progressPercentageInFormat: String = ""   // Formatted percentage string
 

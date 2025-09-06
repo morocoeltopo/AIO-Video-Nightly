@@ -10,6 +10,7 @@ import app.core.engines.downloader.DownloadStatus.DOWNLOADING
 import app.core.engines.services.AIOForegroundService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import lib.files.FileSystemUtility.updateMediaStore
@@ -117,6 +118,29 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 		}, errorHandler = {
 			logger.e("Failed to resume download", it)
 		})
+	}
+
+	/**
+	 * Forced resumes a failing download.
+	 * @param downloadModel Download to resume
+	 */
+	suspend fun forceResumeDownload(downloadModel: DownloadDataModel) {
+		// If already active, pause first then resume after delay
+		if (searchActiveDownloadTaskWith(downloadModel) != null) {
+			ThreadsUtility.executeOnMain {
+				logger.d("Forced paused download: ${downloadModel.fileName}")
+				pauseDownload(downloadModel)
+			}
+			delay(1000)
+		}
+
+		ThreadsUtility.executeOnMain {
+			if (!downloadModel.ytdlpProblemMsg.contains("login", true)) {
+				// Normal resume operation
+				logger.d("Forced resumed download: ${downloadModel.fileName}")
+				resumeDownload(downloadModel = downloadModel)
+			}
+		}
 	}
 
 	/**
