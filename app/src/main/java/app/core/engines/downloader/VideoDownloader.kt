@@ -148,15 +148,17 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			if (retryingDownloadTimer != null) return@executeOnMainThread
 			retryingDownloadTimer = object : CountDownTimer((1000 * 60), 5000) {
 				override fun onTick(millisUntilFinished: Long) {
-					val currentTime = System.currentTimeMillis()
-					if (currentTime - lastUpdateTime >= (1000 * 5)) {
-						lastUpdateTime = currentTime
-						executeInBackground(::restartDownload)
-						return
-					}
+					if (downloadDataModel.isRunning && !downloadDataModel.isComplete) {
+						val currentTime = System.currentTimeMillis()
+						if (currentTime - lastUpdateTime >= (1000 * 5)) {
+							lastUpdateTime = currentTime
+							executeInBackground(::restartDownload)
+							return
+						}
 
-					if (downloadDataModel.isWaitingForNetwork) {
-						executeInBackground(::restartDownload)
+						if (downloadDataModel.isWaitingForNetwork) {
+							executeInBackground(::restartDownload)
+						}
 					}
 				}
 
@@ -207,7 +209,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			} while (File(internalDirPath, randomFileName).exists())
 
 			// Validate filename against existing downloads
-			val sanitizedTempName = validateExistedDownloadedFileName(internalDirPath, randomFileName)
+			val sanitizedTempName =
+				validateExistedDownloadedFileName(internalDirPath, randomFileName)
 
 			// Assign temp yt-dlp destination file
 			val ytTempDownloadFile = File(internalDirPath, sanitizedTempName)
@@ -825,15 +828,21 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			request.addOption("--playlist-items", "1")
 			request.addOption("--user-agent", downloadDataModelConfig.downloadHttpUserAgent)
 			request.addOption("--retries", downloadDataModelConfig.downloadAutoResumeMaxErrors)
-			request.addOption("--socket-timeout", downloadDataModelConfig.downloadMaxHttpReadingTimeout)
+			request.addOption(
+				"--socket-timeout",
+				downloadDataModelConfig.downloadMaxHttpReadingTimeout
+			)
 			request.addOption("--concurrent-fragments", 10)
 			request.addOption("--fragment-retries", 10)
 			request.addOption("--no-check-certificate")
 			request.addOption("--force-ipv4")
 			request.addOption("--source-address", "0.0.0.0")
 
-			if (isVideoByName(downloadDataModel.fileName)) request.addOption("--merge-output-format", "mp4")
-			if (AIOApp.IS_DEBUG_MODE_ON)  request.addOption("-v")
+			if (isVideoByName(downloadDataModel.fileName)) request.addOption(
+				"--merge-output-format",
+				"mp4"
+			)
+			if (AIOApp.IS_DEBUG_MODE_ON) request.addOption("-v")
 
 			// Add cookie support if available
 			downloadDataModel.getCookieFilePathIfAvailable()?.let {
