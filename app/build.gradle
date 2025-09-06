@@ -26,8 +26,8 @@ android {
         targetSdk 36
 
         // App versioning
-        versionCode 79
-        versionName '2025.08.31'
+        versionCode 80
+        versionName '2025.09.06~nightly_build'
 
         // Use vector drawables support
         vectorDrawables.useSupportLibrary = true
