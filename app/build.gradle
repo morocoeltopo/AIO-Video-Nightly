@@ -27,7 +27,7 @@ android {
 
         // App versioning
         versionCode 80
-        versionName '2025.09.06~nightly_build'
+        versionName '2025.09.06'
 
         // Use vector drawables support
         vectorDrawables.useSupportLibrary = true
