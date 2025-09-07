@@ -324,7 +324,7 @@
 	<string name="title_block_popup_ads">Block Popup-Ads</string>
 	<string name="title_hide_task_notifications">Hide Task Notifications</string>
 	<string name="title_wifi_only_download">Wifi Only Downloads</string>
-	<string name="title_play_sound_completion">Play Sound On Completion</string>
+	<string name="title_play_notification_sound">Play Notification Sound</string>
 	<string name="title_tasks">Tasks</string>
 	<string name="title_build_version">Build Version:</string>
 	<string name="title_version_number">Version Number:</string>
@@ -535,5 +535,9 @@
 	<string name="text_make_default_homepage">Default homepage</string>
 	<string name="title_your_content_region">Your Content Region</string>
 	<string name="title_application_language">Application Language</string>
+	<string name="title_enable_dark_mode">Enable Dark UI Mode</string>
+	<string name="title_single_click_open">Single Click To Open</string>
+	<string name="title_permission_needed">Permission Needed</string>
+	<string name="text_app_dont_have_write_permission_msg">AIO need permission to access the system gallery. <b>Please enable it in the settings.</b></string>
 
 </resources>

@@ -160,6 +160,7 @@ class SettingsFragment : BaseFragment() {
 			R.id.btn_login_register_to_cloud to { settingsOnClickLogic?.showLoginOrRegistrationDialog() },
 			R.id.btn_default_download_location to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() },
 			R.id.btn_language_picker to { settingsOnClickLogic?.showApplicationLanguageChanger() },
+			R.id.btn_dark_mode_ui to { settingsOnClickLogic?.togglesDarkModeUISettings() },
 			R.id.btn_content_location to { settingsOnClickLogic?.changeDefaultContentRegion() },
 			R.id.btn_daily_suggestions to { settingsOnClickLogic?.enableDailyContentSuggestions() },
 
@@ -167,6 +168,7 @@ class SettingsFragment : BaseFragment() {
 			R.id.btn_default_download_folder to { settingsOnClickLogic?.changeDefaultDownloadFolder() },
 			R.id.btn_hide_task_notifications to { settingsOnClickLogic?.toggleHideDownloadNotification() },
 			R.id.btn_wifi_only_downloads to { settingsOnClickLogic?.toggleWifiOnlyDownload() },
+			R.id.btn_single_click_open to { settingsOnClickLogic?.toggleSingleClickToOpenFile() },
 			R.id.btn_play_notification_sound to { settingsOnClickLogic?.toggleDownloadNotificationSound() },
 			R.id.btn_adv_downloads_settings to { settingsOnClickLogic?.openAdvanceDownloadsSettings() },
 

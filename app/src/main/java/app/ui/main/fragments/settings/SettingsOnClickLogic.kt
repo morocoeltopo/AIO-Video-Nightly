@@ -115,6 +115,23 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	}
 
 	/**
+	 * Toggles the Dark Mode UI setting.
+	 * When enabled, the app interface will switch between light and dark themes.
+	 */
+	fun togglesDarkModeUISettings() {
+		logger.d("Toggling Dark Mode UI setting")
+		try {
+			aioSettings.enableDarkUIMode = !aioSettings.enableDarkUIMode
+			aioSettings.updateInStorage()
+			logger.d("Dark Mode UI is now: ${aioSettings.enableDarkUIMode}")
+			updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.e("Error toggling Dark Mode UI: ${error.message}", error)
+			error.printStackTrace()
+		}
+	}
+
+	/**
 	 * Changes the default content region for the application
 	 * Shows a region selector dialog and restarts the app upon selection
 	 */
@@ -200,6 +217,24 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			updateSettingStateUI()
 		} catch (error: Exception) {
 			logger.d("Error toggling Wi-Fi only downloads: ${error.message}")
+			error.printStackTrace()
+		}
+	}
+
+	/**
+	 * Toggles Single-Click-Open file mode for downloads.
+	 * When enabled, downloaded files will be opened instantly instead of showing the options dialog.
+	 */
+	fun toggleSingleClickToOpenFile() {
+		logger.d("Toggling single-click open file setting")
+		try {
+			aioSettings.openDownloadedFileOnSingleClick =
+				!aioSettings.openDownloadedFileOnSingleClick
+			aioSettings.updateInStorage()
+			logger.d("Single-click open file is now: ${aioSettings.openDownloadedFileOnSingleClick}")
+			updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.e("Error toggling single-click open file: ${error.message}", error)
 			error.printStackTrace()
 		}
 	}
@@ -516,6 +551,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		safeSettingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
 			listOf(
 				SettingViewConfig(
+					viewId = R.id.txt_dark_mode_ui,
+					isEnabled = aioSettings.enableDarkUIMode
+				),
+				SettingViewConfig(
 					viewId = R.id.txt_daily_suggestions,
 					isEnabled = aioSettings.enableDailyContentSuggestion
 				),
@@ -526,6 +565,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				SettingViewConfig(
 					viewId = R.id.txt_wifi_only_downloads,
 					isEnabled = aioSettings.downloadWifiOnly
+				),
+				SettingViewConfig(
+					viewId = R.id.txt_single_click_open,
+					isEnabled = aioSettings.openDownloadedFileOnSingleClick
 				),
 				SettingViewConfig(
 					viewId = R.id.txt_hide_task_notifications,

@@ -48,13 +48,14 @@ class AIOSettings : Serializable {
 	var lastProcessedClipboardText = ""
 
 	// Default download location
-	var defaultDownloadLocation = SYSTEM_GALLERY
+	var defaultDownloadLocation = PRIVATE_FOLDER
 
 	// Language & regions settings
 	var userSelectedUILanguage: String = ENGLISH
 	var userSelectedContentRegion: String = "IN"
 
 	// Other settings
+	var enableDarkUIMode : Boolean = false
 	var enableDailyContentSuggestion: Boolean = true
 
 	// Analytics / interaction counters

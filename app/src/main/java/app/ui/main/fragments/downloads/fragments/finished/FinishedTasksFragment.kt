@@ -32,31 +32,31 @@ import java.lang.ref.WeakReference
  * It integrates with [downloadSystem], and updates UI based on changes in finished downloads.
  */
 open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIOTimerListener {
-	
+
 	/** Safe reference to the parent activity (MotherActivity). */
 	open val safeMotherActivityRef by lazy { WeakReference(safeBaseActivityRef as MotherActivity).get() }
-	
+
 	/** Safe reference to this fragment. */
 	open val safeFinishTasksFragment by lazy { WeakReference(this).get() }
-	
+
 	/** Options menu for finished downloads (rename, delete, etc.). */
 	private val finishTaskOptions by lazy { FinishedDownloadOptions(safeFinishTasksFragment) }
-	
+
 	private lateinit var emptyDownloadContainer: View
 	private lateinit var buttonOpenActiveTasks: View
 	private lateinit var openActiveTasksAnim: LottieAnimationView
 	private lateinit var buttonHowToDownload: View
-	
+
 	private lateinit var taskListView: ListView
-	
+
 	/** Adapter for listing finished download tasks. */
 	open lateinit var finishedTasksListAdapter: FinishedTasksListAdapter
-	
+
 	/** Returns the layout resource ID to be inflated. */
 	override fun getLayoutResId(): Int {
 		return R.layout.frag_down_4_finish_1
 	}
-	
+
 	/**
 	 * Called after layout is loaded. Initializes all views and registers the fragment in DownloadSystem.
 	 */
@@ -66,7 +66,7 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 			initializeViewsAndListAdapter(layoutView)
 		}
 	}
-	
+
 	/**
 	 * Called when the fragment becomes visible.
 	 * Registers the fragment with the parent and starts the AIO timer.
@@ -75,7 +75,7 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 		selfReferenceRegisterToDownloadFragment()
 		safeFinishTasksFragment?.let { AIOApp.aioTimer.register(it) }
 	}
-	
+
 	/**
 	 * Called when the fragment goes out of view.
 	 * Unregisters the AIO timer.
@@ -84,7 +84,7 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 		selfReferenceRegisterToDownloadFragment()
 		safeFinishTasksFragment?.let { AIOApp.aioTimer.unregister(it) }
 	}
-	
+
 	/**
 	 * Triggered periodically by AIO timer to update UI.
 	 */
@@ -94,53 +94,57 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 			toggleOpenActiveTasksButtonVisibility(buttonOpenActiveTasks)
 		}
 	}
-	
+
 	/** Called when a finished download is clicked. Delegates to long-click handler. */
 	override fun onFinishedDownloadClick(downloadModel: DownloadDataModel) {
-		finishTaskOptions.setDownloadModel(downloadModel)
-		finishTaskOptions.playTheMedia()
+		if (AIOApp.aioSettings.openDownloadedFileOnSingleClick) {
+			finishTaskOptions.setDownloadModel(downloadModel)
+			finishTaskOptions.playTheMedia()
+		} else {
+			onFinishedDownloadLongClick(downloadModel)
+		}
 	}
-	
+
 	/** Handles long-click on a finished download by showing options. */
 	override fun onFinishedDownloadLongClick(downloadModel: DownloadDataModel) {
 		safeMotherActivityRef?.doSomeVibration(50)
 		finishTaskOptions.show(downloadModel)
 	}
-	
+
 	/** Returns a list of all finished download models from DownloadSystem. */
 	open fun getFinishedDownloadModels(): ArrayList<DownloadDataModel> {
 		return downloadSystem.finishedDownloadDataModels
 	}
-	
+
 	/** Initializes all views and sets up the finished downloads list adapter. */
 	private fun initializeViewsAndListAdapter(layoutView: View) {
 		safeFinishTasksFragment?.let { safeFragmentRef ->
 			emptyDownloadContainer = layoutView.findViewById(R.id.container_empty_downloads)
-			
+
 			buttonHowToDownload = layoutView.findViewById(R.id.btn_how_to_download)
 			buttonHowToDownload.setOnClickListener { GuidePlatformPicker(safeMotherActivityRef).show() }
-			
+
 			buttonOpenActiveTasks = layoutView.findViewById(R.id.btn_open_active_downloads)
 			buttonOpenActiveTasks.setOnClickListener { openActiveTasksFragment() }
-			
+
 			openActiveTasksAnim = layoutView.findViewById(R.id.img_open_active_downloads)
 			loadOpenActiveTasksAnimation()
-			
+
 			taskListView = layoutView.findViewById(R.id.container_download_tasks_finished)
 			finishedTasksListAdapter = FinishedTasksListAdapter(safeFragmentRef)
 			taskListView.adapter = finishedTasksListAdapter
-			
+
 			toggleEmptyDownloadListviewVisibility(emptyDownloadContainer, taskListView)
 			toggleOpenActiveTasksButtonVisibility(buttonOpenActiveTasks)
 		}
 	}
-	
+
 	/** Opens the Active Downloads tab from parent fragment. */
 	private fun openActiveTasksFragment() {
 		val downloadFragment = parentFragment as? DownloadsFragment
 		downloadFragment?.openActiveTab()
 	}
-	
+
 	/**
 	 * Shows/hides the "Open Active Tasks" button based on whether any downloads are currently active.
 	 */
@@ -154,7 +158,7 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 			}
 		}
 	}
-	
+
 	/**
 	 * Toggles visibility of the empty-state animation or the task list depending on whether there are finished tasks.
 	 */
@@ -170,7 +174,7 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 			}
 		}; finishedTasksListAdapter.notifyDataSetChangedOnSort(false)
 	}
-	
+
 	/**
 	 * Registers this fragment as the current FinishedTasksFragment in the parent DownloadsFragment.
 	 */
@@ -184,16 +188,17 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 			}
 		}
 	}
-	
+
 	/**
 	 * Registers this fragment into the download system's UI manager for finished downloads.
 	 */
 	private fun selfReferenceRegisterIntoDownloadSystem() {
 		safeFinishTasksFragment?.let { safeFinishedDownloadFragmentRef ->
-			downloadSystem.downloadsUIManager.finishedTasksFragment = safeFinishedDownloadFragmentRef
+			downloadSystem.downloadsUIManager.finishedTasksFragment =
+				safeFinishedDownloadFragmentRef
 		}
 	}
-	
+
 	/**
 	 * Loads the Lottie animation for the Open Active Tasks button.
 	 */

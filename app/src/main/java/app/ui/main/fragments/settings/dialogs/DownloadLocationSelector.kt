@@ -2,12 +2,20 @@ package app.ui.main.fragments.settings.dialogs
 
 import android.view.View
 import android.widget.ImageView
+import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioSettings
 import app.core.bases.BaseActivity
 import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
 import com.aio.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import lib.files.FileSystemUtility
 import lib.process.LogHelperUtils
+import lib.texts.CommonTextUtils.getText
+import lib.ui.MsgDialogUtils
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView
 import java.lang.ref.WeakReference
@@ -65,8 +73,31 @@ class DownloadLocationSelector(private val baseActivity: BaseActivity) {
 
 				galleryBtn.setOnClickListener {
 					logger.d("User selected: System Gallery")
-					aioSettings.defaultDownloadLocation = SYSTEM_GALLERY
-					updateRadioButtons(privateRadio, galleryRadio)
+					if (FileSystemUtility.hasFullFileSystemAccess(INSTANCE)) {
+						aioSettings.defaultDownloadLocation = SYSTEM_GALLERY
+						updateRadioButtons(privateRadio, galleryRadio)
+					} else {
+						safeBaseActivity?.doSomeVibration(50)
+						MsgDialogUtils.getMessageDialog(
+							baseActivityInf = safeBaseActivity,
+							titleText = getText(R.string.title_permission_needed),
+							isTitleVisible = true,
+							isNegativeButtonVisible = false,
+							messageTextViewCustomize = {
+								it.setText(R.string.text_app_dont_have_write_permission_msg)
+							}
+						)?.let { msgDialogBuilder ->
+							msgDialogBuilder.setOnClickForPositiveButton {
+								CoroutineScope(Dispatchers.Main).launch {
+									msgDialogBuilder.close()
+									delay(500)
+									safeBaseActivity?.let {
+										FileSystemUtility.openAllFilesAccessSettings(it)
+									}
+								}
+							}
+						}?.show()
+					}
 				}
 
 				applyBtn.setOnClickListener {
