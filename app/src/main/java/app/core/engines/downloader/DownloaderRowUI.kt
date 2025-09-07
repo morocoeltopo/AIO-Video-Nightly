@@ -133,7 +133,8 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * Handles both video thumbnails and default icons for other file types.
 	 */
 	private fun updateFileThumbnail(downloadModel: DownloadDataModel) {
-		logger.d("updateFileThumbnail: id=${downloadModel.id}, hideThumb=${downloadModel.globalSettings.downloadHideVideoThumbnail}")
+		logger.d("updateFileThumbnail: id=${downloadModel.id}, " +
+				"hideThumb=${downloadModel.globalSettings.downloadHideVideoThumbnail}")
 		// Check if thumbnail visibility setting changed
 		if (downloadModel.globalSettings.downloadHideVideoThumbnail
 			!= isThumbnailSettingsChanged

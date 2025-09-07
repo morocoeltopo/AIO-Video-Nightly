@@ -1,5 +1,6 @@
 package app.core.engines.browser.history
 
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 import java.util.Calendar
 import java.util.Date
@@ -16,79 +17,104 @@ import java.util.Date
  */
 class HistoryModel : Serializable {
 
-	// The URL of the visited web page
+	/** The URL of the visited web page. */
+	@SerializedName("historyUrl")
 	var historyUrl: String = ""
 
-	// The title of the visited web page
+	/** The title of the visited web page. */
+	@SerializedName("historyTitle")
 	var historyTitle: String = ""
 
-	// The date and time when the page was visited
+	/** The date and time when the page was visited. */
+	@SerializedName("historyVisitDateTime")
 	var historyVisitDateTime: Date = Date()
 
-	// Path to the favicon image file associated with the visited page
+	/** Path to the favicon image file associated with the visited page. */
+	@SerializedName("historyFaviconFilePath")
 	var historyFaviconFilePath: String = ""
 
-	// Description or summary of the web page
+	/** Description or summary of the web page. */
+	@SerializedName("historyDescription")
 	var historyDescription: String = ""
 
-	// Flag indicating whether the history item is marked as important
+	/** Flag indicating whether the history item is marked as important. */
+	@SerializedName("historyImportant")
 	var historyImportant: Boolean = false
 
-	// Name of the folder this history entry may be categorized under
+	/** Name of the folder this history entry may be categorized under. */
+	@SerializedName("historyFolder")
 	var historyFolder: String = ""
 
-	// Number of times the URL has been accessed
+	/** Number of times the URL has been accessed. */
+	@SerializedName("historyAccessCount")
 	var historyAccessCount: Int = 0
 
-	// The last time this page was accessed
+	/** The last time this page was accessed. */
+	@SerializedName("historyLastAccessed")
 	var historyLastAccessed: Date = Date()
 
-	// Total duration (in milliseconds) the page was viewed
+	/** Total duration (in milliseconds) the page was viewed. */
+	@SerializedName("historyDuration")
 	var historyDuration: Long = 0L
 
-	// User-provided rating of the visited page (0.0 to 5.0)
+	/** User-provided rating of the visited page (0.0 to 5.0). */
+	@SerializedName("historyRating")
 	var historyRating: Float = 0.0f
 
-	// Priority level (custom sorting or filtering)
+	/** Priority level (custom sorting or filtering). */
+	@SerializedName("historyPriority")
 	var historyPriority: Int = 0
 
-	// Flag indicating whether this history item has been archived
+	/** Flag indicating whether this history item has been archived. */
+	@SerializedName("historyArchived")
 	var historyArchived: Boolean = false
 
-	// Icon associated with the page or custom category
+	/** Icon associated with the page or custom category. */
+	@SerializedName("historyIcon")
 	var historyIcon: String = ""
 
-	// Any notes or annotations about the visit
+	/** Any notes or annotations about the visit. */
+	@SerializedName("historyNotes")
 	var historyNotes: String = ""
 
-	// The user who owns this history entry
+	/** The user who owns this history entry. */
+	@SerializedName("historyOwner")
 	var historyOwner: String = ""
 
-	// List of other users the history entry is shared with
+	/** List of other users the history entry is shared with. */
+	@SerializedName("historySharedWith")
 	var historySharedWith: ArrayList<String> = ArrayList()
 
-	// Session identifier that this visit is part of
+	/** Session identifier that this visit is part of. */
+	@SerializedName("historySessionId")
 	var historySessionId: String = ""
 
-	// User-Agent string from the browser/device
+	/** User-Agent string from the browser/device. */
+	@SerializedName("historyUserAgent")
 	var historyUserAgent: String = ""
 
-	// The referring URL (if any) that led to this visit
+	/** The referring URL (if any) that led to this visit. */
+	@SerializedName("historyReferrer")
 	var historyReferrer: String = ""
 
-	// Tags associated with this history entry
+	/** Tags associated with this history entry. */
+	@SerializedName("historyTags")
 	var historyTags: ArrayList<String> = ArrayList()
 
-	// Search terms used to find or navigate to this page
+	/** Search terms used to find or navigate to this page. */
+	@SerializedName("historySearchTerms")
 	var historySearchTerms: ArrayList<String> = ArrayList()
 
-	// Content type of the visited page (e.g., "text/html", "application/pdf")
+	/** Content type of the visited page (e.g., "text/html", "application/pdf"). */
+	@SerializedName("historyContentType")
 	var historyContentType: String = ""
 
-	// Type of device used (e.g., "mobile", "desktop")
+	/** Type of device used (e.g., "mobile", "desktop"). */
+	@SerializedName("historyDeviceType")
 	var historyDeviceType: String = ""
 
-	// Location of the user at the time of visit
+	/** Location of the user at the time of visit. */
+	@SerializedName("historyLocation")
 	var historyLocation: String = ""
 
 	/**
@@ -156,6 +182,7 @@ class HistoryModel : Serializable {
 	 * Adds a new tag to the history entry.
 	 *
 	 * @param tag The tag to add
+	 * @param onResult Callback invoked with true if tag was added, false otherwise
 	 */
 	fun addTag(tag: String, onResult: (Boolean) -> Unit = {}) {
 		onResult.invoke(historyTags.add(tag))
@@ -165,6 +192,7 @@ class HistoryModel : Serializable {
 	 * Removes an existing tag from the history entry.
 	 *
 	 * @param tag The tag to remove
+	 * @param onResult Callback invoked with true if tag was removed, false otherwise
 	 */
 	fun removeTag(tag: String, onResult: (Boolean) -> Unit = {}) {
 		onResult.invoke(historyTags.remove(tag))

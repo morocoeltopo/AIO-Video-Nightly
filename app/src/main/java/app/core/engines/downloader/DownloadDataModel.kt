@@ -18,6 +18,7 @@ import com.aio.R.drawable
 import com.aio.R.string
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import lib.files.FileExtensions.ARCHIVE_EXTENSIONS
 import lib.files.FileExtensions.DOCUMENT_EXTENSIONS
 import lib.files.FileExtensions.IMAGE_EXTENSIONS
@@ -51,103 +52,228 @@ class DownloadDataModel : Serializable {
 	private val logger = LogHelperUtils.from(javaClass)
 
 	// Basic download identification and state tracking
+	@SerializedName("id")
 	var id: Int = 0                           // Unique identifier for the download
+
+	@SerializedName("status")
 	var status: Int = DownloadStatus.CLOSE    // Current status (see DownloadStatus constants)
+
+	@SerializedName("isRunning")
 	var isRunning: Boolean = false            // Whether download is actively running
+
+	@SerializedName("isComplete")
 	var isComplete: Boolean = false           // Whether download completed successfully
+
+	@SerializedName("isDeleted")
 	var isDeleted: Boolean = false            // Whether download was deleted
-	var isRemoved: Boolean = false            // Whether download was removed from UI
+
+	@SerializedName("isRemoved")
+	var isRemoved: Boolean = false           // Whether download was removed from UI
 
 	// Error and special case flags
+	@SerializedName("isWentToPrivateFolder")
 	var isWentToPrivateFolder: Boolean = false            // If file was saved to private storage
+
+	@SerializedName("isFileUrlExpired")
 	var isFileUrlExpired: Boolean = false                 // If source URL expired
+
+	@SerializedName("isYtdlpHavingProblem")
 	var isYtdlpHavingProblem: Boolean = false             // If yt-dlp encountered issues
+
+	@SerializedName("ytdlpProblemMsg")
 	var ytdlpProblemMsg: String = ""                      // Detailed yt-dlp error message
+
+	@SerializedName("isDestinationFileNotExisted")
 	var isDestinationFileNotExisted: Boolean = false      // If target file doesn't exist
+
+	@SerializedName("isFileChecksumValidationFailed")
 	var isFileChecksumValidationFailed: Boolean = false   // If checksum verification failed
 
 	// Network and operational flags
+	@SerializedName("isWaitingForNetwork")
 	var isWaitingForNetwork: Boolean = false          // Waiting for network availability
+
+	@SerializedName("isFailedToAccessFile")
 	var isFailedToAccessFile: Boolean = false         // Failed to access source file
+
+	@SerializedName("isExpiredURLDialogShown")
 	var isExpiredURLDialogShown: Boolean = false      // If URL expiry dialog was shown
+
+	@SerializedName("isSmartCategoryDirProcessed")
 	var isSmartCategoryDirProcessed: Boolean = false  // If file was categorized automatically
 
 	// User communication and metadata
+	@SerializedName("msgToShowUserViaDialog")
 	var msgToShowUserViaDialog: String = ""           // Message to display to user
+
+	@SerializedName("isDownloadFromBrowser")
 	var isDownloadFromBrowser: Boolean = false        // If initiated from browser
+
+	@SerializedName("isBasicYtdlpModelInitialized")
 	var isBasicYtdlpModelInitialized: Boolean = false // If yt-dlp metadata initialized
+
+	@SerializedName("additionalWebHeaders")
 	var additionalWebHeaders: Map<String, String>? = null // Custom HTTP headers
 
 	// File information
+	@SerializedName("fileName")
 	var fileName: String = ""             // Name of the file being downloaded
+
+	@SerializedName("fileURL")
 	var fileURL: String = ""              // Source URL of the download
+
+	@SerializedName("siteReferrer")
 	var siteReferrer: String = ""         // HTTP Referrer header value
+
+	@SerializedName("fileDirectory")
 	var fileDirectory: String = ""        // Target directory path
 
 	// Metadata and technical details
+	@SerializedName("fileMimeType")
 	var fileMimeType: String = ""                 // MIME type of the file
+
+	@SerializedName("fileContentDisposition")
 	var fileContentDisposition: String = ""       // Content-Disposition header value
+
+	@SerializedName("siteCookieString")
 	var siteCookieString: String = ""             // Cookies for the download
+
+	@SerializedName("thumbPath")
 	var thumbPath: String = ""                    // Local path to thumbnail
+
+	@SerializedName("thumbnailUrl")
 	var thumbnailUrl: String = ""                 // Remote URL of thumbnail
 
 	// Temporary storage and processing info
+	@SerializedName("tempYtdlpDestinationFilePath")
 	var tempYtdlpDestinationFilePath: String = "" // Temp path for yt-dlp processing
+
+	@SerializedName("tempYtdlpStatusInfo")
 	var tempYtdlpStatusInfo: String = ""          // Temp status from yt-dlp
+
+	@SerializedName("fileDirectoryURI")
 	var fileDirectoryURI: String = ""             // URI of target directory
+
+	@SerializedName("fileCategoryName")
 	var fileCategoryName: String = ""             // Auto-categorized file type
+
+	@SerializedName("startTimeDateInFormat")
 	var startTimeDateInFormat: String = ""        // Formatted start timestamp
+
+	@SerializedName("startTimeDate")
 	var startTimeDate: Long = 0L                  // Start time in milliseconds
 
 	// Timestamps
+	@SerializedName("lastModifiedTimeDateInFormat")
 	var lastModifiedTimeDateInFormat: String = "" // Formatted modification time
+
+	@SerializedName("lastModifiedTimeDate")
 	var lastModifiedTimeDate: Long = 0L           // Modification time in milliseconds
+
+	@SerializedName("isUnknownFileSize")
 	var isUnknownFileSize: Boolean = false        // If file size couldn't be determined
 
 	// Size information
+	@SerializedName("fileSize")
 	var fileSize: Long = 0L                       // Total file size in bytes
+
+	@SerializedName("fileChecksum")
 	var fileChecksum: String = "--"               // File checksum/hash
+
+	@SerializedName("fileSizeInFormat")
 	var fileSizeInFormat: String = ""             // Human-readable file size
 
 	// Speed metrics
+	@SerializedName("averageSpeed")
 	var averageSpeed: Long = 0L                   // Average download speed (bytes/sec)
+
+	@SerializedName("maxSpeed")
 	var maxSpeed: Long = 0L                       // Peak download speed
+
+	@SerializedName("realtimeSpeed")
 	var realtimeSpeed: Long = 0L                  // Current speed
+
+	@SerializedName("averageSpeedInFormat")
 	var averageSpeedInFormat: String = "--"       // Formatted average speed
+
+	@SerializedName("maxSpeedInFormat")
 	var maxSpeedInFormat: String = "--"           // Formatted max speed
+
+	@SerializedName("realtimeSpeedInFormat")
 	var realtimeSpeedInFormat: String = "--"      // Formatted current speed
 
 	// Download capabilities
+	@SerializedName("isResumeSupported")
 	var isResumeSupported: Boolean = false        // If download supports resuming
+
+	@SerializedName("isMultiThreadSupported")
 	var isMultiThreadSupported: Boolean = false   // If multi-threaded download supported
 
 	// Progress tracking
+	@SerializedName("totalConnectionRetries")
 	var totalConnectionRetries: Int = 0           // Number of retry attempts
+
+	@SerializedName("totalUnresetConnectionRetries")
 	var totalUnresetConnectionRetries: Int = 0    // Number of retry attempts
+
+	@SerializedName("progressPercentage")
 	var progressPercentage: Long = 0L             // Completion percentage (0-100)
+
+	@SerializedName("progressPercentageInFormat")
 	var progressPercentageInFormat: String = ""   // Formatted percentage string
 
 	// Byte-level tracking
+	@SerializedName("downloadedByte")
 	var downloadedByte: Long = 0L                 // Bytes downloaded so far
+
+	@SerializedName("downloadedByteInFormat")
 	var downloadedByteInFormat: String = "--"     // Formatted byte count
+
+	@SerializedName("partStartingPoint")
 	var partStartingPoint: LongArray = LongArray(18)  // Start bytes for each chunk
+
+	@SerializedName("partEndingPoint")
 	var partEndingPoint: LongArray = LongArray(18)    // End bytes for each chunk
+
+	@SerializedName("partChunkSizes")
 	var partChunkSizes: LongArray = LongArray(18)     // Size of each chunk
+
+	@SerializedName("partsDownloadedByte")
 	var partsDownloadedByte: LongArray = LongArray(18) // Bytes downloaded per chunk
 
 	// Chunk progress
+	@SerializedName("partProgressPercentage")
 	var partProgressPercentage: IntArray = IntArray(18) // Completion % per chunk
+
+	@SerializedName("timeSpentInMilliSec")
 	var timeSpentInMilliSec: Long = 0L            // Total time spent (ms)
+
+	@SerializedName("remainingTimeInSec")
 	var remainingTimeInSec: Long = 0L             // Estimated time remaining (sec)
+
+	@SerializedName("timeSpentInFormat")
 	var timeSpentInFormat: String = "--"          // Formatted time spent
+
+	@SerializedName("remainingTimeInFormat")
 	var remainingTimeInFormat: String = "--"      // Formatted remaining time
+
+	@SerializedName("statusInfo")
 	var statusInfo: String = "--"                 // Current status message
+
+	@SerializedName("videoInfo")
 	var videoInfo: VideoInfo? = null              // Video metadata (for media downloads)
+
+	@SerializedName("videoFormat")
 	var videoFormat: VideoFormat? = null          // Video format details
+
+	@SerializedName("executionCommand")
 	var executionCommand: String = ""             // Command used for download
+
+	@SerializedName("mediaFilePlaybackDuration")
 	var mediaFilePlaybackDuration: String = ""    // Duration of media file
 
 	// Application settings snapshot
+	@SerializedName("globalSettings")
 	lateinit var globalSettings: AIOSettings      // Copy of app settings at download start
 
 	companion object {
