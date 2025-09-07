@@ -103,7 +103,6 @@ class MotherActivity : BaseActivity() {
 	override fun onAfterLayoutRender() {
 		logger.d("After layout render in MotherActivity")
 		safeMotherActivityRef?.let { _ ->
-			setLightSystemBarTheme()
 			setupFragmentViewpager()
 			setupBottomTabs()
 		}

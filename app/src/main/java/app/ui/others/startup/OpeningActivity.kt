@@ -37,12 +37,6 @@ class OpeningActivity : BaseActivity() {
      * @return [Int] Layout resource ID for this screen.
      */
     override fun onRenderingLayout(): Int {
-        setSystemBarsColors(
-            statusBarColorResId = R.color.color_background,
-            navigationBarColorResId = R.color.color_background,
-            isLightStatusBar = true,
-            isLightNavigationBar = true
-        )
         return R.layout.activity_opening_1
     }
 

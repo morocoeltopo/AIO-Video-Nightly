@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
@@ -146,7 +147,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			setDefaultUncaughtExceptionHandler(CrashHandler())
 
 			// Configure system UI
-			setLightSystemBarTheme()
+			if (isDarkModeActive()) setDarkSystemBarTheme() else setLightSystemBarTheme()
 
 			// Initialize storage helper
 			scopedStorageHelper = SimpleStorageHelper(safeActivityRef)
@@ -566,6 +567,12 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		)
 	}
 
+	fun isDarkModeActive(): Boolean {
+		val currentNightMode = resources.configuration.uiMode and
+				Configuration.UI_MODE_NIGHT_MASK
+		return currentNightMode == Configuration.UI_MODE_NIGHT_YES
+	}
+
 	/**
 	 * Sets dark theme for system bars (dark icons on light background).
 	 */
@@ -727,7 +734,13 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 						logger.d("Downloaded latest APK successfully at ${latestAPKFile.absolutePath}")
 
 						if (getFileSha256(latestAPKFile) != updateInfo.versionHash) {
-							logger.d("SHA256 mismatch! Expected=${updateInfo.versionHash}, Got=${getFileSha256(latestAPKFile)}")
+							logger.d(
+								"SHA256 mismatch! Expected=${updateInfo.versionHash}, Got=${
+									getFileSha256(
+										latestAPKFile
+									)
+								}"
+							)
 							latestAPKFile.delete()
 							return@executeInBackground
 						}

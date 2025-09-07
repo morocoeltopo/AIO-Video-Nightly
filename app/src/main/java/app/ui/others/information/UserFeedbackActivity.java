@@ -56,7 +56,6 @@ public class UserFeedbackActivity extends BaseActivity {
 	 */
 	@Override
 	public void onAfterLayoutRender() {
-		setLightSystemBarTheme();
 		initializeViews();
 		initializeViewClickEvents();
 		handleIntentExtra();
