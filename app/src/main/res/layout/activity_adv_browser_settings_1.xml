@@ -123,7 +123,7 @@
 							android:drawablePadding="@dimen/_5"
 							android:drawableTint="@color/color_secondary"
 							android:fontFamily="@font/application_font_family"
-							android:text="@string/text_browser_homepage"
+							android:text="@string/title_browser_homepage"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
@@ -181,7 +181,7 @@
 							android:drawablePadding="@dimen/_5"
 							android:drawableTint="@color/color_secondary"
 							android:fontFamily="@font/application_font_family"
-							android:text="@string/text_enable_browser_adblock"
+							android:text="@string/title_enable_browser_adblock"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
@@ -220,7 +220,7 @@
 							android:drawablePadding="@dimen/_5"
 							android:drawableTint="@color/color_secondary"
 							android:fontFamily="@font/application_font_family"
-							android:text="@string/text_show_image_on_webpage"
+							android:text="@string/title_show_image_on_webpage"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
@@ -249,7 +249,7 @@
 							android:drawablePadding="@dimen/_5"
 							android:drawableTint="@color/color_secondary"
 							android:fontFamily="@font/application_font_family"
-							android:text="@string/text_show_video_grabber"
+							android:text="@string/title_show_video_grabber"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>
@@ -278,7 +278,7 @@
 							android:drawablePadding="@dimen/_5"
 							android:drawableTint="@color/color_secondary"
 							android:fontFamily="@font/application_font_family"
-							android:text="@string/text_block_popup_ads"
+							android:text="@string/title_block_popup_ads"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size" />
 					</LinearLayout>

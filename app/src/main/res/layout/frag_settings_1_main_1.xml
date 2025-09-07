@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Settings screen layout with multiple sections for user preferences -->
+<?xml version="1.0" encoding="utf-8"?><!-- Settings screen layout with multiple sections for user preferences -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -221,7 +220,7 @@
 						android:drawablePadding="@dimen/_7"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_download_location"
+						android:text="@string/title_download_location"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -250,7 +249,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_application_language"
+						android:text="@string/title_application_language"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -289,7 +288,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_content_region"
+						android:text="@string/title_preferred_content_region"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -318,7 +317,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_enable_daily_suggestions"
+						android:text="@string/title_enable_daily_suggestions"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -390,7 +389,7 @@
 						android:drawablePadding="@dimen/_7"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_download_folder"
+						android:text="@string/title_default_download_folder"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -419,7 +418,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_hide_task_notifications"
+						android:text="@string/title_hide_task_notifications"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -448,7 +447,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_wifi_only_download"
+						android:text="@string/title_wifi_only_download"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -477,7 +476,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_play_sound_completion"
+						android:text="@string/title_play_sound_completion"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						tools:ignore="TextContrastCheck" />
@@ -517,7 +516,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_other_advance_settings"
+						android:text="@string/title_other_advance_settings"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -589,7 +588,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_browser_homepage"
+						android:text="@string/title_browser_homepage"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -618,7 +617,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_enable_browser_adblock"
+						android:text="@string/title_enable_browser_adblock"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -647,7 +646,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_block_popup_ads"
+						android:text="@string/title_block_popup_ads"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -686,7 +685,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_show_image_on_webpage"
+						android:text="@string/title_show_image_on_webpage"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -715,7 +714,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_show_video_grabber"
+						android:text="@string/title_show_video_grabber"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -754,7 +753,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_other_advance_settings"
+						android:text="@string/title_other_advance_settings"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -796,7 +795,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center"
 						android:maxLines="1"
-						android:text="@string/title_policies_licenses"
+						android:text="@string/title_customer_service"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						android:textStyle="bold" />
@@ -826,7 +825,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_share_with_friends"
+						android:text="@string/title_share_with_friends"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -855,7 +854,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_your_send_feedback"
+						android:text="@string/title_your_send_feedback"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -884,7 +883,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_open_application_info"
+						android:text="@string/title_open_application_info"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -923,7 +922,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_privacy_policy"
+						android:text="@string/title_privacy_policy"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -952,7 +951,7 @@
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/text_terms_conditions"
+						android:text="@string/title_terms_conditions"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
