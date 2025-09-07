@@ -185,9 +185,11 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 							return
 						}
 
-						if (currentTimeMillis() - lastUpdateTime >= (1000 * 20)) {
-							logger.d("Download stalled for over 20 seconds, forcing restart...")
-							forcedRestartDownload(retryingDownloadTimer)
+						if (currentTimeMillis() - lastUpdateTime >= (1000 * 5)) {
+							if (downloadDataModel.ytdlpProblemMsg.contains("left", true)) {
+								logger.d("Download stalled for over 5 seconds, forcing restart...")
+								forcedRestartDownload(retryingDownloadTimer)
+							}
 						}
 					} else if (downloadDataModel.isWaitingForNetwork) {
 						logger.d("Waiting for network, attempting to restart download...")
