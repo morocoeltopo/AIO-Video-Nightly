@@ -23,7 +23,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -33,6 +33,7 @@
 
 				<!-- User avatar and basic info row -->
 				<LinearLayout
+					android:background="@color/color_cardview_title_bg"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:gravity="center_vertical"
@@ -55,7 +56,8 @@
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
 						android:layout_marginTop="@dimen/_2"
-						android:layout_marginEnd="@dimen/_5"
+						android:layout_marginBottom="@dimen/_2"
+						android:layout_marginEnd="@dimen/_2"
 						android:background="@drawable/ic_button_negative_selector"
 						android:clickable="true"
 						android:orientation="vertical"
@@ -96,16 +98,6 @@
 					</LinearLayout>
 
 				</LinearLayout>
-
-				<!-- Divider line -->
-				<View
-					android:layout_width="match_parent"
-					android:layout_height="@dimen/_1"
-					android:layout_marginStart="@dimen/_10"
-					android:layout_marginTop="@dimen/_0"
-					android:layout_marginEnd="@dimen/_5"
-					android:layout_marginBottom="@dimen/_0"
-					android:background="@color/transparent_dark" />
 
 				<!-- Cloud connection section -->
 				<LinearLayout
@@ -151,7 +143,7 @@
 							android:layout_margin="@dimen/_7"
 							android:drawableStart="@drawable/ic_button_connect"
 							android:drawablePadding="@dimen/_5"
-							android:drawableTint="@color/color_background"
+							android:drawableTint="@color/color_on_secondary"
 							android:fontFamily="@font/application_font_family"
 							android:gravity="center"
 							android:text="@string/title_sign_in_register"
@@ -174,7 +166,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -186,7 +178,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -372,7 +364,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -384,7 +376,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -612,7 +604,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -624,7 +616,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -861,7 +853,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -873,7 +865,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -1075,7 +1067,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -1087,7 +1079,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -1149,7 +1141,7 @@
 						android:layout_margin="@dimen/_7"
 						android:drawableStart="@drawable/ic_button_download"
 						android:drawablePadding="@dimen/_5"
-						android:drawableTint="@color/color_background"
+						android:drawableTint="@color/color_on_secondary"
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center"
 						android:text="@string/title_check_new_update"
@@ -1169,7 +1161,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -1181,7 +1173,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical"
 					tools:ignore="TooManyViews">
 

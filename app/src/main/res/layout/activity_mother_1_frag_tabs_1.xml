@@ -17,7 +17,7 @@
 		android:layout_marginTop="@dimen/_5"
 		android:layout_marginEnd="@dimen/_15"
 		android:layout_marginBottom="@dimen/_8"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_cardview_bg"
 		app:cardCornerRadius="@dimen/_10">
 
 		<LinearLayout

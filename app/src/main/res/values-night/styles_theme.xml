@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!-- Primary colors -->
-	<color name="color_primary">#121212</color>
-	<color name="color_primary_dark">#000000</color>
-	<color name="color_primary_variant">#1E1E1E</color>
+	<color name="color_primary">#1A1A1A</color>
+	<color name="color_primary_dark">#121212</color>
+	<color name="color_primary_variant">#2E2E2E</color>
 	<color name="color_on_primary">#FFFFFF</color>
 
 	<!-- Secondary colors -->
@@ -16,6 +16,8 @@
 	<color name="color_surface">#2C2C2C</color>
 	<color name="color_on_background">#E0E0E0</color>
 	<color name="color_on_surface">#BDBDBD</color>
+	<color name="color_cardview_title_bg">@color/color_primary</color>
+	<color name="color_cardview_bg">@color/color_primary_variant</color>
 
 	<!-- Navigation and action bars -->
 	<color name="color_action_bar_bg">#1E1E1E</color>
@@ -35,7 +37,7 @@
 	<color name="color_green_lite">#388E3C</color>
 
 	<!-- Error colors -->
-	<color name="color_error">#CF6679</color>
+	<color name="color_error">#F05A5A</color>
 	<color name="color_error_dark">#B00020</color>
 	<color name="color_on_error">#000000</color>
 
