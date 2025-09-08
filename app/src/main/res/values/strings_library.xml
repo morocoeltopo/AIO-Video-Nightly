@@ -368,7 +368,7 @@
 	<string name="title_whatsapp">Whatsapp</string>
 	<string name="title_high_quality">High Quality</string>
 	<string name="title_history">History</string>
-	<string name="text_open_downloads_for_recent_downloads"><b>Open Tasks</b> for all downloads</string>
+	<string name="text_open_downloads_for_recent_downloads"><b><u>Open Tasks</u></b> for all downloads</string>
 	<string name="title_recent_downloads">Recent Downloads</string>
 	<string name="text_fb_how_to_guide_1">Tap the <b><u>Share button</u></b> below the video or reel you want, then <b><u>select Copy link</u></b> to copy its web address to your clipboard.</string>
 	<string name="text_yt_how_to_guide_1"><b><u>Tap the Share button</u></b> below the video, then <b><u>scroll horizontally</u></b> to find the <b><u>More option</u></b>.</string>

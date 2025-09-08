@@ -12,12 +12,11 @@
 	<color name="color_on_secondary">#000000</color>
 
 	<!-- Background and surfaces -->
-	<color name="color_background">#474747</color>
-	<color name="color_surface">#2C2C2C</color>
+	<color name="color_background">@color/color_primary_variant</color>
+	<color name="color_surface">@color/color_primary</color>
 	<color name="color_on_background">#E0E0E0</color>
 	<color name="color_on_surface">#BDBDBD</color>
-	<color name="color_cardview_title_bg">@color/color_primary</color>
-	<color name="color_cardview_bg">@color/color_primary_variant</color>
+	<color name="color_cardview_drawable_tint">@color/color_secondary</color>
 
 	<!-- Navigation and action bars -->
 	<color name="color_action_bar_bg">#1E1E1E</color>

@@ -89,7 +89,7 @@
 					android:layout_margin="@dimen/_7"
 					android:drawableStart="@drawable/ic_button_question"
 					android:drawablePadding="@dimen/_5"
-					android:drawableTint="@color/color_background"
+					android:drawableTint="@color/color_on_secondary"
 					android:fontFamily="@font/application_font_family"
 					android:gravity="center"
 					android:text="@string/title_how_to_download"

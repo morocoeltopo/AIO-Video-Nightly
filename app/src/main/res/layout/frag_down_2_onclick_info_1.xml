@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Dialog layout for displaying download information with scrollable text -->
+<?xml version="1.0" encoding="utf-8"?><!-- Dialog layout for displaying download information with scrollable text -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -105,7 +104,7 @@
 						android:layout_margin="@dimen/_7"
 						android:drawableStart="@drawable/ic_button_checked_circle"
 						android:drawablePadding="@dimen/_5"
-						android:drawableTint="@color/color_background"
+						android:drawableTint="@color/color_on_secondary"
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center"
