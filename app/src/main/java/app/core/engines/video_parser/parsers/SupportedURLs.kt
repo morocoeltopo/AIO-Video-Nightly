@@ -50,6 +50,7 @@ object SupportedURLs {
 		"audiomack",
 		"periscope",
 		"jiosaavn",
+		"hotstar",
 		"youku",
 		"rumble",
 		"odysee",
