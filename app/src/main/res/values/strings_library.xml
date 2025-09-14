@@ -42,7 +42,7 @@
 	<string name="title_unknown">Unknown</string>
 	<string name="title_cancel">Cancel</string>
 	<string name="title_yes">Yes</string>
-	<string name="text_delete_the_file">Delete the file</string>
+	<string name="title_delete_the_file">Delete The File</string>
 	<string name="text_title_goes_here">Title goes here</string>
 	<string name="title_message_goes_here">Message goes here</string>
 	<string name="title_download_information">Download Information</string>
@@ -149,7 +149,7 @@
 	<string name="text_clear_from_list">Clear from list</string>
 	<string name="text_media_file_has_deleted">Media file has been deleted.</string>
 	<string name="text_show_download_info">Show download info…</string>
-	<string name="text_rename_file">Rename file</string>
+	<string name="title_rename_file">Rename File</string>
 	<string name="text_discover_more">Discover more</string>
 	<string name="text_you_dont_have_any_downloads"><b>You don\'t have any downloads</b>\nGo and download something!</string>
 	<string name="text_share_with_others">Share with others</string>
@@ -317,7 +317,7 @@
 	<string name="text_content_policy">Content policy</string>
 	<string name="title_your_send_feedback">Send Your Feedback</string>
 	<string name="text_send_feedback">Send feedback</string>
-	<string name="text_special_support_thank_you">The app was made possible with the support of many incredible people. <i><b><u>Thank you for supporting us!</u></b></i></string>
+	<string name="text_special_support_thank_you">This app was brought to life thanks to the support and encouragement of many amazing people.</string>
 	<string name="title_share_with_friends">Share With Friends</string>
 	<string name="text_download_location">Downloads location</string>
 	<string name="title_browser_homepage">Browser Homepage</string>
@@ -405,7 +405,7 @@
 	<string name="text_web_how_to_guide_2">Choose a <b><u>video resolution</u></b> from the available detected video links. <b>Tip*</b> Higher resolutions give better quality.</string>
 	<string name="text_web_how_to_guide_3">Now, click on the <b><u>Download button</u></b> to start downloading. You can see the <b><u>download progress</u></b> at the <b><u>Tasks</u></b> section.</string>
 	<string name="title_internet">Internet</string>
-	<string name="text_show_download_information">Download information…</string>
+	<string name="title_show_download_information">Download Information…</string>
 	<string name="text_file_name_will_be_renamed"><b><u>The actual file name</u></b> on disk will be changed.</string>
 	<string name="title_experimental_feature">Experimental Feature</string>
 	<string name="text_feature_is_experimental_msg">This feature is currently experimental. <b>We don\'t recommend switching the language.</b></string>
@@ -463,13 +463,13 @@
 	<string name="title_xvideos">XVideos</string>
 	<string name="text_loading_downloads_data">Loading downloads data…</string>
 	<string name="text_open_video_site">Open video site</string>
-	<string name="text_share_the_file">Share the file</string>
-	<string name="text_open_the_file">Open the file</string>
+	<string name="title_share_the_file">Share The File</string>
+	<string name="title_open_the_file">Open The File</string>
 	<string name="text_downloading_webpage">Downloading Webpage…</string>
 	<string name="text_downloading_client_config">Downloading Client Config…</string>
 	<string name="text_extracting_player_api">Extracting Player API…</string>
 	<string name="text_open_externally">Open externally</string>
-	<string name="text_open_link">Open file link</string>
+	<string name="title_open_link">Open File Link</string>
 	<string name="text_setting_applied">Setting has applied.</string>
 	<string name="title_application_settings">Application Settings</string>
 	<string name="title_app_version">Application Version</string>
@@ -539,7 +539,10 @@
 	<string name="title_single_click_open">Single Click To Open</string>
 	<string name="title_permission_needed">Permission Needed</string>
 	<string name="text_app_dont_have_write_permission_msg">AIO need permission to access the system gallery. <b>Please enable it in the settings.</b></string>
-	<string name="text_restart_if_somethings_off">If the app isn’t working as expected, try restarting it.\n<i><b><u>A quick restart often fixes common issues.</u></b></i></string>
-	<string name="text_follow_shibafoss"><u>Follow me at Instagram @ShibaFoss</u></string>
+	<string name="text_restart_if_somethings_off">If the app isn’t behaving as expected, try restarting it — this simple step often resolves the issue.</string>
+	<string name="text_follow_shibafoss">Follow me at Instagram <u>@ShibaFoss</u></string>
+	<string name="title_move_to_private">Move To Private</string>
+	<string name="title_hide_thumbnail">Hide Thumbnail</string>
+	<string name="title_show_thumbnail">Show Thumbnail</string>
 
 </resources>

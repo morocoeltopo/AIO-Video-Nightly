@@ -36,6 +36,7 @@ import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
+import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ActivityAnimator.animActivityFade
 import lib.ui.MsgDialogUtils
@@ -56,6 +57,8 @@ import java.io.File
  * @param finishedTasksFragment The parent fragment that contains the finished downloads list
  */
 class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : OnClickListener {
+
+	private val logger = LogHelperUtils.from(javaClass)
 
 	// Safe references to avoid memory leaks
 	private val safeFinishedTasksFragmentRef = finishedTasksFragment?.safeFinishTasksFragment
@@ -84,6 +87,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					R.id.btn_delete_download,
 					R.id.btn_rename_download,
 					R.id.btn_discover_more,
+					R.id.btn_move_to_private,
+					R.id.btn_remove_thumbanil,
 					R.id.btn_show_download_information
 				).toIntArray()
 			)
@@ -138,6 +143,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				R.id.btn_delete_download -> deleteFile()
 				R.id.btn_rename_download -> renameFile()
 				R.id.btn_discover_more -> discoverMore()
+				R.id.btn_move_to_private -> moveToPrivate()
+				R.id.btn_remove_thumbanil -> removeThumbnail()
 				R.id.btn_show_download_information -> downloadInfo()
 			}
 		}
@@ -160,7 +167,29 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				}
 
 				findViewById<ImageView>(R.id.img_file_thumbnail).apply {
-					updateThumbnail(this, downloadModel)
+					if (!downloadModel.globalSettings.downloadHideVideoThumbnail) {
+						updateThumbnail(this, downloadModel)
+					} else {
+						val defaultThumb = downloadModel.getThumbnailDrawableID()
+						this.setImageResource(defaultThumb)
+					}
+				}
+
+				findViewById<TextView>(R.id.txt_remove_thumbnail).apply {
+					val thumbnailSetting = downloadModel.globalSettings.downloadHideVideoThumbnail
+					text = (if (thumbnailSetting) getText(R.string.title_show_thumbnail)
+					else getText(R.string.title_hide_thumbnail))
+				}
+
+				findViewById<View>(R.id.container_media_duration).apply {
+					val mediaIndicator = findViewById<TextView>(R.id.txt_media_duration)
+					val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
+					val playbackTimeString = mediaFilePlaybackDuration.replace("(", "").replace(")", "")
+					if (playbackTimeString.isNotEmpty()) {
+						ViewUtility.showView(this, true)
+						ViewUtility.showView(mediaIndicator, true)
+						mediaIndicator.text = playbackTimeString
+					}
 				}
 			}
 		}
@@ -504,6 +533,34 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			safeMotherActivityRef.sideNavigation
 				?.addNewBrowsingTab(referrerLink, webviewEngine)
 			safeMotherActivityRef.openBrowserFragment()
+		}
+	}
+
+	fun moveToPrivate() {
+		safeFinishedTasksFragmentRef?.let { _ ->
+			safeMotherActivityRef?.let { safeMotherActivityRef ->
+				close()
+				safeMotherActivityRef.doSomeVibration(50)
+				safeMotherActivityRef.showUpcomingFeatures()
+			}
+		}
+	}
+
+	fun removeThumbnail() {
+		safeFinishedTasksFragmentRef?.let { finishedFragment ->
+			safeMotherActivityRef?.let { safeMotherActivityRef ->
+				close()
+				try {
+					val globalSettings = downloadDataModel?.globalSettings
+					globalSettings?.downloadHideVideoThumbnail = !globalSettings.downloadHideVideoThumbnail
+					downloadDataModel?.updateInStorage()
+					val finishedTasksListAdapter = finishedFragment.finishedTasksListAdapter
+					finishedTasksListAdapter.notifyDataSetChangedOnSort(true)
+				} catch (error: Exception) {
+					logger.e("Error found at hide/show thumbnail -", error)
+					showToast(msgId = R.string.text_something_went_wrong)
+				}
+			}
 		}
 	}
 

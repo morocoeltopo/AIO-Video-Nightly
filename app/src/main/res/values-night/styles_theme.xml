@@ -56,6 +56,7 @@
 
 	<!-- Card related color -->
 	<color name="color_toast_view_bg">@color/color_primary</color>
+	<color name="color_actionbar_title_bg">@color/color_cardview_title_bg</color>
 	<color name="color_cardview_bg">@color/color_background</color>
 	<color name="color_cardview_title_bg">@color/color_primary_dark</color>
 

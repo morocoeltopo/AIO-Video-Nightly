@@ -12,7 +12,6 @@ import androidx.core.content.res.ResourcesCompat.getDrawable
 import androidx.core.net.toUri
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioFavicons
-import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import com.aio.R
@@ -142,11 +141,7 @@ class FinishedTasksViewHolder(val layout: View) {
 		logger.d("Setting up click events for download ID: ${downloadDataModel.id}")
 		container.apply {
 			isClickable = true
-			setOnClickListener {
-				if (aioSettings.openDownloadedFileOnSingleClick) {
-					onClick.onFinishedDownloadClick(downloadDataModel)
-				} else onClick.onFinishedDownloadLongClick(downloadDataModel)
-			}
+			setOnClickListener { onClick.onFinishedDownloadClick(downloadDataModel) }
 			setOnLongClickListener(View.OnLongClickListener {
 				onClick.onFinishedDownloadLongClick(downloadDataModel)
 				return@OnLongClickListener true

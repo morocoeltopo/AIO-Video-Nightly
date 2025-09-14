@@ -18,7 +18,7 @@
 		android:layout_marginTop="@dimen/_10"
 		android:layout_marginEnd="@dimen/_15"
 		android:layout_marginBottom="@dimen/_5"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_actionbar_title_bg"
 		app:cardCornerRadius="@dimen/_10">
 
 		<RelativeLayout

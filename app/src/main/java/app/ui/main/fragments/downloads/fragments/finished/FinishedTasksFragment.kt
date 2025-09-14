@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import app.core.AIOApp
 import app.core.AIOApp.Companion.aioRawFiles
+import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOTimer.AIOTimerListener
 import app.core.bases.BaseFragment
@@ -97,11 +98,11 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 
 	/** Called when a finished download is clicked. Delegates to long-click handler. */
 	override fun onFinishedDownloadClick(downloadModel: DownloadDataModel) {
-		if (AIOApp.aioSettings.openDownloadedFileOnSingleClick) {
+		if (aioSettings.openDownloadedFileOnSingleClick) {
 			finishTaskOptions.setDownloadModel(downloadModel)
 			finishTaskOptions.playTheMedia()
 		} else {
-			onFinishedDownloadLongClick(downloadModel)
+			finishTaskOptions.show(downloadModel)
 		}
 	}
 

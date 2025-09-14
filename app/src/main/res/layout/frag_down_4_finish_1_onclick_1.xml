@@ -15,7 +15,7 @@
 		android:layout_marginTop="@dimen/_10"
 		android:layout_marginEnd="@dimen/_5"
 		android:layout_marginBottom="@dimen/_10"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_cardview_bg"
 		app:cardCornerRadius="@dimen/_10"
 		app:cardElevation="@dimen/_5">
 
@@ -62,6 +62,38 @@
 						android:scaleType="centerCrop"
 						android:src="@drawable/image_no_thumb_available"
 						tools:ignore="ImageContrastCheck" />
+
+					<!-- Media duration indicator container (hidden by default) -->
+					<LinearLayout
+						android:id="@+id/container_media_duration"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_gravity="end"
+						android:layout_marginStart="@dimen/_5"
+						android:layout_marginTop="@dimen/_5"
+						android:layout_marginEnd="@dimen/_5"
+						android:layout_marginBottom="@dimen/_5"
+						android:background="@drawable/rounded_primary_color"
+						android:orientation="vertical"
+						android:visibility="gone">
+
+						<!-- Media duration text -->
+						<TextView
+							android:id="@+id/txt_media_duration"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginStart="@dimen/_2"
+							android:layout_marginTop="@dimen/_2"
+							android:layout_marginEnd="@dimen/_2"
+							android:layout_marginBottom="@dimen/_2"
+							android:fontFamily="@font/application_font_family"
+							android:text="@string/text_time_representation"
+							android:textColor="@color/color_on_primary"
+							android:textSize="@dimen/small_text_size"
+							android:textStyle="normal"
+							tools:ignore="TextContrastCheck" />
+
+					</LinearLayout>
 				</androidx.cardview.widget.CardView>
 
 				<!-- Container for file metadata (title and URL) -->
@@ -173,7 +205,7 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/text_open_the_file"
+						android:text="@string/title_open_the_file"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -203,11 +235,21 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/text_share_the_file"
+						android:text="@string/title_share_the_file"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 			</LinearLayout>
+
+			<!-- Divider line -->
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/_1"
+				android:layout_marginStart="@dimen/_10"
+				android:layout_marginTop="@dimen/_5"
+				android:layout_marginEnd="@dimen/_5"
+				android:layout_marginBottom="@dimen/_5"
+				android:background="@color/transparent_dark" />
 
 			<!-- Second row of action buttons: Clear and Delete -->
 			<LinearLayout
@@ -241,7 +283,7 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/text_clear_from_list"
+						android:text="@string/title_clear_from_list"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -271,7 +313,7 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/text_delete_the_file"
+						android:text="@string/title_delete_the_file"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -309,7 +351,7 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/text_rename_file"
+						android:text="@string/title_rename_file"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -339,13 +381,92 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/text_open_link"
+						android:text="@string/title_open_link"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 			</LinearLayout>
 
-			<!-- Fourth row: Show download information button -->
+			<!-- Divider line -->
+			<View
+				android:layout_width="match_parent"
+				android:layout_height="@dimen/_1"
+				android:layout_marginStart="@dimen/_10"
+				android:layout_marginTop="@dimen/_5"
+				android:layout_marginEnd="@dimen/_5"
+				android:layout_marginBottom="@dimen/_5"
+				android:background="@color/transparent_dark" />
+
+			<!-- Fourth row of action buttons: Move to private and Remove Thumbnail -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:baselineAligned="false"
+				android:orientation="horizontal">
+
+				<!-- Rename file button -->
+				<LinearLayout
+					android:id="@+id/btn_move_to_private"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:layout_marginStart="@dimen/_8"
+					android:layout_marginTop="@dimen/_0"
+					android:layout_marginEnd="@dimen/_3"
+					android:layout_marginBottom="@dimen/_0"
+					android:layout_weight="1"
+					android:background="@drawable/ic_button_negative_selector"
+					android:clickable="true"
+					android:orientation="vertical"
+					tools:ignore="TouchTargetSizeCheck">
+
+					<TextView
+						android:layout_width="match_parent"
+						android:layout_height="match_parent"
+						android:layout_margin="@dimen/_8"
+						android:drawableStart="@drawable/ic_button_private_folder"
+						android:drawablePadding="@dimen/_5"
+						android:drawableTint="@color/color_secondary"
+						android:ellipsize="end"
+						android:fontFamily="@font/application_font_family"
+						android:singleLine="true"
+						android:text="@string/title_move_to_private"
+						android:textColor="@color/color_text_primary"
+						android:textSize="@dimen/normal_text_size" />
+				</LinearLayout>
+
+				<!-- Discover more/Open link button -->
+				<LinearLayout
+					android:id="@+id/btn_remove_thumbanil"
+					android:layout_width="0dp"
+					android:layout_height="match_parent"
+					android:layout_marginStart="@dimen/_0"
+					android:layout_marginTop="@dimen/_0"
+					android:layout_marginEnd="@dimen/_8"
+					android:layout_marginBottom="@dimen/_0"
+					android:layout_weight="1"
+					android:background="@drawable/ic_button_negative_selector"
+					android:clickable="true"
+					android:orientation="vertical"
+					tools:ignore="TouchTargetSizeCheck">
+
+					<TextView
+						android:id="@+id/txt_remove_thumbnail"
+						android:layout_width="match_parent"
+						android:layout_height="match_parent"
+						android:layout_margin="@dimen/_8"
+						android:drawableStart="@drawable/ic_button_hide_eye"
+						android:drawablePadding="@dimen/_5"
+						android:drawableTint="@color/color_secondary"
+						android:ellipsize="end"
+						android:fontFamily="@font/application_font_family"
+						android:singleLine="true"
+						android:text="@string/title_hide_thumbnail"
+						android:textColor="@color/color_text_primary"
+						android:textSize="@dimen/normal_text_size" />
+				</LinearLayout>
+			</LinearLayout>
+
+			<!-- Fifth row: Show download information button -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -378,7 +499,7 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/text_show_download_information"
+						android:text="@string/title_show_download_information"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
