@@ -317,7 +317,7 @@
 	<string name="text_content_policy">Content policy</string>
 	<string name="title_your_send_feedback">Send Your Feedback</string>
 	<string name="text_send_feedback">Send feedback</string>
-	<string name="text_special_support_thank_you">The app was made possible with the support of many incredible people. <b>Thank you for supporting us!</b></string>
+	<string name="text_special_support_thank_you">The app was made possible with the support of many incredible people. <i><b><u>Thank you for supporting us!</u></b></i></string>
 	<string name="title_share_with_friends">Share With Friends</string>
 	<string name="text_download_location">Downloads location</string>
 	<string name="title_browser_homepage">Browser Homepage</string>
@@ -539,5 +539,7 @@
 	<string name="title_single_click_open">Single Click To Open</string>
 	<string name="title_permission_needed">Permission Needed</string>
 	<string name="text_app_dont_have_write_permission_msg">AIO need permission to access the system gallery. <b>Please enable it in the settings.</b></string>
+	<string name="text_restart_if_somethings_off">If the app isn’t working as expected, try restarting it.\n<i><b><u>A quick restart often fixes common issues.</u></b></i></string>
+	<string name="text_follow_shibafoss"><u>Follow me at Instagram @ShibaFoss</u></string>
 
 </resources>

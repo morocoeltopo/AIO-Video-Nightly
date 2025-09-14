@@ -190,8 +190,11 @@ class SettingsFragment : BaseFragment() {
 			//Check for new versions
 			R.id.btn_check_new_update to { settingsOnClickLogic?.checkForNewApkVersion() },
 
-			//Acknowledgements
+			//Reset application process
 			R.id.btn_restart_application to { settingsOnClickLogic?.restartApplication() },
+
+			//Acknowledgements
+			R.id.btn_follow_shibafoss to { settingsOnClickLogic?.followDeveloperAtInstagram() },
 		)
 
 		// Apply all click listeners

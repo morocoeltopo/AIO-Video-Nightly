@@ -86,6 +86,8 @@ object WebVideoParser {
 							}
 						}
 					}
+				} else {
+					resetVideoGrabbingButton(webviewEngine)
 				}
 			})
 		} else {

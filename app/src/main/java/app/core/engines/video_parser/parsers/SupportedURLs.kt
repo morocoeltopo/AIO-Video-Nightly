@@ -301,8 +301,10 @@ object SupportedURLs {
 			Regex("""^https?://(www\.)?snapchat\.com/@[^/]+/spotlight/[A-Za-z0-9_-]+""", IGNORE_CASE),
 
 			// Snapchat Spotlight video (optional flexible)
-			Regex("""^https?://(www\.)?snapchat\.com/@[^/]+/(spotlight|story|video)/[A-Za-z0-9_-]+""", IGNORE_CASE)
+			Regex("""^https?://(www\.)?snapchat\.com/@[^/]+/(spotlight|story|video)/[A-Za-z0-9_-]+""", IGNORE_CASE),
 
+			// Dailymotion video link
+			Regex("""^https?://(www\.)?dailymotion\.com/video/[A-Za-z0-9]+/?(\?.*)?$""", IGNORE_CASE),
 		)
 
 		return patterns.any { it.matches(webpageUrl) }

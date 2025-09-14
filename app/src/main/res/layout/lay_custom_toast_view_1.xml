@@ -9,7 +9,7 @@
 	android:layout_marginEnd="@dimen/_10"
 	android:layout_marginBottom="@dimen/_10"
 	android:orientation="horizontal"
-	app:cardBackgroundColor="@color/color_background"
+	app:cardBackgroundColor="@color/color_surface"
 	app:cardCornerRadius="@dimen/_10"
 	app:cardElevation="@dimen/_5">
 
@@ -17,7 +17,7 @@
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:background="@color/color_background"
+		android:background="@color/color_surface"
 		android:orientation="horizontal">
 
 		<!-- Circular app icon inside toast -->

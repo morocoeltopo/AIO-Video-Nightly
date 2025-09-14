@@ -23,6 +23,7 @@ import lib.networks.URLUtility.ensureHttps
 import lib.networks.URLUtility.isValidURL
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
+import lib.process.IntentHelperUtils
 import lib.process.LogHelperUtils
 import lib.process.OSProcessUtils.restartApp
 import lib.process.ThreadsUtility
@@ -625,6 +626,23 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			}?.show()
 		} ?: run {
 			logger.d("Failed to show restart dialog: safeMotherActivityRef is null")
+		}
+	}
+
+	/**
+	 * Follow ShibaFoss the developer at instagram
+	 * Useful for building followers at social media for sharing insights of the app developments.
+	 */
+	fun followDeveloperAtInstagram() {
+		try {
+			safeSettingsFragmentRef?.safeMotherActivityRef?.let {
+				IntentHelperUtils.openInstagramApp(
+					context = it,
+					profileUrl = "https://www.instagram.com/shibafoss/"
+				)
+			}
+		} catch (error: Exception) {
+			logger.e("Error found at opening instagram", error)
 		}
 	}
 
