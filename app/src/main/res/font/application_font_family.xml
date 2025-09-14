@@ -17,7 +17,7 @@
 		android:fontWeight="500" />
 
 	<font
-		android:font="@font/font_family_bold"
+		android:font="@font/font_family_semibold"
 		android:fontStyle="normal"
 		android:fontWeight="600" />
 
@@ -37,7 +37,7 @@
 		android:fontWeight="500" />
 
 	<font
-		android:font="@font/font_family_bolditalic"
+		android:font="@font/font_family_semibolditalic"
 		android:fontStyle="italic"
 		android:fontWeight="600" />
 
