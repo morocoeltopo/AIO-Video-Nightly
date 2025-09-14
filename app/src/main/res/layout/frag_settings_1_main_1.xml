@@ -23,7 +23,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -33,9 +33,9 @@
 
 				<!-- User avatar and basic info row -->
 				<LinearLayout
-					android:background="@color/color_surface"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
+					android:background="@color/color_cardview_title_bg"
 					android:gravity="center_vertical"
 					android:orientation="horizontal">
 
@@ -56,8 +56,8 @@
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
 						android:layout_marginTop="@dimen/_2"
-						android:layout_marginBottom="@dimen/_2"
 						android:layout_marginEnd="@dimen/_2"
+						android:layout_marginBottom="@dimen/_2"
 						android:background="@drawable/ic_button_negative_selector"
 						android:clickable="true"
 						android:orientation="vertical"
@@ -166,7 +166,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -178,7 +178,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -364,7 +364,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -376,7 +376,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -604,7 +604,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_0"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -616,7 +616,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -853,7 +853,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -865,7 +865,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -877,11 +877,41 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center"
 						android:maxLines="1"
-
 						android:text="@string/title_customer_service"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						android:textStyle="bold" />
+				</LinearLayout>
+
+				<!-- Feedback button -->
+				<LinearLayout
+					android:id="@+id/btn_open_feedback"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:layout_marginStart="@dimen/_10"
+					android:layout_marginTop="@dimen/_10"
+					android:layout_marginEnd="@dimen/_10"
+					android:layout_marginBottom="@dimen/_0"
+					android:background="@drawable/ic_button_negative_selector"
+					android:clickable="true"
+					android:orientation="vertical"
+					tools:ignore="TouchTargetSizeCheck">
+
+					<TextView
+						android:id="@+id/txt_open_feedback"
+						android:layout_width="match_parent"
+						android:layout_height="match_parent"
+						android:layout_margin="@dimen/_8"
+						android:drawableStart="@drawable/ic_button_feedback"
+						android:drawableEnd="@drawable/ic_button_open_small"
+						android:drawablePadding="@dimen/_5"
+						android:drawableTint="@color/color_secondary"
+						android:ellipsize="end"
+						android:fontFamily="@font/application_font_family"
+						android:maxLines="1"
+						android:text="@string/title_your_send_feedback"
+						android:textColor="@color/color_text_primary"
+						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
 				<!-- Share with friends button -->
@@ -890,7 +920,7 @@
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
 					android:layout_marginStart="@dimen/_10"
-					android:layout_marginTop="@dimen/_10"
+					android:layout_marginTop="@dimen/_0"
 					android:layout_marginEnd="@dimen/_10"
 					android:layout_marginBottom="@dimen/_0"
 					android:background="@drawable/ic_button_negative_selector"
@@ -912,38 +942,6 @@
 						android:fontFamily="@font/application_font_family"
 						android:maxLines="1"
 						android:text="@string/title_share_with_friends"
-						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size" />
-				</LinearLayout>
-
-				<!-- Feedback button -->
-				<LinearLayout
-					android:id="@+id/btn_open_feedback"
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:layout_marginStart="@dimen/_10"
-					android:layout_marginTop="@dimen/_0"
-					android:layout_marginEnd="@dimen/_10"
-					android:layout_marginBottom="@dimen/_0"
-					android:background="@drawable/ic_button_negative_selector"
-					android:clickable="true"
-					android:orientation="vertical"
-					tools:ignore="TouchTargetSizeCheck">
-
-					<TextView
-						android:id="@+id/txt_open_feedback"
-						android:layout_width="match_parent"
-						android:layout_height="match_parent"
-						android:layout_margin="@dimen/_8"
-						android:drawableStart="@drawable/ic_button_feedback"
-						android:drawableEnd="@drawable/ic_button_open_small"
-						android:drawablePadding="@dimen/_5"
-						android:drawableTint="@color/color_secondary"
-						android:ellipsize="end"
-
-						android:fontFamily="@font/application_font_family"
-						android:maxLines="1"
-						android:text="@string/title_your_send_feedback"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -1067,7 +1065,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -1079,7 +1077,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical">
 
 					<TextView
@@ -1197,7 +1195,7 @@
 			android:layout_marginEnd="@dimen/_15"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<LinearLayout
@@ -1209,7 +1207,7 @@
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="match_parent"
-					android:background="@color/color_surface"
+					android:background="@color/color_cardview_title_bg"
 					android:orientation="vertical"
 					tools:ignore="TooManyViews">
 

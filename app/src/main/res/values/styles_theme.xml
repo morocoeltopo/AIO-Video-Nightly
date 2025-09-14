@@ -54,6 +54,11 @@
 	<color name="color_black_lighter">#55000000</color>
 	<color name="color_black_deep_lighter">#d3000000</color>
 
+	<!-- Card related color -->
+	<color name="color_toast_view_bg">@color/color_background</color>
+	<color name="color_cardview_bg">@color/color_background</color>
+	<color name="color_cardview_title_bg">@color/color_surface</color>
+
 	<!-- Main application theme styles -->
 	<style name="style.application" parent="Theme.AppCompat.DayNight.NoActionBar">
 		<!-- Status and navigation bar appearance -->

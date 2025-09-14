@@ -54,6 +54,11 @@
 	<color name="color_black_lighter">#88000000</color>
 	<color name="color_black_deep_lighter">#CC000000</color>
 
+	<!-- Card related color -->
+	<color name="color_toast_view_bg">@color/color_primary</color>
+	<color name="color_cardview_bg">@color/color_background</color>
+	<color name="color_cardview_title_bg">@color/color_primary_dark</color>
+
 	<!-- Application theme -->
 	<style name="style.application" parent="Theme.AppCompat.DayNight.NoActionBar">
 		<item name="android:statusBarColor">@color/color_surface</item>
