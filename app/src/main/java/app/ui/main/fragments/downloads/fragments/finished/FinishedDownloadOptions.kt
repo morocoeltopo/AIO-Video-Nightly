@@ -74,6 +74,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	private var downloadDataModel: DownloadDataModel? = null
 
 	init {
+		logger.d("Initializing FinishedDownloadOptions")
 		// Initialize dialog view and set click listeners for all option buttons
 		dialogBuilder?.let { dialogBuilder ->
 			dialogBuilder.setView(R.layout.frag_down_4_finish_1_onclick_1)
@@ -93,6 +94,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					R.id.btn_show_download_information
 				).toIntArray()
 			)
+			logger.d("Dialog builder initialized with click listeners")
 		}
 	}
 
@@ -101,6 +103,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param dataModel The download data model to show options for
 	 */
 	fun show(dataModel: DownloadDataModel) {
+		logger.d("Showing options dialog for download ID: ${dataModel.id}")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { _ ->
 				dialogBuilder?.let { dialogBuilder ->
@@ -108,6 +111,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 						setDownloadModel(dataModel)
 						updateTitleAndThumbnails(dataModel)
 						dialogBuilder.show()
+						logger.d("Options dialog shown successfully")
+					} else {
+						logger.d("Dialog is already showing, skipping show()")
 					}
 				}
 			}
@@ -119,6 +125,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param model The download data model
 	 */
 	fun setDownloadModel(model: DownloadDataModel) {
+		logger.d("Setting download model for ID: ${model.id}")
 		this.downloadDataModel = model
 	}
 
@@ -126,6 +133,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Closes the options dialog if it's showing.
 	 */
 	fun close() {
+		logger.d("Closing options dialog")
 		dialogBuilder?.let { dialogBuilder ->
 			if (dialogBuilder.isShowing) dialogBuilder.close()
 		}
@@ -136,6 +144,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 */
 	override fun onClick(view: View?) {
 		view?.let {
+			logger.d("Option button clicked: ${view.id}")
 			when (view.id) {
 				R.id.btn_file_info_card -> playTheMedia()
 				R.id.btn_open_download_file -> openFile()
@@ -156,6 +165,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param downloadModel The download data model containing the information to display
 	 */
 	private fun updateTitleAndThumbnails(downloadModel: DownloadDataModel) {
+		logger.d("Updating title and thumbnails for download ID: ${downloadModel.id}")
 		dialogBuilder?.let { dialogBuilder ->
 			dialogBuilder.view.apply {
 				findViewById<TextView>(R.id.txt_file_url).apply {
@@ -169,8 +179,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 
 				findViewById<ImageView>(R.id.img_file_thumbnail).apply {
 					if (!downloadModel.globalSettings.downloadHideVideoThumbnail) {
+						logger.d("Video thumbnails are enabled, updating thumbnail")
 						updateThumbnail(this, downloadModel)
 					} else {
+						logger.d("Video thumbnails are disabled, using default thumbnail")
 						val defaultThumb = downloadModel.getThumbnailDrawableID()
 						this.setImageResource(defaultThumb)
 					}
@@ -183,6 +195,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				}
 
 				if (isAudioByName(downloadModel.fileName) || isVideoByName(downloadModel.fileName)) {
+					logger.d("Media file detected, showing duration container")
 					findViewById<View>(R.id.container_media_duration).apply {
 						val mediaIndicator = findViewById<TextView>(R.id.txt_media_duration)
 						val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
@@ -198,6 +211,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 						showView(targetView = this, shouldAnimate = true)
 					}
 				} else {
+					logger.d("Non-media file, hiding duration container")
 					findViewById<View>(R.id.container_media_duration).visibility = View.GONE
 					findViewById<View>(R.id.img_media_play_indicator).visibility = View.GONE
 				}
@@ -211,36 +225,45 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param downloadModel The download data model containing thumbnail information
 	 */
 	private fun updateThumbnail(thumbImageView: ImageView, downloadModel: DownloadDataModel) {
+		logger.d("Updating thumbnail for download ID: ${downloadModel.id}")
 		val destinationFile = downloadModel.getDestinationFile()
 		val defaultThumb = downloadModel.getThumbnailDrawableID()
 		val defaultThumbDrawable = getDrawable(INSTANCE.resources, defaultThumb, null)
 
 		// Try to load APK thumbnail first (returns if successful)
-		if (loadApkThumbnail(downloadModel, thumbImageView, defaultThumbDrawable)) return
+		if (loadApkThumbnail(downloadModel, thumbImageView, defaultThumbDrawable)) {
+			logger.d("APK thumbnail loaded successfully")
+			return
+		}
 
 		// Load thumbnail in background to avoid UI freezing
 		executeInBackground {
+			logger.d("Loading thumbnail in background thread")
 			// Check if we have a cached thumbnail path
 			val cachedThumbPath = downloadModel.thumbPath
 			if (cachedThumbPath.isNotEmpty()) {
+				logger.d("Using cached thumbnail at: $cachedThumbPath")
 				executeOnMainThread {
 					loadBitmapWithGlide(thumbImageView, downloadModel.thumbPath, defaultThumb)
 				}; return@executeInBackground
 			}
 
 			// Generate thumbnail from file or URL
+			logger.d("Generating new thumbnail from file/URL")
 			val thumbnailUrl = downloadModel.videoInfo?.videoThumbnailUrl
 			val bitmap = getThumbnailFromFile(destinationFile, thumbnailUrl, 420)
 			if (bitmap != null) {
 				// Rotate portrait images to landscape for better display
 				val isPortrait = bitmap.height > bitmap.width
 				val rotatedBitmap = if (isPortrait) {
+					logger.d("Rotating portrait thumbnail to landscape")
 					rotateBitmap(bitmap, 270f)
 				} else bitmap
 
 				// Save thumbnail to file for caching
 				val thumbnailName = "${downloadModel.id}$THUMB_EXTENSION"
 				saveBitmapToFile(rotatedBitmap, thumbnailName)?.let { filePath ->
+					logger.d("Saved thumbnail to cache: $filePath")
 					downloadModel.thumbPath = filePath
 					downloadModel.updateInStorage()
 					executeOnMainThread {
@@ -251,6 +274,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 						)
 					}
 				}
+			} else {
+				logger.d("Failed to generate thumbnail from file/URL")
 			}
 		}
 	}
@@ -267,9 +292,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 		defaultThumb: Int
 	) {
 		try {
+			logger.d("Loading thumbnail with Glide from: $thumbFilePath")
 			val imgURI = File(thumbFilePath).toUri()
 			thumbImageView.setImageURI(imgURI)
 		} catch (error: Exception) {
+			logger.d("Error loading thumbnail with Glide: ${error.message}")
 			error.printStackTrace()
 			thumbImageView.setImageResource(defaultThumb)
 		}
@@ -287,28 +314,36 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 		imageViewHolder: ImageView,
 		defaultThumbDrawable: Drawable?
 	): Boolean {
+		logger.d("Attempting to load APK thumbnail for download ID: ${downloadModel.id}")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				dialogBuilder?.let { _ ->
 					val apkFile = downloadModel.getDestinationFile()
 					if (!apkFile.exists() || !apkFile.name.lowercase().endsWith(".apk")) {
+						logger.d("File is not an APK or doesn't exist, using default thumbnail")
 						imageViewHolder.setImageDrawable(defaultThumbDrawable)
 						return false
 					}
 
 					val packageManager: PackageManager = safeMotherActivityRef.packageManager
 					return try {
+						logger.d("Loading APK package info")
 						val packageInfo: PackageInfo? = packageManager.getPackageArchiveInfo(
 							apkFile.absolutePath, PackageManager.GET_ACTIVITIES
 						)
 						packageInfo?.applicationInfo?.let { appInfo ->
+							logger.d("APK package info found, loading icon")
 							appInfo.sourceDir = apkFile.absolutePath
 							appInfo.publicSourceDir = apkFile.absolutePath
 							val icon: Drawable = appInfo.loadIcon(packageManager)
 							imageViewHolder.setImageDrawable(icon)
 							true
-						} ?: false
+						} ?: run {
+							logger.d("No package info found for APK")
+							false
+						}
 					} catch (error: Exception) {
+						logger.d("Error loading APK thumbnail: ${error.message}")
 						error.printStackTrace()
 						imageViewHolder.apply {
 							scaleType = ImageView.ScaleType.FIT_CENTER
@@ -328,11 +363,13 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 */
 	@OptIn(UnstableApi::class)
 	fun playTheMedia() {
+		logger.d("Play media option selected")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				dialogBuilder?.let { _ ->
 					downloadDataModel?.let {
 						if (isAudioByName(it.fileName) || isVideoByName(it.fileName)) {
+							logger.d("Starting MediaPlayerActivity for audio/video file")
 							// Start media player activity for audio/video files
 							safeMotherActivityRef.startActivity(
 								Intent(
@@ -352,6 +389,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 							animActivityFade(safeMotherActivityRef)
 							close()
 						} else {
+							logger.d("Non-media file, opening with default app")
 							// For non-media files, just open them
 							openFile()
 						}
@@ -366,17 +404,20 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Handles APK files specially with proper installation flow.
 	 */
 	fun openFile() {
+		logger.d("Open file option selected")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeActivityRef ->
 				dialogBuilder?.let { _ ->
 					close()
 					val extensions = listOf("apk").toTypedArray()
 					if (endsWithExtension(downloadDataModel!!.fileName, extensions)) {
+						logger.d("APK file detected, opening with installation flow")
 						// Special handling for APK files
 						val authority = "${safeActivityRef.packageName}.provider"
 						val apkFile = downloadDataModel!!.getDestinationFile()
 						openApkFile(safeActivityRef, apkFile, authority)
 					} else {
+						logger.d("Opening non-APK file with default app")
 						// Open other file types normally
 						openFile(downloadDataModel!!.getDestinationFile(), safeActivityRef)
 					}
@@ -389,9 +430,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Shares the downloaded file with other applications.
 	 */
 	fun shareFile() {
+		logger.d("Share file option selected")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				close()
+				logger.d("Sharing media file")
 				shareMediaFile(
 					context = safeMotherActivityRef,
 					file = downloadDataModel!!.getDestinationFile()
@@ -404,6 +447,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Clears the download from the list without deleting the file.
 	 */
 	fun clearFromList() {
+		logger.d("Clear from list option selected")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				getMessageDialog(
@@ -420,12 +464,13 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					}
 				)?.apply {
 					setOnClickForPositiveButton {
+						logger.d("User confirmed clear from list")
 						close()
 						this@FinishedDownloadOptions.close()
 						// Remove from storage and list
 						downloadDataModel?.deleteModelFromDisk()
 						downloadSystem.finishedDownloadDataModels.remove(downloadDataModel!!)
-						showToast(getText(R.string.title_successful))
+						showToast(getText(R.string.title_successfully_cleared))
 					}; show()
 				}
 			}
@@ -436,6 +481,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Deletes the downloaded file from storage and removes it from the list.
 	 */
 	fun deleteFile() {
+		logger.d("Delete file option selected")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				getMessageDialog(
@@ -452,15 +498,17 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					}
 				)?.apply {
 					setOnClickForPositiveButton {
+						logger.d("User confirmed file deletion")
 						close()
 						this@FinishedDownloadOptions.close()
 						// Delete in background to avoid UI freezing
 						executeInBackground {
+							logger.d("Deleting file in background")
 							downloadDataModel?.deleteModelFromDisk()
 							downloadDataModel?.getDestinationFile()?.delete()
 							downloadSystem.finishedDownloadDataModels.remove(downloadDataModel!!)
 							executeOnMainThread {
-								showToast(getText(R.string.title_successful))
+								showToast(getText(R.string.title_successfully_deleted))
 							}
 						}
 					}; show()
@@ -473,13 +521,16 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Shows a dialog to rename the downloaded file.
 	 */
 	fun renameFile() {
+		logger.d("Rename file option selected")
 		safeFinishedTasksFragmentRef?.let { safeFinishedDownloadFragmentRef ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				if (!::downloadFileRenamer.isInitialized) {
+					logger.d("Initializing DownloadFileRenamer for the first time")
 					// Initialize file renamer if not already done
 					downloadFileRenamer =
 						DownloadFileRenamer(safeMotherActivityRef, downloadDataModel!!) {
 							// Callback after successful rename
+							logger.d("File rename completed successfully")
 							executeOnMainThread {
 								dialogBuilder?.close()
 								delay(300, object : OnTaskFinishListener {
@@ -491,6 +542,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				}
 
 				// Show rename dialog with current model
+				logger.d("Showing rename dialog for download ID: ${downloadDataModel?.id}")
 				downloadFileRenamer.downloadDataModel = downloadDataModel!!
 				downloadFileRenamer.show(downloadDataModel!!)
 			}
@@ -502,9 +554,11 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Shows warning if no referrer link is available.
 	 */
 	fun discoverMore() {
+		logger.d("Discover more option selected")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			val siteReferrerLink = downloadDataModel!!.siteReferrer
 			if (siteReferrerLink.isEmpty()) {
+				logger.d("No site referrer link available")
 				close()
 				safeMotherActivityRef.doSomeVibration(20)
 				val msgTxt = getText(R.string.text_missing_webpage_link_info)
@@ -522,6 +576,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			val webviewEngine = browserFragment?.browserFragmentBody?.webviewEngine!!
 
 			if (referrerLink.isNullOrEmpty()) {
+				logger.d("Referrer link is null or empty, falling back to download URL")
 				// Fallback to download URL if referrer is missing
 				getMessageDialog(
 					baseActivityInf = safeMotherActivityRef,
@@ -533,6 +588,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				)?.apply {
 					setOnClickForPositiveButton {
 						val fileUrl = downloadDataModel!!.fileURL
+						logger.d("Opening download URL in browser: $fileUrl")
 						this.close()
 						this@FinishedDownloadOptions.close()
 						safeMotherActivityRef.sideNavigation
@@ -546,13 +602,18 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			this@FinishedDownloadOptions.close()
 
 			// Open the referrer link in browser
+			logger.d("Opening referrer link in browser: $referrerLink")
 			safeMotherActivityRef.sideNavigation
 				?.addNewBrowsingTab(referrerLink, webviewEngine)
 			safeMotherActivityRef.openBrowserFragment()
 		}
 	}
 
+	/**
+	 * Placeholder for moving file to private storage (upcoming feature).
+	 */
 	fun moveToPrivate() {
+		logger.d("Move to private option selected (upcoming feature)")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				close()
@@ -562,17 +623,23 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 		}
 	}
 
+	/**
+	 * Toggles video thumbnail visibility for the download.
+	 */
 	fun removeThumbnail() {
+		logger.d("Remove thumbnail option selected")
 		safeFinishedTasksFragmentRef?.let { finishedFragment ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				close()
 				try {
+					logger.d("Toggling thumbnail visibility setting")
 					val globalSettings = downloadDataModel?.globalSettings
 					globalSettings?.downloadHideVideoThumbnail =
 						!globalSettings.downloadHideVideoThumbnail
 					downloadDataModel?.updateInStorage()
 					val finishedTasksListAdapter = finishedFragment.finishedTasksListAdapter
 					finishedTasksListAdapter.notifyDataSetChangedOnSort(true)
+					logger.d("Thumbnail visibility toggled successfully")
 				} catch (error: Exception) {
 					logger.e("Error found at hide/show thumbnail -", error)
 					showToast(msgId = R.string.text_something_went_wrong)
@@ -585,11 +652,15 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Shows detailed information about the download.
 	 */
 	fun downloadInfo() {
+		logger.d("Download info option selected")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				close()
-				if (!::downloadInfoTracker.isInitialized)
+				if (!::downloadInfoTracker.isInitialized) {
+					logger.d("Initializing DownloadInfoTracker for the first time")
 					downloadInfoTracker = DownloadInfoTracker(safeMotherActivityRef)
+				}
+				logger.d("Showing download info for ID: ${downloadDataModel?.id}")
 				downloadInfoTracker.show(downloadDataModel!!)
 			}
 		}

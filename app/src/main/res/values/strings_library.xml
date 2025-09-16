@@ -544,5 +544,7 @@
 	<string name="title_move_to_private">Move To Private</string>
 	<string name="title_hide_thumbnail">Hide Thumbnail</string>
 	<string name="title_show_thumbnail">Show Thumbnail</string>
+	<string name="title_successfully_cleared">Successfully Cleared</string>
+	<string name="title_successfully_deleted">Successfully Deleted</string>
 
 </resources>
