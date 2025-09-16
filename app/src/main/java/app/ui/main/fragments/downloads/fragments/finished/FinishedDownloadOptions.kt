@@ -46,6 +46,7 @@ import lib.ui.ViewUtility.getThumbnailFromFile
 import lib.ui.ViewUtility.rotateBitmap
 import lib.ui.ViewUtility.saveBitmapToFile
 import lib.ui.ViewUtility.setLeftSideDrawable
+import lib.ui.ViewUtility.showView
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
 import java.io.File
@@ -181,15 +182,24 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					else getText(R.string.title_hide_thumbnail))
 				}
 
-				findViewById<View>(R.id.container_media_duration).apply {
-					val mediaIndicator = findViewById<TextView>(R.id.txt_media_duration)
-					val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
-					val playbackTimeString = mediaFilePlaybackDuration.replace("(", "").replace(")", "")
-					if (playbackTimeString.isNotEmpty()) {
-						ViewUtility.showView(this, true)
-						ViewUtility.showView(mediaIndicator, true)
-						mediaIndicator.text = playbackTimeString
+				if (isAudioByName(downloadModel.fileName) || isVideoByName(downloadModel.fileName)) {
+					findViewById<View>(R.id.container_media_duration).apply {
+						val mediaIndicator = findViewById<TextView>(R.id.txt_media_duration)
+						val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
+						val playbackTime = mediaFilePlaybackDuration.replace("(", "").replace(")", "")
+						if (playbackTime.isNotEmpty()) {
+							showView(targetView = this, shouldAnimate = true)
+							showView(targetView = mediaIndicator, shouldAnimate = true)
+							mediaIndicator.text = playbackTime
+						}
 					}
+
+					findViewById<View>(R.id.img_media_play_indicator).apply {
+						showView(targetView = this, shouldAnimate = true)
+					}
+				} else {
+					findViewById<View>(R.id.container_media_duration).visibility = View.GONE
+					findViewById<View>(R.id.img_media_play_indicator).visibility = View.GONE
 				}
 			}
 		}
@@ -325,12 +335,18 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 						if (isAudioByName(it.fileName) || isVideoByName(it.fileName)) {
 							// Start media player activity for audio/video files
 							safeMotherActivityRef.startActivity(
-								Intent(safeMotherActivityRef, MediaPlayerActivity::class.java).apply {
+								Intent(
+									safeMotherActivityRef,
+									MediaPlayerActivity::class.java
+								).apply {
 									flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 									downloadDataModel?.let {
 										putExtra(DOWNLOAD_MODEL_ID_KEY, downloadDataModel!!.id)
 										putExtra(PLAY_MEDIA_FILE_PATH, true)
-										putExtra(WHERE_DID_YOU_COME_FROM, FROM_FINISHED_DOWNLOADS_LIST)
+										putExtra(
+											WHERE_DID_YOU_COME_FROM,
+											FROM_FINISHED_DOWNLOADS_LIST
+										)
 									}
 								})
 							animActivityFade(safeMotherActivityRef)
@@ -552,7 +568,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				close()
 				try {
 					val globalSettings = downloadDataModel?.globalSettings
-					globalSettings?.downloadHideVideoThumbnail = !globalSettings.downloadHideVideoThumbnail
+					globalSettings?.downloadHideVideoThumbnail =
+						!globalSettings.downloadHideVideoThumbnail
 					downloadDataModel?.updateInStorage()
 					val finishedTasksListAdapter = finishedFragment.finishedTasksListAdapter
 					finishedTasksListAdapter.notifyDataSetChangedOnSort(true)

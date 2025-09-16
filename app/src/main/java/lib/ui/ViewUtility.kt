@@ -1067,7 +1067,7 @@ object ViewUtility {
         }
 
         // If the file is an APK, retrieve its icon/thumbnail
-        else if (targetFile.name.lowercase().endsWith("apk")) {
+        else if (targetFile.name.lowercase().endsWith(".apk", true)) {
             getApkThumbnail(targetFile, onApkIconFound = { bitmap ->
                 return@getApkThumbnail bitmap
             })
