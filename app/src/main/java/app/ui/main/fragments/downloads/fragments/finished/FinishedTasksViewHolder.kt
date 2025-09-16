@@ -17,7 +17,9 @@ import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import com.aio.R
 import lib.device.DateTimeUtils.formatLastModifiedDate
 import lib.files.FileSizeFormatter.humanReadableSizeOf
+import lib.files.FileSystemUtility.isAudioByName
 import lib.files.FileSystemUtility.isVideo
+import lib.files.FileSystemUtility.isVideoByName
 import lib.networks.DownloaderUtils.getAudioPlaybackTimeIfAvailable
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
@@ -35,15 +37,22 @@ import java.io.File
 /**
  * ViewHolder class for displaying a finished download item in the list.
  * It handles view initialization, data binding, and thumbnail/image loading.
+ *
+ * Responsibilities:
+ * - Displaying download item information (title, file info, duration)
+ * - Loading and displaying favicons and thumbnails
+ * - Handling click events
+ * - Caching formatted details for performance
  */
 class FinishedTasksViewHolder(val layout: View) {
 
+	// Logger instance for debugging and tracking
 	private val logger = LogHelperUtils.from(javaClass)
 
-	// Cache to store already formatted detail info for reuse
+	// Cache to store already formatted detail info for reuse to improve performance
 	private val detailsCache = mutableMapOf<String, Spanned>()
 
-	// UI components
+	// UI components lazy initialization
 	private val container: RelativeLayout by lazy { layout.findViewById(R.id.button_finish_download_row) }
 	private val thumbnail: ImageView by lazy { layout.findViewById(R.id.img_file_thumbnail) }
 	private val favicon: ImageView by lazy { layout.findViewById(R.id.img_site_favicon) }
@@ -55,6 +64,9 @@ class FinishedTasksViewHolder(val layout: View) {
 
 	/**
 	 * Binds the download data and sets up click listeners.
+	 *
+	 * @param downloadDataModel The download data model to display
+	 * @param onClickItemEvent Click event handler for user interactions
 	 */
 	fun updateView(
 		downloadDataModel: DownloadDataModel,
@@ -68,6 +80,8 @@ class FinishedTasksViewHolder(val layout: View) {
 	/**
 	 * Displays file information like name, category, size, playback time, and last modified date.
 	 * Also initiates thumbnail update.
+	 *
+	 * @param downloadDataModel The download data model containing file information
 	 */
 	private fun showDownloadedFileInfo(downloadDataModel: DownloadDataModel) {
 		logger.d("Showing file info for download ID: ${downloadDataModel.id}")
@@ -79,6 +93,9 @@ class FinishedTasksViewHolder(val layout: View) {
 
 	/**
 	 * Sets up click and long click listeners on the finished download item.
+	 *
+	 * @param onClick The click event handler interface
+	 * @param downloadDataModel The download data model associated with this item
 	 */
 	private fun setupItemClickEvents(
 		onClick: FinishedTasksClickEvents,
@@ -95,18 +112,26 @@ class FinishedTasksViewHolder(val layout: View) {
 		}
 	}
 
+	/**
+	 * Updates the file information text with category, size, playback time, and modification date.
+	 * Uses caching to avoid recomputing the same information repeatedly.
+	 *
+	 * @param downloadDataModel The download data model containing file metadata
+	 */
 	private fun updateFilesInfo(downloadDataModel: DownloadDataModel) {
 		ThreadsUtility.executeInBackground(codeBlock = {
+			// Check if we have cached details for this download
 			val cacheDetails = detailsCache[downloadDataModel.id.toString()]
 			if (cacheDetails != null) {
 				logger.d("Using cached details for download ID: ${downloadDataModel.id}")
 				ThreadsUtility.executeOnMain {
 					fileInfo.text = cacheDetails
-					updatePaybackTime(cacheDetails.toString())
+					updatePaybackTime(fileInfo.text.toString(), downloadDataModel)
 				}
 				return@executeInBackground
 			}
 
+			// Extract and format file information
 			val category = downloadDataModel.getUpdatedCategoryName(shouldRemoveAIOPrefix = true)
 			val fileSize = humanReadableSizeOf(downloadDataModel.fileSize.toDouble())
 			val playbackTime = downloadDataModel.mediaFilePlaybackDuration.ifEmpty {
@@ -133,23 +158,40 @@ class FinishedTasksViewHolder(val layout: View) {
 							fileSize, playbackTime, modifyDate
 						)
 					)
+					// Cache the formatted details for future use
 					detailsCache[downloadDataModel.id.toString()] = detail
 					fileInfo.text = detail
-					updatePaybackTime(detail.toString())
+					updatePaybackTime(fileInfo.text.toString(), downloadDataModel)
 				}
 			}
 		})
 	}
 
-	private fun updatePaybackTime(inputText: String) {
+	/**
+	 * Extracts and displays playback time from the file info text if available.
+	 * Shows/hides the duration container based on whether playback time exists.
+	 *
+	 * @param inputText The formatted file information text
+	 * @param downloadDataModel the associated download data model
+	 */
+	private fun updatePaybackTime(inputText: String, downloadDataModel: DownloadDataModel) {
 		ThreadsUtility.executeInBackground(codeBlock = {
-			val regex = "\\((\\d{1,2}:\\d{2})\\)".toRegex()
-			val playbackTimeString = regex.find(inputText)?.groupValues?.get(1)
-			if (playbackTimeString?.isNotEmpty() == true) {
+			val fileName = downloadDataModel.fileName
+			if (isVideoByName(fileName) || isAudioByName(fileName)) {
+				// Use regex to extract playback time from the formatted text
+				val regex = "\\((\\d{1,2}:\\d{2})\\)".toRegex()
+				val playbackTimeString = regex.find(inputText)?.groupValues?.get(1)
+				if (playbackTimeString?.isNotEmpty() == true) {
+					ThreadsUtility.executeOnMain {
+						showView(targetView = durationContainer, shouldAnimate = true)
+						showView(targetView = mediaIndicator, shouldAnimate = true)
+						duration.text = playbackTimeString
+					}
+				}
+			} else {
 				ThreadsUtility.executeOnMain {
-					showView(targetView = durationContainer, shouldAnimate = true)
-					showView(targetView = mediaIndicator, shouldAnimate = true)
-					duration.text = playbackTimeString
+					mediaIndicator.visibility = View.GONE
+					durationContainer.visibility = View.GONE
 				}
 			}
 		})
@@ -157,16 +199,17 @@ class FinishedTasksViewHolder(val layout: View) {
 
 	/**
 	 * Loads and sets the favicon for the given download item.
-	 *
 	 * Attempts to load a favicon from cache (via AIOApp.aioFavicons). If unavailable,
 	 * falls back to a default drawable.
 	 *
-	 * @param downloadDataModel The download data model containing the site referrer.
+	 * @param downloadDataModel The download data model containing the site referrer
 	 */
 	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
 		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
 		val defaultFaviconResId = R.drawable.ic_button_information
 		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
+
+		// Skip favicon loading if video thumbnails are not allowed
 		if (isVideoThumbnailNotAllowed(downloadDataModel)) {
 			logger.d("Video thumbnails not allowed, using default favicon")
 			executeOnMainThread { favicon.setImageDrawable(defaultFaviconDrawable) }
@@ -203,7 +246,8 @@ class FinishedTasksViewHolder(val layout: View) {
 	}
 
 	/**
-	 * Checks if video thumbnails are allowed for this download.
+	 * Checks if video thumbnails are allowed for this download based on settings.
+	 *
 	 * @param downloadDataModel The download data model
 	 * @return true if thumbnails are not allowed, false otherwise
 	 */
@@ -217,6 +261,8 @@ class FinishedTasksViewHolder(val layout: View) {
 	/**
 	 * Determines and sets an appropriate thumbnail for the downloaded file.
 	 * Loads APK icons, cached thumbnails, or generates a new thumbnail if needed.
+	 *
+	 * @param downloadDataModel The download data model containing file information
 	 */
 	private fun updateThumbnailInfo(downloadDataModel: DownloadDataModel) {
 		logger.d("Updating thumbnail for download ID: ${downloadDataModel.id}")
@@ -224,14 +270,14 @@ class FinishedTasksViewHolder(val layout: View) {
 		val defaultThumb = downloadDataModel.getThumbnailDrawableID()
 		val defaultThumbDrawable = getDrawable(INSTANCE.resources, defaultThumb, null)
 
-		// Image thumbnail is not allowed
+		// Skip thumbnail loading if video thumbnails are not allowed
 		if (isVideoThumbnailNotAllowed(downloadDataModel)) {
 			logger.d("Video thumbnails not allowed, using default thumbnail")
 			thumbnail.setImageDrawable(defaultThumbDrawable)
 			return
 		}
 
-		// If APK icon can be used, use it
+		// First try to load APK thumbnail if applicable
 		val isApkThumbnailFound = loadApkThumbnail(
 			downloadDataModel = downloadDataModel,
 			imageViewHolder = thumbnail,
@@ -254,7 +300,6 @@ class FinishedTasksViewHolder(val layout: View) {
 						defaultThumb = defaultThumb
 					)
 				}
-
 				return@executeInBackground
 			}
 
@@ -295,6 +340,9 @@ class FinishedTasksViewHolder(val layout: View) {
 	/**
 	 * Tries to load a thumbnail image using URI and sets it to the ImageView.
 	 * Falls back to default if loading fails.
+	 *
+	 * @param thumbFilePath The path to the thumbnail file
+	 * @param defaultThumb The default thumbnail resource ID to use if loading fails
 	 */
 	private fun loadBitmapWithGlide(thumbFilePath: String, defaultThumb: Int) {
 		try {
@@ -311,13 +359,17 @@ class FinishedTasksViewHolder(val layout: View) {
 	/**
 	 * Loads the icon of an APK file as a thumbnail if the file is an APK.
 	 *
-	 * @return true if APK icon was successfully set, false otherwise.
+	 * @param downloadDataModel The download data model
+	 * @param imageViewHolder The ImageView to set the thumbnail on
+	 * @param defaultThumbDrawable The default thumbnail resource ID
+	 * @return true if APK icon was successfully set, false otherwise
 	 */
 	private fun loadApkThumbnail(
 		downloadDataModel: DownloadDataModel,
 		imageViewHolder: ImageView,
 		defaultThumbDrawable: Int
 	): Boolean {
+		// First check if we already have a cached thumbnail
 		val cachedThumbPath = downloadDataModel.thumbPath
 		if (cachedThumbPath.isNotEmpty()) {
 			logger.d("Using cached thumbnail")
@@ -351,6 +403,8 @@ class FinishedTasksViewHolder(val layout: View) {
 				appInfo.publicSourceDir = apkFileAbsolutePath
 				val appIconDrawable: Drawable = appInfo.loadIcon(packageManager)
 				imageViewHolder.setImageDrawable(appIconDrawable)
+
+				// Save the APK icon as a thumbnail for future use
 				ThreadsUtility.executeInBackground(codeBlock = {
 					ViewUtility.drawableToBitmap(appIconDrawable)?.let {
 						val appIconBitmap = it
