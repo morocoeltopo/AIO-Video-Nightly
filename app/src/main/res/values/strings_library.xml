@@ -546,5 +546,6 @@
 	<string name="title_show_thumbnail">Show Thumbnail</string>
 	<string name="title_successfully_cleared">Successfully Cleared</string>
 	<string name="title_successfully_deleted">Successfully Deleted</string>
+	<string name="title_open_website">Open Website</string>
 
 </resources>

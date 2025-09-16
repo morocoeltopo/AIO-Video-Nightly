@@ -1,6 +1,6 @@
 [versions]
 # Android Gradle Plugin version
-agp = "8.12.1"
+agp = "8.12.3"
 
 # Desugar JDK NIO (backports newer Java APIs to older Android)
 desugar_jdk_libs_nio = "2.1.5"
@@ -49,6 +49,9 @@ circleimageview = "3.1.0"
 
 # Media3 (modern ExoPlayer and media libraries)
 media3player = "1.8.0"
+
+# Mp4 file's container parser
+mp4_iso_parser = "1.1.22"
 
 # OkHttp (HTTP client)
 okhttp = "5.1.0"
@@ -120,6 +123,7 @@ media3_exoplayer_dash = { module = "androidx.media3:media3-exoplayer-dash", vers
 media3_session = { module = "androidx.media3:media3-session", version.ref = "media3player" }
 media3-datasource = { module = "androidx.media3:media3-datasource", version.ref = "media3player" }
 media3_ui = { module = "androidx.media3:media3-ui", version.ref = "media3player" }
+mp4_iso_parser = { module = "com.googlecode.mp4parser:isoparser", version.ref = "mp4_iso_parser" }
 
 # Retrofit networking
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

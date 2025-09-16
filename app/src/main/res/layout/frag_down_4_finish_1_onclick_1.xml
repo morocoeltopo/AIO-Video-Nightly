@@ -390,13 +390,13 @@
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:layout_margin="@dimen/_8"
-						android:drawableStart="@drawable/ic_button_discovery_v2"
+						android:drawableStart="@drawable/ic_button_browser"
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/title_open_link"
+						android:text="@string/title_open_website"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>

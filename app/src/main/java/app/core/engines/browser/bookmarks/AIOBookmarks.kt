@@ -203,6 +203,7 @@ class AIOBookmarks : Serializable {
 
 			// 🔞 Adult (18+)
 			"Pornhub" to "https://pornhub.com/",
+			"TubeSafari" to "https://tubesafari.com/",
 			"UncutClips" to "https://uncutclips.org/",
 			"XVideos" to "https://xvideos.com/",
 			"XNXX" to "https://xnxx.com/",

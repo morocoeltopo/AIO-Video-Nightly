@@ -154,6 +154,7 @@ dependencies {
     implementation libs.ytdlp.library
     implementation libs.ytdlp.ffmpeg
     implementation libs.newpipeextractor
+    implementation (libs.mp4.iso.parser)
 
     // Java 11 desugaring library
     coreLibraryDesugaring libs.desugar.jdk.libs.nio
