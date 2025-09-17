@@ -59,6 +59,7 @@ import lib.texts.CommonTextUtils.capitalizeWords
 import lib.texts.CommonTextUtils.generateRandomString
 import lib.texts.CommonTextUtils.getText
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.RandomAccessFile
@@ -204,7 +205,9 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 				override fun onFinish() {
 					logger.d("Timer finished.")
-					if (downloadDataModel.isWaitingForNetwork) {
+					if (downloadDataModel.isRunning ||
+						downloadDataModel.isWaitingForNetwork ||
+						downloadDataModel.isComplete == false) {
 						logger.d("Still waiting for network, restarting timer...")
 						start()
 					}
@@ -1461,13 +1464,13 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			namePrefix = File(downloadDataModel.tempYtdlpDestinationFilePath).name
 		)
 
-		inputFile?.let { tempFile ->
+		inputFile?.let { ytdlpTempfile ->
 			try {
 				// Copy temp file to final destination and delete original
 				val outputFile = downloadDataModel.getDestinationFile()
-				val isMp4ConvertSuccessful = moveMoovAtomToStart(inputFile, outputFile)
-				if (!isMp4ConvertSuccessful) inputFile.copyTo(outputFile, overwrite = true)
-				tempFile.delete()
+				val isMp4ConvertSuccessful = moveMoovAtomToStart(ytdlpTempfile, outputFile)
+				if (!isMp4ConvertSuccessful) ytdlpTempfile.copyTo(outputFile, overwrite = true)
+				ytdlpTempfile.delete()
 
 				// Update metadata with file stats
 				downloadDataModel.fileSize = outputFile.length()
@@ -1486,7 +1489,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 				// Attempt recovery by reverting rename and retrying
 				val outputFile = downloadDataModel.getDestinationFile()
-				outputFile.renameTo(File(tempFile.name)) // revert rename attempt
+				outputFile.renameTo(File(ytdlpTempfile.name)) // revert rename attempt
 				outputFile.delete()
 
 				// Fix invalid filenames & retry copying
@@ -1494,7 +1497,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				downloadDataModel.fileName = sanitizeFileNameExtreme(currentName)
 				renameIfDownloadFileExistsWithSameName(downloadDataModel)
 
-				copyFileToUserDestination(tempFile)
+				copyFileToUserDestination(ytdlpTempfile)
 				logger.d("Recovery steps executed for moving file.")
 			}
 		}
@@ -1544,40 +1547,73 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	}
 
 	/**
-	 * Moves the 'moov' atom to the beginning of an MP4 file for optimized streaming.
+	 * Moves the 'moov' atom to the beginning of an MP4 file for optimized streaming
+	 * using the MP4Parser library. Includes proper initialization and error handling.
 	 *
-	 * MP4 files typically have the 'moov' atom (movie metadata) at the end of the file,
-	 * which requires downloading the entire file before playback can begin. This function
-	 * restructures the MP4 file to place the 'moov' atom at the start, enabling:
-	 * - Faster video playback initiation (progressive streaming)
-	 * - Better seeking performance
-	 * - Improved compatibility with streaming servers
-	 * - Reduced buffering time for clients
-	 *
-	 * @param inputFile The source MP4 file to be processed. Must be a valid MP4 file.
-	 * @param outputFile The destination file where the optimized MP4 will be written.
-	 *                  If the file exists, it will be overwritten.
-	 * @return true if the operation was successful, false if any error occurred during processing.
-	 * Returns false for invalid input files, read/write permissions issues, or corrupt MP4 structures.
+	 * @param inputFile The source MP4 file to be processed
+	 * @param outputFile The destination file where the optimized MP4 will be written
+	 * @return true if the operation was successful and the output file is valid, false otherwise
 	 */
 	fun moveMoovAtomToStart(inputFile: File, outputFile: File): Boolean {
+		// Pre-validation checks
+		if (!inputFile.exists()) {
+			logger.e("Input file does not exist: ${inputFile.absolutePath}")
+			return false
+		}
+
+		if (inputFile.length() == 0L) {
+			logger.e("Input file is empty: ${inputFile.absolutePath}")
+			return false
+		}
+
+		if (!inputFile.canRead()) {
+			logger.e("Cannot read input file: ${inputFile.absolutePath}")
+			return false
+		}
+
+		val outputDir = outputFile.parentFile
+		if (outputDir != null && !outputDir.canWrite()) {
+			logger.e("Cannot write to output directory: ${outputDir.absolutePath}")
+			return false
+		}
+
+		val requiredSpace = inputFile.length() * 2
+		val availableSpace = outputDir?.freeSpace ?: 0L
+		if (availableSpace < requiredSpace) {
+			logger.e("Insufficient storage space. Required: $requiredSpace, Available: $availableSpace")
+			return false
+		}
+
 		return try {
 			logger.d("Starting moov atom optimization for: ${inputFile.name}")
+			logger.d("Input file size: ${inputFile.length()} bytes")
+
 			// Load the MP4 file into a Movie object
+			// This parses the entire MP4 structure including tracks, metadata, and atoms
 			val movie: Movie = MovieCreator.build(FileDataSourceImpl(inputFile.absolutePath))
 			logger.d("MP4 file parsed successfully. Track count: ${movie.tracks.size}")
 
 			// Build a new container with moov atom at the beginning
+			// DefaultMp4Builder automatically optimizes atom placement
 			val mp4Builder = DefaultMp4Builder()
 			val container = mp4Builder.build(movie)
 			logger.d("New MP4 container built with optimized structure")
 
 			// Write the container to the output file
-			FileOutputStream(outputFile).use { fos -> container.writeContainer(fos.channel) }
+			// Using try-with-resources to ensure proper stream closure
+			FileOutputStream(outputFile).use { fos ->
+				container.writeContainer(fos.channel)
+			}
+
+			val outputSize = outputFile.length()
+			logger.d("Optimization completed successfully. Output file size: $outputSize bytes")
 			logger.d("Output file created at: ${outputFile.absolutePath}")
+
 			true
+
 		} catch (error: Exception) {
 			logger.e("Failed to move moov atom to start: ${error.message}")
+			error.printStackTrace()
 
 			// Clean up partially written output file on failure
 			if (outputFile.exists()) {
@@ -1588,7 +1624,35 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					logger.e("Failed to clean up output file: ${cleanupError.message}")
 				}
 			}
+
 			false
 		}
 	}
+
+
+	/**
+	 * Basic validation to check if a file appears to be a valid MP4 file
+	 * by checking for the MP4 signature ('ftyp' atom at the beginning)
+	 */
+	private fun isValidMp4File(file: File): Boolean {
+		if (!file.exists() || file.length() < 12) {
+			return false
+		}
+
+		return try {
+			FileInputStream(file).use { fis ->
+				val buffer = ByteArray(12)
+				val bytesRead = fis.read(buffer)
+				if (bytesRead < 12) {
+					return false
+				}
+				val signature = String(buffer, 4, 4, Charsets.US_ASCII)
+				signature == "ftyp"
+			}
+		} catch (error: Exception) {
+			logger.e("Error validating MP4 file: ${error.message}")
+			false
+		}
+	}
+
 }

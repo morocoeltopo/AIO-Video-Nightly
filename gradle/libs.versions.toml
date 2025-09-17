@@ -1,6 +1,6 @@
 [versions]
 # Android Gradle Plugin version
-agp = "8.12.3"
+agp = "8.13.0"
 
 # Desugar JDK NIO (backports newer Java APIs to older Android)
 desugar_jdk_libs_nio = "2.1.5"
