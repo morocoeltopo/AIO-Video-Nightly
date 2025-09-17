@@ -1482,44 +1482,57 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			try {
 				// Copy temp file to final destination and delete original
 				val outputFile = downloadDataModel.getDestinationFile()
+				logger.d("Preparing to move file: ${ytdlpTempfile.absolutePath} to ${outputFile.absolutePath}")
+
 				if (isMp4Seekable(ytdlpTempfile)) {
+					logger.d("Video file is seekable")
 					ytdlpTempfile.copyTo(outputFile, overwrite = true)
 					ytdlpTempfile.delete()
+					logger.d("File copied to destination and temp file deleted")
 				} else {
+					logger.d("Video file is not seekable, attempting optimization")
 					if (!moveMoovAtomToStart(ytdlpTempfile, outputFile)) {
+						logger.d("Optimization failed, copying file without changes")
 						ytdlpTempfile.copyTo(outputFile, overwrite = true)
 						ytdlpTempfile.delete()
+						logger.d("File copied to destination after failed optimization and temp file deleted")
+					} else {
+						logger.d("File optimized successfully and moved to destination")
 					}
 				}
 
 				// Update metadata with file stats
 				downloadDataModel.fileSize = outputFile.length()
-				downloadDataModel.fileSizeInFormat =
-					getHumanReadableFormat(downloadDataModel.fileSize)
+				downloadDataModel.fileSizeInFormat = getHumanReadableFormat(downloadDataModel.fileSize)
+				logger.d("File size updated: ${downloadDataModel.fileSizeInFormat}")
 
 				downloadDataModel.downloadedByte = downloadDataModel.fileSize
-				downloadDataModel.downloadedByteInFormat =
-					getHumanReadableFormat(downloadDataModel.downloadedByte)
+				downloadDataModel.downloadedByteInFormat = getHumanReadableFormat(downloadDataModel.downloadedByte)
+				logger.d("Downloaded byte info updated: ${downloadDataModel.downloadedByteInFormat}")
 
 				downloadDataModel.progressPercentage = 100
 				downloadDataModel.partsDownloadedByte[0] = downloadDataModel.downloadedByte
 				downloadDataModel.partProgressPercentage[0] = 100
 				downloadDataModel.updateInStorage()
+				logger.d("Download progress marked as complete")
 
 				logger.d("File successfully moved to destination: ${outputFile.absolutePath}")
 			} catch (error: Exception) {
-				logger.e("Error while moving file: ${error.message}. " +
-						"Attempting recovery: ", error)
+				logger.e("Error while moving file: ${error.message}. Attempting recovery: ", error)
 
 				// Attempt recovery by reverting rename and retrying
 				val outputFile = downloadDataModel.getDestinationFile()
+				logger.d("Attempting recovery for file: ${outputFile.absolutePath}")
 				outputFile.renameTo(File(ytdlpTempfile.name)) // revert rename attempt
 				outputFile.delete()
+				logger.d("Reverted rename and deleted corrupted output file")
 
 				// Fix invalid filenames & retry copying
 				val currentName = downloadDataModel.fileName
+				logger.d("Sanitizing filename: $currentName")
 				downloadDataModel.fileName = sanitizeFileNameExtreme(currentName)
 				renameIfDownloadFileExistsWithSameName(downloadDataModel)
+				logger.d("Filename sanitized and renamed if needed")
 
 				copyFileToUserDestination(ytdlpTempfile)
 				logger.d("Recovery steps executed for moving file.")
