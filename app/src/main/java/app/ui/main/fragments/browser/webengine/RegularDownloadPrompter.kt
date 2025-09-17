@@ -239,7 +239,7 @@ class RegularDownloadPrompter(
         if (extractedVideoLink.isEmpty()) {
             executeOnMain {
                 safeMotherActivity?.doSomeVibration(50)
-                showToast(msgId = R.string.text_something_went_wrong)
+                showToast(msgId = R.string.title_something_went_wrong)
             }; return false
         } else return true
     }

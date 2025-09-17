@@ -283,7 +283,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
                     executeOnMainThread {
                         waitingDialog.close()
                         safeActivityRef.resumePlayer()
-                        showToast(msgId = string.text_something_went_wrong)
+                        showToast(msgId = string.title_something_went_wrong)
                     }
                 }
             })

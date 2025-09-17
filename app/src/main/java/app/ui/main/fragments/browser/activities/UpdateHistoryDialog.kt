@@ -119,7 +119,7 @@ class UpdateHistoryDialog(
 		} catch (error: Exception) {
 			logger.e("Can't show History Update Dialog:", error)
 			safeHistoryActivity?.doSomeVibration(50)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 
@@ -137,7 +137,7 @@ class UpdateHistoryDialog(
 		} catch (error: Exception) {
 			logger.e("Can't close History Update Dialog:", error)
 			safeHistoryActivity?.doSomeVibration(50)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 

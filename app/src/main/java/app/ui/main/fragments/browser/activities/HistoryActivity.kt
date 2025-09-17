@@ -126,7 +126,7 @@ class HistoryActivity : BaseActivity(),
 			} catch (error: Exception) {
 				error.printStackTrace()
 				logger.d("Failed to show history option popup: ${error.message}")
-				showToast(msgId = R.string.text_something_went_wrong)
+				showToast(msgId = R.string.title_something_went_wrong)
 			}
 		}
 	}

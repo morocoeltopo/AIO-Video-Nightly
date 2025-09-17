@@ -270,7 +270,7 @@ class SingleResolutionPrompter(
 					if (extractedVideoLink.isEmpty()) {
 						executeOnMain {
 							safeBaseActivityRef.doSomeVibration(50)
-							showToast(msgId = R.string.text_something_went_wrong)
+							showToast(msgId = R.string.title_something_went_wrong)
 						}; return@executeInBackground
 					}
 

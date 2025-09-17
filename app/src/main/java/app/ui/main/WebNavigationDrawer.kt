@@ -253,7 +253,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				logger.d("Error closing web view tab: ${error.message}")
 				error.printStackTrace()
 				safeMotherActivityRef.doSomeVibration(50)
-				ToastView.showToast(msgId = R.string.text_something_went_wrong)
+				ToastView.showToast(msgId = R.string.title_something_went_wrong)
 			}
 		}
 	}
@@ -303,7 +303,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				logger.d("Error opening web view tab: ${error.message}")
 				error.printStackTrace()
 				safeMotherActivityRef.doSomeVibration(50)
-				ToastView.showToast(msgId = R.string.text_something_went_wrong)
+				ToastView.showToast(msgId = R.string.title_something_went_wrong)
 			}
 		}
 	}

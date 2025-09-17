@@ -126,7 +126,7 @@ class UpdateBookmarkDialog(
 		} catch (error: Exception) {
 			logger.e("Can't show Bookmark Update Dialog:", error)
 			safeBookmarkActivity?.doSomeVibration(50)
-			ToastView.showToast(msgId = R.string.text_something_went_wrong)
+			ToastView.showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 
@@ -144,7 +144,7 @@ class UpdateBookmarkDialog(
 		} catch (error: Exception) {
 			logger.e("Can't close bookmark update dialog:", error)
 			safeBookmarkActivity?.doSomeVibration(50)
-			ToastView.showToast(msgId = R.string.text_something_went_wrong)
+			ToastView.showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 

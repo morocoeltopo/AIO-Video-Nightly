@@ -331,7 +331,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		} catch (error: Exception) {
 			logger.d("Error setting browser homepage: ${error.message}")
 			error.printStackTrace()
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 
@@ -536,7 +536,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			}, errorHandler = {
 				logger.d("Error while checking updates: ${it.message}")
 				safeBaseActivityRef.doSomeVibration(50)
-				showToast(msgId = R.string.text_something_went_wrong)
+				showToast(msgId = R.string.title_something_went_wrong)
 			})
 		} ?: run {
 			logger.d("Failed to check for updates: safeBaseActivityRef is null")

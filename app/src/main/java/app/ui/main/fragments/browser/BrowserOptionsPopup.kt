@@ -17,7 +17,6 @@ import app.ui.main.guides.GuidePlatformPicker
 import app.ui.others.information.UserFeedbackActivity
 import com.aio.R
 import lib.networks.URLUtility
-import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.normalizeEncodedUrl
 import lib.texts.ClipboardUtils.copyTextToClipboard
 import lib.texts.CommonTextUtils.getText
@@ -161,7 +160,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 	
@@ -190,7 +189,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 	
@@ -212,7 +211,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 	

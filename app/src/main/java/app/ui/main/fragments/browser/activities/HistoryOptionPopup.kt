@@ -11,7 +11,6 @@ import app.core.AIOApp.Companion.aioHistory
 import app.core.engines.browser.bookmarks.BookmarkModel
 import app.core.engines.browser.history.HistoryModel
 import com.aio.R
-import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.normalizeEncodedUrl
 import lib.process.LogHelperUtils
 import lib.texts.ClipboardUtils.copyTextToClipboard
@@ -113,7 +112,7 @@ class HistoryOptionPopup(
 			logger.d("Error deleting history: ${error.message}")
 			error.printStackTrace()
 			safeHistoryActivityRef?.doSomeVibration(20)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 
@@ -132,7 +131,7 @@ class HistoryOptionPopup(
 			logger.d("Error sharing history: ${error.message}")
 			error.printStackTrace()
 			safeHistoryActivityRef?.doSomeVibration(20)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 
@@ -154,7 +153,7 @@ class HistoryOptionPopup(
 			logger.d("Error adding bookmark: ${error.message}")
 			error.printStackTrace()
 			safeHistoryActivityRef?.doSomeVibration(20)
-			showToast(msgId = R.string.text_something_went_wrong)
+			showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 }

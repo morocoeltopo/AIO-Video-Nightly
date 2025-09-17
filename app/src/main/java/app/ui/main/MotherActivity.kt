@@ -598,7 +598,7 @@ class MotherActivity : BaseActivity() {
 			logger.d("Error opening browser fragment: ${error.message}")
 			error.printStackTrace()
 			doSomeVibration(50)
-			ToastView.showToast(msgId = R.string.text_something_went_wrong)
+			ToastView.showToast(msgId = R.string.title_something_went_wrong)
 		}
 	}
 

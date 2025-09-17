@@ -143,7 +143,7 @@ class WebTabListAdapter(
 					} catch (error: Exception) {
 						error.printStackTrace()
 						safeMotherActivityRef?.doSomeVibration(50)
-						ToastView.showToast(msgId = R.string.text_something_went_wrong)
+						ToastView.showToast(msgId = R.string.title_something_went_wrong)
 					}
 					return@setOnLongClickListener true
 				}

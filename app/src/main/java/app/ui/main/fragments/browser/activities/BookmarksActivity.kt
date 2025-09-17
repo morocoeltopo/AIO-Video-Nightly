@@ -221,7 +221,7 @@ class BookmarksActivity : BaseActivity(),
 			} catch (error: Exception) {
 				logger.d("Error displaying options popup: ${error.message}")
 				error.printStackTrace()
-				showToast(msgId = R.string.text_something_went_wrong)
+				showToast(msgId = R.string.title_something_went_wrong)
 			}
 		}
 	}

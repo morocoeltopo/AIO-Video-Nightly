@@ -32,11 +32,13 @@ import lib.device.ShareUtility.shareMediaFile
 import lib.files.FileSystemUtility.endsWithExtension
 import lib.files.FileSystemUtility.isAudioByName
 import lib.files.FileSystemUtility.isVideoByName
+import lib.files.VideoFilesUtility.moveMoovAtomToStart
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
 import lib.process.LogHelperUtils
+import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ActivityAnimator.animActivityFade
 import lib.ui.MsgDialogUtils
@@ -49,6 +51,7 @@ import lib.ui.ViewUtility.setLeftSideDrawable
 import lib.ui.ViewUtility.showView
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
+import lib.ui.builders.WaitingDialog
 import java.io.File
 
 /**
@@ -91,6 +94,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					R.id.btn_discover_more,
 					R.id.btn_move_to_private,
 					R.id.btn_remove_thumbanil,
+					R.id.btn_fix_unseekable_mp4_file,
 					R.id.btn_show_download_information
 				).toIntArray()
 			)
@@ -155,6 +159,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				R.id.btn_discover_more -> discoverMore()
 				R.id.btn_move_to_private -> moveToPrivate()
 				R.id.btn_remove_thumbanil -> removeThumbnail()
+				R.id.btn_fix_unseekable_mp4_file -> fixUnseekableMp4s()
 				R.id.btn_show_download_information -> downloadInfo()
 			}
 		}
@@ -199,7 +204,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					findViewById<View>(R.id.container_media_duration).apply {
 						val mediaIndicator = findViewById<TextView>(R.id.txt_media_duration)
 						val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
-						val playbackTime = mediaFilePlaybackDuration.replace("(", "").replace(")", "")
+						val playbackTime =
+							mediaFilePlaybackDuration.replace("(", "").replace(")", "")
 						if (playbackTime.isNotEmpty()) {
 							showView(targetView = this, shouldAnimate = true)
 							showView(targetView = mediaIndicator, shouldAnimate = true)
@@ -642,9 +648,60 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					logger.d("Thumbnail visibility toggled successfully")
 				} catch (error: Exception) {
 					logger.e("Error found at hide/show thumbnail -", error)
-					showToast(msgId = R.string.text_something_went_wrong)
+					showToast(msgId = R.string.title_something_went_wrong)
 				}
 			}
+		}
+	}
+
+	fun fixUnseekableMp4s() {
+		safeMotherActivityRef?.let { safeMotherActivityRef ->
+			getMessageDialog(
+				baseActivityInf = safeMotherActivityRef,
+				isNegativeButtonVisible = false,
+				isTitleVisible = true,
+				titleTextViewCustomize = {
+					val resources = safeMotherActivityRef.resources
+					val errorColor = resources.getColor(R.color.color_error, null)
+					it.setTextColor(errorColor)
+					it.text = getText(R.string.title_are_you_sure_about_this)
+				}, messageTextViewCustomize = {
+					it.setText(R.string.text_msg_of_fixing_unseekable_mp4_files)
+				}, positiveButtonTextCustomize = {
+					it.setLeftSideDrawable(R.drawable.ic_okay_done)
+				}
+			)?.apply {
+				setOnClickForPositiveButton {
+					this.close()
+					val destinationFile = downloadDataModel?.getDestinationFile()
+					if (destinationFile == null || destinationFile.exists() == false) {
+						safeMotherActivityRef.doSomeVibration(50)
+						showToast(msgId = R.string.title_something_went_wrong)
+						return@setOnClickForPositiveButton
+					}
+					val waitingDialog = WaitingDialog(
+						baseActivityInf = safeMotherActivityRef,
+						loadingMessage = getText(R.string.title_fixing_mp4_file_please_wait),
+						isCancelable = false,
+						shouldHideOkayButton = true
+					)
+
+					ThreadsUtility.executeInBackground(codeBlock = {
+						try {
+							ThreadsUtility.executeOnMain { waitingDialog.show() }
+							downloadDataModel?.getDestinationFile()
+							moveMoovAtomToStart(destinationFile, destinationFile)
+							ThreadsUtility.executeOnMain {
+								showToast(msgId = R.string.title_fixing_done_successfully)
+								waitingDialog.close()
+							}
+						} catch (error: Exception) {
+							logger.e("Error in fixing unseekable mp4 file:", error)
+							ThreadsUtility.executeOnMain { waitingDialog.close() }
+						}
+					})
+				}
+			}?.show()
 		}
 	}
 

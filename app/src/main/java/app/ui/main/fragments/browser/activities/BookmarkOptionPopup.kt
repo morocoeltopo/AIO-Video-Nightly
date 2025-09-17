@@ -150,13 +150,13 @@ class BookmarkOptionPopup(
 							logger.d("Bookmark updated successfully: ${bookmarkModel.bookmarkUrl}")
 						} else {
 							activity.doSomeVibration(50)
-							showToast(msgId = R.string.text_something_went_wrong)
+							showToast(msgId = R.string.title_something_went_wrong)
 							logger.d("Bookmark update failed for: ${bookmarkModel.bookmarkUrl}")
 						}
 					}).show(bookmarkModel)
 			} catch (error: Exception) {
 				activity.doSomeVibration(50)
-				showToast(msgId = R.string.text_something_went_wrong)
+				showToast(msgId = R.string.title_something_went_wrong)
 				logger.d("Exception while editing bookmark: ${error.message}")
 			}
 		}
@@ -215,7 +215,7 @@ class BookmarkOptionPopup(
 				logger.d("Deleted bookmark: ${bookmarkModel.bookmarkUrl}")
 			} catch (error: Exception) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_something_went_wrong)
+				showToast(msgId = R.string.title_something_went_wrong)
 				logger.d("Failed to delete bookmark: ${error.message}")
 			}
 		}
@@ -240,7 +240,7 @@ class BookmarkOptionPopup(
 			} catch (error: Exception) {
 				error.printStackTrace()
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_something_went_wrong)
+				showToast(msgId = R.string.title_something_went_wrong)
 				logger.d("Failed to share bookmark: ${error.message}")
 			}
 		}

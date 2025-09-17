@@ -68,7 +68,6 @@
 	<string name="title_no_referral_site_added">No Referral Site Added</string>
 	<string name="title_open_download_url">Open Download URL</string>
 
-
 	<string name="text_no">No</string>
 	<string name="title_performed">Performed</string>
 	<string name="title_not_performed">Not Performed</string>
@@ -122,7 +121,6 @@
 	<string name="text_subtitle_file_not_readable">It looks like there was a problem adding the selected subtitle file to the player. Unfortunately, you’ll need to watch the video withoutsubtitles. We apologize for the inconvenience.</string>
 	<string name="text_subtitle_file_not_supported">The selected file is unsupported, please pick a valid subtitle file for the video.</string>
 	<string name="text_error_media_cant_be_played"><b>Unable to play due to an error.</b> Please check if the file format is supported by your device.</string>
-
 
 	<string name="title_media_options">Media Options</string>
 	<string name="title_share_with_others">Share with others</string>
@@ -181,7 +179,6 @@
 	<string name="text_resume_task">Resume task</string>
 	<string name="text_pause_task">Pause task</string>
 
-
 	<string name="text_share_file_link">Share file link</string>
 	<string name="text_type_new_file_name_hint">Type a new file name here…</string>
 	<string name="text_missing_webpage_link_info">The downloaded file is missing <b> its associated webpage link</b>.</string>
@@ -211,7 +208,7 @@
 	<string name="text_select_a_video_resolution">Select your desired resolution first</string>
 	<string name="text_wait_for_video_title">Wait till server return the video title.</string>
 	<string name="text_b_b_b_date_b"><![CDATA[<b>%1$s:</b> %2$s  <b>/</b>  %3$s %4$s    <b>/</b>   %5$s]]></string>
-	<string name="text_something_went_wrong">Something went wrong, try again later.</string>
+	<string name="title_something_went_wrong">Something\'s Wrong, Try Again Later.</string>
 	<string name="text_bookmark_saved">Bookmark is saved.</string>
 	<string name="title_preparing_download">Preparing The Download…</string>
 	<string name="text_downloaded">Downloaded</string>
@@ -236,7 +233,6 @@
 	<string name="text_many_tabs_open_consider_warning"><b>You have %1$s browser tabs open.</b> After closing them, you can access the lost tabs from your browser history.</string>
 	<string name="text_exit_the_app">Exit Now</string>
 	<string name="text_close_tabs">Close Tabs</string>
-
 
 	<string name="title_load_more_browser_bookmarks">Load More Bookmarks</string>
 	<string name="text_your_bookmark_collection_empty">Your bookmarks collection is empty.</string>
@@ -271,7 +267,6 @@
 	<string name="text_delete_bookmark">Delete bookmark</string>
 	<string name="text_copy_bookmark">Copy to clipboard</string>
 	<string name="text_copy_history">Copy to clipboard</string>
-
 
 	<string name="text_delete_history">Delete history</string>
 	<string name="text_no_video_resources_found"><b>Try playing the video first then wait a few seconds</b> for the app to capture the video link.</string>
@@ -547,5 +542,9 @@
 	<string name="title_successfully_cleared">Successfully Cleared</string>
 	<string name="title_successfully_deleted">Successfully Deleted</string>
 	<string name="title_open_website">Open Website</string>
+	<string name="title_fix_unseekable_mp4_videos">Fix Unseekable Mp4 Files (Risky)</string>
+	<string name="title_fixing_mp4_file_please_wait">Fixing Mp4 File, Please Wait…</string>
+	<string name="text_msg_of_fixing_unseekable_mp4_files">You are about to attempt fixing an unseekable MP4 video file. <b>This is an advanced and potentially risky operation that may, <u>in some cases, corrupt the video.</u></b> Proceed with caution.</string>
+	<string name="title_fixing_done_successfully">Fixed Mp4 File Successfully</string>
 
 </resources>
