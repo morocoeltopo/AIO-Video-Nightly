@@ -1,7 +1,6 @@
 package app.core.engines.downloader
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
@@ -9,10 +8,6 @@ import android.webkit.CookieManager
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.core.net.toUri
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.downloadSystem
@@ -1487,9 +1482,15 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			try {
 				// Copy temp file to final destination and delete original
 				val outputFile = downloadDataModel.getDestinationFile()
-				val isMp4ConvertSuccessful = moveMoovAtomToStartIfNeeded(ytdlpTempfile, outputFile)
-				if (!isMp4ConvertSuccessful) ytdlpTempfile.copyTo(outputFile, overwrite = true)
-				ytdlpTempfile.delete()
+				if (isMp4Seekable(ytdlpTempfile)) {
+					ytdlpTempfile.copyTo(outputFile, overwrite = true)
+					ytdlpTempfile.delete()
+				} else {
+					if (!moveMoovAtomToStart(ytdlpTempfile, outputFile)) {
+						ytdlpTempfile.copyTo(outputFile, overwrite = true)
+						ytdlpTempfile.delete()
+					}
+				}
 
 				// Update metadata with file stats
 				downloadDataModel.fileSize = outputFile.length()
@@ -1540,7 +1541,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		val outputFile = downloadDataModel.getDestinationFile()
 
 		// Copy file and remove the temp source
-		val isMp4ConvertSuccessful = moveMoovAtomToStartIfNeeded(sourceFile, outputFile)
+		val isMp4ConvertSuccessful = moveMoovAtomToStart(sourceFile, outputFile)
 		if (!isMp4ConvertSuccessful) sourceFile.copyTo(outputFile, overwrite = true)
 		sourceFile.delete()
 		logger.d("Copied file to destination: ${outputFile.absolutePath}")
@@ -1567,42 +1568,80 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		logger.d("Updated download data model after copying file.")
 	}
 
-	fun moveMoovAtomToStartIfNeeded(inputFile: File, outputFile: File): Boolean {
-		if (!inputFile.exists() || inputFile.length() < 12) {
-			logger.e("Invalid input file")
+	/**
+	 * Checks if an MP4 file is truly seekable.
+	 * Performs two levels of validation:
+	 * 1. Checks if the 'moov' atom is near the beginning.
+	 * 2. Validates that the movie has tracks and each track contains samples.
+	 *
+	 * @param file The MP4 file to check
+	 * @return true if the file is likely seekable, false otherwise
+	 */
+	fun isMp4Seekable(file: File): Boolean {
+		if (!file.exists() || file.length() < 100) {
+			logger.d("File does not exist or is too small: ${file.absolutePath}")
 			return false
 		}
 
-		// Check if 'moov' is already near the beginning (within first 1MB)
-		FileInputStream(inputFile).use { fis ->
-			val buffer = ByteArray(1024 * 1024) // 1MB
-			val bytesRead = fis.read(buffer)
-			if (bytesRead > 0) {
+		// Check if 'moov' atom is near the start
+		try {
+			FileInputStream(file).use { fis ->
+				val buffer = ByteArray(1024 * 1024) // 1MB
+				val bytesRead = fis.read(buffer)
+				if (bytesRead <= 0) {
+					logger.d("Failed to read file: ${file.absolutePath}")
+					return false
+				}
 				val content = buffer.copyOf(bytesRead)
-				if (content.containsMoovAtomAtStart()) {
-					logger.d("File already optimized with 'moov' atom at the beginning.")
-					inputFile.copyTo(outputFile, overwrite = true)
-					return true
+				if (!content.containsMoovAtomAtStart()) {
+					logger.d("'moov' atom not found near start: ${file.name}")
+					return false
 				}
 			}
+		} catch (e: Exception) {
+			logger.e("Error reading file for moov check: ${e.message}")
+			return false
 		}
 
-		// Proceed with the existing moveMoovAtomToStart logic if not optimized
-		return moveMoovAtomToStart(inputFile, outputFile)
+		// Validate tracks and samples using MP4Parser
+		try {
+			val dataSource = FileDataSourceImpl(file.absolutePath)
+			val movie = MovieCreator.build(dataSource)
+			val isValid = movie.tracks.isNotEmpty() &&
+					movie.tracks.all { it.samples.isNotEmpty() }
+			dataSource.close()
+
+			if (!isValid) {
+				logger.d("Movie tracks or samples invalid: ${file.name}")
+			}
+
+			return isValid
+		} catch (error: Exception) {
+			logger.e("MP4Parser validation failed: ${error.message}")
+			return false
+		}
 	}
 
+	/**
+	 * Checks if this byte array contains a 'moov' atom at the beginning of an MP4 file.
+	 * Scans the first part of the file to locate the 'moov' atom and returns true if found
+	 * within the first 1KB, indicating the file is already optimized for streaming.
+	 */
 	fun ByteArray.containsMoovAtomAtStart(): Boolean {
 		var i = 0
 		while (i + 8 <= this.size) {
+			// Read the size of the current atom (4 bytes)
 			val size = ((this[i].toInt() and 0xFF) shl 24) or
 					((this[i + 1].toInt() and 0xFF) shl 16) or
 					((this[i + 2].toInt() and 0xFF) shl 8) or
 					(this[i + 3].toInt() and 0xFF)
 			if (i + size > this.size || size < 8) break
+
+			// Read the atom type (next 4 bytes)
 			val type = String(this, i + 4, 4, Charsets.US_ASCII)
-			if (type == "moov") {
-				return i <= 1024 // moov within first 1KB = good
-			}
+
+			// Return true if 'moov' is within the first 1KB
+			if (type == "moov") return i <= 1024
 			i += size
 		}
 		return false
@@ -1837,76 +1876,6 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			logger.e("Error during advanced validation: ${error.message}")
 			false
 		}
-	}
-
-	/**
-	 * Checks if a video file is seekable by attempting to seek near the end using ExoPlayer.
-	 * Runs in a background thread to avoid blocking the UI and invokes the result callback upon completion.
-	 *
-	 * @param context The Android context used to initialize ExoPlayer; defaults to INSTANCE
-	 * @param videoFile The video file to check for seek-ability
-	 * @param onResult Callback invoked with true if the video is seekable, false otherwise
-	 */
-	fun checkIfSeekableVideoFile(
-		context: Context = INSTANCE,
-		videoFile: File,
-		onResult: (isSeekable: Boolean) -> Unit
-	) {
-		Thread {
-			logger.d("Starting seekability check for: ${videoFile.absolutePath}")
-			val player = ExoPlayer.Builder(context).build()
-			try {
-				val mediaItem = MediaItem.fromUri(videoFile.toUri())
-				player.setMediaItem(mediaItem)
-				player.prepare()
-				logger.d("Player prepared for: ${videoFile.name}")
-
-				// Wait until ready
-				val latch = java.util.concurrent.CountDownLatch(1)
-				player.addListener(object : Player.Listener {
-					override fun onPlaybackStateChanged(state: Int) {
-						if (state == Player.STATE_READY) {
-							logger.d("Player state READY for: ${videoFile.name}")
-							latch.countDown()
-						}
-					}
-				})
-				latch.await()
-
-				val duration = player.duration
-				logger.d("Video duration: $duration ms for ${videoFile.name}")
-				if (duration <= 0) {
-					logger.d("Invalid duration; cannot seek for: ${videoFile.name}")
-					onResult(false)
-					player.release()
-					return@Thread
-				}
-
-				// Attempt to seek near the end
-				val seekPosition = if (duration > 10000) duration - 5000 else duration / 2
-				logger.d("Attempting to seek to position: $seekPosition ms for ${videoFile.name}")
-				player.seekTo(seekPosition)
-
-				// Wait briefly to ensure the seek happened
-				Thread.sleep(500)
-
-				// Check if the current position is close to the target
-				val currentPosition = player.currentPosition
-				val isSeekable = kotlin.math.abs(currentPosition - seekPosition) < 2000 // within 2s
-				logger.d(
-					"Seek check result for ${videoFile.name}: " +
-							"target=$seekPosition ms, current=$currentPosition ms, isSeekable=$isSeekable"
-				)
-
-				onResult(isSeekable)
-			} catch (e: Exception) {
-				logger.d("Exception during seek check for ${videoFile.name}: ${e.message}")
-				onResult(false)
-			} finally {
-				logger.d("Releasing player for: ${videoFile.name}")
-				player.release()
-			}
-		}.start()
 	}
 
 }
