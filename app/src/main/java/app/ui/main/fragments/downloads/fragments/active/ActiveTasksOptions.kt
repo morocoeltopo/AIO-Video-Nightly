@@ -470,7 +470,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					downloadDataModel?.let {
 						downloadSystem.clearDownload(it) {
 							executeOnMainThread {
-								showToast(getText(string.title_successful))
+								showToast(getText(string.title_successfully_cleared))
 							}
 						}
 					}
@@ -527,7 +527,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					downloadDataModel?.let {
 						downloadSystem.deleteDownload(it) {
 							executeOnMainThread {
-								showToast(getText(string.title_successful))
+								showToast(getText(string.title_successfully_deleted))
 							}
 						}
 					}

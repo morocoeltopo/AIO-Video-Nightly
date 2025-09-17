@@ -28,24 +28,24 @@ import java.lang.ref.WeakReference
  * Implements AIOTimerListener for periodic updates
  */
 open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
-	
+
 	// Weak references to avoid memory leaks
 	open val safeMotherActivityRef by lazy {
 		WeakReference(safeBaseActivityRef as MotherActivity).get()
 	}
-	
+
 	open val safeActiveTasksFragmentRef by lazy { WeakReference(this).get() }
-	
+
 	// Options dialog for active download items
 	private val activeTasksOptions by lazy {
 		ActiveTasksOptions(motherActivity = safeMotherActivityRef)
 	}
-	
+
 	// Container view for the list of active downloads
 	open val activeTasksListContainer: LinearLayout? by lazy {
 		safeFragmentLayoutRef?.findViewById(R.id.container_download_tasks_queue)
 	}
-	
+
 	/**
 	 * Provides the layout resource ID for this fragment
 	 * @return The layout resource ID (R.layout.frag_down_3_active_1)
@@ -53,16 +53,17 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 	override fun getLayoutResId(): Int {
 		return R.layout.frag_down_3_active_1
 	}
-	
+
 	/**
 	 * Called after the fragment layout is loaded
 	 * @param layoutView The inflated layout view
 	 * @param state Saved instance state bundle
 	 */
 	override fun onAfterLayoutLoad(layoutView: View, state: Bundle?) {
+		initViewsClickEvents(layoutView)
 		registerToDownloadSystem()
 	}
-	
+
 	/**
 	 * Called when the fragment resumes
 	 * Registers with necessary systems and updates UI
@@ -72,7 +73,7 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 		selfRegisterToParentFragment()
 		safeActiveTasksFragmentRef?.let { AIOApp.aioTimer.register(it) }
 	}
-	
+
 	/**
 	 * Called when the fragment pauses
 	 * Unregisters from systems to prevent leaks
@@ -82,7 +83,7 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 		selfRegisterToParentFragment()
 		safeActiveTasksFragmentRef?.let { AIOApp.aioTimer.unregister(it) }
 	}
-	
+
 	/**
 	 * Called when the fragment view is destroyed
 	 * Cleans up registration with download system
@@ -91,7 +92,7 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 		unregisterFromDownloadSystem()
 		super.onDestroyView()
 	}
-	
+
 	/**
 	 * Timer callback that checks for completed downloads
 	 * @param loopCount The current timer loop count
@@ -102,7 +103,7 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 			openToFinishedTab()
 		}
 	}
-	
+
 	/**
 	 * Opens the finished downloads tab in parent fragment
 	 */
@@ -110,7 +111,7 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 		val downloadFragment = parentFragment as? DownloadsFragment
 		downloadFragment?.openFinishedTab()
 	}
-	
+
 	/**
 	 * Registers this fragment with the download system for UI updates
 	 */
@@ -118,18 +119,18 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 		// Clear previous registration before re-registering
 		downloadSystem.downloadsUIManager.activeTasksFragment = null
 		downloadSystem.downloadsUIManager.activeTasksFragment = safeActiveTasksFragmentRef
-		
+
 		// Force UI refresh
 		downloadSystem.downloadsUIManager.redrawEverything()
 	}
-	
+
 	/**
 	 * Unregisters this fragment from the download system
 	 */
 	private fun unregisterFromDownloadSystem() {
 		downloadSystem.downloadsUIManager.activeTasksFragment = null
 	}
-	
+
 	/**
 	 * Handles click events for download items
 	 * @param downloadModel The DownloadDataModel associated with clicked item
@@ -137,7 +138,7 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 	fun onDownloadUIItemClick(downloadModel: DownloadDataModel) {
 		activeTasksOptions.show(downloadModel)
 	}
-	
+
 	/**
 	 * Registers this fragment with its parent DownloadsFragment
 	 * Updates the parent's title and reference to this fragment
@@ -152,4 +153,16 @@ open class ActiveTasksFragment : BaseFragment(), AIOTimerListener {
 			title?.setText(R.string.title_active_downloads)
 		}
 	}
+
+	/**
+	 * Initializes click listeners for views within the provided layout.
+	 * Currently sets up the back button to trigger the activity's back press action.
+	 *
+	 * @param layoutView The root view containing the clickable elements
+	 */
+	private fun initViewsClickEvents(layoutView: View) {
+		layoutView.findViewById<View>(R.id.btn_go_back_finished_tasks)
+			.setOnClickListener { safeMotherActivityRef?.onBackPressActivity() }
+	}
+
 }

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.view.View
 import android.view.View.OnClickListener
+import android.view.View.VISIBLE
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.OptIn
@@ -201,6 +202,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 
 				if (isAudioByName(downloadModel.fileName) || isVideoByName(downloadModel.fileName)) {
 					logger.d("Media file detected, showing duration container")
+					findViewById<View>(R.id.container_mp4_file_fix).visibility = VISIBLE
+
 					findViewById<View>(R.id.container_media_duration).apply {
 						val mediaIndicator = findViewById<TextView>(R.id.txt_media_duration)
 						val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
@@ -668,7 +671,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				}, messageTextViewCustomize = {
 					it.setText(R.string.text_msg_of_fixing_unseekable_mp4_files)
 				}, positiveButtonTextCustomize = {
-					it.setLeftSideDrawable(R.drawable.ic_okay_done)
+					it.setLeftSideDrawable(R.drawable.ic_button_fix_hand)
+					it.setText(R.string.title_fixed_mp4_file)
+
 				}
 			)?.apply {
 				setOnClickForPositiveButton {

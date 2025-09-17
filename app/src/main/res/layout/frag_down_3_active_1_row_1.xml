@@ -10,131 +10,153 @@
 	tools:ignore="UseAppTint, UselessParent">
 
 	<!-- Main container with background selector and elevation -->
-	<RelativeLayout
+	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginStart="@dimen/_15"
 		android:layout_marginTop="@dimen/_3"
 		android:layout_marginEnd="@dimen/_15"
 		android:layout_marginBottom="@dimen/_5"
-		android:background="@drawable/ic_button_selector_background"
-		android:elevation="@dimen/_1"
-		android:orientation="vertical">
+		android:orientation="vertical"
+		app:cardBackgroundColor="@color/color_cardview_bg"
+		app:cardCornerRadius="@dimen/_10">
 
-		<!-- Thumbnail container with rounded corners -->
-		<androidx.cardview.widget.CardView
-			android:id="@+id/container_img_thumbnail"
-			android:layout_width="@dimen/_90"
-			android:layout_height="@dimen/_70"
-			android:layout_marginStart="@dimen/_5"
-			android:layout_marginTop="@dimen/_5"
-			android:layout_marginEnd="@dimen/_5"
-			android:layout_marginBottom="@dimen/_5"
-			app:cardBackgroundColor="@color/color_background"
-			app:cardCornerRadius="@dimen/_5">
-
-			<!-- File thumbnail image with fallback -->
-			<ImageView
-				android:id="@+id/img_file_thumbnail"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:layout_centerVertical="true"
-				android:adjustViewBounds="true"
-				android:importantForAccessibility="no"
-				android:scaleType="centerCrop"
-				android:src="@drawable/image_no_thumb_available"
-				tools:ignore="ImageContrastCheck" />
-
-			<!-- Selection checkbox image indicator -->
-			<ImageView
-				android:id="@+id/img_checkbox_selection"
-				android:layout_width="@dimen/_30"
-				android:layout_height="wrap_content"
-				android:layout_alignParentStart="true"
-				android:layout_gravity="center_vertical|center_horizontal"
-				android:adjustViewBounds="true"
-				android:elevation="@dimen/_2"
-				android:importantForAccessibility="no"
-				android:src="@drawable/media3_icon_check_circle_filled"
-				android:tint="@color/color_secondary"
-				android:visibility="gone" />
-
-		</androidx.cardview.widget.CardView>
-
-		<!-- Container for file info (name and status) -->
-		<LinearLayout
+		<RelativeLayout
+			android:id="@+id/main_row_container"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_centerVertical="true"
-			android:layout_marginEnd="@dimen/_8"
-			android:layout_toEndOf="@id/container_img_thumbnail"
-			android:orientation="vertical">
+			android:background="@drawable/ic_button_selector_background">
 
-			<!-- File name and status indicator row -->
-			<RelativeLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content">
+			<!-- Thumbnail container with rounded corners -->
+			<androidx.cardview.widget.CardView
+				android:id="@+id/container_img_thumbnail"
+				android:layout_width="@dimen/_90"
+				android:layout_height="@dimen/_65"
+				android:layout_marginStart="@dimen/_5"
+				android:layout_marginTop="@dimen/_5"
+				android:layout_marginEnd="@dimen/_5"
+				android:layout_marginBottom="@dimen/_5"
+				app:cardBackgroundColor="@color/color_cardview_bg"
+				app:cardCornerRadius="@dimen/_5">
 
-				<!-- File name with max 2 lines -->
-				<TextView
-					android:id="@+id/txt_file_name"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:layout_toStartOf="@id/img_status_indicator"
-					android:ellipsize="end"
-					android:fontFamily="@font/application_font_family"
-					android:gravity="center_vertical"
-					android:maxLines="2"
-					android:singleLine="false"
-					android:text="@string/text_sample_video_file_name"
-					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/normal_text_size_small" />
-
-				<!-- Status indicator icon -->
+				<!-- Site favicon indicator (hidden by default) -->
 				<ImageView
-					android:id="@+id/img_status_indicator"
-					android:layout_width="wrap_content"
+					android:id="@+id/img_site_favicon"
+					android:layout_width="@dimen/_20"
 					android:layout_height="wrap_content"
-					android:layout_alignParentEnd="true"
-					android:layout_centerVertical="true"
+					android:layout_gravity="start|top"
 					android:layout_marginStart="@dimen/_5"
+					android:layout_marginTop="@dimen/_5"
 					android:adjustViewBounds="true"
+					android:elevation="@dimen/_5"
 					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_open_v2"
-					android:tint="@color/color_secondary"
+					android:src="@drawable/ic_button_information"
+					android:visibility="visible"
 					tools:ignore="ImageContrastCheck" />
 
-			</RelativeLayout>
-
-			<!-- Download status container with rounded background -->
-			<RelativeLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="@dimen/_2"
-				android:background="@drawable/rounded_surface_color"
-				android:orientation="horizontal">
-
-				<!-- Download status text (progress, speed, etc.) -->
-				<TextView
-					android:id="@+id/txt_download_status"
+				<!-- File thumbnail image with fallback -->
+				<ImageView
+					android:id="@+id/img_file_thumbnail"
 					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:layout_centerVertical="true"
+					android:adjustViewBounds="true"
+					android:importantForAccessibility="no"
+					android:scaleType="centerCrop"
+					android:src="@drawable/image_no_thumb_available"
+					tools:ignore="ImageContrastCheck" />
+
+				<!-- Selection checkbox image indicator -->
+				<ImageView
+					android:id="@+id/img_checkbox_selection"
+					android:layout_width="@dimen/_30"
 					android:layout_height="wrap_content"
 					android:layout_alignParentStart="true"
-					android:layout_marginStart="@dimen/_5"
-					android:layout_marginTop="@dimen/_2"
-					android:layout_marginEnd="@dimen/_5"
-					android:layout_marginBottom="@dimen/_2"
-					android:ellipsize="end"
-					android:fontFamily="@font/application_font_family"
-					android:gravity="center_vertical"
-					android:singleLine="true"
-					android:text="@string/text__"
-					android:textColor="@color/color_text_hint"
-					android:textSize="@dimen/smallest_text_size"
-					android:textStyle="italic"
-					tools:ignore="TextContrastCheck" />
-			</RelativeLayout>
+					android:layout_gravity="center_vertical|center_horizontal"
+					android:adjustViewBounds="true"
+					android:elevation="@dimen/_2"
+					android:importantForAccessibility="no"
+					android:src="@drawable/media3_icon_check_circle_filled"
+					android:tint="@color/color_secondary"
+					android:visibility="gone" />
 
-		</LinearLayout>
-	</RelativeLayout>
+			</androidx.cardview.widget.CardView>
+
+			<!-- Container for file info (name and status) -->
+			<LinearLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_centerVertical="true"
+				android:layout_marginEnd="@dimen/_8"
+				android:layout_toEndOf="@id/container_img_thumbnail"
+				android:orientation="vertical">
+
+				<!-- File name and status indicator row -->
+				<RelativeLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content">
+
+					<!-- File name with max 2 lines -->
+					<TextView
+						android:id="@+id/txt_file_name"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_toStartOf="@id/img_status_indicator"
+						android:ellipsize="end"
+						android:fontFamily="@font/application_font_family"
+						android:gravity="center_vertical"
+						android:maxLines="2"
+						android:singleLine="false"
+						android:textFontWeight="500"
+						android:text="@string/text_sample_video_file_name"
+						android:textColor="@color/color_text_primary"
+						android:textSize="@dimen/normal_text_size_small" />
+
+					<!-- Status indicator icon -->
+					<ImageView
+						android:id="@+id/img_status_indicator"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_alignParentEnd="true"
+						android:layout_centerVertical="true"
+						android:layout_marginStart="@dimen/_5"
+						android:adjustViewBounds="true"
+						android:importantForAccessibility="no"
+						android:src="@drawable/ic_button_open_v2"
+						android:tint="@color/color_secondary"
+						tools:ignore="ImageContrastCheck" />
+
+				</RelativeLayout>
+
+				<!-- Download status container with rounded background -->
+				<RelativeLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="@dimen/_2"
+					android:background="@drawable/rounded_surface_color"
+					android:orientation="horizontal">
+
+					<!-- Download status text (progress, speed, etc.) -->
+					<TextView
+						android:id="@+id/txt_download_status"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_alignParentStart="true"
+						android:layout_marginStart="@dimen/_5"
+						android:layout_marginTop="@dimen/_2"
+						android:layout_marginEnd="@dimen/_5"
+						android:layout_marginBottom="@dimen/_2"
+						android:ellipsize="end"
+						android:fontFamily="@font/application_font_family"
+						android:gravity="center_vertical"
+						android:singleLine="true"
+						android:text="@string/text__"
+						android:textColor="@color/color_text_hint"
+						android:textSize="@dimen/smallest_text_size"
+						android:textStyle="italic"
+						tools:ignore="TextContrastCheck" />
+				</RelativeLayout>
+			</LinearLayout>
+		</RelativeLayout>
+	</androidx.cardview.widget.CardView>
 </RelativeLayout>

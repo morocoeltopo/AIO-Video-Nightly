@@ -5,23 +5,28 @@ import android.view.View.GONE
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat.getDrawable
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.net.toUri
 import app.core.AIOApp.Companion.INSTANCE
+import app.core.AIOApp.Companion.aioFavicons
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOApp.Companion.internalDataFolder
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
 import com.aio.R
 import com.anggrayudi.storage.file.getAbsolutePath
+import lib.files.FileSystemUtility.isVideo
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.LogHelperUtils
+import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.MsgDialogUtils
 import lib.ui.ViewUtility.getThumbnailFromFile
 import lib.ui.ViewUtility.isBlackThumbnail
 import lib.ui.ViewUtility.rotateBitmap
 import lib.ui.ViewUtility.saveBitmapToFile
+import lib.ui.ViewUtility.showView
 import java.io.File
 import java.lang.ref.WeakReference
 
@@ -54,6 +59,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private val statusIndicationImageView: ImageView by lazy { rowLayout.findViewById(R.id.img_status_indicator) }
 	private val fileNameTextView: TextView by lazy { rowLayout.findViewById(R.id.txt_file_name) }
 	private val statusInfo: TextView by lazy { rowLayout.findViewById(R.id.txt_download_status) }
+	private val favicon: ImageView by lazy { rowLayout.findViewById(R.id.img_site_favicon) }
 
 	/**
 	 * Main update method that refreshes all UI elements for a download item.
@@ -66,6 +72,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			updateFileName(downloadModel)
 			updateDownloadProgress(downloadModel)
 			updateFileThumbnail(downloadModel)
+			updateFaviconInfo(downloadModel)
 			updateAlertMessage(downloadModel)
 		} ?: logger.d("Row layout reference lost, skipping update.")
 	}
@@ -133,8 +140,10 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 * Handles both video thumbnails and default icons for other file types.
 	 */
 	private fun updateFileThumbnail(downloadModel: DownloadDataModel) {
-		logger.d("updateFileThumbnail: id=${downloadModel.id}, " +
-				"hideThumb=${downloadModel.globalSettings.downloadHideVideoThumbnail}")
+		logger.d(
+			"updateFileThumbnail: id=${downloadModel.id}, " +
+					"hideThumb=${downloadModel.globalSettings.downloadHideVideoThumbnail}"
+		)
 		// Check if thumbnail visibility setting changed
 		if (downloadModel.globalSettings.downloadHideVideoThumbnail
 			!= isThumbnailSettingsChanged
@@ -155,6 +164,69 @@ class DownloaderRowUI(private val rowLayout: View) {
 				updateDefaultThumbnail(downloadModel)
 			}
 		}
+	}
+
+	/**
+	 * Loads and sets the favicon for the given download item.
+	 * Attempts to load a favicon from cache (via AIOApp.aioFavicons). If unavailable,
+	 * falls back to a default drawable.
+	 *
+	 * @param downloadDataModel The download data model containing the site referrer
+	 */
+	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
+		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
+		val defaultFaviconResId = R.drawable.ic_button_information
+		val defaultFaviconDrawable = ResourcesCompat.getDrawable(
+			INSTANCE.resources, defaultFaviconResId, null
+		)
+
+		// Skip favicon loading if video thumbnails are not allowed
+		if (isVideoThumbnailNotAllowed(downloadDataModel)) {
+			logger.d("Video thumbnails not allowed, using default favicon")
+			executeOnMainThread { favicon.setImageDrawable(defaultFaviconDrawable) }
+			return
+		}
+
+		ThreadsUtility.executeInBackground(codeBlock = {
+			val referralSite = downloadDataModel.siteReferrer
+			logger.d("Loading favicon for site: $referralSite")
+			aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
+				val faviconImgFile = File(faviconFilePath)
+				if (!faviconImgFile.exists() || !faviconImgFile.isFile) {
+					logger.d("Favicon file not found")
+					return@executeInBackground
+				}
+				val faviconImgURI = faviconImgFile.toUri()
+				ThreadsUtility.executeOnMain(codeBlock = {
+					try {
+						logger.d("Setting favicon from URI")
+						showView(favicon, true)
+						favicon.setImageURI(faviconImgURI)
+					} catch (error: Exception) {
+						logger.d("Error setting favicon: ${error.message}")
+						error.printStackTrace()
+						showView(favicon, true)
+						favicon.setImageResource(defaultFaviconResId)
+					}
+				})
+			}
+		}, errorHandler = {
+			logger.d("Error loading favicon: ${it.message}")
+			it.printStackTrace()
+		})
+	}
+
+	/**
+	 * Checks if video thumbnails are allowed for this download based on settings.
+	 *
+	 * @param downloadDataModel The download data model
+	 * @return true if thumbnails are not allowed, false otherwise
+	 */
+	private fun isVideoThumbnailNotAllowed(downloadDataModel: DownloadDataModel): Boolean {
+		val isVideoHidden = downloadDataModel.globalSettings.downloadHideVideoThumbnail
+		val result = isVideo(downloadDataModel.getDestinationDocumentFile()) && isVideoHidden
+		logger.d("Video thumbnail allowed: ${!result}")
+		return result
 	}
 
 	/**

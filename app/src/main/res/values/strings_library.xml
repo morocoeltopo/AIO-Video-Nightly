@@ -146,9 +146,8 @@
 	<string name="text_download_complete_click_to_open">Download\'s completed, click here to open.</string>
 	<string name="text_clear_from_list">Clear from list</string>
 	<string name="text_media_file_has_deleted">Media file has been deleted.</string>
-	<string name="text_show_download_info">Show download info…</string>
-	<string name="title_rename_file">Rename File</string>
-	<string name="text_discover_more">Discover more</string>
+	<string name="title_show_download_info">Show Download Info…</string>
+	<string name="title_rename_the_file">Rename File</string>
 	<string name="text_you_dont_have_any_downloads"><b>You don\'t have any downloads</b>\nGo and download something!</string>
 	<string name="text_share_with_others">Share with others</string>
 	<string name="title_open_link_in_browser">Open With Browser</string>
@@ -175,11 +174,11 @@
 	<string name="text_configuring_auto_remove">Configuring Auto Remove…</string>
 	<string name="title_unknown_size">Unknown Size</string>
 	<string name="text_download_has_been_paused">Download has been paused.</string>
-	<string name="text_copy_file_link">Copy file link</string>
-	<string name="text_resume_task">Resume task</string>
-	<string name="text_pause_task">Pause task</string>
+	<string name="title_copy_file_link">Copy File Link</string>
+	<string name="title_resume_task">Resume Task</string>
+	<string name="title_stop_download">Pause Task</string>
 
-	<string name="text_share_file_link">Share file link</string>
+	<string name="title_share_file_link">Share File Link</string>
 	<string name="text_type_new_file_name_hint">Type a new file name here…</string>
 	<string name="text_missing_webpage_link_info">The downloaded file is missing <b> its associated webpage link</b>.</string>
 	<string name="title_download_failed">Download Failed</string>
@@ -544,7 +543,9 @@
 	<string name="title_open_website">Open Website</string>
 	<string name="title_fix_unseekable_mp4_videos">Fix Unseekable Mp4 Files (Risky)</string>
 	<string name="title_fixing_mp4_file_please_wait">Fixing Mp4 File, Please Wait…</string>
-	<string name="text_msg_of_fixing_unseekable_mp4_files">You are about to attempt fixing an unseekable MP4 video file. <b>This is an advanced and potentially risky operation that may, <u>in some cases, corrupt the video.</u></b> Proceed with caution.</string>
+	<string name="text_msg_of_fixing_unseekable_mp4_files">This is an advanced and potentially risky operation that may <b>corrupt the video file altogether.</b></string>
 	<string name="title_fixing_done_successfully">Fixed Mp4 File Successfully</string>
+	<string name="title_fixed_mp4_file">Fix MP4 File</string>
+	<string name="title_go_back_to_finished_tasks">Downloaded Files</string>
 
 </resources>
