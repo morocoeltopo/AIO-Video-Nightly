@@ -191,7 +191,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 							return
 						}
 
-						if (currentTimeMillis() - lastUpdateTime >= (1000 * 5)) {
+						if (currentTimeMillis() - downloadDataModel.lastModifiedTimeDate >= (1000 * 5)) {
 							if (downloadDataModel.ytdlpProblemMsg.contains("left", true)) {
 								logger.d("Download stalled for over 5 seconds, forcing restart...")
 								forcedRestartDownload(retryingDownloadTimer)
@@ -1496,9 +1496,11 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				downloadDataModel.fileSize = outputFile.length()
 				downloadDataModel.fileSizeInFormat =
 					getHumanReadableFormat(downloadDataModel.fileSize)
+
 				downloadDataModel.downloadedByte = downloadDataModel.fileSize
 				downloadDataModel.downloadedByteInFormat =
 					getHumanReadableFormat(downloadDataModel.downloadedByte)
+
 				downloadDataModel.progressPercentage = 100
 				downloadDataModel.partsDownloadedByte[0] = downloadDataModel.downloadedByte
 				downloadDataModel.partProgressPercentage[0] = 100
@@ -1506,8 +1508,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 				logger.d("File successfully moved to destination: ${outputFile.absolutePath}")
 			} catch (error: Exception) {
-				error.printStackTrace()
-				logger.d("Error while moving file: ${error.message}. Attempting recovery.")
+				logger.e("Error while moving file: ${error.message}. " +
+						"Attempting recovery: ", error)
 
 				// Attempt recovery by reverting rename and retrying
 				val outputFile = downloadDataModel.getDestinationFile()
@@ -1541,8 +1543,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		val outputFile = downloadDataModel.getDestinationFile()
 
 		// Copy file and remove the temp source
-		val isMp4ConvertSuccessful = moveMoovAtomToStart(sourceFile, outputFile)
-		if (!isMp4ConvertSuccessful) sourceFile.copyTo(outputFile, overwrite = true)
+		sourceFile.copyTo(outputFile, overwrite = true)
 		sourceFile.delete()
 		logger.d("Copied file to destination: ${outputFile.absolutePath}")
 
@@ -1598,8 +1599,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					return false
 				}
 			}
-		} catch (e: Exception) {
-			logger.e("Error reading file for moov check: ${e.message}")
+		} catch (error: Exception) {
+			logger.e("Error reading file for moov check: ${error.message}", error)
 			return false
 		}
 
@@ -1617,7 +1618,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 			return isValid
 		} catch (error: Exception) {
-			logger.e("MP4Parser validation failed: ${error.message}")
+			logger.e("MP4Parser validation failed: ${error.message}", error)
 			return false
 		}
 	}
@@ -1733,7 +1734,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 			// Validate the temporary file
 			if (!isValidMp4File(tempFile)) {
-				logger.e("Temporary file validation failed - optimization may have corrupted the file")
+				logger.e("Temporary file validation failed - " +
+						"optimization may have corrupted the file")
 				tempFile.delete()
 				return false
 			}
@@ -1744,14 +1746,17 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			val sizeRatio = tempSize.toDouble() / inputSize.toDouble()
 
 			if (sizeRatio < 0.5 || sizeRatio > 1.5) {
-				logger.e("Suspicious file size ratio: $sizeRatio (input: $inputSize, output: $tempSize)")
+				logger.e("Suspicious file size ratio" +
+						": $sizeRatio (input: $inputSize, output: $tempSize)")
 				tempFile.delete()
 				return false
 			}
 
 			// Atomic move from temp to final location
 			if (tempFile.renameTo(outputFile)) {
-				logger.d("Optimization completed successfully. Output file size: ${outputFile.length()} bytes")
+				logger.d("Optimization completed successfully. " +
+						"Output file size: ${outputFile.length()} bytes")
+
 				logger.d("Output file created at: ${outputFile.absolutePath}")
 
 				// Final validation of the output file
@@ -1776,7 +1781,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					tempFile.delete()
 					logger.d("Cleaned up temporary file after failure")
 				} catch (cleanupError: Exception) {
-					logger.e("Failed to clean up temporary file: ${cleanupError.message}")
+					logger.e("Failed to clean up temporary file" +
+							": ${cleanupError.message}", cleanupError)
 				}
 			}
 
@@ -1786,7 +1792,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					outputFile.delete()
 					logger.d("Cleaned up output file after failure")
 				} catch (cleanupError: Exception) {
-					logger.e("Failed to clean up output file: ${cleanupError.message}")
+					logger.e("Failed to clean up output file" +
+							": ${cleanupError.message}", cleanupError)
 				}
 			}
 
@@ -1828,16 +1835,13 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				// Extract the 4-byte signature at offset 4 and compare with "ftyp"
 				val signature = String(buffer, 4, 4, Charsets.US_ASCII)
 				val isValid = (signature == "ftyp")
-
-				if (!isValid) {
-					logger.d("File signature mismatch. Expected 'ftyp', found '$signature' for ${file.name}")
-				}
+				if (!isValid) logger.d("File signature mismatch. " +
+						"Expected 'ftyp', found '$signature' for ${file.name}")
 
 				isValid
 			}
 		} catch (error: Exception) {
-			// Log any exceptions encountered during file reading
-			logger.e("Error validating MP4 file: ${error.message}")
+			logger.e("Error validating MP4 file:", error)
 			false
 		}
 	}
@@ -1851,29 +1855,30 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 * @return true if the file structure is valid and contains playable content, false otherwise
 	 */
 	private fun isValidMp4FileAdvanced(file: File): Boolean {
+		// Quick check: file must exist and have a reasonable size
 		if (!file.exists() || file.length() < 100) return false
+
 		return try {
-			// Open the file as a data source for parsing
 			val dataSource = FileDataSourceImpl(file.absolutePath)
 			try {
-				// Parse the MP4 structure into a Movie object
+				// Parse the MP4 file into a Movie object
 				val movie = MovieCreator.build(dataSource)
 
-				// Validate that the movie has tracks and each track has samples
-				val isValid = movie.tracks.isNotEmpty() &&
-						movie.tracks.all { it.samples.isNotEmpty() }
+				// Validate that the movie has tracks and each track has non-empty samples
+				val isValid = movie.tracks.isNotEmpty() && movie.tracks.all { it.samples.isNotEmpty() }
 				if (!isValid) logger.d("Advanced validation failed: empty tracks or samples")
 
 				isValid
 			} catch (error: Exception) {
-				logger.e("Advanced MP4 validation failed: ${error.message}")
+				logger.e("Advanced MP4 validation failed:", error)
 				false
+
 			} finally {
-				// Ensure the data source is closed to free resources
+				// Ensure the data source is closed
 				dataSource.close()
 			}
 		} catch (error: Exception) {
-			logger.e("Error during advanced validation: ${error.message}")
+			logger.e("Error during advanced validation:", error)
 			false
 		}
 	}
