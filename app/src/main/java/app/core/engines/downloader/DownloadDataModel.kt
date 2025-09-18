@@ -48,9 +48,6 @@ import java.io.Serializable
  */
 class DownloadDataModel : Serializable {
 
-	@Transient
-	private val logger = LogHelperUtils.from(javaClass)
-
 	// Basic download identification and state tracking
 	@SerializedName("id")
 	var id: Int = 0                           // Unique identifier for the download
@@ -278,7 +275,7 @@ class DownloadDataModel : Serializable {
 
 	companion object {
 		@Transient
-		private val logger = LogHelperUtils.from(DownloadDataModel::class.java)
+		var logger = LogHelperUtils.from(DownloadDataModel::class.java)
 
 		// Constants for file naming and storage
 		const val DOWNLOAD_MODEL_ID_KEY = "DOWNLOAD_MODEL_ID_KEY"

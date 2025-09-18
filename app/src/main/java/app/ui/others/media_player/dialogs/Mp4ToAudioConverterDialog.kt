@@ -10,7 +10,6 @@ import app.core.bases.BaseActivity
 import app.core.engines.downloader.DownloadDataModel
 import app.ui.others.media_player.MediaPlayerActivity
 import com.aio.R
-import com.aio.R.string
 import lib.device.DateTimeUtils.millisToDateTimeString
 import lib.files.FileSystemUtility
 import lib.files.VideoToAudioConverter
@@ -18,6 +17,7 @@ import lib.files.VideoToAudioConverter.ConversionListener
 import lib.networks.DownloaderUtils.getHumanReadableFormat
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CopyObjectUtils.deepCopy
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.process.UniqueNumberUtils.getUniqueNumberForDownloadModels
 import lib.texts.CommonTextUtils.getText
@@ -26,73 +26,114 @@ import lib.ui.builders.ToastView.Companion.showToast
 import lib.ui.builders.WaitingDialog
 import java.io.File
 
+/**
+ * Handles conversion of MP4 video files to MP3 audio files.
+ * Displays a dialog with progress updates, supports cancellation,
+ * and adds the converted file to the download system.
+ */
 object Mp4ToAudioConverterDialog {
 
+	private val logger = LogHelperUtils.from(javaClass)
+
+	/**
+	 * Shows the MP4 to Audio conversion dialog.
+	 *
+	 * @param baseActivityRef Reference to the calling BaseActivity
+	 * @param downloadModel The download data model for the video file
+	 */
 	@OptIn(UnstableApi::class)
-	fun showMp4ToAudioConverterDialog(baseActivityRef: BaseActivity?, downloadModel: DownloadDataModel?) {
+	fun showMp4ToAudioConverterDialog(
+		baseActivityRef: BaseActivity?,
+		downloadModel: DownloadDataModel?
+	) {
 		baseActivityRef?.let { safeActivityRef ->
+			logger.d("Initializing MP4 to Audio conversion dialog")
 			val videoToAudioConverter = VideoToAudioConverter()
-			// Setup waiting dialog with progress updates
+
+			// Create waiting dialog to display conversion progress
 			val waitingDialog = WaitingDialog(
 				baseActivityInf = safeActivityRef,
-				loadingMessage = getText(string.text_converting_audio_progress_0),
+				loadingMessage = getText(R.string.text_converting_audio_progress_0),
 				isCancelable = false,
 				shouldHideOkayButton = false
 			)
 
 			var messageTextView: TextView? = null
+
+			// Setup dialog views
 			waitingDialog.dialogBuilder?.view?.apply {
 				messageTextView = findViewById(R.id.txt_progress_info)
+
+				// Configure Cancel button
 				findViewById<TextView>(R.id.btn_dialog_positive)?.apply {
-					this.setText(string.text_cancel_converting)
+					this.setText(R.string.text_cancel_converting)
 					this.setLeftSideDrawable(R.drawable.ic_button_cancel)
 				}
 
+				// Cancel conversion if button clicked
 				findViewById<View>(R.id.btn_dialog_positive_container)
-					?.setOnClickListener { videoToAudioConverter.cancel(); waitingDialog.close() }
+					?.setOnClickListener {
+						logger.d("User clicked cancel during conversion")
+						videoToAudioConverter.cancel()
+						waitingDialog.close()
+					}
 			}
 
-			if (safeActivityRef is MediaPlayerActivity) safeActivityRef.pausePlayer()
-			waitingDialog.show()
+			// Pause player if inside MediaPlayerActivity
+			if (safeActivityRef is MediaPlayerActivity) {
+				logger.d("Pausing MediaPlayer before conversion")
+				safeActivityRef.pausePlayer()
+			}
 
-			// Perform conversion in background thread
+			waitingDialog.show()
+			logger.d("Conversion dialog displayed")
+
+			// Start background conversion process
 			ThreadsUtility.executeInBackground(codeBlock = {
 				try {
 					downloadModel?.let { downloadDataModel ->
 						val inputMediaFilePath = downloadDataModel.getDestinationFile().absolutePath
 						val convertedAudioFileName = downloadDataModel.fileName + "_converted.mp3"
-						val outputPath = "${getText(string.text_default_aio_download_folder_path)}/AIO Sounds/"
+						val outputPath = downloadDataModel.fileDirectory
 						val outputMediaFile = File(outputPath, convertedAudioFileName)
 
-						// Start the conversion process
+						logger.d("Starting audio extraction from: $inputMediaFilePath -> $outputMediaFile")
+
+						// Begin conversion
 						videoToAudioConverter.extractAudio(
 							inputFile = inputMediaFilePath,
 							outputFile = outputMediaFile.absolutePath,
 							listener = object : ConversionListener {
+
 								override fun onProgress(progress: Int) {
+									// Update progress on UI thread
 									executeOnMainThread {
-										val progressString = INSTANCE.getString(
-											string.text_converting_audio_progress,
-											"${progress}%"
-										); messageTextView?.text = progressString
+										val resId = R.string.text_converting_audio_progress
+										val progressString = INSTANCE.getString(resId, "${progress}%")
+										logger.d("Conversion progress: $progress%")
+										messageTextView?.text = progressString
 									}
 								}
 
 								override fun onSuccess(outputFile: String) {
 									executeOnMainThread {
+										logger.d("Conversion completed successfully: $outputFile")
 										waitingDialog.close()
+
+										// Resume media player if paused
 										if (safeActivityRef is MediaPlayerActivity) {
 											safeActivityRef.resumePlayer()
+											logger.d("Resumed MediaPlayer after conversion")
 										}
-										// Add to media store and show success message
+
+										// Add converted audio to media store
 										FileSystemUtility.addToMediaStore(outputMediaFile)
-										showToast(msgId = string.title_converting_audio_has_been_successful)
+										showToast(msgId = R.string.title_converted_successfully)
+
 										try {
-											addNewDownloadModelToSystem(
-												downloadDataModel,
-												outputMediaFile
-											)
+											addNewDownloadModelToSystem(downloadDataModel, outputMediaFile)
 										} catch (error: Exception) {
+											logger.d("Error adding converted file to system: ${error.message}")
 											error.printStackTrace()
 										}
 									}
@@ -100,23 +141,25 @@ object Mp4ToAudioConverterDialog {
 
 								override fun onFailure(errorMessage: String) {
 									executeOnMainThread {
+										logger.d("Conversion failed: $errorMessage")
 										waitingDialog.close()
 										if (safeActivityRef is MediaPlayerActivity) {
 											safeActivityRef.resumePlayer()
-										}
-										showToast(msgId = string.title_converting_audio_has_been_failed)
+											logger.d("Resumed MediaPlayer after failure")
+										}; showToast(msgId = R.string.title_converting_failed)
 									}
 								}
 							}
 						)
 					}
 				} catch (error: Exception) {
+					logger.d("Unexpected error during conversion: ${error.message}")
 					executeOnMainThread {
 						waitingDialog.close()
 						if (safeActivityRef is MediaPlayerActivity) {
 							safeActivityRef.resumePlayer()
-						}
-						showToast(msgId = string.title_something_went_wrong)
+							logger.d("Resumed MediaPlayer after unexpected error")
+						}; showToast(msgId = R.string.title_something_went_wrong)
 					}
 				}
 			})
@@ -126,34 +169,41 @@ object Mp4ToAudioConverterDialog {
 	/**
 	 * Adds the converted audio file to the download system as a new entry.
 	 *
-	 * @param downloadDataModel The original download model to copy properties from
-	 * @param outputMediaFile The converted audio file
+	 * @param downloadDataModel The original download model
+	 * @param outputMediaFile The newly converted audio file
 	 */
 	private fun addNewDownloadModelToSystem(
 		downloadDataModel: DownloadDataModel,
 		outputMediaFile: File
 	) {
-		// Create a copy of the original model with updated properties
+		logger.d("Adding converted audio file to download system: ${outputMediaFile.name}")
+
+		// Create a deep copy of the original model with new file details
 		val copiedDataModel = deepCopy(downloadDataModel)
-		copiedDataModel?.id = getUniqueNumberForDownloadModels()
-		copiedDataModel?.apply {
-			fileName = outputMediaFile.name
-			fileDirectory = outputMediaFile.parentFile?.absolutePath.toString()
-			fileSize = outputMediaFile.length()
-			fileSizeInFormat = getHumanReadableFormat(fileSize)
-			fileCategoryName = getUpdatedCategoryName()
-			startTimeDate = System.currentTimeMillis()
-			startTimeDateInFormat = millisToDateTimeString(lastModifiedTimeDate)
-			lastModifiedTimeDate = System.currentTimeMillis()
-			lastModifiedTimeDateInFormat = millisToDateTimeString(lastModifiedTimeDate)
-		}?.let {
-			// Update storage and UI
-			it.updateInStorage()
-			downloadSystem.addAndSortFinishedDownloadDataModels(it)
-			val downloadsUIManager = downloadSystem.downloadsUIManager
-			val finishedTasksFragment = downloadsUIManager.finishedTasksFragment
-			val finishedTasksListAdapter = finishedTasksFragment?.finishedTasksListAdapter
-			finishedTasksListAdapter?.notifyDataSetChangedOnSort(false)
-		}
+		if (copiedDataModel == null) return
+		copiedDataModel.id = getUniqueNumberForDownloadModels()
+		copiedDataModel.fileName = outputMediaFile.name
+		copiedDataModel.fileDirectory = outputMediaFile.parentFile?.absolutePath.toString()
+		copiedDataModel.fileSize = outputMediaFile.length()
+		copiedDataModel.fileSizeInFormat = getHumanReadableFormat(copiedDataModel.fileSize)
+		copiedDataModel.fileCategoryName = copiedDataModel.getUpdatedCategoryName()
+
+		copiedDataModel.startTimeDate = System.currentTimeMillis()
+		copiedDataModel.lastModifiedTimeDate = System.currentTimeMillis()
+
+		val lastModifiedTimeDate = copiedDataModel.lastModifiedTimeDate
+		copiedDataModel.startTimeDateInFormat = millisToDateTimeString(lastModifiedTimeDate)
+		copiedDataModel.lastModifiedTimeDateInFormat = millisToDateTimeString(lastModifiedTimeDate)
+		logger.d("Converted model prepared, updating storage and UI")
+
+		copiedDataModel.updateInStorage()
+		downloadSystem.addAndSortFinishedDownloadDataModels(copiedDataModel)
+
+		// Update UI to reflect the new entry
+		val downloadsUIManager = downloadSystem.downloadsUIManager
+		val finishedTasksFragment = downloadsUIManager.finishedTasksFragment
+		val finishedTasksListAdapter = finishedTasksFragment?.finishedTasksListAdapter
+		finishedTasksListAdapter?.notifyDataSetChangedOnSort(false)
+		logger.d("Download system updated with converted file: ${copiedDataModel.fileName}")
 	}
 }

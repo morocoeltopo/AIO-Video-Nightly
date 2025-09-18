@@ -299,8 +299,8 @@
 	<string name="text_no_discovery_during_streaming"><b>This feature is designed for downloaded videos only</b> and not possible for streaming.</string>
 	<string name="text_no_app_can_handle_this_request">No app can handle this request.</string>
 	<string name="text_cancel_converting">Cancel Converting</string>
-	<string name="title_converting_audio_has_been_successful">Converting Audio\'s Successful.</string>
-	<string name="title_converting_audio_has_been_failed">Converting Audio\'s Failed.</string>
+	<string name="title_converted_successfully">Converted Successfully.</string>
+	<string name="title_converting_failed">Converting Failed.</string>
 	<string name="text_converting_audio_progress">Converting Audio… Progress(%1$s)</string>
 	<string name="text_converting_audio_progress_0">Converting Audio… Progress (0%)</string>
 	<string name="text_failed_to_load_media_info"><b>Opps! Something went wrong.</b> Failed to load the media file information.</string>
