@@ -15,7 +15,13 @@ import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
 import com.aio.R
 import com.anggrayudi.storage.file.getAbsolutePath
+import lib.files.FileSystemUtility.isArchiveByName
+import lib.files.FileSystemUtility.isAudioByName
+import lib.files.FileSystemUtility.isDocumentByName
+import lib.files.FileSystemUtility.isImageByName
+import lib.files.FileSystemUtility.isProgramByName
 import lib.files.FileSystemUtility.isVideo
+import lib.files.FileSystemUtility.isVideoByName
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.LogHelperUtils
@@ -54,12 +60,12 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private var isThumbnailSettingsChanged = false // Tracks changes to thumbnail visibility setting
 
 	// Lazy-initialized view references
-	private val mainLayoutRowContainer: View by lazy { rowLayout.findViewById(R.id.container_running_info) }
 	private val thumbImageView: ImageView by lazy { rowLayout.findViewById(R.id.img_file_thumbnail) }
 	private val statusIndicationImageView: ImageView by lazy { rowLayout.findViewById(R.id.img_status_indicator) }
 	private val fileNameTextView: TextView by lazy { rowLayout.findViewById(R.id.txt_file_name) }
 	private val statusInfo: TextView by lazy { rowLayout.findViewById(R.id.txt_download_status) }
 	private val favicon: ImageView by lazy { rowLayout.findViewById(R.id.img_site_favicon) }
+	private val fileTypeIndicator: ImageView by lazy { rowLayout.findViewById(R.id.img_file_type_indicator) }
 
 	/**
 	 * Main update method that refreshes all UI elements for a download item.
@@ -73,6 +79,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			updateDownloadProgress(downloadModel)
 			updateFileThumbnail(downloadModel)
 			updateFaviconInfo(downloadModel)
+			updateFileTypeIndicator(downloadModel)
 			updateAlertMessage(downloadModel)
 		} ?: logger.d("Row layout reference lost, skipping update.")
 	}
@@ -164,6 +171,29 @@ class DownloaderRowUI(private val rowLayout: View) {
 				updateDefaultThumbnail(downloadModel)
 			}
 		}
+	}
+
+	/**
+	 * Updates the file type indicator icon in the UI based on the file type
+	 * detected from the download model's file name.
+	 *
+	 * @param downloadDataModel The model containing information about the downloaded file
+	 */
+	private fun updateFileTypeIndicator(downloadDataModel: DownloadDataModel) {
+		logger.d("Updating file type indicator for download ID: ${downloadDataModel.id}")
+
+		// Determine the correct icon by checking file type via file name
+		fileTypeIndicator.setImageResource(
+			when {
+				isImageByName(downloadDataModel.fileName) -> R.drawable.ic_button_images   // Image files
+				isAudioByName(downloadDataModel.fileName) -> R.drawable.ic_button_audio    // Audio files
+				isVideoByName(downloadDataModel.fileName) -> R.drawable.ic_button_video    // Video files
+				isDocumentByName(downloadDataModel.fileName) -> R.drawable.ic_button_document // Documents
+				isArchiveByName(downloadDataModel.fileName) -> R.drawable.ic_button_archives  // Archives
+				isProgramByName(downloadDataModel.fileName) -> R.drawable.ic_button_programs  // Executables/programs
+				else -> R.drawable.ic_button_file // Default for unknown file types
+			}
+		)
 	}
 
 	/**

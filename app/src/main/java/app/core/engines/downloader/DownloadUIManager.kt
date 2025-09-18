@@ -127,6 +127,7 @@ class DownloadUIManager(val downloadSystem: DownloadSystem) {
 			}
 			setOnLongClickListener {
 				logger.d("Row long-clicked for: ${downloadModel.fileName}")
+				activeTasksFragment?.safeMotherActivityRef?.doSomeVibration(50)
 				activeTasksFragment?.onDownloadUIItemClick(downloadModel); true
 			}
 			val dpValue = 0f

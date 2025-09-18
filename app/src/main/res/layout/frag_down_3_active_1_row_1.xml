@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Layout for a running download task item with thumbnail and status info -->
+<?xml version="1.0" encoding="utf-8"?><!-- Layout for a completed download item row with thumbnail and file info -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/container_running_info"
+	android:id="@+id/button_finish_download_row"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:background="@color/transparent"
@@ -31,28 +31,13 @@
 			<androidx.cardview.widget.CardView
 				android:id="@+id/container_img_thumbnail"
 				android:layout_width="@dimen/_90"
-				android:layout_height="@dimen/_65"
+				android:layout_height="@dimen/_70"
 				android:layout_marginStart="@dimen/_5"
 				android:layout_marginTop="@dimen/_5"
 				android:layout_marginEnd="@dimen/_5"
 				android:layout_marginBottom="@dimen/_5"
 				app:cardBackgroundColor="@color/color_cardview_bg"
 				app:cardCornerRadius="@dimen/_5">
-
-				<!-- Site favicon indicator (hidden by default) -->
-				<ImageView
-					android:id="@+id/img_site_favicon"
-					android:layout_width="@dimen/_20"
-					android:layout_height="wrap_content"
-					android:layout_gravity="start|top"
-					android:layout_marginStart="@dimen/_5"
-					android:layout_marginTop="@dimen/_5"
-					android:adjustViewBounds="true"
-					android:elevation="@dimen/_5"
-					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_information"
-					android:visibility="visible"
-					tools:ignore="ImageContrastCheck" />
 
 				<!-- File thumbnail image with fallback -->
 				<ImageView
@@ -66,6 +51,54 @@
 					android:src="@drawable/image_no_thumb_available"
 					tools:ignore="ImageContrastCheck" />
 
+				<!-- Play indicator overlay for media files (hidden by default) -->
+				<ImageView
+					android:id="@+id/img_media_play_indicator"
+					android:layout_width="@dimen/_20"
+					android:layout_height="wrap_content"
+					android:layout_gravity="center"
+					android:adjustViewBounds="true"
+					android:alpha="0.8"
+					android:elevation="@dimen/_5"
+					android:importantForAccessibility="no"
+					android:src="@drawable/image_media_play"
+					android:tint="@color/color_on_primary"
+					android:visibility="gone"
+					tools:ignore="ImageContrastCheck" />
+
+				<!-- Site favicon indicator (hidden by default) -->
+				<ImageView
+					android:id="@+id/img_site_favicon"
+					android:layout_width="@dimen/_20"
+					android:layout_height="wrap_content"
+					android:layout_gravity="start|top"
+					android:layout_marginStart="@dimen/_5"
+					android:layout_marginTop="@dimen/_5"
+					android:adjustViewBounds="true"
+					android:elevation="@dimen/_5"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_information"
+					android:visibility="gone"
+					tools:ignore="ImageContrastCheck" />
+
+				<!-- File type indicator -->
+				<ImageView
+					android:id="@+id/img_file_type_indicator"
+					android:layout_width="@dimen/_20"
+					android:layout_height="wrap_content"
+					android:layout_gravity="start|bottom"
+					android:layout_marginStart="@dimen/_5"
+					android:layout_marginTop="@dimen/_5"
+					android:layout_marginBottom="@dimen/_5"
+					android:adjustViewBounds="true"
+					android:background="@drawable/rounded_transparent_black"
+					android:elevation="@dimen/_2"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_video"
+					android:tint="@color/color_on_primary"
+					android:visibility="visible"
+					tools:ignore="ImageContrastCheck" />
+
 				<!-- Selection checkbox image indicator -->
 				<ImageView
 					android:id="@+id/img_checkbox_selection"
@@ -74,7 +107,7 @@
 					android:layout_alignParentStart="true"
 					android:layout_gravity="center_vertical|center_horizontal"
 					android:adjustViewBounds="true"
-					android:elevation="@dimen/_2"
+					android:elevation="@dimen/_5"
 					android:importantForAccessibility="no"
 					android:src="@drawable/media3_icon_check_circle_filled"
 					android:tint="@color/color_secondary"
@@ -82,7 +115,7 @@
 
 			</androidx.cardview.widget.CardView>
 
-			<!-- Container for file info (name and status) -->
+			<!-- Container for file info (name and details) -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -91,7 +124,7 @@
 				android:layout_toEndOf="@id/container_img_thumbnail"
 				android:orientation="vertical">
 
-				<!-- File name and status indicator row -->
+				<!-- File name and open option button row -->
 				<RelativeLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content">
@@ -107,12 +140,12 @@
 						android:gravity="center_vertical"
 						android:maxLines="2"
 						android:singleLine="false"
-						android:textFontWeight="500"
 						android:text="@string/text_sample_video_file_name"
 						android:textColor="@color/color_text_primary"
+						android:textFontWeight="500"
 						android:textSize="@dimen/normal_text_size_small" />
 
-					<!-- Status indicator icon -->
+					<!-- Open option button -->
 					<ImageView
 						android:id="@+id/img_status_indicator"
 						android:layout_width="wrap_content"
@@ -132,7 +165,6 @@
 				<RelativeLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_marginTop="@dimen/_2"
 					android:background="@drawable/rounded_surface_color"
 					android:orientation="horizontal">
 
@@ -152,8 +184,8 @@
 						android:singleLine="true"
 						android:text="@string/text__"
 						android:textColor="@color/color_text_hint"
+						android:textFontWeight="300"
 						android:textSize="@dimen/smallest_text_size"
-						android:textStyle="italic"
 						tools:ignore="TextContrastCheck" />
 				</RelativeLayout>
 			</LinearLayout>

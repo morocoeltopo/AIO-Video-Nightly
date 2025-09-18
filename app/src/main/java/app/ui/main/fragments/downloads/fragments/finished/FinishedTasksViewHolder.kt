@@ -343,18 +343,27 @@ class FinishedTasksViewHolder(val layout: View) {
 		}
 	}
 
-	private fun updateFileTypeIndicator(downloadDataModel: DownloadDataModel){
+	/**
+	 * Updates the file type indicator icon in the UI based on the file type
+	 * detected from the download model's file name.
+	 *
+	 * @param downloadDataModel The model containing information about the downloaded file
+	 */
+	private fun updateFileTypeIndicator(downloadDataModel: DownloadDataModel) {
 		logger.d("Updating file type indicator for download ID: ${downloadDataModel.id}")
-		// Show file type indicator based on file name
-		fileTypeIndicator.setImageResource(when {
-			isImageByName(downloadDataModel.fileName) -> R.drawable.ic_button_images
-			isAudioByName(downloadDataModel.fileName) -> R.drawable.ic_button_audio
-			isVideoByName(downloadDataModel.fileName) -> R.drawable.ic_button_video
-			isDocumentByName(downloadDataModel.fileName) -> R.drawable.ic_button_document
-			isArchiveByName(downloadDataModel.fileName) -> R.drawable.ic_button_archives
-			isProgramByName(downloadDataModel.fileName) -> R.drawable.ic_button_programs
-			else -> R.drawable.ic_button_file
-		})
+
+		// Determine the correct icon by checking file type via file name
+		fileTypeIndicator.setImageResource(
+			when {
+				isImageByName(downloadDataModel.fileName) -> R.drawable.ic_button_images   // Image files
+				isAudioByName(downloadDataModel.fileName) -> R.drawable.ic_button_audio    // Audio files
+				isVideoByName(downloadDataModel.fileName) -> R.drawable.ic_button_video    // Video files
+				isDocumentByName(downloadDataModel.fileName) -> R.drawable.ic_button_document // Documents
+				isArchiveByName(downloadDataModel.fileName) -> R.drawable.ic_button_archives  // Archives
+				isProgramByName(downloadDataModel.fileName) -> R.drawable.ic_button_programs  // Executables/programs
+				else -> R.drawable.ic_button_file // Default for unknown file types
+			}
+		)
 	}
 
 	/**
