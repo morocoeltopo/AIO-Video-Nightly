@@ -147,7 +147,7 @@
 	<string name="text_clear_from_list">Clear from list</string>
 	<string name="text_media_file_has_deleted">Media file has been deleted.</string>
 	<string name="title_show_download_info">Show Download Info…</string>
-	<string name="title_rename_the_file">Rename File</string>
+	<string name="title_rename_the_file">Rename The File</string>
 	<string name="text_you_dont_have_any_downloads"><b>You don\'t have any downloads</b>\nGo and download something!</string>
 	<string name="text_share_with_others">Share with others</string>
 	<string name="title_open_link_in_browser">Open With Browser</string>
@@ -399,7 +399,7 @@
 	<string name="text_web_how_to_guide_2">Choose a <b><u>video resolution</u></b> from the available detected video links. <b>Tip*</b> Higher resolutions give better quality.</string>
 	<string name="text_web_how_to_guide_3">Now, click on the <b><u>Download button</u></b> to start downloading. You can see the <b><u>download progress</u></b> at the <b><u>Tasks</u></b> section.</string>
 	<string name="title_internet">Internet</string>
-	<string name="title_show_download_information">Download Information…</string>
+	<string name="title_download_system_information">Download System Information…</string>
 	<string name="text_file_name_will_be_renamed"><b><u>The actual file name</u></b> on disk will be changed.</string>
 	<string name="title_experimental_feature">Experimental Feature</string>
 	<string name="text_feature_is_experimental_msg">This feature is currently experimental. <b>We don\'t recommend switching the language.</b></string>
@@ -541,11 +541,14 @@
 	<string name="title_successfully_cleared">Successfully Cleared</string>
 	<string name="title_successfully_deleted">Successfully Deleted</string>
 	<string name="title_open_website">Open Website</string>
-	<string name="title_fix_unseekable_mp4_videos">Fix Unseekable Mp4 Files (Risky)</string>
+	<string name="title_fix_unseekable_mp4_file_risky">Fix Unseekable Mp4 Files (Risky)</string>
 	<string name="title_fixing_mp4_file_please_wait">Fixing Mp4 File, Please Wait…</string>
 	<string name="text_msg_of_fixing_unseekable_mp4_files">This is an advanced and potentially risky operation that may <b>corrupt the video file altogether.</b></string>
 	<string name="title_fixing_done_successfully">Fixed Mp4 File Successfully</string>
 	<string name="title_fixed_mp4_file">Fix MP4 File</string>
 	<string name="title_go_back_to_finished_tasks">Downloaded Files</string>
+	<string name="title_convert_video_file_to_mp3_audio">Convert Video File To MP3 Audio</string>
+	<string name="title_open_externally">Open Externally</string>
+	<string name="title_play_the_media">Play The Media</string>
 
 </resources>

@@ -94,7 +94,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					R.id.btn_rename_download,
 					R.id.btn_discover_more,
 					R.id.btn_move_to_private,
-					R.id.btn_remove_thumbanil,
+					R.id.btn_remove_thumbnail,
 					R.id.btn_fix_unseekable_mp4_file,
 					R.id.btn_show_download_information
 				).toIntArray()
@@ -159,7 +159,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				R.id.btn_rename_download -> renameFile()
 				R.id.btn_discover_more -> discoverMore()
 				R.id.btn_move_to_private -> moveToPrivate()
-				R.id.btn_remove_thumbanil -> removeThumbnail()
+				R.id.btn_remove_thumbnail -> removeThumbnail()
 				R.id.btn_fix_unseekable_mp4_file -> fixUnseekableMp4s()
 				R.id.btn_show_download_information -> downloadInfo()
 			}
@@ -223,6 +223,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					logger.d("Non-media file, hiding duration container")
 					findViewById<View>(R.id.container_media_duration).visibility = View.GONE
 					findViewById<View>(R.id.img_media_play_indicator).visibility = View.GONE
+					findViewById<View>(R.id.container_mp4_file_fix).visibility = View.GONE
 				}
 			}
 		}

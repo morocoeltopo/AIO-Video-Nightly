@@ -110,7 +110,6 @@
 						android:textSize="@dimen/small_text_size"
 						android:textStyle="normal"
 						tools:ignore="TextContrastCheck" />
-
 				</LinearLayout>
 
 				<!-- Selection checkbox image indicator -->
@@ -202,7 +201,6 @@
 						android:textSize="@dimen/smaller_text_size"
 						tools:ignore="TextContrastCheck" />
 				</RelativeLayout>
-
 			</LinearLayout>
 		</RelativeLayout>
 	</androidx.cardview.widget.CardView>
