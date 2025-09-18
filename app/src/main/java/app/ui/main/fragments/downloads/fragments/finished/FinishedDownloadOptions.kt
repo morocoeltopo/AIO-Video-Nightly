@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.view.View
+import android.view.View.GONE
 import android.view.View.OnClickListener
 import android.view.View.VISIBLE
 import android.widget.ImageView
@@ -218,16 +219,20 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					else getText(R.string.title_hide_thumbnail))
 				}
 
-				if (isAudioByName(downloadModel.fileName)) txtPlayTheFile.text = getText(R.string.title_play_the_audio)
-				else if (isVideoByName(downloadModel.fileName)) txtPlayTheFile.text = getText(R.string.title_play_the_video)
+				if (isAudioByName(downloadModel.fileName)) txtPlayTheFile.text =
+					getText(R.string.title_play_the_audio)
+				else if (isVideoByName(downloadModel.fileName)) txtPlayTheFile.text =
+					getText(R.string.title_play_the_video)
 				else txtPlayTheFile.text = getText(R.string.title_open_the_file)
 
 				if (isMediaFile(downloadModel)) {
 					logger.d("Media file detected, showing all related view containers")
-					btnConvertMp4ToAudio.visibility = VISIBLE
-					btnFixUnseekableMp4VideoFiles.visibility = VISIBLE
-					imgMediaPlayIndicator.apply { showView(this, true) }
+					btnConvertMp4ToAudio.visibility =
+						if (isVideoByName(downloadModel.fileName)) VISIBLE else GONE
+					btnFixUnseekableMp4VideoFiles.visibility =
+						if (isVideoByName(downloadModel.fileName)) VISIBLE else GONE
 
+					imgMediaPlayIndicator.apply { showView(this, true) }
 					containerMediaDuration.apply {
 						val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
 						val playbackTimeString =
@@ -240,10 +245,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					}
 				} else {
 					logger.d("Non-media file, hiding duration container")
-					containerMediaDuration.visibility = View.GONE
-					imgMediaPlayIndicator.visibility = View.GONE
-					btnConvertMp4ToAudio.visibility = View.GONE
-					btnFixUnseekableMp4VideoFiles.visibility = View.GONE
+					containerMediaDuration.visibility = GONE
+					imgMediaPlayIndicator.visibility = GONE
+					btnConvertMp4ToAudio.visibility = GONE
+					btnFixUnseekableMp4VideoFiles.visibility = GONE
 				}
 			}
 		}
@@ -357,7 +362,6 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-
 
 	/**
 	 * Checks if video thumbnails are allowed for this download based on settings.
@@ -520,7 +524,6 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			}
 		}
 	}
-
 
 	private fun copySiteLink() {
 		downloadDataModel?.siteReferrer?.takeIf { isValidURL(it) }?.let { fileUrl ->
@@ -767,7 +770,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					it.setText(R.string.text_msg_of_fixing_unseekable_mp4_files)
 				}, positiveButtonTextCustomize = {
 					it.setLeftSideDrawable(R.drawable.ic_button_fix_hand)
-					it.setText(R.string.title_fixed_mp4_file)
+					it.setText(R.string.title_proceed_anyway)
 
 				}
 			)?.apply {

@@ -545,7 +545,7 @@
 	<string name="title_fixing_mp4_file_please_wait">Fixing Mp4 File, Please Wait…</string>
 	<string name="text_msg_of_fixing_unseekable_mp4_files">This is an advanced and potentially risky operation that may <b>corrupt the video file altogether.</b></string>
 	<string name="title_fixing_mp4_done_successfully">Fixed Mp4 File Successfully</string>
-	<string name="title_fixed_mp4_file">Fix MP4 File</string>
+	<string name="title_proceed_anyway">Proceed Anyway</string>
 	<string name="title_go_back_to_finished_tasks">Downloaded Files</string>
 	<string name="title_convert_video_file_to_mp3_audio">Convert Video File To MP3 Audio</string>
 	<string name="title_open_externally">Open Externally</string>
