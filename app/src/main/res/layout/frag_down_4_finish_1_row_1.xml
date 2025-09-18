@@ -81,6 +81,22 @@
 					android:visibility="gone"
 					tools:ignore="ImageContrastCheck" />
 
+				<!-- File type indicator -->
+				<ImageView
+					android:id="@+id/img_file_type_indicator"
+					android:layout_width="@dimen/_20"
+					android:layout_height="wrap_content"
+					android:layout_gravity="start|bottom"
+					android:layout_marginStart="@dimen/_5"
+					android:layout_marginTop="@dimen/_5"
+					android:adjustViewBounds="true"
+					android:elevation="@dimen/_5"
+					android:tint="@color/color_secondary"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_video"
+					android:visibility="visible"
+					tools:ignore="ImageContrastCheck" />
+
 				<!-- Media duration indicator container (hidden by default) -->
 				<LinearLayout
 					android:id="@+id/container_media_duration"

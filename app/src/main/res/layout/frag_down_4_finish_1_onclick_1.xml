@@ -78,7 +78,7 @@
 						android:src="@drawable/image_no_thumb_available"
 						tools:ignore="ImageContrastCheck" />
 
-					<!-- Site favicon indicator (hidden by default) -->
+					<!-- Site favicon indicator -->
 					<ImageView
 						android:id="@+id/img_site_favicon"
 						android:layout_width="@dimen/_15"
@@ -90,6 +90,22 @@
 						android:elevation="@dimen/_5"
 						android:importantForAccessibility="no"
 						android:src="@drawable/ic_button_information"
+						android:visibility="visible"
+						tools:ignore="ImageContrastCheck" />
+
+					<!-- File type indicator -->
+					<ImageView
+						android:id="@+id/img_file_type_indicator"
+						android:layout_width="@dimen/_16"
+						android:layout_height="wrap_content"
+						android:layout_gravity="start|bottom"
+						android:layout_marginStart="@dimen/_5"
+						android:layout_marginTop="@dimen/_5"
+						android:adjustViewBounds="true"
+						android:elevation="@dimen/_5"
+						android:tint="@color/color_secondary"
+						android:importantForAccessibility="no"
+						android:src="@drawable/ic_button_video"
 						android:visibility="visible"
 						tools:ignore="ImageContrastCheck" />
 

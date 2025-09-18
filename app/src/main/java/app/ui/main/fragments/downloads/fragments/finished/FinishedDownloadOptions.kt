@@ -34,7 +34,11 @@ import lib.device.ShareUtility.openApkFile
 import lib.device.ShareUtility.openFile
 import lib.device.ShareUtility.shareMediaFile
 import lib.files.FileSystemUtility.endsWithExtension
+import lib.files.FileSystemUtility.isArchiveByName
 import lib.files.FileSystemUtility.isAudioByName
+import lib.files.FileSystemUtility.isDocumentByName
+import lib.files.FileSystemUtility.isImageByName
+import lib.files.FileSystemUtility.isProgramByName
 import lib.files.FileSystemUtility.isVideo
 import lib.files.FileSystemUtility.isVideoByName
 import lib.files.VideoFilesUtility.moveMoovAtomToStart
@@ -241,6 +245,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				val containerMediaDuration = findViewById<View>(R.id.container_media_duration)
 				val txtMediaPlaybackDuration = findViewById<TextView>(R.id.txt_media_duration)
 				val imgMediaPlayIndicator = findViewById<View>(R.id.img_media_play_indicator)
+				val imgFileTypeIndicator = findViewById<ImageView>(R.id.img_file_type_indicator)
 
 				// 🔹 Title and subtitle
 				txtFileNameTitle.isSelected = true
@@ -307,6 +312,18 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					btnConvertMp4ToAudio.visibility = GONE
 					btnFixUnseekableMp4VideoFiles.visibility = GONE
 				}
+
+				logger.d("Updating file type indicator image view")
+				// Show file type indicator based on file name
+				imgFileTypeIndicator.setImageResource(when {
+					isImageByName(downloadModel.fileName) -> R.drawable.ic_button_images
+					isAudioByName(downloadModel.fileName) -> R.drawable.ic_button_audio
+					isVideoByName(downloadModel.fileName) -> R.drawable.ic_button_video
+					isDocumentByName(downloadModel.fileName) -> R.drawable.ic_button_document
+					isArchiveByName(downloadModel.fileName) -> R.drawable.ic_button_archives
+					isProgramByName(downloadModel.fileName) -> R.drawable.ic_button_programs
+					else -> R.drawable.ic_button_file
+				})
 			}
 		}
 	}

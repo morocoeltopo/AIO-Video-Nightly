@@ -17,7 +17,11 @@ import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import com.aio.R
 import lib.device.DateTimeUtils.formatLastModifiedDate
 import lib.files.FileSizeFormatter.humanReadableSizeOf
+import lib.files.FileSystemUtility.isArchiveByName
 import lib.files.FileSystemUtility.isAudioByName
+import lib.files.FileSystemUtility.isDocumentByName
+import lib.files.FileSystemUtility.isImageByName
+import lib.files.FileSystemUtility.isProgramByName
 import lib.files.FileSystemUtility.isVideo
 import lib.files.FileSystemUtility.isVideoByName
 import lib.networks.DownloaderUtils.getAudioPlaybackTimeIfAvailable
@@ -61,6 +65,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	private val duration: TextView by lazy { layout.findViewById(R.id.txt_media_duration) }
 	private val durationContainer: View by lazy { layout.findViewById(R.id.container_media_duration) }
 	private val mediaIndicator: View by lazy { layout.findViewById(R.id.img_media_play_indicator) }
+	private val fileTypeIndicator: ImageView by lazy { layout.findViewById(R.id.img_file_type_indicator) }
 
 	/**
 	 * Binds the download data and sets up click listeners.
@@ -89,6 +94,7 @@ class FinishedTasksViewHolder(val layout: View) {
 		updateFilesInfo(downloadDataModel)
 		updateFaviconInfo(downloadDataModel)
 		updateThumbnailInfo(downloadDataModel)
+		updateFileTypeIndicator(downloadDataModel)
 	}
 
 	/**
@@ -335,6 +341,20 @@ class FinishedTasksViewHolder(val layout: View) {
 				logger.d("Failed to generate thumbnail")
 			}
 		}
+	}
+
+	private fun updateFileTypeIndicator(downloadDataModel: DownloadDataModel){
+		logger.d("Updating file type indicator for download ID: ${downloadDataModel.id}")
+		// Show file type indicator based on file name
+		fileTypeIndicator.setImageResource(when {
+			isImageByName(downloadDataModel.fileName) -> R.drawable.ic_button_images
+			isAudioByName(downloadDataModel.fileName) -> R.drawable.ic_button_audio
+			isVideoByName(downloadDataModel.fileName) -> R.drawable.ic_button_video
+			isDocumentByName(downloadDataModel.fileName) -> R.drawable.ic_button_document
+			isArchiveByName(downloadDataModel.fileName) -> R.drawable.ic_button_archives
+			isProgramByName(downloadDataModel.fileName) -> R.drawable.ic_button_programs
+			else -> R.drawable.ic_button_file
+		})
 	}
 
 	/**
