@@ -570,10 +570,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	private fun copyDownloadFileLink() {
 		downloadDataModel?.fileURL?.takeIf { isValidURL(it) }?.let { fileUrl ->
 			copyTextToClipboard(safeMotherActivityRef, fileUrl)
-			showToast(getText(string.text_file_url_has_been_copied))
+			showToast(getText(string.title_file_url_has_been_copied))
 			close()
 		} ?: run {
-			showToast(getText(string.text_dont_have_anything_to_copy))
+			showToast(getText(string.title_dont_have_anything_to_copy))
 		}
 	}
 	
@@ -641,7 +641,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				R.id.btn_copy_download_url to { copyDownloadFileLink() },
 				R.id.btn_share_download_url to { shareDownloadFileLink() },
 				R.id.btn_discover_more to { openDownloadReferrerLink() },
-				R.id.btn_show_download_information to { openDownloadInfoTracker() }
+				R.id.btn_download_system_information to { openDownloadInfoTracker() }
 			)
 			
 			// Set up click listeners for all buttons

@@ -16,6 +16,7 @@ import androidx.core.content.res.ResourcesCompat.getDrawable
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import app.core.AIOApp.Companion.INSTANCE
+import app.core.AIOApp.Companion.aioFavicons
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
@@ -32,14 +33,17 @@ import lib.device.ShareUtility.openFile
 import lib.device.ShareUtility.shareMediaFile
 import lib.files.FileSystemUtility.endsWithExtension
 import lib.files.FileSystemUtility.isAudioByName
+import lib.files.FileSystemUtility.isVideo
 import lib.files.FileSystemUtility.isVideoByName
 import lib.files.VideoFilesUtility.moveMoovAtomToStart
+import lib.networks.URLUtility.isValidURL
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
+import lib.texts.ClipboardUtils.copyTextToClipboard
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ActivityAnimator.animActivityFade
 import lib.ui.MsgDialogUtils
@@ -87,7 +91,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				layout = dialogBuilder.view,
 				ids = listOf(
 					R.id.btn_file_info_card,
+					R.id.btn_play_the_media,
 					R.id.btn_open_download_file,
+					R.id.btn_copy_site_link,
 					R.id.btn_share_download_file,
 					R.id.btn_clear_download,
 					R.id.btn_delete_download,
@@ -96,7 +102,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					R.id.btn_move_to_private,
 					R.id.btn_remove_thumbnail,
 					R.id.btn_fix_unseekable_mp4_file,
-					R.id.btn_show_download_information
+					R.id.btn_mp4_to_mp3_convert,
+					R.id.btn_download_system_information
 				).toIntArray()
 			)
 			logger.d("Dialog builder initialized with click listeners")
@@ -114,7 +121,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				dialogBuilder?.let { dialogBuilder ->
 					if (!dialogBuilder.isShowing) {
 						setDownloadModel(dataModel)
-						updateTitleAndThumbnails(dataModel)
+						updateDialogViewsWith(dataModel)
 						dialogBuilder.show()
 						logger.d("Options dialog shown successfully")
 					} else {
@@ -152,7 +159,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			logger.d("Option button clicked: ${view.id}")
 			when (view.id) {
 				R.id.btn_file_info_card -> playTheMedia()
+				R.id.btn_play_the_media -> playTheMedia()
 				R.id.btn_open_download_file -> openFile()
+				R.id.btn_copy_site_link -> copySiteLink()
 				R.id.btn_share_download_file -> shareFile()
 				R.id.btn_clear_download -> clearFromList()
 				R.id.btn_delete_download -> deleteFile()
@@ -161,7 +170,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				R.id.btn_move_to_private -> moveToPrivate()
 				R.id.btn_remove_thumbnail -> removeThumbnail()
 				R.id.btn_fix_unseekable_mp4_file -> fixUnseekableMp4s()
-				R.id.btn_show_download_information -> downloadInfo()
+				R.id.btn_download_system_information -> downloadInfo()
 			}
 		}
 	}
@@ -170,20 +179,27 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Updates the dialog's title and thumbnail views with download information.
 	 * @param downloadModel The download data model containing the information to display
 	 */
-	private fun updateTitleAndThumbnails(downloadModel: DownloadDataModel) {
+	private fun updateDialogViewsWith(downloadModel: DownloadDataModel) {
 		logger.d("Updating title and thumbnails for download ID: ${downloadModel.id}")
 		dialogBuilder?.let { dialogBuilder ->
 			dialogBuilder.view.apply {
-				findViewById<TextView>(R.id.txt_file_url).apply {
-					text = downloadModel.fileURL
-				}
+				val txtFileUrlSubTitle = findViewById<TextView>(R.id.txt_file_url)
+				val txtFileNameTitle = findViewById<TextView>(R.id.txt_file_title)
+				val txtPlayTheFile = findViewById<TextView>(R.id.txt_play_the_media)
+				val imgFileThumbnail = findViewById<ImageView>(R.id.img_file_thumbnail)
+				val imgFileFavicon = findViewById<ImageView>(R.id.img_site_favicon)
+				val btnToggleThumbnail = findViewById<TextView>(R.id.txt_remove_thumbnail)
+				val btnConvertMp4ToAudio = findViewById<View>(R.id.btn_mp4_to_mp3_convert)
+				val btnFixUnseekableMp4VideoFiles = findViewById<View>(R.id.container_mp4_file_fix)
+				val containerMediaDuration = findViewById<View>(R.id.container_media_duration)
+				val txtMediaPlaybackDuration = findViewById<TextView>(R.id.txt_media_duration)
+				val imgMediaPlayIndicator = findViewById<View>(R.id.img_media_play_indicator)
 
-				findViewById<TextView>(R.id.txt_file_title).apply {
-					isSelected = true
-					text = downloadModel.fileName
-				}
+				txtFileNameTitle.isSelected = true
+				txtFileNameTitle.text = downloadModel.fileName
+				txtFileUrlSubTitle.text = downloadModel.fileURL
 
-				findViewById<ImageView>(R.id.img_file_thumbnail).apply {
+				imgFileThumbnail.apply {
 					if (!downloadModel.globalSettings.downloadHideVideoThumbnail) {
 						logger.d("Video thumbnails are enabled, updating thumbnail")
 						updateThumbnail(this, downloadModel)
@@ -194,39 +210,91 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					}
 				}
 
-				findViewById<TextView>(R.id.txt_remove_thumbnail).apply {
+				updateFaviconInfo(downloadModel, imgFileFavicon)
+
+				btnToggleThumbnail.apply {
 					val thumbnailSetting = downloadModel.globalSettings.downloadHideVideoThumbnail
 					text = (if (thumbnailSetting) getText(R.string.title_show_thumbnail)
 					else getText(R.string.title_hide_thumbnail))
 				}
 
-				if (isAudioByName(downloadModel.fileName) || isVideoByName(downloadModel.fileName)) {
-					logger.d("Media file detected, showing duration container")
-					findViewById<View>(R.id.container_mp4_file_fix).visibility = VISIBLE
+				if (isAudioByName(downloadModel.fileName)) txtPlayTheFile.text = getText(R.string.title_play_the_audio)
+				else if (isVideoByName(downloadModel.fileName)) txtPlayTheFile.text = getText(R.string.title_play_the_video)
+				else txtPlayTheFile.text = getText(R.string.title_open_the_file)
 
-					findViewById<View>(R.id.container_media_duration).apply {
-						val mediaIndicator = findViewById<TextView>(R.id.txt_media_duration)
+				if (isMediaFile(downloadModel)) {
+					logger.d("Media file detected, showing all related view containers")
+					btnConvertMp4ToAudio.visibility = VISIBLE
+					btnFixUnseekableMp4VideoFiles.visibility = VISIBLE
+					imgMediaPlayIndicator.apply { showView(this, true) }
+
+					containerMediaDuration.apply {
 						val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
-						val playbackTime =
+						val playbackTimeString =
 							mediaFilePlaybackDuration.replace("(", "").replace(")", "")
-						if (playbackTime.isNotEmpty()) {
-							showView(targetView = this, shouldAnimate = true)
-							showView(targetView = mediaIndicator, shouldAnimate = true)
-							mediaIndicator.text = playbackTime
+						if (playbackTimeString.isNotEmpty()) {
+							showView(this, true)
+							showView(txtMediaPlaybackDuration, true)
+							txtMediaPlaybackDuration.text = playbackTimeString
 						}
-					}
-
-					findViewById<View>(R.id.img_media_play_indicator).apply {
-						showView(targetView = this, shouldAnimate = true)
 					}
 				} else {
 					logger.d("Non-media file, hiding duration container")
-					findViewById<View>(R.id.container_media_duration).visibility = View.GONE
-					findViewById<View>(R.id.img_media_play_indicator).visibility = View.GONE
-					findViewById<View>(R.id.container_mp4_file_fix).visibility = View.GONE
+					containerMediaDuration.visibility = View.GONE
+					imgMediaPlayIndicator.visibility = View.GONE
+					btnConvertMp4ToAudio.visibility = View.GONE
+					btnFixUnseekableMp4VideoFiles.visibility = View.GONE
 				}
 			}
 		}
+	}
+
+	/**
+	 * Loads and sets the favicon for the given download item.
+	 * Attempts to load a favicon from cache (via AIOApp.aioFavicons). If unavailable,
+	 * falls back to a default drawable.
+	 *
+	 * @param downloadDataModel The download data model containing the site referrer
+	 */
+	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel, imgFavicon: ImageView) {
+		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
+		val defaultFaviconResId = R.drawable.ic_button_information
+		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
+
+		// Skip favicon loading if video thumbnails are not allowed
+		if (isVideoThumbnailNotAllowed(downloadDataModel)) {
+			logger.d("Video thumbnails not allowed, using default favicon")
+			executeOnMainThread { imgFavicon.setImageDrawable(defaultFaviconDrawable) }
+			return
+		}
+
+		ThreadsUtility.executeInBackground(codeBlock = {
+			val referralSite = downloadDataModel.siteReferrer
+			logger.d("Loading favicon for site: $referralSite")
+			aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
+				val faviconImgFile = File(faviconFilePath)
+				if (!faviconImgFile.exists() || !faviconImgFile.isFile) {
+					logger.d("Favicon file not found")
+					return@executeInBackground
+				}
+				val faviconImgURI = faviconImgFile.toUri()
+				ThreadsUtility.executeOnMain(codeBlock = {
+					try {
+						logger.d("Setting favicon from URI")
+						showView(imgFavicon, true)
+						imgFavicon.setImageURI(faviconImgURI)
+					} catch (error: Exception) {
+						logger.d("Error setting favicon: ${error.message}")
+						error.printStackTrace()
+						showView(imgFavicon, true)
+						imgFavicon.setImageResource(defaultFaviconResId)
+					}
+				})
+			}
+		}, errorHandler = {
+			logger.d("Error loading favicon: ${it.message}")
+			it.printStackTrace()
+		})
 	}
 
 	/**
@@ -288,6 +356,20 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				logger.d("Failed to generate thumbnail from file/URL")
 			}
 		}
+	}
+
+
+	/**
+	 * Checks if video thumbnails are allowed for this download based on settings.
+	 *
+	 * @param downloadDataModel The download data model
+	 * @return true if thumbnails are not allowed, false otherwise
+	 */
+	private fun isVideoThumbnailNotAllowed(downloadDataModel: DownloadDataModel): Boolean {
+		val isVideoHidden = downloadDataModel.globalSettings.downloadHideVideoThumbnail
+		val result = isVideo(downloadDataModel.getDestinationDocumentFile()) && isVideoHidden
+		logger.d("Video thumbnail allowed: ${!result}")
+		return result
 	}
 
 	/**
@@ -378,7 +460,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
 				dialogBuilder?.let { _ ->
 					downloadDataModel?.let {
-						if (isAudioByName(it.fileName) || isVideoByName(it.fileName)) {
+						if (isMediaFile(it)) {
 							logger.d("Starting MediaPlayerActivity for audio/video file")
 							// Start media player activity for audio/video files
 							safeMotherActivityRef.startActivity(
@@ -409,6 +491,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 		}
 	}
 
+	private fun isMediaFile(downloadModel: DownloadDataModel): Boolean =
+		isAudioByName(downloadModel.fileName) || isVideoByName(downloadModel.fileName)
+
 	/**
 	 * Opens the downloaded file using appropriate application.
 	 * Handles APK files specially with proper installation flow.
@@ -434,6 +519,15 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				}
 			}
 		}
+	}
+
+
+	private fun copySiteLink() {
+		downloadDataModel?.siteReferrer?.takeIf { isValidURL(it) }?.let { fileUrl ->
+			copyTextToClipboard(safeMotherActivityRef, fileUrl)
+			showToast(getText(R.string.title_file_url_has_been_copied))
+			close()
+		} ?: run { showToast(getText(R.string.title_dont_have_anything_to_copy)) }
 	}
 
 	/**
@@ -698,7 +792,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 							downloadDataModel?.getDestinationFile()
 							moveMoovAtomToStart(destinationFile, destinationFile)
 							ThreadsUtility.executeOnMain {
-								showToast(msgId = R.string.title_fixing_done_successfully)
+								showToast(msgId = R.string.title_fixing_mp4_done_successfully)
 								waitingDialog.close()
 							}
 						} catch (error: Exception) {

@@ -51,8 +51,8 @@
 	<string name="title_invalid_file_url">Invalid File URL</string>
 	<string name="text_dont_have_anything_to_share">You don\'t have anything to share</string>
 	<string name="text_share_download_file_url">Share download file URL…</string>
-	<string name="text_dont_have_anything_to_copy">You don\'t have anything to copy</string>
-	<string name="text_file_url_has_been_copied">URL has been copied to clipboard.</string>
+	<string name="title_dont_have_anything_to_copy">You Don\'t Have Anything To Copy</string>
+	<string name="title_file_url_has_been_copied">URL\'s Been Copied To Clipboard.</string>
 	<string name="text_cant_rename_on_active_download">You cannot rename the file while the download is in progress. <b>Please pause it first.</b></string>
 	<string name="title_delete_file">Delete File</string>
 	<string name="text_are_you_sure_about_delete">Are you sure you want to permanently delete this file? <b>Once deleted, it cannot be undone.</b></string>
@@ -544,11 +544,13 @@
 	<string name="title_fix_unseekable_mp4_file_risky">Fix Unseekable Mp4 Files (Risky)</string>
 	<string name="title_fixing_mp4_file_please_wait">Fixing Mp4 File, Please Wait…</string>
 	<string name="text_msg_of_fixing_unseekable_mp4_files">This is an advanced and potentially risky operation that may <b>corrupt the video file altogether.</b></string>
-	<string name="title_fixing_done_successfully">Fixed Mp4 File Successfully</string>
+	<string name="title_fixing_mp4_done_successfully">Fixed Mp4 File Successfully</string>
 	<string name="title_fixed_mp4_file">Fix MP4 File</string>
 	<string name="title_go_back_to_finished_tasks">Downloaded Files</string>
 	<string name="title_convert_video_file_to_mp3_audio">Convert Video File To MP3 Audio</string>
 	<string name="title_open_externally">Open Externally</string>
-	<string name="title_play_the_media">Play The Media</string>
+	<string name="title_play_the_video">Play The Video</string>
+	<string name="title_play_the_audio">Play The Audio</string>
+	<string name="title_copy_site_link">Copy Site Link</string>
 
 </resources>

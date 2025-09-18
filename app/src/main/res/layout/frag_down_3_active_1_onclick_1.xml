@@ -453,7 +453,7 @@
 
 				<!-- Show download info button -->
 				<LinearLayout
-					android:id="@+id/btn_show_download_information"
+					android:id="@+id/btn_download_system_information"
 					android:layout_width="0dp"
 					android:layout_height="match_parent"
 					android:layout_marginStart="@dimen/_8"
