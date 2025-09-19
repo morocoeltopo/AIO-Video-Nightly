@@ -96,16 +96,18 @@
 					<!-- File type indicator -->
 					<ImageView
 						android:id="@+id/img_file_type_indicator"
-						android:layout_width="@dimen/_16"
+						android:layout_width="@dimen/_15"
 						android:layout_height="wrap_content"
 						android:layout_gravity="start|bottom"
 						android:layout_marginStart="@dimen/_5"
 						android:layout_marginTop="@dimen/_5"
+						android:layout_marginBottom="@dimen/_5"
 						android:adjustViewBounds="true"
-						android:elevation="@dimen/_5"
-						android:tint="@color/color_secondary"
+						android:background="@drawable/rounded_transparent_black"
+						android:elevation="@dimen/_2"
 						android:importantForAccessibility="no"
 						android:src="@drawable/ic_button_video"
+						android:tint="@color/color_on_primary"
 						android:visibility="visible"
 						tools:ignore="ImageContrastCheck" />
 

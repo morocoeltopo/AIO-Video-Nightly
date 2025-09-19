@@ -552,5 +552,7 @@
 	<string name="title_play_the_video">Play The Video</string>
 	<string name="title_play_the_audio">Play The Audio</string>
 	<string name="title_copy_site_link">Copy Site Link</string>
+	<string name="title_speed_limiter">Speed Limiter</string>
+	<string name="title_update_link">Update File Link</string>
 
 </resources>
