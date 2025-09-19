@@ -114,7 +114,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 				webView.goBack()
 			} else {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_reached_limit_for_going_back)
+				showToast(msgId = R.string.title_reached_limit_for_going_back)
 			}
 		}
 	}
@@ -129,7 +129,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 				webView.goForward()
 			} else {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_reached_limit_for_going_forward)
+				showToast(msgId = R.string.title_reached_limit_for_going_forward)
 			}
 		}
 	}
@@ -144,7 +144,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			val currentWebpageTitle = getCurrentWebpageTitle()
 			if (currentWebpageUrl.isNullOrEmpty()) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_invalid_webpage_url)
+				showToast(msgId = R.string.title_webpage_url_invalid)
 				return
 			}
 			aioBookmark.getBookmarkLibrary().add(0, BookmarkModel().apply {
@@ -173,7 +173,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			val currentWebviewUrl = getCurrentWebpageURL()
 			if (currentWebviewUrl == null) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_invalid_webpage_url)
+				showToast(msgId = R.string.title_webpage_url_invalid)
 				return
 			}
 			
@@ -202,7 +202,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			val currentWebpageUrl = getCurrentWebpageURL()
 			if (currentWebpageUrl.isNullOrEmpty()) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_invalid_webpage_url)
+				showToast(msgId = R.string.title_webpage_url_invalid)
 				return
 			}
 			

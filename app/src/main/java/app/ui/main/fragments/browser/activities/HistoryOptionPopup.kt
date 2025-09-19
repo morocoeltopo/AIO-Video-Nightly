@@ -86,7 +86,7 @@ class HistoryOptionPopup(
 	private fun copyHistoryToClipboard() {
 		logger.d("Copying history URL to clipboard: ${historyModel.historyUrl}")
 		copyTextToClipboard(safeHistoryActivityRef, historyModel.historyUrl)
-		showToast(msgId = R.string.text_copied_url_to_clipboard)
+		showToast(msgId = R.string.title_copied_url_to_clipboard)
 	}
 
 	/** Open history item in browser */

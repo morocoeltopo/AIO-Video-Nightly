@@ -189,7 +189,7 @@ class BookmarkOptionPopup(
 	private fun copyBookmarkInClipboard() {
 		safeBookmarksActivityRef?.let { activity ->
 			copyTextToClipboard(activity, bookmarkModel.bookmarkUrl)
-			showToast(msgId = R.string.text_copied_url_to_clipboard)
+			showToast(msgId = R.string.title_copied_url_to_clipboard)
 			logger.d("Copied bookmark to clipboard: ${bookmarkModel.bookmarkUrl}")
 		}
 	}

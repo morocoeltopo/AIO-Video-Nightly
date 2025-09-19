@@ -138,7 +138,7 @@ class WebTabListAdapter(
 						if (currentWebUrl.isNotEmpty()) {
 							copyTextToClipboard(safeMotherActivityRef, currentWebUrl)
 							safeMotherActivityRef?.doSomeVibration(50)
-							ToastView.showToast(msgId = R.string.text_copied_url_to_clipboard)
+							ToastView.showToast(msgId = R.string.title_copied_url_to_clipboard)
 						}
 					} catch (error: Exception) {
 						error.printStackTrace()
@@ -159,7 +159,7 @@ class WebTabListAdapter(
 				browserTabUrl.text = removeWwwFromUrl(webpageUrl)
 				if (!title.isNullOrEmpty()) browserTabTitle.text = targetWebview.title.toString()
 				else browserTabTitle.text = webpageUrl.ifEmpty {
-					context.getString(R.string.text_waiting_for_server_to_respond)
+					context.getString(R.string.title_waiting_for_server_to_respond)
 				}
 
 				// Load favicon asynchronously

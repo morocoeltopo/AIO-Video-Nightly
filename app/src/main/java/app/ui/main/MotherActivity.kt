@@ -348,11 +348,11 @@ class MotherActivity : BaseActivity() {
 						it.text = getString(resId, totalWebViews.size.toString())
 					},
 					negativeButtonTextCustomize = {
-						it.setText(R.string.text_exit_the_app)
+						it.setText(R.string.title_exit_now)
 						it.setLeftSideDrawable(R.drawable.ic_button_exit)
 					},
 					positiveButtonTextCustomize = {
-						it.setText(R.string.text_close_tabs)
+						it.setText(R.string.title_close_tabs)
 						it.setLeftSideDrawable(R.drawable.ic_button_cancel)
 					}
 				)

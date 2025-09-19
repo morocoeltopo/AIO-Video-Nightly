@@ -312,7 +312,7 @@ class ExtractedLinksAdapter(
         private fun setupLongClickItemListener(extractedVideoLink: String) {
             itemClickableContainer.setOnLongClickListener {
                 copyTextToClipboard(safeMotherActivity, extractedVideoLink)
-                showToast(msgId = R.string.text_copied_url_to_clipboard)
+                showToast(msgId = R.string.title_copied_url_to_clipboard)
                 return@setOnLongClickListener true
             }
         }

@@ -417,7 +417,7 @@ object VideoFormatsUtils {
      */
     private fun processDownloadLine(input: String): String {
         val stage1 = if (input.contains("Downloading m3u8 information")) {
-            getText(R.string.text_downloading_m3u8_information)
+            getText(R.string.title_downloading_m3u8_information)
         } else input
 
         val stage2 = if (stage1.contains("Downloading")) {
@@ -432,7 +432,7 @@ object VideoFormatsUtils {
      */
     private fun processMergerLine(line: String): String {
         return if (line.contains("Merging formats into"))
-            getText(R.string.text_merging_video_and_audio_format) else line
+            getText(R.string.title_merging_video_and_audio_format) else line
     }
 
     /**
@@ -440,7 +440,7 @@ object VideoFormatsUtils {
      */
     private fun processDeletionLine(line: String): String {
         return if (line.contains("Deleting original file"))
-            getText(R.string.text_finishing_up_the_download) else line
+            getText(R.string.title_finishing_up_the_download) else line
     }
 
     /**
@@ -495,8 +495,8 @@ object VideoFormatsUtils {
      * Detects and replaces session initialization message with localized string.
      */
     private fun formatDownloadLineStage4(input: String): String {
-        val targetPhrase = getText(R.string.text_setting_up_session)
-        return if (input.contains(targetPhrase)) {
+        val targetPhrase = getText(R.string.title_setting_up_download_session)
+        return if (input.contains(other = "session", ignoreCase = true)) {
             targetPhrase
         } else {
             formatDownloadLineStage5(input)
@@ -519,7 +519,7 @@ object VideoFormatsUtils {
      */
     private fun formatDownloadingLineStage6(input: String): String {
         return if (input.startsWith("Downloading") && input.contains("format(s):")) {
-            getText(R.string.text_checking_formats_to_download)
+            getText(R.string.title_checking_formats_to_download)
         } else {
             formatDownloadLineStage7(input)
         }
@@ -548,7 +548,7 @@ object VideoFormatsUtils {
         val regex = """.*/.*\.part-Frag\d+ has already been downloaded""".toRegex()
 
         return if (regex.matches(input)) {
-            getText(R.string.text_validating_already_downloaded_part)
+            getText(R.string.title_validating_already_downloaded_part)
         } else {
             formatDownloadLineStage9(input)
         }
@@ -579,7 +579,7 @@ object VideoFormatsUtils {
             val matchResult = regex.find(input)
             matchResult?.let {
                 INSTANCE.getString(
-                    R.string.text_connection_failed_retrying,
+                    R.string.title_connection_failed_retrying,
                     it.groups[1]?.value, it.groups[2]?.value
                 )
             } ?: input
@@ -593,13 +593,16 @@ object VideoFormatsUtils {
      */
     private fun formatDownloadLineStage11(input: String): String {
         val map = mapOf(
-            "Extracting url" to R.string.text_extracting_source_url,
-            "Checking m3u8 live status" to R.string.text_checking_m3u8_live_status,
-            "Fixing MPEG-TS in MP4 container" to R.string.text_fixing_mpeg_ts_in_mp4_container,
-            "Downloading webpage" to R.string.text_downloading_webpage,
-            "tv client config" to R.string.text_downloading_client_config,
-            "player" to R.string.text_extracting_player_api,
-            "Downloading m3u8 manifest" to R.string.text_downloading_m3u8_manifest,
+            "Extracting url" to R.string.title_extracting_source_url,
+            "Checking m3u8 live status" to R.string.title_checking_m3u8_live_status,
+            "Fixing MPEG-TS in MP4 container" to R.string.title_fixing_mpeg_ts_in_mp4_container,
+            "Downloading webpage" to R.string.title_downloading_webpage,
+            "tv client config" to R.string.title_downloading_client_config,
+            "player" to R.string.title_extracting_player_api,
+            "Downloading m3u8 manifest" to R.string.title_downloading_m3u8_manifest,
+            "Downloading media JSON metadata" to R.string.title_downloading_media_json_metadata,
+            "Downloading metadata JSON" to R.string.title_downloading_metadata_json,
+            "Downloading video info" to R.string.title_downloading_video_info,
         )
         return map.entries.firstOrNull { input.contains(it.key, true) }
             ?.let { getText(it.value) }
