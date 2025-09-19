@@ -198,10 +198,9 @@
 	<string name="text_allow_the_permissions">Allow the permissions</string>
 	<string name="text_press_back_button_to_exit">Press back once more to exit.</string>
 	<string name="text_unknown_video_title">Unknown Video Title</string>
-	<string name="text_application_language">Application language</string>
 	<string name="text_00_00">00:00</string>
-	<string name="text_failed_to_add_download_task">Failed to add download.</string>
-	<string name="text_download_added_successfully">Download\'s added successfully</string>
+	<string name="title_failed_to_add_download_task">Failed To Add Download.</string>
+	<string name="title_download_added_successfully">Download\'s Added Successfully</string>
 	<string name="text_player_is_locked_unlock_first">Player is locked, unlock first.</string>
 	<string name="text_getting_name_from_server">Getting name from server…</string>
 	<string name="text_select_a_video_resolution">Select your desired resolution first</string>

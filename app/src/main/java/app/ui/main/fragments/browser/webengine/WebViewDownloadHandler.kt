@@ -235,7 +235,7 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 					if (hasEnoughSpace) {
 						downloadSystem.addDownload(downloadModel)
 						executeOnMainThread {
-							val toastMsgResId = R.string.text_download_added_successfully
+							val toastMsgResId = R.string.title_download_added_successfully
 							showToast(msgId = toastMsgResId)
 						}
 
@@ -264,7 +264,7 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 				executeOnMain {
 					// Show failure feedback
 					safeWebEngineRef?.safeMotherActivityRef?.doSomeVibration(50)
-					showToast(msgId = R.string.text_failed_to_add_download_task)
+					showToast(msgId = R.string.title_failed_to_add_download_task)
 				}
 			}
 		})

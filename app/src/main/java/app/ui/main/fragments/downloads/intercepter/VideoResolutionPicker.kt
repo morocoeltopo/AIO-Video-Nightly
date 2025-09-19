@@ -350,7 +350,7 @@ class VideoResolutionPicker(
                         if (hasEnoughSpace) {
                             // Add to download system
                             downloadSystem.addDownload(downloadModel, onAdded = {
-                                val toastMsgResId = R.string.text_download_added_successfully
+                                val toastMsgResId = R.string.title_download_added_successfully
                                 showToast(msgId = toastMsgResId)
                             })
 
@@ -388,7 +388,7 @@ class VideoResolutionPicker(
                     }
                 } catch (error: Exception) {
                     error.printStackTrace()
-                    val failedToAddResId = R.string.text_failed_to_add_download_task
+                    val failedToAddResId = R.string.title_failed_to_add_download_task
                     executeOnMain {
                         safeBaseActivityRef.doSomeVibration(20)
                         showToast(msgId = failedToAddResId)
