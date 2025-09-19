@@ -12,6 +12,7 @@ import androidx.core.content.res.ResourcesCompat.getDrawable
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import app.core.AIOApp.Companion.INSTANCE
+import app.core.AIOApp.Companion.aioFavicons
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
@@ -31,9 +32,17 @@ import com.yausername.youtubedl_android.YoutubeDL.getInstance
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import kotlinx.coroutines.delay
 import lib.device.ShareUtility.shareUrl
+import lib.files.FileSystemUtility.isArchiveByName
+import lib.files.FileSystemUtility.isAudioByName
+import lib.files.FileSystemUtility.isDocumentByName
+import lib.files.FileSystemUtility.isImageByName
+import lib.files.FileSystemUtility.isProgramByName
+import lib.files.FileSystemUtility.isVideo
+import lib.files.FileSystemUtility.isVideoByName
 import lib.networks.URLUtility.isValidURL
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.texts.ClipboardUtils.copyTextToClipboard
 import lib.texts.CommonTextUtils.getText
@@ -44,6 +53,7 @@ import lib.ui.ViewUtility.getThumbnailFromFile
 import lib.ui.ViewUtility.rotateBitmap
 import lib.ui.ViewUtility.saveBitmapToFile
 import lib.ui.ViewUtility.setLeftSideDrawable
+import lib.ui.ViewUtility.showView
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
 import lib.ui.builders.WaitingDialog
@@ -63,7 +73,9 @@ import java.lang.ref.WeakReference
  * @param motherActivity The parent activity that hosts these options
  */
 class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
-	
+
+	private val logger = LogHelperUtils.from(javaClass)
+
 	// Weak reference to parent activity to prevent memory leaks
 	private val safeMotherActivityRef by lazy { WeakReference(motherActivity).get() }
 	
@@ -106,10 +118,143 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	 */
 	private fun updateDialogFileInfo(downloadModel: DownloadDataModel) {
 		dialogBuilder.view.apply {
-			findViewById<TextView>(R.id.txt_file_title).apply { isSelected = true; text = downloadModel.fileName }
-			findViewById<TextView>(R.id.txt_file_url).apply { text = downloadModel.fileURL }
-			findViewById<ImageView>(R.id.img_file_thumbnail).apply { updateThumbnail(this, downloadModel) }
+			findViewById<TextView>(R.id.txt_file_title).apply {
+				isSelected = true; text = downloadModel.fileName
+			}
+
+			findViewById<TextView>(R.id.txt_file_url).apply {
+				text = downloadModel.fileURL
+			}
+
+			findViewById<ImageView>(R.id.img_file_thumbnail).apply {
+				updateThumbnail(
+					thumbImageView = this,
+					downloadModel = downloadModel
+				)
+			}
+
+			findViewById<ImageView>(R.id.img_file_type_indicator).apply {
+				updateFileTypeIndicator(
+					fileTypeIndicator = this,
+					downloadDataModel = downloadModel
+				)
+			}
+
+			findViewById<ImageView>(R.id.img_site_favicon).apply {
+				updateFaviconInfo(
+					favicon = this,
+					downloadDataModel = downloadModel
+				)
+			}
+
+			findViewById<ImageView>(R.id.img_media_play_indicator).apply {
+				updateMediaPlayIndicator(
+					mediaPlayIndicator = this,
+					downloadDataModel = downloadModel
+				)
+			}
+
 		}
+	}
+
+	private fun updateMediaPlayIndicator(
+		mediaPlayIndicator: ImageView,
+		downloadDataModel: DownloadDataModel
+	) {
+		val fileName = downloadDataModel.fileName
+		if (isVideoByName(fileName) || isAudioByName(fileName)) {
+			mediaPlayIndicator.visibility = View.VISIBLE
+		} else {
+			mediaPlayIndicator.visibility = View.GONE
+		}
+	}
+
+	/**
+	 * Updates the file type indicator icon in the UI based on the file type
+	 * detected from the download model's file name.
+	 *
+	 * @param fileTypeIndicator The imageview that related to the information
+	 * @param downloadDataModel The model containing information about the downloaded file
+	 */
+	private fun updateFileTypeIndicator(
+		fileTypeIndicator: ImageView,
+		downloadDataModel: DownloadDataModel
+	) {
+		logger.d("Updating file type indicator for download ID: ${downloadDataModel.id}")
+
+		// Determine the correct icon by checking file type via file name
+		fileTypeIndicator.setImageResource(
+			when {
+				isImageByName(downloadDataModel.fileName) -> R.drawable.ic_button_images   // Image files
+				isAudioByName(downloadDataModel.fileName) -> R.drawable.ic_button_audio    // Audio files
+				isVideoByName(downloadDataModel.fileName) -> R.drawable.ic_button_video    // Video files
+				isDocumentByName(downloadDataModel.fileName) -> R.drawable.ic_button_document // Documents
+				isArchiveByName(downloadDataModel.fileName) -> R.drawable.ic_button_archives  // Archives
+				isProgramByName(downloadDataModel.fileName) -> R.drawable.ic_button_programs  // Executables/programs
+				else -> R.drawable.ic_button_file // Default for unknown file types
+			}
+		)
+	}
+
+	/**
+	 * Loads and sets the favicon for the given download item.
+	 * Attempts to load a favicon from cache (via AIOApp.aioFavicons). If unavailable,
+	 * falls back to a default drawable.
+	 *
+	 * @param downloadDataModel The download data model containing the site referrer
+	 */
+	private fun updateFaviconInfo(favicon: ImageView, downloadDataModel: DownloadDataModel) {
+		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
+		val defaultFaviconResId = R.drawable.ic_button_information
+		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
+
+		// Skip favicon loading if video thumbnails are not allowed
+		if (isVideoThumbnailNotAllowed(downloadDataModel)) {
+			logger.d("Video thumbnails not allowed, using default favicon")
+			executeOnMainThread { favicon.setImageDrawable(defaultFaviconDrawable) }
+			return
+		}
+
+		ThreadsUtility.executeInBackground(codeBlock = {
+			val referralSite = downloadDataModel.siteReferrer
+			logger.d("Loading favicon for site: $referralSite")
+			aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
+				val faviconImgFile = File(faviconFilePath)
+				if (!faviconImgFile.exists() || !faviconImgFile.isFile) {
+					logger.d("Favicon file not found")
+					return@executeInBackground
+				}
+				val faviconImgURI = faviconImgFile.toUri()
+				ThreadsUtility.executeOnMain(codeBlock = {
+					try {
+						logger.d("Setting favicon from URI")
+						showView(favicon, true)
+						favicon.setImageURI(faviconImgURI)
+					} catch (error: Exception) {
+						logger.d("Error setting favicon: ${error.message}")
+						error.printStackTrace()
+						showView(favicon, true)
+						favicon.setImageResource(defaultFaviconResId)
+					}
+				})
+			}
+		}, errorHandler = {
+			logger.d("Error loading favicon: ${it.message}")
+			it.printStackTrace()
+		})
+	}
+
+	/**
+	 * Checks if video thumbnails are allowed for this download based on settings.
+	 *
+	 * @param downloadDataModel The download data model
+	 * @return true if thumbnails are not allowed, false otherwise
+	 */
+	private fun isVideoThumbnailNotAllowed(downloadDataModel: DownloadDataModel): Boolean {
+		val isVideoHidden = downloadDataModel.globalSettings.downloadHideVideoThumbnail
+		val result = isVideo(downloadDataModel.getDestinationDocumentFile()) && isVideoHidden
+		logger.d("Video thumbnail allowed: ${!result}")
+		return result
 	}
 	
 	/**

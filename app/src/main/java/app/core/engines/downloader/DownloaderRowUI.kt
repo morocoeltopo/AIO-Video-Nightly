@@ -66,6 +66,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private val statusInfo: TextView by lazy { rowLayout.findViewById(R.id.txt_download_status) }
 	private val favicon: ImageView by lazy { rowLayout.findViewById(R.id.img_site_favicon) }
 	private val fileTypeIndicator: ImageView by lazy { rowLayout.findViewById(R.id.img_file_type_indicator) }
+	private val mediaPlayIndicator: ImageView by lazy { rowLayout.findViewById(R.id.img_media_play_indicator) }
 
 	/**
 	 * Main update method that refreshes all UI elements for a download item.
@@ -79,6 +80,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			updateDownloadProgress(downloadModel)
 			updateFileThumbnail(downloadModel)
 			updateFaviconInfo(downloadModel)
+			updateMediaPlayIndicator(downloadModel)
 			updateFileTypeIndicator(downloadModel)
 			updateAlertMessage(downloadModel)
 		} ?: logger.d("Row layout reference lost, skipping update.")
@@ -194,6 +196,13 @@ class DownloaderRowUI(private val rowLayout: View) {
 				else -> R.drawable.ic_button_file // Default for unknown file types
 			}
 		)
+	}
+
+	private fun updateMediaPlayIndicator(downloadDataModel: DownloadDataModel) {
+		val fileName = downloadDataModel.fileName
+		if (isVideoByName(fileName) || isAudioByName(fileName))
+			mediaPlayIndicator.visibility = View.VISIBLE
+		else mediaPlayIndicator.visibility = GONE
 	}
 
 	/**

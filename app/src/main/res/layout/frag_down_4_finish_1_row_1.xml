@@ -58,7 +58,6 @@
 					android:layout_height="wrap_content"
 					android:layout_gravity="center"
 					android:adjustViewBounds="true"
-					android:alpha="0.8"
 					android:elevation="@dimen/_5"
 					android:importantForAccessibility="no"
 					android:src="@drawable/image_media_play"
