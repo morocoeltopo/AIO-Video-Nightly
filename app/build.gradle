@@ -141,7 +141,6 @@ dependencies {
 
     // UI / Animations / Images
     implementation libs.lottie
-    implementation(libs.audio.visualizer)
     implementation libs.glide
 
     // Permissions / Storage

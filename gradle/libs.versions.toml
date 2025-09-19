@@ -44,9 +44,6 @@ coroutine = "1.10.2"
 # Lottie (vector animations)
 lottie = "6.6.7"
 
-# Audio Visualizer
-audio_visualizer = "2.2.5"
-
 # CircleImageView (circular ImageView widget)
 circleimageview = "3.1.0"
 
@@ -140,9 +137,6 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 # Jsoup HTML parser
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
-
-# Audio Visualizer
-audio_visualizer = { module = "io.github.gautamchibde:audiovisualizer", version.ref = "audio_visualizer" }
 
 # Glide image loader
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
