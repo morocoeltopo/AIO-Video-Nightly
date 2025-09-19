@@ -141,6 +141,7 @@ dependencies {
 
     // UI / Animations / Images
     implementation libs.lottie
+    implementation(libs.audio.visualizer)
     implementation libs.glide
 
     // Permissions / Storage
@@ -153,7 +154,7 @@ dependencies {
     // Downloading (yt-dlp, ffmpeg, NewPipe extractor)
     implementation libs.ytdlp.library
     implementation libs.ytdlp.ffmpeg
-    implementation libs.newpipeextractor
+    implementation libs.newpipe.extractor
     implementation libs.mp4.iso.parser
 
     // Java 11 desugaring library

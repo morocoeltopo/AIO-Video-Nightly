@@ -44,6 +44,9 @@ coroutine = "1.10.2"
 # Lottie (vector animations)
 lottie = "6.6.7"
 
+# Audio Visualizer
+audio_visualizer = "2.2.5"
+
 # CircleImageView (circular ImageView widget)
 circleimageview = "3.1.0"
 
@@ -138,6 +141,9 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 # Jsoup HTML parser
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
+# Audio Visualizer
+audio_visualizer = { module = "io.github.gautamchibde:audiovisualizer", version.ref = "audio_visualizer" }
+
 # Glide image loader
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 
@@ -155,7 +161,7 @@ ytdlp_ffmpeg = { module = "io.github.junkfood02.youtubedl-android:ffmpeg", versi
 ytdlp_library = { module = "io.github.junkfood02.youtubedl-android:library", version.ref = "ytdlp" }
 
 # NewPipe Extractor
-newpipeextractor = { module = "com.github.teamnewpipe.NewPipeExtractor:NewPipeExtractor", version.ref = "new_pipe_extractor" }
+newpipe_extractor = { module = "com.github.teamnewpipe.NewPipeExtractor:NewPipeExtractor", version.ref = "new_pipe_extractor" }
 
 
 [plugins]
