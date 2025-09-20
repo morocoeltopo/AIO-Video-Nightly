@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory.decodeByteArray
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
@@ -61,11 +62,14 @@ import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID
 import app.core.engines.downloader.DownloadURLHelper.getFileInfoFromSever
 import app.ui.others.media_player.dialogs.MediaInfoHtmlBuilder.buildMediaInfoHtmlString
 import app.ui.others.media_player.dialogs.MediaOptionsPopup
+import com.aio.R
 import com.aio.R.color
 import com.aio.R.drawable
 import com.aio.R.id
 import com.aio.R.layout
 import com.aio.R.string
+import com.airbnb.lottie.LottieAnimationView
+import com.airbnb.lottie.LottieCompositionFactory.fromRawRes
 import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.google.common.io.Files.getFileExtension
@@ -84,8 +88,11 @@ import lib.texts.CommonTextUtils.fromHtmlStringToSpanned
 import lib.ui.MsgDialogUtils.getMessageDialog
 import lib.ui.MsgDialogUtils.showMessageDialog
 import lib.ui.RoundedTimeBar
+import lib.ui.ViewUtility
+import lib.ui.ViewUtility.blurBitmap
 import lib.ui.ViewUtility.hideView
 import lib.ui.ViewUtility.matchHeightToTopCutout
+import lib.ui.ViewUtility.rotateBitmap
 import lib.ui.ViewUtility.setLeftSideDrawable
 import lib.ui.ViewUtility.setTextColorKT
 import lib.ui.ViewUtility.showView
@@ -143,6 +150,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
     lateinit var deviceCutoutEmptyPadding: View
     lateinit var audioAlbumArtHolder: ImageView
+	lateinit var audioVisualizer: LottieAnimationView
     lateinit var entirePlaybackController: View
     lateinit var buttonBackActionbar: View
     lateinit var textCurrentVideoName: TextView
@@ -395,8 +403,11 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
             entirePlaybackController = findViewById(id.container_player_controller)
             entirePlaybackController.visibility = GONE
 
-            // Initialize album art holder for audio files
+            // Initialize album art & visualizer holder for audio files
             audioAlbumArtHolder = findViewById(id.img_audio_album_art)
+            audioVisualizer = findViewById(id.anim_audio_visualizing)
+			fromRawRes(INSTANCE, R.raw.animation_audio_visualizing)
+				.addListener { audioVisualizer.setComposition(it) }
 
             // Set up action bar buttons
             buttonBackActionbar = findViewById(id.btn_actionbar_back)
@@ -840,7 +851,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
                 }
 
                 if (!isAudio(mediaFile)) {
-                    audioAlbumArtHolder.visibility = GONE; return
+                    hideView(audioVisualizer, true)
+                    hideView(audioAlbumArtHolder, true)
+					return
                 }; showDefaultAudioAlbumArt(mediaFile)
             }
         }
@@ -852,7 +865,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
      */
     private fun showDefaultAudioAlbumArt(mediaFile: DocumentFile) {
         safeSelfReference?.let { safeActivityRef ->
-            audioAlbumArtHolder.visibility = VISIBLE
+			showView(audioVisualizer, true)
+			showView(audioAlbumArtHolder, true)
             setAlbumArt(mediaFile.getAbsolutePath(safeActivityRef), audioAlbumArtHolder)
         }
     }
@@ -868,13 +882,17 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
             retriever.setDataSource(audioFilePath)
             val art = retriever.embeddedPicture
             if (art != null) {
-                val albumArt = decodeByteArray(art, 0, art.size)
-                imageView.setImageBitmap(albumArt)
+                val albumArtBitmap = decodeByteArray(art, 0, art.size)
+               showBlurredBitmap(imageView, albumArtBitmap)
             } else {
                 getCurrentPlayingDownloadModel()?.let { downloadDataModel ->
                     if (downloadDataModel.thumbPath.isNotEmpty()) {
-                        val thumbImageUri = Uri.fromFile(File(downloadDataModel.thumbPath))
-                        imageView.setImageURI(thumbImageUri)
+						val bitmapFile = File(downloadDataModel.thumbPath)
+						val originalBitmap = ViewUtility.getBitmapFromFile(bitmapFile)
+						originalBitmap?.let { showBlurredBitmap(imageView, originalBitmap) } ?: run {
+							val thumbImageUri = Uri.fromFile(bitmapFile)
+							imageView.setImageURI(thumbImageUri)
+						}
                     } else imageView.setImageResource(drawable.image_audio_thumb)
                 } ?: run { imageView.setImageResource(drawable.image_audio_thumb) }
             }
@@ -886,7 +904,36 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
         }
     }
 
-    /**
+	/**
+	 * Displays a blurred version of the original bitmap in the given ImageView.
+	 *
+	 * - If the bitmap is portrait (height > width), the original image is shown without blur.
+	 * - If the bitmap is landscape, it is first rotated by 90 degrees,
+	 *   then blurred with the given radius (default 5f), and finally displayed.
+	 * - The blur operation runs in a background thread to avoid blocking the UI.
+	 * - Once processing is complete, the result is posted back on the main thread
+	 *   to safely update the ImageView.
+	 *
+	 * @param targetImageView The ImageView where the blurred (or original) bitmap will be displayed
+	 * @param originalBitmap The original bitmap to be processed
+	 */
+	private fun showBlurredBitmap(targetImageView: ImageView, originalBitmap: Bitmap) {
+		ThreadsUtility.executeInBackground(codeBlock = {
+			val isPortraitImage = originalBitmap.height > originalBitmap.width
+			if (isPortraitImage) {
+				targetImageView.setImageBitmap(originalBitmap)
+			} else {
+				rotateBitmap(originalBitmap, 90f).let { rotatedBitmap ->
+					val blurredBitmap = blurBitmap(bitmap = rotatedBitmap, radius = 15f)
+					ThreadsUtility.executeOnMain {
+						targetImageView.setImageBitmap(blurredBitmap)
+					}
+				}
+			}
+		})
+	}
+
+	/**
      * Stops and releases player resources.
      */
     private fun stopAndReleasePlayer() {
@@ -1131,6 +1178,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
         else drawable.ic_button_media_play
         val buttonViewId = id.btn_img_video_play_pause_toggle
         (findViewById<ImageView>(buttonViewId)).setImageResource(iconResId)
+        if (isPlaying) audioVisualizer.resumeAnimation()
+        else audioVisualizer.pauseAnimation()
     }
 
     /**

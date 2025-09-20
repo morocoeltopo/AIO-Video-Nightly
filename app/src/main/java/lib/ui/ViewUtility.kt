@@ -27,6 +27,10 @@ import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Handler
 import android.os.Looper
+import android.renderscript.Allocation
+import android.renderscript.Element
+import android.renderscript.RenderScript
+import android.renderscript.ScriptIntrinsicBlur
 import android.util.DisplayMetrics
 import android.view.View
 import android.view.View.GONE
@@ -1405,6 +1409,51 @@ object ViewUtility {
 
         bitmap.recycle() // Always recycle bitmap to avoid memory leaks
         return true
+    }
+
+
+    /**
+     * Applies a Gaussian blur effect to the given [Bitmap].
+     *
+     * This implementation uses the deprecated [RenderScript] API, which is supported
+     * on devices below API 31 (Android 12). For Android 12+, consider using
+     * [RenderEffect] with [Paint.setRenderEffect] instead.
+     *
+     * @param bitmap The input [Bitmap] to blur.
+     * @param radius The blur radius, clamped between `0f` and `25f`. Default is `20f`.
+     *               Larger values increase the blur strength.
+     *
+     * @return A new blurred [Bitmap] with the same dimensions and configuration
+     *         as the input.
+     *
+     * @see RenderScript
+     * @see ScriptIntrinsicBlur
+     */
+    @Suppress("DEPRECATION")
+    fun blurBitmap(bitmap: Bitmap, radius: Float = 20f): Bitmap {
+        val safeConfig = bitmap.config ?: Bitmap.Config.ARGB_8888
+        val rs = RenderScript.create(AIOApp.INSTANCE)
+
+        // Create input allocation from the bitmap
+        val input = Allocation.createFromBitmap(rs, bitmap)
+
+        // Prepare output allocation
+        val output = Allocation.createTyped(rs, input.type)
+
+        // Initialize the intrinsic blur script
+        val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
+        script.setRadius(radius.coerceIn(0f, 25f)) // Radius must be in [0..25]
+        script.setInput(input)
+        script.forEach(output)
+
+        // Copy result into a new bitmap
+        val blurred = createBitmap(bitmap.width, bitmap.height, safeConfig)
+        output.copyTo(blurred)
+
+        // Clean up resources
+        rs.destroy()
+
+        return blurred
     }
 
     /**

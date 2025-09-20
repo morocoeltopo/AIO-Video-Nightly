@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Media player activity layout with ExoPlayer integration -->
+<?xml version="1.0" encoding="utf-8"?><!-- Media player activity layout with ExoPlayer integration -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -13,11 +12,12 @@
 	<!-- ExoPlayer video surface -->
 	<androidx.media3.ui.PlayerView
 		android:id="@+id/video_player_view"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerInParent="true"
 		android:background="@color/color_pure_black"
 		app:player_layout_id="@layout/activity_player_3_con_layout_1"
-		app:resize_mode="fit"
+		app:resize_mode="zoom"
 		app:show_buffering="when_playing"
 		app:show_timeout="4000"
 		app:shutter_background_color="@color/color_pure_black"
@@ -29,10 +29,31 @@
 		android:id="@+id/img_audio_album_art"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:adjustViewBounds="true"
 		android:background="@color/color_pure_black"
 		android:importantForAccessibility="no"
-		android:src="@drawable/image_audio_thumb"
+		android:scaleType="centerCrop"
+		android:src="@drawable/image_no_thumb_available"
 		android:visibility="gone" />
+
+	<!-- Lottie animation for audio visualizing -->
+	<com.airbnb.lottie.LottieAnimationView
+		android:id="@+id/anim_audio_visualizing"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_centerInParent="true"
+		android:layout_gravity="center_vertical|center_horizontal"
+		android:layout_marginTop="@dimen/_0"
+		android:layout_marginBottom="-30dp"
+		android:adjustViewBounds="true"
+		android:hardwareAccelerated="true"
+		android:importantForAccessibility="no"
+		android:layerType="hardware"
+		android:visibility="gone"
+		app:lottie_autoPlay="true"
+		app:lottie_enableMergePathsForKitKatAndAbove="true"
+		app:lottie_loop="true"
+		tools:ignore="ImageContrastCheck,VisualLintBounds" />
 
 	<!-- Dark overlay for night mode -->
 	<View
@@ -84,7 +105,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="0dp"
 			android:layout_alignParentTop="true"
-			android:background="@color/color_pure_black" />
+			android:background="@color/transparent" />
 
 		<!-- Action bar at the top -->
 		<include
@@ -117,6 +138,7 @@
 
 				<!-- Player control components -->
 				<include layout="@layout/activity_player_2_con_01" />
+
 				<include layout="@layout/activity_player_2_con_02" />
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
