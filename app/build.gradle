@@ -3,8 +3,12 @@
 plugins {
     // Android application plugin
     alias(libs.plugins.android.application)
+
     // Kotlin Android plugin
     alias(libs.plugins.kotlin.android)
+
+    // Kotlin Kapt (annotation processing, needed for DSL-JSON.)
+    alias(libs.plugins.kotlin.kapt)
 }
 
 android {
@@ -87,15 +91,15 @@ android {
     }
 
     compileOptions {
-        // Enable Java 11 APIs (desugaring for older devices)
+        // Enable Java 17 APIs (desugaring for older devices)
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlin {
-        // Use Java 11 toolchain for Kotlin
-        jvmToolchain(11)
+        // Use Java 17 toolchain for Kotlin
+        jvmToolchain(17)
     }
 
     dependenciesInfo {
@@ -119,7 +123,7 @@ dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.lifecycle.process
 
-    // Kotlin Coroutines
+    // Kotlin Coroutines (async support)
     implementation libs.kotlin.coroutines.core
     implementation libs.kotlin.coroutines
 
@@ -131,10 +135,19 @@ dependencies {
     implementation libs.media3.ui
     implementation libs.media3.session
 
-    // Networking / Parsing
-    implementation libs.gson
+    // Fast Serialization (binary)
     implementation libs.fst
+
+    // HTML parser
     implementation libs.jsoup
+
+    // GSON & DSL-JSON (high-performance JSON)
+    implementation libs.gson
+    implementation(libs.dsljson)
+    kapt(libs.dsljson)
+    compileOnly(libs.jsonbind.api)
+
+    // Networking
     implementation libs.retrofit
     implementation libs.retrofit.converter.gson
     implementation libs.okhttp

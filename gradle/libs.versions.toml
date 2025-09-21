@@ -77,6 +77,11 @@ storage = "2.2.0"
 # YouTubeDL-Android (ytdlp core + ffmpeg)
 ytdlp = "0.17.4"
 
+# DSL-JSON (high-performance JSON parser)
+dsljson = "2.0.2"
+
+# JSON-B API (needed as stub for DSL-JSON annotation processor)
+jsonbind = "1.0"
 
 [libraries]
 # AndroidX core library
@@ -157,6 +162,11 @@ ytdlp_library = { module = "io.github.junkfood02.youtubedl-android:library", ver
 # NewPipe Extractor
 newpipe_extractor = { module = "com.github.teamnewpipe.NewPipeExtractor:NewPipeExtractor", version.ref = "new_pipe_extractor" }
 
+# DSL-JSON library
+dsljson = { module = "com.dslplatform:dsl-json", version.ref = "dsljson" }
+
+# JSON-B API (compileOnly dependency for DSL-JSON)
+jsonbind_api = { module = "javax.json.bind:javax.json.bind-api", version.ref = "jsonbind" }
 
 [plugins]
 # Android Application plugin
@@ -164,3 +174,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 
 # Kotlin Android plugin
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
+# Kotlin Kapt (annotation processing, version comes with Kotlin plugin)
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }
