@@ -12,6 +12,9 @@ import java.io.FileOutputStream
 object VideoFilesUtility {
 	private val logger = LogHelperUtils.from(javaClass)
 
+	const val TMP_MOOV_OPTIMIZED_PREFIX = "moov_optimize_"
+	const val TMP_MOOV_OPTIMIZED_SUFFIX = ".mp4"
+
 	/**
 	 * Performs an advanced validation of an MP4 file using the MP4Parser library.
 	 * Ensures that the file structure is intact by checking that it contains at least one track
@@ -90,6 +93,7 @@ object VideoFilesUtility {
 			false
 		}
 	}
+
 	/**
 	 * Moves the 'moov' atom to the beginning of an MP4 file for optimized streaming
 	 * using the MP4Parser library. Includes comprehensive validation and atomic operations
@@ -137,7 +141,10 @@ object VideoFilesUtility {
 		}
 
 		// Create temporary file in the same directory for atomic operation
-		val tempFile = File.createTempFile("moov_optimize_${inputFile.name}", ".mp4", outputDir)
+		val tempFile = File.createTempFile(
+			"$TMP_MOOV_OPTIMIZED_PREFIX${inputFile.name}",
+			TMP_MOOV_OPTIMIZED_SUFFIX, outputDir
+		)
 
 		return try {
 			logger.d("Starting moov atom optimization for: ${inputFile.name}")

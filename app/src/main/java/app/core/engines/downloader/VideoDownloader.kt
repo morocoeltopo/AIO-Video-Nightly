@@ -35,8 +35,6 @@ import lib.files.FileSystemUtility.findFileStartingWith
 import lib.files.FileSystemUtility.isFileNameValid
 import lib.files.FileSystemUtility.isVideoByName
 import lib.files.FileSystemUtility.sanitizeFileNameExtreme
-import lib.files.VideoFilesUtility.isMp4Seekable
-import lib.files.VideoFilesUtility.moveMoovAtomToStart
 import lib.networks.DownloaderUtils.getAudioPlaybackTimeIfAvailable
 import lib.networks.DownloaderUtils.getFormattedPercentage
 import lib.networks.DownloaderUtils.getHumanReadableFormat
@@ -1479,23 +1477,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				// Copy temp file to final destination and delete original
 				val outputFile = downloadDataModel.getDestinationFile()
 				logger.d("Preparing to move file: ${ytdlpTempfile.absolutePath} to ${outputFile.absolutePath}")
-
-				if (isMp4Seekable(ytdlpTempfile)) {
-					logger.d("Video file is seekable")
-					ytdlpTempfile.copyTo(outputFile, overwrite = true)
-					ytdlpTempfile.delete()
-					logger.d("File copied to destination and temp file deleted")
-				} else {
-					logger.d("Video file is not seekable, attempting optimization")
-					if (!moveMoovAtomToStart(ytdlpTempfile, outputFile)) {
-						logger.d("Optimization failed, copying file without changes")
-						ytdlpTempfile.copyTo(outputFile, overwrite = true)
-						ytdlpTempfile.delete()
-						logger.d("File copied to destination after failed optimization and temp file deleted")
-					} else {
-						logger.d("File optimized successfully and moved to destination")
-					}
-				}
+				ytdlpTempfile.copyTo(outputFile, overwrite = true)
+				ytdlpTempfile.delete()
 
 				// Update metadata with file stats
 				downloadDataModel.fileSize = outputFile.length()
