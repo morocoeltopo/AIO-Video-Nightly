@@ -6,7 +6,7 @@ import androidx.core.net.toFile
 import androidx.documentfile.provider.DocumentFile
 import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
-import app.core.AIOApp.Companion.aioGSONInstance
+import app.core.AIOApp.Companion.aioDSLJsonInstance
 import app.core.AIOApp.Companion.aioSettings
 import app.core.FSTBuilder.fstConfig
 import app.core.engines.settings.AIOSettings
@@ -17,7 +17,7 @@ import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import com.aio.R.drawable
 import com.aio.R.string
 import com.anggrayudi.storage.file.getAbsolutePath
-import com.google.gson.Gson
+import com.dslplatform.json.CompiledJson
 import com.google.gson.annotations.SerializedName
 import lib.files.FileExtensions.ARCHIVE_EXTENSIONS
 import lib.files.FileExtensions.DOCUMENT_EXTENSIONS
@@ -36,6 +36,8 @@ import lib.process.ThreadsUtility
 import lib.process.UniqueNumberUtils.getUniqueNumberForDownloadModels
 import lib.texts.CommonTextUtils.getText
 import lib.texts.CommonTextUtils.removeDuplicateSlashes
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.Serializable
 
@@ -46,232 +48,288 @@ import java.io.Serializable
  *
  * The class implements Serializable to allow for persistence and transfer between components.
  */
+@CompiledJson
 class DownloadDataModel : Serializable {
 
-	// Basic download identification and state tracking
+	/** Unique identifier for the download task */
 	@SerializedName("id")
-	var id: Int = 0                           // Unique identifier for the download
+	var id: Int = 0
 
+	/** Current operational status (see DownloadStatus constants) */
 	@SerializedName("status")
-	var status: Int = DownloadStatus.CLOSE    // Current status (see DownloadStatus constants)
+	var status: Int = DownloadStatus.CLOSE
 
+	/** Indicates if the download process is currently active */
 	@SerializedName("isRunning")
-	var isRunning: Boolean = false            // Whether download is actively running
+	var isRunning: Boolean = false
 
+	/** Indicates if the download completed successfully */
 	@SerializedName("isComplete")
-	var isComplete: Boolean = false           // Whether download completed successfully
+	var isComplete: Boolean = false
 
+	/** Indicates if the download was explicitly deleted by user or system */
 	@SerializedName("isDeleted")
-	var isDeleted: Boolean = false            // Whether download was deleted
+	var isDeleted: Boolean = false
 
+	/** Indicates if the download was removed from UI but may still exist in storage */
 	@SerializedName("isRemoved")
-	var isRemoved: Boolean = false           // Whether download was removed from UI
+	var isRemoved: Boolean = false
 
-	// Error and special case flags
+	/** Flag indicating if file was saved to private/secure storage location */
 	@SerializedName("isWentToPrivateFolder")
-	var isWentToPrivateFolder: Boolean = false            // If file was saved to private storage
+	var isWentToPrivateFolder: Boolean = false
 
+	/** Flag indicating if the source download URL has expired or become invalid */
 	@SerializedName("isFileUrlExpired")
-	var isFileUrlExpired: Boolean = false                 // If source URL expired
+	var isFileUrlExpired: Boolean = false
 
+	/** Flag indicating if yt-dlp encountered processing issues during download */
 	@SerializedName("isYtdlpHavingProblem")
-	var isYtdlpHavingProblem: Boolean = false             // If yt-dlp encountered issues
+	var isYtdlpHavingProblem: Boolean = false
 
+	/** Detailed error message from yt-dlp when processing issues occur */
 	@SerializedName("ytdlpProblemMsg")
-	var ytdlpProblemMsg: String = ""                      // Detailed yt-dlp error message
+	var ytdlpProblemMsg: String = ""
 
+	/** Flag indicating if the expected destination file does not exist after download */
 	@SerializedName("isDestinationFileNotExisted")
-	var isDestinationFileNotExisted: Boolean = false      // If target file doesn't exist
+	var isDestinationFileNotExisted: Boolean = false
 
+	/** Flag indicating if file integrity check via checksum validation failed */
 	@SerializedName("isFileChecksumValidationFailed")
-	var isFileChecksumValidationFailed: Boolean = false   // If checksum verification failed
+	var isFileChecksumValidationFailed: Boolean = false
 
-	// Network and operational flags
+	/** Flag indicating download is paused waiting for network connectivity */
 	@SerializedName("isWaitingForNetwork")
-	var isWaitingForNetwork: Boolean = false          // Waiting for network availability
+	var isWaitingForNetwork: Boolean = false
 
+	/** Flag indicating failure to access or read from source file location */
 	@SerializedName("isFailedToAccessFile")
-	var isFailedToAccessFile: Boolean = false         // Failed to access source file
+	var isFailedToAccessFile: Boolean = false
 
+	/** Flag indicating if URL expiration dialog has been shown to user */
 	@SerializedName("isExpiredURLDialogShown")
-	var isExpiredURLDialogShown: Boolean = false      // If URL expiry dialog was shown
+	var isExpiredURLDialogShown: Boolean = false
 
+	/** Flag indicating if automatic file categorization has been processed */
 	@SerializedName("isSmartCategoryDirProcessed")
-	var isSmartCategoryDirProcessed: Boolean = false  // If file was categorized automatically
+	var isSmartCategoryDirProcessed: Boolean = false
 
-	// User communication and metadata
+	/** Message to display to user via dialog or notification */
 	@SerializedName("msgToShowUserViaDialog")
-	var msgToShowUserViaDialog: String = ""           // Message to display to user
+	var msgToShowUserViaDialog: String = ""
 
+	/** Flag indicating if download was initiated from browser context */
 	@SerializedName("isDownloadFromBrowser")
-	var isDownloadFromBrowser: Boolean = false        // If initiated from browser
+	var isDownloadFromBrowser: Boolean = false
 
+	/** Flag indicating if basic yt-dlp metadata extraction completed successfully */
 	@SerializedName("isBasicYtdlpModelInitialized")
-	var isBasicYtdlpModelInitialized: Boolean = false // If yt-dlp metadata initialized
+	var isBasicYtdlpModelInitialized: Boolean = false
 
+	/** Custom HTTP headers to include in download requests */
 	@SerializedName("additionalWebHeaders")
-	var additionalWebHeaders: Map<String, String>? = null // Custom HTTP headers
+	var additionalWebHeaders: Map<String, String>? = null
 
-	// File information
+	/** Name of the target file being downloaded */
 	@SerializedName("fileName")
-	var fileName: String = ""             // Name of the file being downloaded
+	var fileName: String = ""
 
+	/** Source URL from which the file is being downloaded */
 	@SerializedName("fileURL")
-	var fileURL: String = ""              // Source URL of the download
+	var fileURL: String = ""
 
+	/** HTTP Referrer header value for the download request */
 	@SerializedName("siteReferrer")
-	var siteReferrer: String = ""         // HTTP Referrer header value
+	var siteReferrer: String = ""
 
+	/** Target directory path where file will be saved */
 	@SerializedName("fileDirectory")
-	var fileDirectory: String = ""        // Target directory path
+	var fileDirectory: String = ""
 
-	// Metadata and technical details
+	/** MIME type of the file being downloaded */
 	@SerializedName("fileMimeType")
-	var fileMimeType: String = ""                 // MIME type of the file
+	var fileMimeType: String = ""
 
+	/** Content-Disposition header value from server response */
 	@SerializedName("fileContentDisposition")
-	var fileContentDisposition: String = ""       // Content-Disposition header value
+	var fileContentDisposition: String = ""
 
+	/** Cookie string for authenticated download requests */
 	@SerializedName("siteCookieString")
-	var siteCookieString: String = ""             // Cookies for the download
+	var siteCookieString: String = ""
 
+	/** Local filesystem path to the downloaded file's thumbnail */
 	@SerializedName("thumbPath")
-	var thumbPath: String = ""                    // Local path to thumbnail
+	var thumbPath: String = ""
 
+	/** Remote URL source for the file's thumbnail image */
 	@SerializedName("thumbnailUrl")
-	var thumbnailUrl: String = ""                 // Remote URL of thumbnail
+	var thumbnailUrl: String = ""
 
-	// Temporary storage and processing info
+	/** Temporary file path used during yt-dlp processing phase */
 	@SerializedName("tempYtdlpDestinationFilePath")
-	var tempYtdlpDestinationFilePath: String = "" // Temp path for yt-dlp processing
+	var tempYtdlpDestinationFilePath: String = ""
 
+	/** Temporary status information during yt-dlp processing */
 	@SerializedName("tempYtdlpStatusInfo")
-	var tempYtdlpStatusInfo: String = ""          // Temp status from yt-dlp
+	var tempYtdlpStatusInfo: String = ""
 
+	/** URI representation of the target directory location */
 	@SerializedName("fileDirectoryURI")
-	var fileDirectoryURI: String = ""             // URI of target directory
+	var fileDirectoryURI: String = ""
 
+	/** Automatically determined category name for the file */
 	@SerializedName("fileCategoryName")
-	var fileCategoryName: String = ""             // Auto-categorized file type
+	var fileCategoryName: String = ""
 
+	/** Formatted timestamp string indicating download start time */
 	@SerializedName("startTimeDateInFormat")
-	var startTimeDateInFormat: String = ""        // Formatted start timestamp
+	var startTimeDateInFormat: String = ""
 
+	/** Unix timestamp in milliseconds indicating download start time */
 	@SerializedName("startTimeDate")
-	var startTimeDate: Long = 0L                  // Start time in milliseconds
+	var startTimeDate: Long = 0L
 
-	// Timestamps
+	/** Formatted timestamp string of last file modification time */
 	@SerializedName("lastModifiedTimeDateInFormat")
-	var lastModifiedTimeDateInFormat: String = "" // Formatted modification time
+	var lastModifiedTimeDateInFormat: String = ""
 
+	/** Unix timestamp in milliseconds of last file modification */
 	@SerializedName("lastModifiedTimeDate")
-	var lastModifiedTimeDate: Long = 0L           // Modification time in milliseconds
+	var lastModifiedTimeDate: Long = 0L
 
+	/** Flag indicating if file size could not be determined from source */
 	@SerializedName("isUnknownFileSize")
-	var isUnknownFileSize: Boolean = false        // If file size couldn't be determined
+	var isUnknownFileSize: Boolean = false
 
-	// Size information
+	/** Total file size in bytes */
 	@SerializedName("fileSize")
-	var fileSize: Long = 0L                       // Total file size in bytes
+	var fileSize: Long = 0L
 
+	/** Cryptographic hash/checksum for file integrity verification */
 	@SerializedName("fileChecksum")
-	var fileChecksum: String = "--"               // File checksum/hash
+	var fileChecksum: String = "--"
 
+	/** Human-readable formatted string representation of file size */
 	@SerializedName("fileSizeInFormat")
-	var fileSizeInFormat: String = ""             // Human-readable file size
+	var fileSizeInFormat: String = ""
 
-	// Speed metrics
+	/** Average download speed in bytes per second */
 	@SerializedName("averageSpeed")
-	var averageSpeed: Long = 0L                   // Average download speed (bytes/sec)
+	var averageSpeed: Long = 0L
 
+	/** Maximum achieved download speed in bytes per second */
 	@SerializedName("maxSpeed")
-	var maxSpeed: Long = 0L                       // Peak download speed
+	var maxSpeed: Long = 0L
 
+	/** Current real-time download speed in bytes per second */
 	@SerializedName("realtimeSpeed")
-	var realtimeSpeed: Long = 0L                  // Current speed
+	var realtimeSpeed: Long = 0L
 
+	/** Formatted string representation of average download speed */
 	@SerializedName("averageSpeedInFormat")
-	var averageSpeedInFormat: String = "--"       // Formatted average speed
+	var averageSpeedInFormat: String = "--"
 
+	/** Formatted string representation of maximum download speed */
 	@SerializedName("maxSpeedInFormat")
-	var maxSpeedInFormat: String = "--"           // Formatted max speed
+	var maxSpeedInFormat: String = "--"
 
+	/** Formatted string representation of current download speed */
 	@SerializedName("realtimeSpeedInFormat")
-	var realtimeSpeedInFormat: String = "--"      // Formatted current speed
+	var realtimeSpeedInFormat: String = "--"
 
-	// Download capabilities
+	/** Flag indicating if the download supports resumption after interruption */
 	@SerializedName("isResumeSupported")
-	var isResumeSupported: Boolean = false        // If download supports resuming
+	var isResumeSupported: Boolean = false
 
+	/** Flag indicating if multi-threaded downloading is supported for this file */
 	@SerializedName("isMultiThreadSupported")
-	var isMultiThreadSupported: Boolean = false   // If multi-threaded download supported
+	var isMultiThreadSupported: Boolean = false
 
-	// Progress tracking
+	/** Total number of connection retry attempts made */
 	@SerializedName("totalConnectionRetries")
-	var totalConnectionRetries: Int = 0           // Number of retry attempts
+	var totalConnectionRetries: Int = 0
 
+	/** Total number of connection retries that weren't reset */
 	@SerializedName("totalUnresetConnectionRetries")
-	var totalUnresetConnectionRetries: Int = 0    // Number of retry attempts
+	var totalUnresetConnectionRetries: Int = 0
 
+	/** Download completion percentage (0-100) */
 	@SerializedName("progressPercentage")
-	var progressPercentage: Long = 0L             // Completion percentage (0-100)
+	var progressPercentage: Long = 0L
 
+	/** Formatted string representation of completion percentage */
 	@SerializedName("progressPercentageInFormat")
-	var progressPercentageInFormat: String = ""   // Formatted percentage string
+	var progressPercentageInFormat: String = ""
 
-	// Byte-level tracking
+	/** Total number of bytes downloaded so far */
 	@SerializedName("downloadedByte")
-	var downloadedByte: Long = 0L                 // Bytes downloaded so far
+	var downloadedByte: Long = 0L
 
+	/** Formatted string representation of downloaded bytes */
 	@SerializedName("downloadedByteInFormat")
-	var downloadedByteInFormat: String = "--"     // Formatted byte count
+	var downloadedByteInFormat: String = "--"
 
+	/** Array tracking starting byte positions for each download chunk (18 chunks max) */
 	@SerializedName("partStartingPoint")
-	var partStartingPoint: LongArray = LongArray(18)  // Start bytes for each chunk
+	var partStartingPoint: LongArray = LongArray(18)
 
+	/** Array tracking ending byte positions for each download chunk (18 chunks max) */
 	@SerializedName("partEndingPoint")
-	var partEndingPoint: LongArray = LongArray(18)    // End bytes for each chunk
+	var partEndingPoint: LongArray = LongArray(18)
 
+	/** Array tracking total size of each download chunk (18 chunks max) */
 	@SerializedName("partChunkSizes")
-	var partChunkSizes: LongArray = LongArray(18)     // Size of each chunk
+	var partChunkSizes: LongArray = LongArray(18)
 
+	/** Array tracking bytes downloaded for each chunk (18 chunks max) */
 	@SerializedName("partsDownloadedByte")
-	var partsDownloadedByte: LongArray = LongArray(18) // Bytes downloaded per chunk
+	var partsDownloadedByte: LongArray = LongArray(18)
 
-	// Chunk progress
+	/** Array tracking completion percentage for each download chunk (18 chunks max) */
 	@SerializedName("partProgressPercentage")
-	var partProgressPercentage: IntArray = IntArray(18) // Completion % per chunk
+	var partProgressPercentage: IntArray = IntArray(18)
 
+	/** Total time spent on download in milliseconds */
 	@SerializedName("timeSpentInMilliSec")
-	var timeSpentInMilliSec: Long = 0L            // Total time spent (ms)
+	var timeSpentInMilliSec: Long = 0L
 
+	/** Estimated remaining time to complete download in seconds */
 	@SerializedName("remainingTimeInSec")
-	var remainingTimeInSec: Long = 0L             // Estimated time remaining (sec)
+	var remainingTimeInSec: Long = 0L
 
+	/** Formatted string representation of time spent downloading */
 	@SerializedName("timeSpentInFormat")
-	var timeSpentInFormat: String = "--"          // Formatted time spent
+	var timeSpentInFormat: String = "--"
 
+	/** Formatted string representation of estimated remaining time */
 	@SerializedName("remainingTimeInFormat")
-	var remainingTimeInFormat: String = "--"      // Formatted remaining time
+	var remainingTimeInFormat: String = "--"
 
+	/** Current status message for display purposes */
 	@SerializedName("statusInfo")
-	var statusInfo: String = "--"                 // Current status message
+	var statusInfo: String = "--"
 
+	/** Video-specific metadata for media downloads */
 	@SerializedName("videoInfo")
-	var videoInfo: VideoInfo? = null              // Video metadata (for media downloads)
+	var videoInfo: VideoInfo? = null
 
+	/** Video format and codec information */
 	@SerializedName("videoFormat")
-	var videoFormat: VideoFormat? = null          // Video format details
+	var videoFormat: VideoFormat? = null
 
+	/** Command string used to execute the download process */
 	@SerializedName("executionCommand")
-	var executionCommand: String = ""             // Command used for download
+	var executionCommand: String = ""
 
+	/** Playback duration string for media files (e.g., "02:30" for 2 minutes 30 seconds) */
 	@SerializedName("mediaFilePlaybackDuration")
-	var mediaFilePlaybackDuration: String = ""    // Duration of media file
+	var mediaFilePlaybackDuration: String = ""
 
-	// Application settings snapshot
+	/** Snapshot of application settings at the time download was initiated */
 	@SerializedName("globalSettings")
-	lateinit var globalSettings: AIOSettings      // Copy of app settings at download start
+	lateinit var globalSettings: AIOSettings
 
 	companion object {
 		@Transient
@@ -293,8 +351,7 @@ class DownloadDataModel : Serializable {
 		fun convertJSONStringToClass(downloadDataModelJSONFile: File): DownloadDataModel? {
 			logger.d("Starting JSON to class conversion for file: ${downloadDataModelJSONFile.absolutePath}")
 			val internalDir = AIOApp.internalDataFolder
-			val downloadDataModelBinaryFileName =
-				"${downloadDataModelJSONFile.nameWithoutExtension}.dat"
+			val downloadDataModelBinaryFileName = "${downloadDataModelJSONFile.nameWithoutExtension}.dat"
 			val downloadDataModelBinaryFile = internalDir.findFile(downloadDataModelBinaryFileName)
 
 			try {
@@ -304,8 +361,10 @@ class DownloadDataModel : Serializable {
 				if (downloadDataModelBinaryFile != null && downloadDataModelBinaryFile.exists()) {
 					logger.d("Found binary download model file: ${downloadDataModelBinaryFile.name}")
 					val absolutePath = downloadDataModelBinaryFile.getAbsolutePath(INSTANCE)
+
 					logger.d("Attempting to load binary from: $absolutePath")
 					val objectInMemory = loadFromBinary(File(absolutePath))
+
 					if (objectInMemory != null) {
 						logger.d("Binary load successful for file: ${downloadDataModelBinaryFile.name}")
 						downloadDataModel = objectInMemory
@@ -319,8 +378,11 @@ class DownloadDataModel : Serializable {
 				if (!isBinaryFileValid || downloadDataModel == null) {
 					logger.d("Attempting JSON load for file: ${downloadDataModelJSONFile.name}")
 					val jsonString = downloadDataModelJSONFile.readText(Charsets.UTF_8)
+
 					logger.d("JSON content length: ${jsonString.length} chars")
-					downloadDataModel = aioGSONInstance.fromJson(jsonString, DownloadDataModel::class.java)
+					val inputStream = ByteArrayInputStream(jsonString.encodeToByteArray())
+					downloadDataModel = aioDSLJsonInstance.deserialize(DownloadDataModel::class.java, inputStream)
+
 					if (downloadDataModel != null) {
 						logger.d("JSON load successful for file: ${downloadDataModelJSONFile.name}")
 						downloadDataModel.updateInStorage()
@@ -404,10 +466,8 @@ class DownloadDataModel : Serializable {
 			logger.d("Saving to JSON format")
 			val json = convertClassToJSON()
 			logger.d("JSON content length: ${json.length} chars")
-			saveStringToInternalStorage(
-				fileName = "$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION",
-				data = json
-			)
+
+			saveStringToInternalStorage("$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION", json)
 			logger.d("Storage update completed for download ID: $id")
 		}, errorHandler = { error ->
 			logger.e("Storage update failed for download ID: $id", error)
@@ -426,8 +486,8 @@ class DownloadDataModel : Serializable {
 			val modelBinaryFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
 
 			if (isWritableFile(modelBinaryFile)) {
-				modelBinaryFile?.delete()?.let {
-					if (it) logger.d("Deleted existing binary file successfully")
+				modelBinaryFile?.delete()?.let { isDeletedSuccessful ->
+					if (isDeletedSuccessful) logger.d("Deleted existing binary file successfully")
 					else logger.d("Failed to delete existing binary file")
 				}
 			}
@@ -460,30 +520,22 @@ class DownloadDataModel : Serializable {
 
 			logger.d("Deleting JSON file")
 			isWritableFile(modelJsonFile).let {
-				if (it) modelJsonFile?.delete()?.let {
-					logger.d("Deleted JSON file successfully")
-				}
+				if (it) modelJsonFile?.delete()?.let { logger.d("Deleted JSON file successfully") }
 			}
 
 			logger.d("Deleting binary file")
 			isWritableFile(modelBinaryFile).let {
-				if (it) modelBinaryFile?.delete()?.let {
-					logger.d("Deleted binary file successfully")
-				}
+				if (it) modelBinaryFile?.delete()?.let { logger.d("Deleted binary file successfully") }
 			}
 
 			logger.d("Deleting thumbnail file")
 			isWritableFile(thumbFile).let {
-				if (it) thumbFile?.delete()?.let {
-					logger.d("Deleted thumbnail file successfully")
-				}
+				if (it) thumbFile?.delete()?.let { logger.d("Deleted thumbnail file successfully") }
 			}
 
 			logger.d("Deleting cookies file")
 			isWritableFile(cookieFile).let {
-				if (it) cookieFile?.delete()?.let {
-					logger.d("Deleted cookies file successfully")
-				}
+				if (it) cookieFile?.delete()?.let { logger.d("Deleted cookies file successfully") }
 			}
 
 			logger.d("Deleting temporary files")
@@ -492,8 +544,8 @@ class DownloadDataModel : Serializable {
 			if (globalSettings.defaultDownloadLocation == PRIVATE_FOLDER) {
 				logger.d("Deleting downloaded file from private folder")
 				val downloadedFile = getDestinationDocumentFile()
-				isWritableFile(downloadedFile).let {
-					if (it) downloadedFile.delete().let {
+				isWritableFile(downloadedFile).let { isDeletedSuccessful ->
+					if (isDeletedSuccessful) downloadedFile.delete().let {
 						logger.d("Deleted downloaded file successfully")
 					}
 				}
@@ -584,7 +636,20 @@ class DownloadDataModel : Serializable {
 	 */
 	fun convertClassToJSON(): String {
 		logger.d("Converting class to JSON for download ID: $id")
-		return Gson().toJson(this)
+		val outputStream = ByteArrayOutputStream()
+		aioDSLJsonInstance.serialize(this, outputStream) // write to stream
+		return outputStream.toByteArray().decodeToString() // convert to String
+	}
+
+	/**
+	 * Converts a JSON string to an DownloadDataModel object.
+	 * @param jsonString The JSON string to convert
+	 * @return The deserialized DownloadDataModel object
+	 */
+	private fun convertJSONStringToClass(jsonString: String): DownloadDataModel? {
+		logger.d("Converting JSON to download data model object")
+		val inputStream = ByteArrayInputStream(jsonString.encodeToByteArray())
+		return aioDSLJsonInstance.deserialize(DownloadDataModel::class.java, inputStream)
 	}
 
 	/**
