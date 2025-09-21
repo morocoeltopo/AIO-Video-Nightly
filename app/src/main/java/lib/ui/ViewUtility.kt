@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package lib.ui
 
 import android.animation.Animator
