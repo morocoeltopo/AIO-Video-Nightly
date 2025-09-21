@@ -4,19 +4,23 @@ import android.content.Context.MODE_PRIVATE
 import androidx.documentfile.provider.DocumentFile
 import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
-import app.core.AIOApp.Companion.aioGSONInstance
+import app.core.AIOApp.Companion.aioDSLJsonInstance
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOLanguage.Companion.ENGLISH
 import app.core.FSTBuilder.fstConfig
 import com.aio.R.string
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
+import com.dslplatform.json.CompiledJson
+import com.google.gson.annotations.SerializedName
 import lib.files.FileSystemUtility.isWritableFile
 import lib.files.FileSystemUtility.readStringFromInternalStorage
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.Serializable
 
@@ -33,96 +37,209 @@ import java.io.Serializable
  * - Default values for all settings
  * - Validation of storage locations
  */
+@CompiledJson
 class AIOSettings : Serializable {
 
 	@Transient
 	private val logger = LogHelperUtils.from(javaClass)
 
 	// Basic user state
+	@SerializedName("userInstallationId")
 	var userInstallationId: String = ""
+
+	@SerializedName("isFirstTimeLanguageSelectionComplete")
 	var isFirstTimeLanguageSelectionComplete = false
+
+	@SerializedName("hasUserRatedTheApplication")
 	var hasUserRatedTheApplication: Boolean = false
+
+	@SerializedName("totalNumberOfSuccessfulDownloads")
 	var totalNumberOfSuccessfulDownloads = 0
+
+	@SerializedName("totalUsageTimeInMs")
 	var totalUsageTimeInMs = 0.0f
+
+	@SerializedName("totalUsageTimeInFormat")
 	var totalUsageTimeInFormat = ""
+
+	@SerializedName("lastProcessedClipboardText")
 	var lastProcessedClipboardText = ""
 
 	// Default download location
+	@SerializedName("defaultDownloadLocation")
 	var defaultDownloadLocation = PRIVATE_FOLDER
 
 	// Language & regions settings
+	@SerializedName("userSelectedUILanguage")
 	var userSelectedUILanguage: String = ENGLISH
+
+	@SerializedName("userSelectedContentRegion")
 	var userSelectedContentRegion: String = "IN"
 
 	// Other settings
-	var enableDarkUIMode : Boolean = false
+	@SerializedName("enableDarkUIMode")
+	var enableDarkUIMode: Boolean = false
+
+	@SerializedName("enableDailyContentSuggestion")
 	var enableDailyContentSuggestion: Boolean = true
 
 	// Analytics / interaction counters
+	@SerializedName("totalClickCountOnLanguageChange")
 	var totalClickCountOnLanguageChange = 0
+
+	@SerializedName("totalClickCountOnMediaPlayback")
 	var totalClickCountOnMediaPlayback = 0
+
+	@SerializedName("totalClickCountOnHowToGuide")
 	var totalClickCountOnHowToGuide = 0
+
+	@SerializedName("totalClickCountOnVideoUrlEditor")
 	var totalClickCountOnVideoUrlEditor = 0
+
+	@SerializedName("totalClickCountOnHomeHistory")
 	var totalClickCountOnHomeHistory = 0
+
+	@SerializedName("totalClickCountOnHomeBookmarks")
 	var totalClickCountOnHomeBookmarks = 0
+
+	@SerializedName("totalClickCountOnRecentDownloads")
 	var totalClickCountOnRecentDownloads = 0
+
+	@SerializedName("totalClickCountOnHomeFavicon")
 	var totalClickCountOnHomeFavicon = 0
+
+	@SerializedName("totalClickCountOnVersionCheck")
 	var totalClickCountOnVersionCheck = 0
+
+	@SerializedName("totalInterstitialAdClick")
 	var totalInterstitialAdClick = 0
+
+	@SerializedName("totalInterstitialImpression")
 	var totalInterstitialImpression = 0
+
+	@SerializedName("totalRewardedAdClick")
 	var totalRewardedAdClick = 0
+
+	@SerializedName("totalRewardedImpression")
 	var totalRewardedImpression = 0
 
 	// Path to WhatsApp Statuses folder (used in status saving)
+	@SerializedName("whatsAppStatusFullFolderPath")
 	val whatsAppStatusFullFolderPath = getText(string.text_whatsapp_status_file_dir)
 
 	// Download preferences
+	@SerializedName("downloadSingleUIProgress")
 	var downloadSingleUIProgress: Boolean = true
+
+	@SerializedName("downloadHideVideoThumbnail")
 	var downloadHideVideoThumbnail: Boolean = false
+
+	@SerializedName("downloadPlayNotificationSound")
 	var downloadPlayNotificationSound: Boolean = true
+
+	@SerializedName("downloadHideNotification")
 	var downloadHideNotification: Boolean = false
+
+	@SerializedName("hideDownloadProgressFromUI")
 	var hideDownloadProgressFromUI: Boolean = false
+
+	@SerializedName("downloadAutoRemoveTasks")
 	var downloadAutoRemoveTasks: Boolean = false
+
+	@SerializedName("downloadAutoRemoveTaskAfterNDays")
 	var downloadAutoRemoveTaskAfterNDays: Int = 0
+
+	@SerializedName("openDownloadedFileOnSingleClick")
 	var openDownloadedFileOnSingleClick: Boolean = true
 
 	// Advanced download features
+	@SerializedName("downloadAutoResume")
 	var downloadAutoResume: Boolean = true
+
+	@SerializedName("downloadAutoResumeMaxErrors")
 	var downloadAutoResumeMaxErrors: Int = 35
+
+	@SerializedName("downloadAutoLinkRedirection")
 	var downloadAutoLinkRedirection: Boolean = true
+
+	@SerializedName("downloadAutoFolderCatalog")
 	var downloadAutoFolderCatalog: Boolean = true
+
+	@SerializedName("downloadAutoThreadSelection")
 	var downloadAutoThreadSelection: Boolean = true
+
+	@SerializedName("downloadAutoFileMoveToPrivate")
 	var downloadAutoFileMoveToPrivate: Boolean = false
+
+	@SerializedName("downloadAutoConvertVideosToMp3")
 	var downloadAutoConvertVideosToMp3: Boolean = false
 
 	// Download performance settings
+	@SerializedName("downloadBufferSize")
 	var downloadBufferSize: Int = 1024 * 8
+
+	@SerializedName("downloadMaxHttpReadingTimeout")
 	var downloadMaxHttpReadingTimeout: Int = 1000 * 30
+
+	@SerializedName("downloadDefaultThreadConnections")
 	var downloadDefaultThreadConnections: Int = 1
+
+	@SerializedName("downloadDefaultParallelConnections")
 	var downloadDefaultParallelConnections: Int = 10
+
+	@SerializedName("downloadVerifyChecksum")
 	var downloadVerifyChecksum: Boolean = false
+
+	@SerializedName("downloadMaxNetworkSpeed")
 	var downloadMaxNetworkSpeed: Long = 0
+
+	@SerializedName("downloadWifiOnly")
 	var downloadWifiOnly: Boolean = false
+
+	@SerializedName("downloadHttpUserAgent")
 	var downloadHttpUserAgent: String =
 		getText(string.text_downloads_default_http_user_agent)
+
+	@SerializedName("downloadHttpProxyServer")
 	var downloadHttpProxyServer = ""
 
 	// Crash handling
+	@SerializedName("hasAppCrashedRecently")
 	var hasAppCrashedRecently: Boolean = false
 
 	// Privacy and limits
+	@SerializedName("privateFolderPassword")
 	var privateFolderPassword: String = ""
+
+	@SerializedName("numberOfMaxDownloadThreshold")
 	var numberOfMaxDownloadThreshold = 1
+
+	@SerializedName("numberOfDownloadsUserDid")
 	var numberOfDownloadsUserDid = 0
 
 	// Browser-specific settings
+	@SerializedName("browserDefaultHomepage")
 	var browserDefaultHomepage: String = getText(string.text_https_google_com)
+
+	@SerializedName("browserDesktopBrowsing")
 	var browserDesktopBrowsing: Boolean = false
+
+	@SerializedName("browserEnableAdblocker")
 	var browserEnableAdblocker: Boolean = true
+
+	@SerializedName("browserEnableJavascript")
 	var browserEnableJavascript: Boolean = true
+
+	@SerializedName("browserEnableImages")
 	var browserEnableImages: Boolean = true
+
+	@SerializedName("browserEnablePopupBlocker")
 	var browserEnablePopupBlocker: Boolean = true
+
+	@SerializedName("browserEnableVideoGrabber")
 	var browserEnableVideoGrabber: Boolean = true
+
+	@SerializedName("browserHttpUserAgent")
 	var browserHttpUserAgent: String =
 		getText(string.text_browser_default_mobile_http_user_agent)
 
@@ -142,6 +259,7 @@ class AIOSettings : Serializable {
 					logger.d("Found binary settings file, attempting to load")
 					val absolutePath = settingsBinaryDataFile.getAbsolutePath(INSTANCE)
 					val objectInMemory = loadFromBinary(File(absolutePath))
+
 					if (objectInMemory != null) {
 						logger.d("Successfully loaded settings from binary format")
 						aioSettings = objectInMemory
@@ -157,7 +275,7 @@ class AIOSettings : Serializable {
 					logger.d("Attempting to load settings from JSON format")
 					readStringFromInternalStorage(AIO_SETTINGS_FILE_NAME_JSON).let { jsonString ->
 						if (jsonString.isNotEmpty()) {
-							convertJSONStringToClass(data = jsonString).let {
+							convertJSONStringToClass(jsonString = jsonString).let {
 								logger.d("Successfully loaded settings from JSON format")
 								aioSettings = it
 								aioSettings.updateInStorage()
@@ -167,8 +285,7 @@ class AIOSettings : Serializable {
 					}
 				}
 			} catch (error: Exception) {
-				logger.d("Error reading settings from storage: ${error.message}")
-				error.printStackTrace()
+				logger.e("Error reading settings from storage: ${error.message}", error)
 			}
 		})
 	}
@@ -188,8 +305,7 @@ class AIOSettings : Serializable {
 				)
 				logger.d("Settings successfully updated in storage")
 			} catch (error: Exception) {
-				logger.d("Error updating settings in storage: ${error.message}")
-				error.printStackTrace()
+				logger.e("Error updating settings in storage: ${error.message}", error)
 			}
 		})
 	}
@@ -209,7 +325,7 @@ class AIOSettings : Serializable {
 				logger.d("Binary settings saved successfully")
 			}
 		} catch (error: Exception) {
-			logger.d("Error saving binary settings: ${error.message}")
+			logger.e("Error saving binary settings: ${error.message}", error)
 		}
 	}
 
@@ -231,9 +347,8 @@ class AIOSettings : Serializable {
 				logger.d("Successfully loaded settings from binary file")
 			} as AIOSettings
 		} catch (error: Exception) {
-			logger.d("Error loading binary settings: ${error.message}")
+			logger.e("Error loading binary settings: ${error.message}", error)
 			settingDataBinaryFile.delete()
-			error.printStackTrace()
 			null
 		}
 	}
@@ -248,11 +363,12 @@ class AIOSettings : Serializable {
 			logger.d("User selected folder not writable, creating default folder")
 			createDefaultAIODownloadFolder()
 		}
+
 		aioSettings.updateInStorage()
 	}
 
 	/**
-	 * Gets the user-selected directory as a DocumentFile.
+	 * Gets the user-selected download directory as a DocumentFile.
 	 * @return DocumentFile representing the selected directory or null if invalid
 	 */
 	private fun getUserSelectedDir(): DocumentFile? {
@@ -269,8 +385,8 @@ class AIOSettings : Serializable {
 
 			SYSTEM_GALLERY -> {
 				logger.d("Getting system gallery directory")
-				val externalDataFolderPath =
-					getText(string.text_default_aio_download_folder_path)
+				val resID = string.text_default_aio_download_folder_path
+				val externalDataFolderPath = getText(resID)
 				fromFullPath(
 					context = INSTANCE,
 					fullPath = externalDataFolderPath,
@@ -296,8 +412,7 @@ class AIOSettings : Serializable {
 			INSTANCE.getPublicDownloadDir()?.createDirectory(defaultFolderName)
 			logger.d("Default folder created successfully")
 		} catch (error: Exception) {
-			logger.d("Error creating default folder: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error creating default folder: ${error.message}", error)
 		}
 	}
 
@@ -307,17 +422,23 @@ class AIOSettings : Serializable {
 	 */
 	fun convertClassToJSON(): String {
 		logger.d("Converting settings to JSON")
-		return aioGSONInstance.toJson(this)
+		val outputStream = ByteArrayOutputStream()
+		aioDSLJsonInstance.serialize(this, outputStream) // write to stream
+		return outputStream.toByteArray().decodeToString() // convert to String
 	}
 
 	/**
 	 * Converts a JSON string to an AIOSettings object.
-	 * @param data The JSON string to convert
+	 * @param jsonString The JSON string to convert
 	 * @return The deserialized AIOSettings object
 	 */
-	private fun convertJSONStringToClass(data: String): AIOSettings {
+	private fun convertJSONStringToClass(jsonString: String): AIOSettings {
 		logger.d("Converting JSON to settings object")
-		return aioGSONInstance.fromJson(data, AIOSettings::class.java)
+		val inputStream = ByteArrayInputStream(jsonString.encodeToByteArray())
+		val loadedSettings: AIOSettings = aioDSLJsonInstance.deserialize(
+			AIOSettings::class.java, inputStream
+		) ?: AIOSettings()
+		return loadedSettings
 	}
 
 	companion object {
