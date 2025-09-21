@@ -18,7 +18,7 @@ import com.aio.R.drawable
 import com.aio.R.string
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.dslplatform.json.CompiledJson
-import com.google.gson.annotations.SerializedName
+import com.dslplatform.json.JsonAttribute
 import lib.files.FileExtensions.ARCHIVE_EXTENSIONS
 import lib.files.FileExtensions.DOCUMENT_EXTENSIONS
 import lib.files.FileExtensions.IMAGE_EXTENSIONS
@@ -52,283 +52,283 @@ import java.io.Serializable
 class DownloadDataModel : Serializable {
 
 	/** Unique identifier for the download task */
-	@SerializedName("id")
+	@JsonAttribute(name = "id")
 	var id: Int = 0
 
 	/** Current operational status (see DownloadStatus constants) */
-	@SerializedName("status")
+	@JsonAttribute(name = "status")
 	var status: Int = DownloadStatus.CLOSE
 
 	/** Indicates if the download process is currently active */
-	@SerializedName("isRunning")
+	@JsonAttribute(name = "isRunning")
 	var isRunning: Boolean = false
 
 	/** Indicates if the download completed successfully */
-	@SerializedName("isComplete")
+	@JsonAttribute(name = "isComplete")
 	var isComplete: Boolean = false
 
 	/** Indicates if the download was explicitly deleted by user or system */
-	@SerializedName("isDeleted")
+	@JsonAttribute(name = "isDeleted")
 	var isDeleted: Boolean = false
 
 	/** Indicates if the download was removed from UI but may still exist in storage */
-	@SerializedName("isRemoved")
+	@JsonAttribute(name = "isRemoved")
 	var isRemoved: Boolean = false
 
 	/** Flag indicating if file was saved to private/secure storage location */
-	@SerializedName("isWentToPrivateFolder")
+	@JsonAttribute(name = "isWentToPrivateFolder")
 	var isWentToPrivateFolder: Boolean = false
 
 	/** Flag indicating if the source download URL has expired or become invalid */
-	@SerializedName("isFileUrlExpired")
+	@JsonAttribute(name = "isFileUrlExpired")
 	var isFileUrlExpired: Boolean = false
 
 	/** Flag indicating if yt-dlp encountered processing issues during download */
-	@SerializedName("isYtdlpHavingProblem")
+	@JsonAttribute(name = "isYtdlpHavingProblem")
 	var isYtdlpHavingProblem: Boolean = false
 
 	/** Detailed error message from yt-dlp when processing issues occur */
-	@SerializedName("ytdlpProblemMsg")
+	@JsonAttribute(name = "ytdlpProblemMsg")
 	var ytdlpProblemMsg: String = ""
 
 	/** Flag indicating if the expected destination file does not exist after download */
-	@SerializedName("isDestinationFileNotExisted")
+	@JsonAttribute(name = "isDestinationFileNotExisted")
 	var isDestinationFileNotExisted: Boolean = false
 
 	/** Flag indicating if file integrity check via checksum validation failed */
-	@SerializedName("isFileChecksumValidationFailed")
+	@JsonAttribute(name = "isFileChecksumValidationFailed")
 	var isFileChecksumValidationFailed: Boolean = false
 
 	/** Flag indicating download is paused waiting for network connectivity */
-	@SerializedName("isWaitingForNetwork")
+	@JsonAttribute(name = "isWaitingForNetwork")
 	var isWaitingForNetwork: Boolean = false
 
 	/** Flag indicating failure to access or read from source file location */
-	@SerializedName("isFailedToAccessFile")
+	@JsonAttribute(name = "isFailedToAccessFile")
 	var isFailedToAccessFile: Boolean = false
 
 	/** Flag indicating if URL expiration dialog has been shown to user */
-	@SerializedName("isExpiredURLDialogShown")
+	@JsonAttribute(name = "isExpiredURLDialogShown")
 	var isExpiredURLDialogShown: Boolean = false
 
 	/** Flag indicating if automatic file categorization has been processed */
-	@SerializedName("isSmartCategoryDirProcessed")
+	@JsonAttribute(name = "isSmartCategoryDirProcessed")
 	var isSmartCategoryDirProcessed: Boolean = false
 
 	/** Message to display to user via dialog or notification */
-	@SerializedName("msgToShowUserViaDialog")
+	@JsonAttribute(name = "msgToShowUserViaDialog")
 	var msgToShowUserViaDialog: String = ""
 
 	/** Flag indicating if download was initiated from browser context */
-	@SerializedName("isDownloadFromBrowser")
+	@JsonAttribute(name = "isDownloadFromBrowser")
 	var isDownloadFromBrowser: Boolean = false
 
 	/** Flag indicating if basic yt-dlp metadata extraction completed successfully */
-	@SerializedName("isBasicYtdlpModelInitialized")
+	@JsonAttribute(name = "isBasicYtdlpModelInitialized")
 	var isBasicYtdlpModelInitialized: Boolean = false
 
 	/** Custom HTTP headers to include in download requests */
-	@SerializedName("additionalWebHeaders")
+	@JsonAttribute(name = "additionalWebHeaders")
 	var additionalWebHeaders: Map<String, String>? = null
 
 	/** Name of the target file being downloaded */
-	@SerializedName("fileName")
+	@JsonAttribute(name = "fileName")
 	var fileName: String = ""
 
 	/** Source URL from which the file is being downloaded */
-	@SerializedName("fileURL")
+	@JsonAttribute(name = "fileURL")
 	var fileURL: String = ""
 
 	/** HTTP Referrer header value for the download request */
-	@SerializedName("siteReferrer")
+	@JsonAttribute(name = "siteReferrer")
 	var siteReferrer: String = ""
 
 	/** Target directory path where file will be saved */
-	@SerializedName("fileDirectory")
+	@JsonAttribute(name = "fileDirectory")
 	var fileDirectory: String = ""
 
 	/** MIME type of the file being downloaded */
-	@SerializedName("fileMimeType")
+	@JsonAttribute(name = "fileMimeType")
 	var fileMimeType: String = ""
 
 	/** Content-Disposition header value from server response */
-	@SerializedName("fileContentDisposition")
+	@JsonAttribute(name = "fileContentDisposition")
 	var fileContentDisposition: String = ""
 
 	/** Cookie string for authenticated download requests */
-	@SerializedName("siteCookieString")
+	@JsonAttribute(name = "siteCookieString")
 	var siteCookieString: String = ""
 
 	/** Local filesystem path to the downloaded file's thumbnail */
-	@SerializedName("thumbPath")
+	@JsonAttribute(name = "thumbPath")
 	var thumbPath: String = ""
 
 	/** Remote URL source for the file's thumbnail image */
-	@SerializedName("thumbnailUrl")
+	@JsonAttribute(name = "thumbnailUrl")
 	var thumbnailUrl: String = ""
 
 	/** Temporary file path used during yt-dlp processing phase */
-	@SerializedName("tempYtdlpDestinationFilePath")
+	@JsonAttribute(name = "tempYtdlpDestinationFilePath")
 	var tempYtdlpDestinationFilePath: String = ""
 
 	/** Temporary status information during yt-dlp processing */
-	@SerializedName("tempYtdlpStatusInfo")
+	@JsonAttribute(name = "tempYtdlpStatusInfo")
 	var tempYtdlpStatusInfo: String = ""
 
 	/** URI representation of the target directory location */
-	@SerializedName("fileDirectoryURI")
+	@JsonAttribute(name = "fileDirectoryURI")
 	var fileDirectoryURI: String = ""
 
 	/** Automatically determined category name for the file */
-	@SerializedName("fileCategoryName")
+	@JsonAttribute(name = "fileCategoryName")
 	var fileCategoryName: String = ""
 
 	/** Formatted timestamp string indicating download start time */
-	@SerializedName("startTimeDateInFormat")
+	@JsonAttribute(name = "startTimeDateInFormat")
 	var startTimeDateInFormat: String = ""
 
 	/** Unix timestamp in milliseconds indicating download start time */
-	@SerializedName("startTimeDate")
+	@JsonAttribute(name = "startTimeDate")
 	var startTimeDate: Long = 0L
 
 	/** Formatted timestamp string of last file modification time */
-	@SerializedName("lastModifiedTimeDateInFormat")
+	@JsonAttribute(name = "lastModifiedTimeDateInFormat")
 	var lastModifiedTimeDateInFormat: String = ""
 
 	/** Unix timestamp in milliseconds of last file modification */
-	@SerializedName("lastModifiedTimeDate")
+	@JsonAttribute(name = "lastModifiedTimeDate")
 	var lastModifiedTimeDate: Long = 0L
 
 	/** Flag indicating if file size could not be determined from source */
-	@SerializedName("isUnknownFileSize")
+	@JsonAttribute(name = "isUnknownFileSize")
 	var isUnknownFileSize: Boolean = false
 
 	/** Total file size in bytes */
-	@SerializedName("fileSize")
+	@JsonAttribute(name = "fileSize")
 	var fileSize: Long = 0L
 
 	/** Cryptographic hash/checksum for file integrity verification */
-	@SerializedName("fileChecksum")
+	@JsonAttribute(name = "fileChecksum")
 	var fileChecksum: String = "--"
 
 	/** Human-readable formatted string representation of file size */
-	@SerializedName("fileSizeInFormat")
+	@JsonAttribute(name = "fileSizeInFormat")
 	var fileSizeInFormat: String = ""
 
 	/** Average download speed in bytes per second */
-	@SerializedName("averageSpeed")
+	@JsonAttribute(name = "averageSpeed")
 	var averageSpeed: Long = 0L
 
 	/** Maximum achieved download speed in bytes per second */
-	@SerializedName("maxSpeed")
+	@JsonAttribute(name = "maxSpeed")
 	var maxSpeed: Long = 0L
 
 	/** Current real-time download speed in bytes per second */
-	@SerializedName("realtimeSpeed")
+	@JsonAttribute(name = "realtimeSpeed")
 	var realtimeSpeed: Long = 0L
 
 	/** Formatted string representation of average download speed */
-	@SerializedName("averageSpeedInFormat")
+	@JsonAttribute(name = "averageSpeedInFormat")
 	var averageSpeedInFormat: String = "--"
 
 	/** Formatted string representation of maximum download speed */
-	@SerializedName("maxSpeedInFormat")
+	@JsonAttribute(name = "maxSpeedInFormat")
 	var maxSpeedInFormat: String = "--"
 
 	/** Formatted string representation of current download speed */
-	@SerializedName("realtimeSpeedInFormat")
+	@JsonAttribute(name = "realtimeSpeedInFormat")
 	var realtimeSpeedInFormat: String = "--"
 
 	/** Flag indicating if the download supports resumption after interruption */
-	@SerializedName("isResumeSupported")
+	@JsonAttribute(name = "isResumeSupported")
 	var isResumeSupported: Boolean = false
 
 	/** Flag indicating if multi-threaded downloading is supported for this file */
-	@SerializedName("isMultiThreadSupported")
+	@JsonAttribute(name = "isMultiThreadSupported")
 	var isMultiThreadSupported: Boolean = false
 
 	/** Total number of connection retry attempts made */
-	@SerializedName("totalConnectionRetries")
+	@JsonAttribute(name = "totalConnectionRetries")
 	var totalConnectionRetries: Int = 0
 
 	/** Total number of connection retries that weren't reset */
-	@SerializedName("totalUnresetConnectionRetries")
+	@JsonAttribute(name = "totalUnresetConnectionRetries")
 	var totalUnresetConnectionRetries: Int = 0
 
 	/** Download completion percentage (0-100) */
-	@SerializedName("progressPercentage")
+	@JsonAttribute(name = "progressPercentage")
 	var progressPercentage: Long = 0L
 
 	/** Formatted string representation of completion percentage */
-	@SerializedName("progressPercentageInFormat")
+	@JsonAttribute(name = "progressPercentageInFormat")
 	var progressPercentageInFormat: String = ""
 
 	/** Total number of bytes downloaded so far */
-	@SerializedName("downloadedByte")
+	@JsonAttribute(name = "downloadedByte")
 	var downloadedByte: Long = 0L
 
 	/** Formatted string representation of downloaded bytes */
-	@SerializedName("downloadedByteInFormat")
+	@JsonAttribute(name = "downloadedByteInFormat")
 	var downloadedByteInFormat: String = "--"
 
 	/** Array tracking starting byte positions for each download chunk (18 chunks max) */
-	@SerializedName("partStartingPoint")
+	@JsonAttribute(name = "partStartingPoint")
 	var partStartingPoint: LongArray = LongArray(18)
 
 	/** Array tracking ending byte positions for each download chunk (18 chunks max) */
-	@SerializedName("partEndingPoint")
+	@JsonAttribute(name = "partEndingPoint")
 	var partEndingPoint: LongArray = LongArray(18)
 
 	/** Array tracking total size of each download chunk (18 chunks max) */
-	@SerializedName("partChunkSizes")
+	@JsonAttribute(name = "partChunkSizes")
 	var partChunkSizes: LongArray = LongArray(18)
 
 	/** Array tracking bytes downloaded for each chunk (18 chunks max) */
-	@SerializedName("partsDownloadedByte")
+	@JsonAttribute(name = "partsDownloadedByte")
 	var partsDownloadedByte: LongArray = LongArray(18)
 
 	/** Array tracking completion percentage for each download chunk (18 chunks max) */
-	@SerializedName("partProgressPercentage")
+	@JsonAttribute(name = "partProgressPercentage")
 	var partProgressPercentage: IntArray = IntArray(18)
 
 	/** Total time spent on download in milliseconds */
-	@SerializedName("timeSpentInMilliSec")
+	@JsonAttribute(name = "timeSpentInMilliSec")
 	var timeSpentInMilliSec: Long = 0L
 
 	/** Estimated remaining time to complete download in seconds */
-	@SerializedName("remainingTimeInSec")
+	@JsonAttribute(name = "remainingTimeInSec")
 	var remainingTimeInSec: Long = 0L
 
 	/** Formatted string representation of time spent downloading */
-	@SerializedName("timeSpentInFormat")
+	@JsonAttribute(name = "timeSpentInFormat")
 	var timeSpentInFormat: String = "--"
 
 	/** Formatted string representation of estimated remaining time */
-	@SerializedName("remainingTimeInFormat")
+	@JsonAttribute(name = "remainingTimeInFormat")
 	var remainingTimeInFormat: String = "--"
 
 	/** Current status message for display purposes */
-	@SerializedName("statusInfo")
+	@JsonAttribute(name = "statusInfo")
 	var statusInfo: String = "--"
 
 	/** Video-specific metadata for media downloads */
-	@SerializedName("videoInfo")
+	@JsonAttribute(name = "videoInfo")
 	var videoInfo: VideoInfo? = null
 
 	/** Video format and codec information */
-	@SerializedName("videoFormat")
+	@JsonAttribute(name = "videoFormat")
 	var videoFormat: VideoFormat? = null
 
 	/** Command string used to execute the download process */
-	@SerializedName("executionCommand")
+	@JsonAttribute(name = "executionCommand")
 	var executionCommand: String = ""
 
 	/** Playback duration string for media files (e.g., "02:30" for 2 minutes 30 seconds) */
-	@SerializedName("mediaFilePlaybackDuration")
+	@JsonAttribute(name = "mediaFilePlaybackDuration")
 	var mediaFilePlaybackDuration: String = ""
 
 	/** Snapshot of application settings at the time download was initiated */
-	@SerializedName("globalSettings")
+	@JsonAttribute(name = "globalSettings")
 	lateinit var globalSettings: AIOSettings
 
 	companion object {
