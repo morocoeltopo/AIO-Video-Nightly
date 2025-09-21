@@ -556,5 +556,7 @@
 	<string name="title_downloading_media_json_metadata">Downloading Media JSON Metadata…</string>
 	<string name="title_downloading_metadata_json">Downloading Metadata JSON…</string>
 	<string name="title_downloading_video_info">Downloading Video Info…</string>
+	<string name="title_processing_fragments">Processing Fragments (Wait…)</string>
+	<string name="title_downloading">Downloading…</string>
 
 </resources>

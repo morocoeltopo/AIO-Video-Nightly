@@ -184,7 +184,10 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 							logger.d("Last update time is zero, skipping tick.")
 							return
 						}
-
+						
+						downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_processing_fragments)
+						updateDownloadProgress()
+						
 						if (currentTimeMillis() - downloadDataModel.lastModifiedTimeDate >= (1000 * 5)) {
 							if (downloadDataModel.ytdlpProblemMsg.contains("left", true)) {
 								logger.d("Download stalled for over 5 seconds, forcing restart...")
