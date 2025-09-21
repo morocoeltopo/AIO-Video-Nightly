@@ -12,7 +12,7 @@ import com.aio.R.string
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.dslplatform.json.CompiledJson
-import com.google.gson.annotations.SerializedName
+import com.dslplatform.json.JsonAttribute
 import lib.files.FileSystemUtility.isWritableFile
 import lib.files.FileSystemUtility.readStringFromInternalStorage
 import lib.files.FileSystemUtility.saveStringToInternalStorage
@@ -44,204 +44,202 @@ class AIOSettings : Serializable {
 	private val logger = LogHelperUtils.from(javaClass)
 
 	// Basic user state
-	@SerializedName("userInstallationId")
+	@JsonAttribute(name = "userInstallationId")
 	var userInstallationId: String = ""
 
-	@SerializedName("isFirstTimeLanguageSelectionComplete")
-	var isFirstTimeLanguageSelectionComplete = false
+	@JsonAttribute(name = "isFirstTimeLanguageSelectionComplete")
+	var isFirstTimeLanguageSelectionComplete: Boolean = false
 
-	@SerializedName("hasUserRatedTheApplication")
+	@JsonAttribute(name = "hasUserRatedTheApplication")
 	var hasUserRatedTheApplication: Boolean = false
 
-	@SerializedName("totalNumberOfSuccessfulDownloads")
-	var totalNumberOfSuccessfulDownloads = 0
+	@JsonAttribute(name = "totalNumberOfSuccessfulDownloads")
+	var totalNumberOfSuccessfulDownloads: Int = 0
 
-	@SerializedName("totalUsageTimeInMs")
-	var totalUsageTimeInMs = 0.0f
+	@JsonAttribute(name = "totalUsageTimeInMs")
+	var totalUsageTimeInMs: Float = 0.0f
 
-	@SerializedName("totalUsageTimeInFormat")
-	var totalUsageTimeInFormat = ""
+	@JsonAttribute(name = "totalUsageTimeInFormat")
+	var totalUsageTimeInFormat: String = ""
 
-	@SerializedName("lastProcessedClipboardText")
-	var lastProcessedClipboardText = ""
+	@JsonAttribute(name = "lastProcessedClipboardText")
+	var lastProcessedClipboardText: String = ""
 
 	// Default download location
-	@SerializedName("defaultDownloadLocation")
-	var defaultDownloadLocation = PRIVATE_FOLDER
+	@JsonAttribute(name = "defaultDownloadLocation")
+	var defaultDownloadLocation : Int = PRIVATE_FOLDER
 
 	// Language & regions settings
-	@SerializedName("userSelectedUILanguage")
+	@JsonAttribute(name = "userSelectedUILanguage")
 	var userSelectedUILanguage: String = ENGLISH
 
-	@SerializedName("userSelectedContentRegion")
+	@JsonAttribute(name = "userSelectedContentRegion")
 	var userSelectedContentRegion: String = "IN"
 
 	// Other settings
-	@SerializedName("enableDarkUIMode")
+	@JsonAttribute(name = "enableDarkUIMode")
 	var enableDarkUIMode: Boolean = false
 
-	@SerializedName("enableDailyContentSuggestion")
+	@JsonAttribute(name = "enableDailyContentSuggestion")
 	var enableDailyContentSuggestion: Boolean = true
 
 	// Analytics / interaction counters
-	@SerializedName("totalClickCountOnLanguageChange")
-	var totalClickCountOnLanguageChange = 0
+	@JsonAttribute(name = "totalClickCountOnLanguageChange")
+	var totalClickCountOnLanguageChange: Int = 0
 
-	@SerializedName("totalClickCountOnMediaPlayback")
-	var totalClickCountOnMediaPlayback = 0
+	@JsonAttribute(name = "totalClickCountOnMediaPlayback")
+	var totalClickCountOnMediaPlayback: Int = 0
 
-	@SerializedName("totalClickCountOnHowToGuide")
-	var totalClickCountOnHowToGuide = 0
+	@JsonAttribute(name = "totalClickCountOnHowToGuide")
+	var totalClickCountOnHowToGuide: Int = 0
 
-	@SerializedName("totalClickCountOnVideoUrlEditor")
-	var totalClickCountOnVideoUrlEditor = 0
+	@JsonAttribute(name = "totalClickCountOnVideoUrlEditor")
+	var totalClickCountOnVideoUrlEditor: Int = 0
 
-	@SerializedName("totalClickCountOnHomeHistory")
-	var totalClickCountOnHomeHistory = 0
+	@JsonAttribute(name = "totalClickCountOnHomeHistory")
+	var totalClickCountOnHomeHistory: Int = 0
 
-	@SerializedName("totalClickCountOnHomeBookmarks")
-	var totalClickCountOnHomeBookmarks = 0
+	@JsonAttribute(name = "totalClickCountOnHomeBookmarks")
+	var totalClickCountOnHomeBookmarks: Int = 0
 
-	@SerializedName("totalClickCountOnRecentDownloads")
-	var totalClickCountOnRecentDownloads = 0
+	@JsonAttribute(name = "totalClickCountOnRecentDownloads")
+	var totalClickCountOnRecentDownloads: Int = 0
 
-	@SerializedName("totalClickCountOnHomeFavicon")
-	var totalClickCountOnHomeFavicon = 0
+	@JsonAttribute(name = "totalClickCountOnHomeFavicon")
+	var totalClickCountOnHomeFavicon: Int = 0
 
-	@SerializedName("totalClickCountOnVersionCheck")
-	var totalClickCountOnVersionCheck = 0
+	@JsonAttribute(name = "totalClickCountOnVersionCheck")
+	var totalClickCountOnVersionCheck: Int = 0
 
-	@SerializedName("totalInterstitialAdClick")
-	var totalInterstitialAdClick = 0
+	@JsonAttribute(name = "totalInterstitialAdClick")
+	var totalInterstitialAdClick: Int = 0
 
-	@SerializedName("totalInterstitialImpression")
-	var totalInterstitialImpression = 0
+	@JsonAttribute(name = "totalInterstitialImpression")
+	var totalInterstitialImpression: Int = 0
 
-	@SerializedName("totalRewardedAdClick")
-	var totalRewardedAdClick = 0
+	@JsonAttribute(name = "totalRewardedAdClick")
+	var totalRewardedAdClick: Int = 0
 
-	@SerializedName("totalRewardedImpression")
-	var totalRewardedImpression = 0
+	@JsonAttribute(name = "totalRewardedImpression")
+	var totalRewardedImpression: Int = 0
 
-	// Path to WhatsApp Statuses folder (used in status saving)
-	@SerializedName("whatsAppStatusFullFolderPath")
-	val whatsAppStatusFullFolderPath = getText(string.text_whatsapp_status_file_dir)
+	// Path to WhatsApp Statuses folder
+	@JsonAttribute(name = "whatsAppStatusFullFolderPath")
+	val whatsAppStatusFullFolderPath: String = getText(string.text_whatsapp_status_file_dir)
 
 	// Download preferences
-	@SerializedName("downloadSingleUIProgress")
+	@JsonAttribute(name = "downloadSingleUIProgress")
 	var downloadSingleUIProgress: Boolean = true
 
-	@SerializedName("downloadHideVideoThumbnail")
+	@JsonAttribute(name = "downloadHideVideoThumbnail")
 	var downloadHideVideoThumbnail: Boolean = false
 
-	@SerializedName("downloadPlayNotificationSound")
+	@JsonAttribute(name = "downloadPlayNotificationSound")
 	var downloadPlayNotificationSound: Boolean = true
 
-	@SerializedName("downloadHideNotification")
+	@JsonAttribute(name = "downloadHideNotification")
 	var downloadHideNotification: Boolean = false
 
-	@SerializedName("hideDownloadProgressFromUI")
+	@JsonAttribute(name = "hideDownloadProgressFromUI")
 	var hideDownloadProgressFromUI: Boolean = false
 
-	@SerializedName("downloadAutoRemoveTasks")
+	@JsonAttribute(name = "downloadAutoRemoveTasks")
 	var downloadAutoRemoveTasks: Boolean = false
 
-	@SerializedName("downloadAutoRemoveTaskAfterNDays")
+	@JsonAttribute(name = "downloadAutoRemoveTaskAfterNDays")
 	var downloadAutoRemoveTaskAfterNDays: Int = 0
 
-	@SerializedName("openDownloadedFileOnSingleClick")
+	@JsonAttribute(name = "openDownloadedFileOnSingleClick")
 	var openDownloadedFileOnSingleClick: Boolean = true
 
 	// Advanced download features
-	@SerializedName("downloadAutoResume")
+	@JsonAttribute(name = "downloadAutoResume")
 	var downloadAutoResume: Boolean = true
 
-	@SerializedName("downloadAutoResumeMaxErrors")
+	@JsonAttribute(name = "downloadAutoResumeMaxErrors")
 	var downloadAutoResumeMaxErrors: Int = 35
 
-	@SerializedName("downloadAutoLinkRedirection")
+	@JsonAttribute(name = "downloadAutoLinkRedirection")
 	var downloadAutoLinkRedirection: Boolean = true
 
-	@SerializedName("downloadAutoFolderCatalog")
+	@JsonAttribute(name = "downloadAutoFolderCatalog")
 	var downloadAutoFolderCatalog: Boolean = true
 
-	@SerializedName("downloadAutoThreadSelection")
+	@JsonAttribute(name = "downloadAutoThreadSelection")
 	var downloadAutoThreadSelection: Boolean = true
 
-	@SerializedName("downloadAutoFileMoveToPrivate")
+	@JsonAttribute(name = "downloadAutoFileMoveToPrivate")
 	var downloadAutoFileMoveToPrivate: Boolean = false
 
-	@SerializedName("downloadAutoConvertVideosToMp3")
+	@JsonAttribute(name = "downloadAutoConvertVideosToMp3")
 	var downloadAutoConvertVideosToMp3: Boolean = false
 
 	// Download performance settings
-	@SerializedName("downloadBufferSize")
+	@JsonAttribute(name = "downloadBufferSize")
 	var downloadBufferSize: Int = 1024 * 8
 
-	@SerializedName("downloadMaxHttpReadingTimeout")
+	@JsonAttribute(name = "downloadMaxHttpReadingTimeout")
 	var downloadMaxHttpReadingTimeout: Int = 1000 * 30
 
-	@SerializedName("downloadDefaultThreadConnections")
+	@JsonAttribute(name = "downloadDefaultThreadConnections")
 	var downloadDefaultThreadConnections: Int = 1
 
-	@SerializedName("downloadDefaultParallelConnections")
+	@JsonAttribute(name = "downloadDefaultParallelConnections")
 	var downloadDefaultParallelConnections: Int = 10
 
-	@SerializedName("downloadVerifyChecksum")
+	@JsonAttribute(name = "downloadVerifyChecksum")
 	var downloadVerifyChecksum: Boolean = false
 
-	@SerializedName("downloadMaxNetworkSpeed")
+	@JsonAttribute(name = "downloadMaxNetworkSpeed")
 	var downloadMaxNetworkSpeed: Long = 0
 
-	@SerializedName("downloadWifiOnly")
+	@JsonAttribute(name = "downloadWifiOnly")
 	var downloadWifiOnly: Boolean = false
 
-	@SerializedName("downloadHttpUserAgent")
-	var downloadHttpUserAgent: String =
-		getText(string.text_downloads_default_http_user_agent)
+	@JsonAttribute(name = "downloadHttpUserAgent")
+	var downloadHttpUserAgent: String = getText(string.text_downloads_default_http_user_agent)
 
-	@SerializedName("downloadHttpProxyServer")
-	var downloadHttpProxyServer = ""
+	@JsonAttribute(name = "downloadHttpProxyServer")
+	var downloadHttpProxyServer: String = ""
 
 	// Crash handling
-	@SerializedName("hasAppCrashedRecently")
+	@JsonAttribute(name = "hasAppCrashedRecently")
 	var hasAppCrashedRecently: Boolean = false
 
 	// Privacy and limits
-	@SerializedName("privateFolderPassword")
+	@JsonAttribute(name = "privateFolderPassword")
 	var privateFolderPassword: String = ""
 
-	@SerializedName("numberOfMaxDownloadThreshold")
-	var numberOfMaxDownloadThreshold = 1
+	@JsonAttribute(name = "numberOfMaxDownloadThreshold")
+	var numberOfMaxDownloadThreshold: Int = 1
 
-	@SerializedName("numberOfDownloadsUserDid")
-	var numberOfDownloadsUserDid = 0
+	@JsonAttribute(name = "numberOfDownloadsUserDid")
+	var numberOfDownloadsUserDid: Int = 0
 
 	// Browser-specific settings
-	@SerializedName("browserDefaultHomepage")
+	@JsonAttribute(name = "browserDefaultHomepage")
 	var browserDefaultHomepage: String = getText(string.text_https_google_com)
 
-	@SerializedName("browserDesktopBrowsing")
+	@JsonAttribute(name = "browserDesktopBrowsing")
 	var browserDesktopBrowsing: Boolean = false
 
-	@SerializedName("browserEnableAdblocker")
+	@JsonAttribute(name = "browserEnableAdblocker")
 	var browserEnableAdblocker: Boolean = true
 
-	@SerializedName("browserEnableJavascript")
+	@JsonAttribute(name = "browserEnableJavascript")
 	var browserEnableJavascript: Boolean = true
 
-	@SerializedName("browserEnableImages")
+	@JsonAttribute(name = "browserEnableImages")
 	var browserEnableImages: Boolean = true
 
-	@SerializedName("browserEnablePopupBlocker")
+	@JsonAttribute(name = "browserEnablePopupBlocker")
 	var browserEnablePopupBlocker: Boolean = true
 
-	@SerializedName("browserEnableVideoGrabber")
+	@JsonAttribute(name = "browserEnableVideoGrabber")
 	var browserEnableVideoGrabber: Boolean = true
 
-	@SerializedName("browserHttpUserAgent")
-	var browserHttpUserAgent: String =
-		getText(string.text_browser_default_mobile_http_user_agent)
+	@JsonAttribute(name = "browserHttpUserAgent")
+	var browserHttpUserAgent: String = getText(string.text_browser_default_mobile_http_user_agent)
 
 	/**
 	 * Reads settings from internal storage and applies them to the current app instance.

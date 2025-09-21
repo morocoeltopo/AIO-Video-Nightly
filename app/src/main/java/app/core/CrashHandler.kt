@@ -73,8 +73,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 
 				logger.d("Crash log written at: ${crashLogFile.absolutePath}")
 			} catch (error: Exception) {
-				logger.d("Failed to save crash log: ${error.message}")
-				error.printStackTrace()
+				logger.e("Failed to save crash log: ${error.message}", error)
 			}
 
 			// Save crash information for later inspection
