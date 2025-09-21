@@ -2,6 +2,8 @@ package app.core.engines.video_parser.parsers
 
 import app.core.AIOApp.Companion.INSTANCE
 import com.aio.R
+import com.dslplatform.json.CompiledJson
+import com.dslplatform.json.JsonAttribute
 import lib.device.DateTimeUtils.calculateTime
 import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
@@ -39,16 +41,36 @@ object VideoFormatsUtils {
      * @property formatProtocol Protocol used (http, https, etc.)
      * @property formatStreamingUrl Direct streaming URL if available
      */
+    @CompiledJson
     data class VideoFormat(
+        @param:JsonAttribute(name = "isFromSocialMedia")
         var isFromSocialMedia: Boolean = false,
+
+        @param:JsonAttribute(name = "formatId")
         var formatId: String = "",
+
+        @param:JsonAttribute(name = "formatExtension")
         var formatExtension: String = "",
+
+        @param:JsonAttribute(name = "formatResolution")
         var formatResolution: String = "",
+
+        @param:JsonAttribute(name = "formatFileSize")
         var formatFileSize: String = "",
+
+        @param:JsonAttribute(name = "formatVcodec")
         var formatVcodec: String = "",
+
+        @param:JsonAttribute(name = "formatAcodec")
         var formatAcodec: String = "",
+
+        @param:JsonAttribute(name = "formatTBR")
         var formatTBR: String = "",
+
+        @param:JsonAttribute(name = "formatProtocol")
         var formatProtocol: String = "",
+
+        @param:JsonAttribute(name = "formatStreamingUrl")
         var formatStreamingUrl: String = ""
     ) : Serializable
 
@@ -65,15 +87,33 @@ object VideoFormatsUtils {
      * @property videoCookie Cookie string for authenticated requests
      * @property videoCookieTempPath Temporary file path for cookie storage
      */
+    @CompiledJson
     data class VideoInfo(
+        @param:JsonAttribute(name = "videoTitle")
         var videoTitle: String? = null,
+
+        @param:JsonAttribute(name = "videoThumbnailUrl")
         var videoThumbnailUrl: String? = null,
+
+        @param:JsonAttribute(name = "videoThumbnailByReferer")
         var videoThumbnailByReferer: Boolean = false,
+
+        @param:JsonAttribute(name = "videoDescription")
         var videoDescription: String? = null,
+
+        @param:JsonAttribute(name = "videoUrlReferer")
         var videoUrlReferer: String? = null,
+
+        @param:JsonAttribute(name = "videoUrl")
         var videoUrl: String = "",
-        var videoFormats: ArrayList<VideoFormat> = ArrayList(),
+
+        @param:JsonAttribute(name = "videoFormats")
+        var videoFormats: List<VideoFormat> = emptyList(),
+
+        @param:JsonAttribute(name = "videoCookie")
         var videoCookie: String? = "",
+
+        @param:JsonAttribute(name = "videoCookieTempPath")
         var videoCookieTempPath: String = ""
     ) : Serializable
 
