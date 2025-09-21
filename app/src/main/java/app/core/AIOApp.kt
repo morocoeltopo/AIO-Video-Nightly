@@ -19,6 +19,7 @@ import app.core.engines.video_parser.parsers.YoutubeVidParser
 import com.aio.BuildConfig
 import com.anggrayudi.storage.file.DocumentFileCompat.fromPublicFolder
 import com.anggrayudi.storage.file.PublicDirectory.DOWNLOADS
+import com.dslplatform.json.DslJson
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.Strictness.LENIENT
@@ -78,6 +79,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 		val aioLanguage: AIOLanguage by lazy { AIOLanguage() }
 		val aioGSONInstance: Gson by lazy { GsonBuilder().setStrictness(LENIENT).create() }
+		val aioDSLJsonInstance = DslJson<Any>()
 
 		// Download engines & manager
 		val downloadSystem: DownloadSystem by lazy { DownloadSystem() }
