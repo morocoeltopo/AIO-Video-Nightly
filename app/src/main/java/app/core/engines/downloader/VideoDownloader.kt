@@ -95,14 +95,14 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 */
 	override fun initiate() {
 		logger.d("Initiating download task...")
-		executeInBackground {
+		executeInBackground(codeBlock = {
 			logger.d("Initializing download data model...")
 			initDownloadDataModel()
 			logger.d("Setting up download retry timer...")
 			initDownloadTaskTimer()
 			logger.d("Updating initial download status...")
 			updateDownloadStatus()
-		}
+		})
 	}
 
 	/**
@@ -172,7 +172,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				return@executeOnMainThread
 			}
 			logger.d("Setting up new CountDownTimer for download retries.")
-			retryingDownloadTimer = object : CountDownTimer((1000 * 60), 5000) {
+			retryingDownloadTimer = object : CountDownTimer((1000 * 60), 10000) {
+				@Synchronized
 				override fun onTick(millisUntilFinished: Long) {
 					logger.d("Timer tick: Checking download state...")
 					if (downloadDataModel.isRunning &&
@@ -184,13 +185,13 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 							logger.d("Last update time is zero, skipping tick.")
 							return
 						}
-						
-						downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_processing_fragments)
-						updateDownloadProgress()
-						
-						if (currentTimeMillis() - downloadDataModel.lastModifiedTimeDate >= (1000 * 5)) {
+
+						if (currentTimeMillis() - lastUpdateTime >= (1000 * 10)) {
+							downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_processing_fragments)
+							updateDownloadProgress()
+
 							if (downloadDataModel.ytdlpProblemMsg.contains("left", true)) {
-								logger.d("Download stalled for over 5 seconds, forcing restart...")
+								logger.d("Download stalled for over 10 seconds, forcing restart...")
 								forcedRestartDownload(retryingDownloadTimer)
 							}
 						}
@@ -200,15 +201,12 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					}
 				}
 
+				@Synchronized
 				override fun onFinish() {
 					logger.d("Timer finished.")
-					if (downloadDataModel.isRunning ||
-						downloadDataModel.isWaitingForNetwork ||
-						downloadDataModel.isComplete == false
-					) {
-						logger.d("Still waiting for network, restarting timer...")
-						start()
-					}
+					if (downloadDataModel.isRunning == false) return
+					logger.d("Download is still active, restarting timer...")
+					start()
 				}
 			}
 		}
@@ -228,7 +226,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			if (downloadDataModel.totalUnresetConnectionRetries < 10) {
 				downloadDataModel.totalUnresetConnectionRetries++
 				logger.d("Increasing retry count to ${downloadDataModel.totalUnresetConnectionRetries}")
-				retryingDownloadTimer?.cancel()
+				executeOnMainThread { retryingDownloadTimer?.cancel() }
 				logger.d("Cancelled the existing retry timer.")
 				downloadSystem.forceResumeDownload(downloadDataModel)
 				logger.d("Triggered force resume download.")
@@ -646,6 +644,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 * @param statusInfo Optional status message to display.
 	 * @param status The current status code (e.g., DOWNLOADING, COMPLETE).
 	 */
+	@Synchronized
 	override fun updateDownloadStatus(statusInfo: String?, status: Int) {
 		logger.d("Updating download status...")
 
@@ -1096,7 +1095,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		logger.d("Executing download process.")
 		updateDownloadStatus(getText(R.string.title_started_downloading), DOWNLOADING)
 		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_connecting_to_the_server)
-		retryingDownloadTimer?.cancel()
+		executeOnMainThread { retryingDownloadTimer?.cancel() }
 
 		try {
 			lastUpdateTime = currentTimeMillis()
@@ -1111,10 +1110,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			request.addOption("--playlist-items", "1")
 			request.addOption("--user-agent", downloadDataModelConfig.downloadHttpUserAgent)
 			request.addOption("--retries", downloadDataModelConfig.downloadAutoResumeMaxErrors)
-			request.addOption(
-				"--socket-timeout",
-				downloadDataModelConfig.downloadMaxHttpReadingTimeout
-			)
+			request.addOption("--socket-timeout", downloadDataModelConfig.downloadMaxHttpReadingTimeout)
 			request.addOption("--concurrent-fragments", 10)
 			request.addOption("--fragment-retries", 10)
 			request.addOption("--no-check-certificate")
@@ -1151,7 +1147,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 			// Execute restarting downloading timer
 			initDownloadTaskTimer()
-			retryingDownloadTimer?.start()
+			executeOnMainThread { retryingDownloadTimer?.start() }
 
 			// Execute yt-dlp request with progress callback
 			val response = getInstance().execute(
@@ -1186,7 +1182,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				downloadDataModel.isRunning = false
 				downloadDataModel.isComplete = true
 				updateDownloadStatus(getText(R.string.text_completed), COMPLETE)
-				retryingDownloadTimer?.cancel()
+				executeOnMainThread { retryingDownloadTimer?.cancel() }
 
 				logger.d("Download status updated to COMPLETE.")
 				logger.d("Elapsed time: ${response.elapsedTime} ms")
@@ -1267,7 +1263,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				// No response → retry logic
 				logger.d("No response, retrying download process.")
 				restartDownload()
-				retryingDownloadTimer?.start()
+				executeOnMainThread { retryingDownloadTimer?.start() }
 			}
 
 			// Always persist the latest state
