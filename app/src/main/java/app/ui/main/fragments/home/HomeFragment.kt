@@ -838,19 +838,28 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			ThreadsUtility.executeInBackground(codeBlock = {
 				val downloadedFileName = downloadDataModel.fileName
 				if (isVideoByName(downloadedFileName) || isAudioByName(downloadedFileName)) {
-					delay(500)
-					ThreadsUtility.executeOnMain(codeBlock = {
-						downloadDataModel.mediaFilePlaybackDuration.let {
-							val cleaned = it.replace("(", "").replace(")", "")
-							if (cleaned.isNotEmpty()) {
+					repeat(3) { attempt ->
+						Thread.sleep(1000) // wait 1 sec between retries
+						val cleaned = downloadDataModel.mediaFilePlaybackDuration
+							.replace("(", "")
+							.replace(")", "")
+						if (cleaned.isNotEmpty()) {
+							ThreadsUtility.executeOnMain {
 								duration.text = cleaned
 								showView(durationContainer, true)
 								showView(mediaIndicator, true)
 							}
+							return@executeInBackground // stop retries once valid
 						}
-					})
+					}
+					// optional: handle case when still empty after retries
+					ThreadsUtility.executeOnMain {
+						showView(durationContainer, false)
+						showView(mediaIndicator, false)
+					}
 				}
 			})
+
 		}
 
 		/**
@@ -900,7 +909,6 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 				ShareUtility.openFile(downloadedFile, safeMotherActivityRef)
 			}
 		}
-
 
 		/**
 		 * Loads and sets the favicon for the given download item.
