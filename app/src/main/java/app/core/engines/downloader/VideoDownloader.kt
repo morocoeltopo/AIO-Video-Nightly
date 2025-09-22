@@ -187,12 +187,12 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 						}
 
 						if (currentTimeMillis() - lastUpdateTime >= (1000 * 10)) {
-							downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_processing_fragments)
-							updateDownloadProgress()
-
-							if (downloadDataModel.ytdlpProblemMsg.contains("left", true)) {
+							if (downloadDataModel.tempYtdlpStatusInfo.contains("left", true)) {
 								logger.d("Download stalled for over 10 seconds, forcing restart...")
 								forcedRestartDownload(retryingDownloadTimer)
+							} else {
+								downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_processing_fragments)
+								updateDownloadProgress()
 							}
 						}
 					} else if (downloadDataModel.isWaitingForNetwork) {

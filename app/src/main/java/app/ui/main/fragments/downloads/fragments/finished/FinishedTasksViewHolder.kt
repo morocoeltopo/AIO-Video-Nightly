@@ -132,7 +132,7 @@ class FinishedTasksViewHolder(val layout: View) {
 				logger.d("Using cached details for download ID: ${downloadDataModel.id}")
 				ThreadsUtility.executeOnMain {
 					fileInfo.text = cacheDetails
-					updatePaybackTime(fileInfo.text.toString(), downloadDataModel)
+					updatePaybackTime(downloadDataModel)
 				}
 				return@executeInBackground
 			}
@@ -167,7 +167,7 @@ class FinishedTasksViewHolder(val layout: View) {
 					// Cache the formatted details for future use
 					detailsCache[downloadDataModel.id.toString()] = detail
 					fileInfo.text = detail
-					updatePaybackTime(fileInfo.text.toString(), downloadDataModel)
+					updatePaybackTime(downloadDataModel)
 				}
 			}
 		})
@@ -177,21 +177,26 @@ class FinishedTasksViewHolder(val layout: View) {
 	 * Extracts and displays playback time from the file info text if available.
 	 * Shows/hides the duration container based on whether playback time exists.
 	 *
-	 * @param inputText The formatted file information text
 	 * @param downloadDataModel the associated download data model
 	 */
-	private fun updatePaybackTime(inputText: String, downloadDataModel: DownloadDataModel) {
+	private fun updatePaybackTime(downloadDataModel: DownloadDataModel) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			val fileName = downloadDataModel.fileName
 			if (isVideoByName(fileName) || isAudioByName(fileName)) {
-				// Use regex to extract playback time from the formatted text
-				val regex = "\\((\\d{1,2}:\\d{2})\\)".toRegex()
-				val playbackTimeString = regex.find(inputText)?.groupValues?.get(1)
-				if (playbackTimeString?.isNotEmpty() == true) {
+				val cleanedData = downloadDataModel.mediaFilePlaybackDuration
+					.replace("(", "")
+					.replace(")", "")
+				if (cleanedData.isNotEmpty()) {
 					ThreadsUtility.executeOnMain {
 						showView(targetView = durationContainer, shouldAnimate = true)
 						showView(targetView = mediaIndicator, shouldAnimate = true)
-						duration.text = playbackTimeString
+						duration.text = cleanedData
+					}
+				} else {
+					// optional: handle case when still empty after retries
+					ThreadsUtility.executeOnMain {
+						showView(durationContainer, false)
+						showView(mediaIndicator, false)
 					}
 				}
 			} else {

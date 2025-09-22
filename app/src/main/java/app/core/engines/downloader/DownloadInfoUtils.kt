@@ -62,7 +62,7 @@ object DownloadInfoUtils {
 				.append(context.getString(R.string.b_multi_thread_support_b_br, isMultithreadingSupported(ddm)))
 				.append(context.getString(R.string.b_resume_support_b_br, isResumeSupported(ddm)))
 				.append(context.getString(R.string.b_unknown_file_size_b_br, isUnknownFile(ddm)))
-				.append(context.getString(R.string.b_connection_retry_counts_b_times_br, "${ddm.totalConnectionRetries}"))
+				.append(context.getString(R.string.b_connection_retry_counts_b_times_br, "${ddm.totalTrackedConnectionRetries}"))
 				
 				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_default_parallel_connections_b_br, "${defaultParallelConnection(ddm)}"))
