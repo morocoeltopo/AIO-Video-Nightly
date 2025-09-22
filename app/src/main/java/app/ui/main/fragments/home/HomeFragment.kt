@@ -859,7 +859,6 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 					}
 				}
 			})
-
 		}
 
 		/**

@@ -699,6 +699,9 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		logger.d("Updating last modification timestamp.")
 		updateLastModificationDate()
 
+		logger.d("Updating total connection reties")
+		updateTotalConnectionRetries()
+
 		logger.d("Saving updated download model state to storage.")
 		downloadDataModel.updateInStorage()
 	}
@@ -869,6 +872,15 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			logger.d("Error while calculating download percentage: ${error.message}")
 			error.printStackTrace()
 		}
+	}
+
+	/**
+	 * Updates the download model's total tracked retries connections
+	 */
+	private fun updateTotalConnectionRetries() {
+		logger.d("Updating total connection reties")
+		downloadDataModel.totalTrackedConnectionRetries =
+			downloadDataModel.totalConnectionRetries + downloadDataModel.totalUnresetConnectionRetries
 	}
 
 	/**

@@ -40,31 +40,31 @@ object DownloadInfoUtils {
 			}
 			
 			stringBuilder
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_file_category_b_br, ddm.fileCategoryName))
 				.append(context.getString(R.string.b_file_directory_b_br, ddm.fileDirectory))
 				.append(context.getString(R.string.b_file_url_b_br, buildUrlTag(ddm.fileURL)))
 				.append(context.getString(R.string.b_download_webpage_b_br, buildUrlTag(ddm.siteReferrer)))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_download_status_info_b_br, ddm.statusInfo))
 				.append(context.getString(R.string.b_download_started_b_br, ddm.startTimeDateInFormat))
 				.append(context.getString(R.string.b_download_last_modified_b_br, ddm.lastModifiedTimeDateInFormat))
 				.append(context.getString(R.string.b_time_spent_b_br, ddm.timeSpentInFormat))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_is_file_url_expired_b_br, "${ddm.isFileUrlExpired}"))
 				.append(context.getString(R.string.b_is_failed_to_access_file_b_br, "${ddm.isFailedToAccessFile}"))
 				.append(context.getString(R.string.b_is_waiting_for_network_b_br, "${ddm.isWaitingForNetwork}"))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_checksum_validation_b_br, ifChecksumVerified(ddm)))
 				.append(context.getString(R.string.b_multi_thread_support_b_br, isMultithreadingSupported(ddm)))
 				.append(context.getString(R.string.b_resume_support_b_br, isResumeSupported(ddm)))
 				.append(context.getString(R.string.b_unknown_file_size_b_br, isUnknownFile(ddm)))
 				.append(context.getString(R.string.b_connection_retry_counts_b_times_br, "${ddm.totalConnectionRetries}"))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_default_parallel_connections_b_br, "${defaultParallelConnection(ddm)}"))
 				.append(context.getString(R.string.b_default_thread_connections_b_br, "${defaultNumOfThreadsAssigned(ddm)}"))
 				.append(context.getString(R.string.b_buffer_size_b_br, getBufferSize(ddm)))
@@ -81,37 +81,37 @@ object DownloadInfoUtils {
 				.append(context.getString(R.string.b_downloaded_bytes_in_format_b_br, ddm.downloadedByteInFormat))
 				.append(context.getString(R.string.b_progress_percentage_b_br, "${ddm.progressPercentage}%"))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_file_category_b_br, ddm.fileCategoryName))
 				.append(context.getString(R.string.b_file_directory_b_br, ddm.fileDirectory))
 				.append(context.getString(R.string.b_file_url_b_br, buildUrlTag(ddm.fileURL)))
 				.append(context.getString(R.string.b_download_webpage_b_br, buildUrlTag(ddm.siteReferrer)))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_download_status_info_b_br, ddm.statusInfo))
 				.append(context.getString(R.string.b_download_started_b_br, ddm.startTimeDateInFormat))
 				.append(context.getString(R.string.b_download_last_modified_b_br, ddm.lastModifiedTimeDateInFormat))
 				.append(context.getString(R.string.b_time_spent_b_br, ddm.timeSpentInFormat))
 				.append(context.getString(R.string.b_remaining_time_b_br, ddm.remainingTimeInFormat))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_is_file_url_expired_b_br, "${ddm.isFileUrlExpired}"))
 				.append(context.getString(R.string.b_is_failed_to_access_file_b_br, "${ddm.isFailedToAccessFile}"))
 				.append(context.getString(R.string.b_is_waiting_for_network_b_br, "${ddm.isWaitingForNetwork}"))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_realtime_network_speed_b_br, getRealtimeNetworkSpeed(ddm)))
 				.append(context.getString(R.string.b_average_network_speed_b_br, ddm.averageSpeedInFormat))
 				.append(context.getString(R.string.b_max_network_speed_b_br, ddm.maxSpeedInFormat))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_checksum_validation_b_br, ifChecksumVerified(ddm)))
 				.append(context.getString(R.string.b_multi_thread_support_b_br, isMultithreadingSupported(ddm)))
 				.append(context.getString(R.string.b_resume_support_b_br, isResumeSupported(ddm)))
 				.append(context.getString(R.string.b_unknown_file_size_b_br, isUnknownFile(ddm)))
-				.append(context.getString(R.string.b_connection_retry_counts_b_times_br, "${ddm.totalConnectionRetries}"))
+				.append(context.getString(R.string.b_connection_retry_counts_b_times_br, "${ddm.totalTrackedConnectionRetries}"))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_default_parallel_connections_b_br, "${defaultParallelConnection(ddm)}"))
 				.append(context.getString(R.string.b_default_thread_connections_b_br, "${defaultNumOfThreadsAssigned(ddm)}"))
 				.append(context.getString(R.string.b_buffer_size_b_br, getBufferSize(ddm)))
@@ -120,7 +120,7 @@ object DownloadInfoUtils {
 				.append(context.getString(R.string.b_user_agent_b_br, ddm.globalSettings.downloadHttpUserAgent))
 				.append(context.getString(R.string.b_est_part_chunk_size_b_br, estPartChunkSize(ddm)))
 				
-				.append("<br>---------------------------------<br>")
+				.append("---------------------------------<br>")
 				.append(context.getString(R.string.b_part_progress_percentages_b_br, getDownloadPartPercentage(ddm)))
 				.append(context.getString(R.string.b_parts_downloaded_bytes_b_br, getPartDownloadedByte(ddm)))
 				
