@@ -878,7 +878,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 * Updates the download model's total tracked retries connections
 	 */
 	private fun updateTotalConnectionRetries() {
-		logger.d("Updating total connection reties")
+		logger.d("Updating total connection retries")
 		downloadDataModel.totalTrackedConnectionRetries =
 			downloadDataModel.totalConnectionRetries + downloadDataModel.totalUnresetConnectionRetries
 	}

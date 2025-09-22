@@ -728,7 +728,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 	 * Updates the download model's total tracked retries connections
 	 */
 	private fun calculateDownloadRetries() {
-		logger.d("Updating total connection reties")
+		logger.d("Updating total connection retries")
 		downloadDataModel.totalTrackedConnectionRetries =
 			downloadDataModel.totalConnectionRetries + downloadDataModel.totalUnresetConnectionRetries
 	}
