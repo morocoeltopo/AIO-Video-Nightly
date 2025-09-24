@@ -21,11 +21,11 @@
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/_50"
 			android:layout_alignParentTop="true"
-			android:layout_marginStart="@dimen/_15"
+			android:layout_marginStart="@dimen/_10"
 			android:layout_marginTop="@dimen/_10"
-			android:layout_marginEnd="@dimen/_15"
+			android:layout_marginEnd="@dimen/_10"
 			android:layout_marginBottom="@dimen/_5"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_actionbar_title_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<RelativeLayout
@@ -62,22 +62,33 @@
 					android:layout_toStartOf="@+id/btn_browser_options"
 					android:layout_toEndOf="@+id/btn_open_navigation"
 					android:background="@drawable/ic_button_selector_secondary"
-					android:elevation="@dimen/_5"
+					android:elevation="@dimen/_2"
 					android:orientation="horizontal">
 
-					<!-- Website favicon indicator -->
-					<ImageView
-						android:id="@+id/img_browser_favicon"
-						android:layout_width="@dimen/_24"
-						android:layout_height="wrap_content"
+					<!-- Container website favicon indicator -->
+					<androidx.cardview.widget.CardView
+						android:id="@+id/container_img_browser_favicon"
+						android:layout_width="@dimen/_20"
+						android:layout_height="@dimen/_20"
 						android:layout_alignParentStart="true"
 						android:layout_centerVertical="true"
-						android:layout_margin="@dimen/_5"
-						android:adjustViewBounds="true"
-						android:importantForAccessibility="no"
-						android:src="@drawable/ic_button_browser_favicon"
-						android:visibility="visible"
-						tools:ignore="ImageContrastCheck" />
+						android:layout_marginEnd="@dimen/_5"
+						android:layout_marginStart="@dimen/_8"
+						app:cardBackgroundColor="@color/transparent"
+						app:cardCornerRadius="@dimen/_10"
+						app:cardElevation="@dimen/_0">
+
+						<!-- Website favicon indicator -->
+						<ImageView
+							android:id="@+id/img_browser_favicon"
+							android:layout_width="match_parent"
+							android:layout_height="match_parent"
+							android:adjustViewBounds="true"
+							android:importantForAccessibility="no"
+							android:src="@drawable/ic_image_anim_favicon"
+							android:visibility="visible"
+							tools:ignore="ImageContrastCheck" />
+					</androidx.cardview.widget.CardView>
 
 					<!-- URL/search text display with marquee scrolling -->
 					<TextView
@@ -88,7 +99,7 @@
 						android:layout_marginStart="@dimen/_5"
 						android:layout_marginEnd="@dimen/_5"
 						android:layout_toStartOf="@+id/btn_browser_reload"
-						android:layout_toEndOf="@+id/img_browser_favicon"
+						android:layout_toEndOf="@+id/container_img_browser_favicon"
 						android:ellipsize="marquee"
 						android:focusable="true"
 						android:focusableInTouchMode="true"
@@ -163,9 +174,9 @@
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/_50"
 			android:layout_alignParentTop="true"
-			android:layout_marginStart="@dimen/_15"
+			android:layout_marginStart="@dimen/_10"
 			android:layout_marginTop="@dimen/_10"
-			android:layout_marginEnd="@dimen/_15"
+			android:layout_marginEnd="@dimen/_10"
 			android:layout_marginBottom="@dimen/_5"
 			app:cardBackgroundColor="@color/color_background"
 			app:cardCornerRadius="@dimen/_10">
@@ -297,9 +308,9 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_below="@+id/top_actionbar_section"
-		android:layout_marginStart="@dimen/_15"
+		android:layout_marginStart="@dimen/_10"
 		android:layout_marginTop="@dimen/_3"
-		android:layout_marginEnd="@dimen/_15"
+		android:layout_marginEnd="@dimen/_10"
 		android:layout_marginBottom="@dimen/_5"
 		app:cardBackgroundColor="@color/color_background"
 		app:cardCornerRadius="@dimen/_10">
@@ -327,10 +338,10 @@
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/_30"
 			android:layout_gravity="bottom"
-			android:layout_marginStart="@dimen/_15"
+			android:layout_marginStart="@dimen/_10"
 			android:layout_marginTop="@dimen/_10"
-			android:layout_marginEnd="@dimen/_15"
-			android:layout_marginBottom="@dimen/_15"
+			android:layout_marginEnd="@dimen/_10"
+			android:layout_marginBottom="@dimen/_10"
 			android:alpha="1"
 			android:background="@drawable/rounded_secondary_color"
 			android:elevation="@dimen/_2"
@@ -356,7 +367,7 @@
 			android:layout_height="wrap_content"
 			android:layout_gravity="bottom|right"
 			android:layout_marginStart="@dimen/_0"
-			android:layout_marginEnd="@dimen/_15"
+			android:layout_marginEnd="@dimen/_10"
 			android:layout_marginBottom="@dimen/_25"
 			android:adjustViewBounds="true"
 			android:background="@drawable/ic_button_selector_background"

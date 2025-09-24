@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Dialog layout showing a YouTube-specific download guide with step-by-step instructions -->
+<?xml version="1.0" encoding="utf-8"?><!-- Dialog layout showing a YouTube-specific download guide with step-by-step instructions -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -206,9 +205,9 @@
 				android:id="@+id/btn_dialog_positive_container"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginStart="@dimen/_15"
+				android:layout_marginStart="@dimen/_10"
 				android:layout_marginTop="@dimen/_8"
-				android:layout_marginEnd="@dimen/_15"
+				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_8"
 				android:background="@drawable/ic_button_selector_secondary"
 				android:clickable="true"
@@ -224,7 +223,7 @@
 					android:layout_margin="@dimen/_7"
 					android:drawableStart="@drawable/ic_button_checked_circle"
 					android:drawablePadding="@dimen/_5"
-					android:drawableTint="@color/color_background"
+					android:drawableTint="@color/color_on_secondary"
 					android:fontFamily="@font/application_font_family"
 					android:gravity="center"
 					android:text="@string/title_okay"

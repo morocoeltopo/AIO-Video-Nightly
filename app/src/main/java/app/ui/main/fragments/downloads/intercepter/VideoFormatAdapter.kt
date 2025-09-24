@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import android.widget.ImageView
 import android.widget.TextView
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
 import app.core.bases.BaseActivity
@@ -59,6 +60,7 @@ open class VideoFormatAdapter(
 			val mainLayout = view.findViewById<View>(R.id.main_layout)
 			val resolutionTextView: TextView = view.findViewById(R.id.txt_resolution)
 			val fileSizeTextView: TextView = view.findViewById(R.id.txt_file_size)
+			val imgSelectionView : ImageView = view.findViewById(R.id.img_checkbox_selection)
 
 			val videoFormat = getItem(position)
 
@@ -85,10 +87,12 @@ open class VideoFormatAdapter(
 				mainLayout.setBackgroundResource(R.drawable.rounded_secondary_color)
 				resolutionTextView.setTextColor(safeBaseActivityRef.getColor(R.color.color_on_secondary))
 				fileSizeTextView.setTextColor(safeBaseActivityRef.getColor(R.color.color_on_secondary))
+				imgSelectionView.visibility = View.VISIBLE
 			} else {
 				mainLayout.setBackgroundResource(R.drawable.rounded_secondary_color_border)
 				resolutionTextView.setTextColor(safeBaseActivityRef.getColor(R.color.color_text_primary))
 				fileSizeTextView.setTextColor(safeBaseActivityRef.getColor(R.color.color_text_primary))
+				imgSelectionView.visibility = View.GONE
 			}
 
 			// Handle click to select format
