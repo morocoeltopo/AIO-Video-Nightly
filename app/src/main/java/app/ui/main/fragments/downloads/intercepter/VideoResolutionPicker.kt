@@ -213,12 +213,6 @@ class VideoResolutionPicker(
 	/**
 	 * Loads and displays the site favicon inside the given layout.
 	 *
-	 * The function tries to fetch the favicon for the current video’s referral site (or fallback URL)
-	 * using [aioFavicons]. If a valid favicon file is found, it is displayed in the ImageView.
-	 * Otherwise, a default fallback icon is used.
-	 *
-	 * This runs the favicon lookup in a background thread and updates the UI on the main thread.
-	 *
 	 * @param layout The parent [View] containing an ImageView with ID [R.id.img_site_favicon].
 	 */
 	private fun showSiteFavicon(layout: View) {
