@@ -532,7 +532,7 @@
 	<string name="title_single_click_open">Single Click To Open</string>
 	<string name="title_permission_needed">Permission Needed</string>
 	<string name="text_app_dont_have_write_permission_msg">AIO need permission to access the system gallery. <b>Please enable it in the settings.</b></string>
-	<string name="text_restart_if_somethings_off">If the app isn’t behaving as expected, try restarting it — this simple step often resolves the issue.</string>
+	<string name="text_restart_if_somethings_off">If the app isn’t behaving as expected, try restarting it. This simple step often resolves the issue.</string>
 	<string name="text_follow_shibafoss">Follow me at Instagram <u>@ShibaFoss</u></string>
 	<string name="title_move_to_private">Move To Private</string>
 	<string name="title_hide_thumbnail">Hide Thumbnail</string>
@@ -550,7 +550,7 @@
 	<string name="title_open_externally">Open Externally</string>
 	<string name="title_play_the_video">Play The Video</string>
 	<string name="title_play_the_audio">Play The Audio</string>
-	<string name="title_copy_site_link">Copy Site Link</string>
+	<string name="title_copy_website_link">Copy Site Link</string>
 	<string name="title_speed_limiter">Speed Limiter</string>
 	<string name="title_update_link">Update File Link</string>
 	<string name="title_downloading_media_json_metadata">Downloading Media JSON Metadata…</string>
@@ -558,5 +558,6 @@
 	<string name="title_downloading_video_info">Downloading Video Info…</string>
 	<string name="title_processing_fragments">Processing Fragments (Wait…)</string>
 	<string name="title_downloading">Downloading…</string>
+	<string name="title_advanced_download_settings">Advanced Download Settings</string>
 
 </resources>

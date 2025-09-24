@@ -331,7 +331,7 @@
 				<!-- Open downloads tab link -->
 				<TextView
 					android:id="@+id/open_downloads_tab"
-					android:layout_width="wrap_content"
+					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_gravity="center_horizontal"
 					android:layout_marginStart="@dimen/_8"
@@ -340,6 +340,8 @@
 					android:layout_marginBottom="@dimen/_5"
 					android:background="@drawable/ic_button_negative_selector"
 					android:clickable="true"
+					android:gravity="center"
+					android:textFontWeight="600"
 					android:fontFamily="@font/application_font_family"
 					android:text="@string/text_open_downloads_for_recent_downloads"
 					android:textColor="@color/color_text_primary"

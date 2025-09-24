@@ -968,6 +968,13 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		}
 	}
 
+	private fun toggleDownloadThumbnail() {
+		safeMotherActivityRef?.let { motherActivity ->
+			motherActivity.doSomeVibration(50)
+			showToast(msgId = string.title_experimental_feature)
+		}
+	}
+
 	/**
 	 * Copies the download URL to the clipboard if it's valid.
 	 * - If valid: copies, shows confirmation toast, and closes the dialog.
@@ -1061,6 +1068,16 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
+	 * Open advanced download settings dialog.
+	 */
+	private fun openAdvancedDownloadSettings() {
+		safeMotherActivityRef?.let { motherActivity ->
+			motherActivity.doSomeVibration(50)
+			showToast(msgId = string.title_experimental_feature)
+		}
+	}
+
+	/**
 	 * Initializes the dialog by inflating its layout and setting up click listeners
 	 * for all option buttons related to an active download task.
 	 *
@@ -1102,6 +1119,13 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					logger.d("Rename download button clicked")
 					renameDownloadTask()
 				},
+				R.id.btn_remove_thumbnail to {
+					logger.d("Rename download button clicked")
+					toggleDownloadThumbnail()
+				},
+				R.id.btn_copy_site_link  to {
+
+				},
 				R.id.btn_copy_download_url to {
 					logger.d("Copy download URL button clicked")
 					copyDownloadFileLink()
@@ -1113,6 +1137,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				R.id.btn_discover_more to {
 					logger.d("Discover more button clicked")
 					openDownloadReferrerLink()
+				},
+				R.id.btn_advanced_download_settings to {
+					logger.d("Advance download settings button clicked")
+					openAdvancedDownloadSettings()
 				},
 				R.id.btn_download_system_information to {
 					logger.d("Download system info button clicked")

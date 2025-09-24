@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Bottom navigation tab bar layout -->
+<?xml version="1.0" encoding="utf-8"?><!-- Bottom navigation tab bar layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -13,9 +12,9 @@
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginStart="@dimen/_15"
+		android:layout_marginStart="@dimen/_10"
 		android:layout_marginTop="@dimen/_5"
-		android:layout_marginEnd="@dimen/_15"
+		android:layout_marginEnd="@dimen/_10"
 		android:layout_marginBottom="@dimen/_8"
 		app:cardBackgroundColor="@color/color_actionbar_title_bg"
 		app:cardCornerRadius="@dimen/_10">
@@ -64,8 +63,8 @@
 					android:maxLines="1"
 					android:text="@string/title_home"
 					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/small_text_size"
-					android:textFontWeight="600" />
+					android:textFontWeight="600"
+					android:textSize="@dimen/small_text_size" />
 			</LinearLayout>
 
 			<!-- Browser tab button -->
@@ -106,8 +105,8 @@
 					android:maxLines="1"
 					android:text="@string/title_browser"
 					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/small_text_size"
-					android:textFontWeight="600" />
+					android:textFontWeight="600"
+					android:textSize="@dimen/small_text_size" />
 			</LinearLayout>
 
 			<!-- Tasks/Downloads tab button -->
@@ -148,8 +147,8 @@
 					android:maxLines="1"
 					android:text="@string/title_tasks"
 					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/small_text_size"
-					android:textFontWeight="600" />
+					android:textFontWeight="600"
+					android:textSize="@dimen/small_text_size" />
 			</LinearLayout>
 
 			<!-- Settings tab button -->
@@ -190,8 +189,8 @@
 					android:maxLines="1"
 					android:text="@string/title_settings"
 					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/small_text_size"
-					android:textFontWeight="600"/>
+					android:textFontWeight="600"
+					android:textSize="@dimen/small_text_size" />
 			</LinearLayout>
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>

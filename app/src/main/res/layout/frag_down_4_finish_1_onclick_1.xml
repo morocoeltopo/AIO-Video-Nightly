@@ -321,7 +321,7 @@
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:singleLine="true"
-						android:text="@string/title_copy_site_link"
+						android:text="@string/title_copy_website_link"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
