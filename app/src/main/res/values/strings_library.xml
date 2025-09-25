@@ -363,23 +363,23 @@
 	<string name="title_history">History</string>
 	<string name="text_open_downloads_for_recent_downloads"><b><u>Open Tasks</u></b> for all downloads</string>
 	<string name="title_recent_downloads">Recent Downloads</string>
-	<string name="text_fb_how_to_guide_1">Tap the <b><u>Share button</u></b> below the video or reel you want, then <b><u>select Copy link</u></b> to copy its web address to your clipboard.</string>
-	<string name="text_yt_how_to_guide_1"><b><u>Tap the Share button</u></b> below the video, then <b><u>scroll horizontally</u></b> to find the <b><u>More option</u></b>.</string>
-	<string name="text_fb_how_to_guide_2"><b><u>Return to AIO app</u></b>, then paste the copied link into <b><u>the top search box</u></b>, and press <b><u>download</u></b>.</string>
-	<string name="text_yt_how_to_guide_2">Scroll the options to the left to reveal more. <b><u>Tap More to view AIO</u></b> along with other apps.</string>
-	<string name="text_fb_how_to_guide_3"><b><u>After pasting the video link</u></b> into the input field, tap the <b><u>download icon</u></b> to see the available videos resolutions to download.</string>
-	<string name="text_yt_how_to_guide_3">Once the <b><u>list of available apps appears</u></b>, find <b><u>AIO Video Downloader</u></b> in the list and select it.</string>
-	<string name="text_fb_how_to_guide_4">Simply tap the <b><u>Download button</u></b> to save the video or reel directly to <b><u>your phone’s storage</u></b> for offline viewing.</string>
-	<string name="text_yt_how_to_guide_4">Simply tap the <b><u>Download button</u></b> to save the YouTube video <b><u>on your phone’s storage</u></b>.</string>
+	<string name="text_fb_how_to_guide_1">Tap the <b>Share 📤</b> button below the video or reel, then <b>Copy link 🔗</b> to copy its address.</string>
+	<string name="text_yt_how_to_guide_1">Tap the <b>Share 📤</b> button below the video, then <b>scroll ↔️</b> to find the <b>More...</b> option.</string>
+	<string name="text_fb_how_to_guide_2"><b>Return to AIO 🔄</b>, paste the copied link into <b>the search box 🔍</b>, then press <b>Download ⬇️</b>.</string>
+	<string name="text_yt_how_to_guide_2">Scroll left ↩️ to see more options. <b>Tap More...</b> to open AIO 📲 and other apps.</string>
+	<string name="text_fb_how_to_guide_3"><b>After pasting the link 🔗</b>, tap the <b>Download icon ⬇️</b> to see available video resolutions.</string>
+	<string name="text_yt_how_to_guide_3">When the <b>app list 📋</b> appears, find <b>AIO Video Downloader 📲</b> and select it.</string>
+	<string name="text_fb_how_to_guide_4">Tap the <b>Download ⬇️</b> button to save the video or reel to <b>your phone 💾</b> for offline viewing.</string>
+	<string name="text_yt_how_to_guide_4">Tap the <b>Download ⬇️</b> button to save the YouTube video to <b>your phone 💾</b>.</string>
 	<string name="title_pick_video_hosting_platform">Select Video Sharing Platform</string>
 	<string name="title_copied_link">Copied Link</string>
 	<string name="title_open_the_link">Open The Link</string>
 	<string name="title_youtube">Youtube</string>
 	<string name="title_file_size">File Size:</string>
-	<string name="text_inst_how_to_guide_1"><b><u>Open the Instagram reel you want</u></b>, then tap the <b><u>share icon</u></b> to access the available sharing options.</string>
-	<string name="text_inst_how_to_guide_2"><b><u>Tap the share icon again</u></b>, and you’ll see different ways to <b><u>share or copy the reel link</u></b>.</string>
-	<string name="text_inst_how_to_guide_3">Now choose <b><u>AIO</u></b> from the share options, which will open the app and <b><u>let you download the video instantly</u></b>.</string>
-	<string name="text_inst_how_to_guide_4">Simply tap the <b><u>Download</u></b> button to save the Instagram video or reel <b><u>directly to your phone’s storage</u></b> for offline viewing.</string>
+	<string name="text_inst_how_to_guide_1"><b>Open the Instagram reel 🎬</b>, then tap the <b>Share 📤</b> icon to see sharing options.</string>
+	<string name="text_inst_how_to_guide_2"><b>Tap Share 📤 again</b> to see options to <b>share or copy the reel link 🔗</b>.</string>
+	<string name="text_inst_how_to_guide_3">Choose <b>AIO 📲</b> from the share options to open the app and <b>download the video instantly ⬇️</b>.</string>
+	<string name="text_inst_how_to_guide_4">Tap <b>Download ⬇️</b> to save the Instagram video or reel to <b>your phone 💾</b> for offline viewing.</string>
 
 	<string name="text_you_have_b_active_downloads_b">You have <b>%1$s active downloads.</b></string>
 	<string name="text_app_will_restart_to_take_effect">The app will restart to take effect.</string>
@@ -394,9 +394,9 @@
 	<string name="title_download_instagram_reel">Download Instagram Reels</string>
 	<string name="title_download_fb_videos">Download Facebook Videos</string>
 	<string name="title_download_video_from_web">Download Web Videos</string>
-	<string name="text_web_how_to_guide_1">First, <b><u>play the video you want to download</u></b>. Once it’s playing, click the <b><u>Video Grabber icon</u></b> to see the detected video links.</string>
-	<string name="text_web_how_to_guide_2">Choose a <b><u>video resolution</u></b> from the available detected video links. <b>Tip*</b> Higher resolutions give better quality.</string>
-	<string name="text_web_how_to_guide_3">Now, click on the <b><u>Download button</u></b> to start downloading. You can see the <b><u>download progress</u></b> at the <b><u>Tasks</u></b> section.</string>
+	<string name="text_web_how_to_guide_1">First, <b>play the video ▶️</b>. Then click the <b>Video Grabber 🎯</b> icon to see detected links.</string>
+	<string name="text_web_how_to_guide_2">Choose a <b>video resolution 🎥</b> from the detected links. <b>💡 Tip:</b> Higher resolutions give better quality.</string>
+	<string name="text_web_how_to_guide_3">Click the <b>Download ⬇️</b> button to start. Track <b>progress 📊</b> in the <b>Tasks 🗂️</b> section.</string>
 	<string name="title_internet">Internet</string>
 	<string name="title_download_system_information">Download System Information…</string>
 	<string name="text_file_name_will_be_renamed"><b><u>The actual file name</u></b> on disk will be changed.</string>
@@ -521,7 +521,7 @@
 	<string name="text_enable_desktop_mode">Enable desktop mode</string>
 	<string name="title_reset_settings">Reset Settings</string>
 	<string name="title_reset_browser_settings">Reset Browser Settings</string>
-	<string name="text_reset_browser_settings">Reset your browser settings to their default state. This will remove any custom changes.</string>
+	<string name="text_reset_browser_settings">Reset your browser settings to their original defaults. <b>All custom configurations will be removed.</b></string>
 	<string name="text_enable_private_mode">Enable private mode</string>
 	<string name="text_export_browser_bookmark">Export bookmarks/history</string>
 	<string name="text_import_browser_bookmark">Import bookmarks/history</string>
@@ -559,5 +559,6 @@
 	<string name="title_processing_fragments">Processing Fragments (Wait…)</string>
 	<string name="title_downloading">Downloading…</string>
 	<string name="title_advanced_download_settings">Advanced Download Settings</string>
+	<string name="title_no_videos_found">No Videos Found</string>
 
 </resources>

@@ -14,11 +14,11 @@
 		android:id="@+id/top_actionbar_section"
 		android:layout_width="match_parent"
 		android:layout_height="@dimen/_50"
-		android:layout_marginStart="@dimen/_15"
+		android:layout_marginStart="@dimen/_10"
 		android:layout_marginTop="@dimen/_10"
-		android:layout_marginEnd="@dimen/_15"
+		android:layout_marginEnd="@dimen/_10"
 		android:layout_marginBottom="@dimen/_5"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_actionbar_title_bg"
 		app:cardCornerRadius="@dimen/_10">
 
 		<RelativeLayout
@@ -104,9 +104,9 @@
 			<androidx.cardview.widget.CardView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginStart="@dimen/_15"
+				android:layout_marginStart="@dimen/_10"
 				android:layout_marginTop="@dimen/_5"
-				android:layout_marginEnd="@dimen/_15"
+				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
 				app:cardBackgroundColor="@color/color_background"
@@ -137,9 +137,9 @@
 			<androidx.cardview.widget.CardView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginStart="@dimen/_15"
+				android:layout_marginStart="@dimen/_10"
 				android:layout_marginTop="@dimen/_0"
-				android:layout_marginEnd="@dimen/_15"
+				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
 				app:cardBackgroundColor="@color/color_background"
@@ -280,9 +280,9 @@
 			<androidx.cardview.widget.CardView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginStart="@dimen/_15"
+				android:layout_marginStart="@dimen/_10"
 				android:layout_marginTop="@dimen/_0"
-				android:layout_marginEnd="@dimen/_15"
+				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
 				app:cardBackgroundColor="@color/color_background"
@@ -314,6 +314,9 @@
 							style="@style/style_dialog.message"
 							android:layout_margin="@dimen/_8"
 							android:background="@color/transparent"
+							android:drawableLeft="@drawable/ic_button_email_address"
+							android:drawablePadding="@dimen/_8"
+							android:drawableTint="@color/color_secondary"
 							android:gravity="center_vertical"
 							android:hint="@string/text_enter_your_email_address_here"
 							android:importantForAutofill="no"
@@ -344,18 +347,19 @@
 							style="@style/style_dialog.message"
 							android:layout_margin="@dimen/_8"
 							android:background="@color/transparent"
+							android:drawableLeft="@drawable/ic_button_edit_text"
+							android:drawablePadding="@dimen/_8"
+							android:drawableTint="@color/color_secondary"
 							android:gravity="start"
 							android:hint="@string/text_describe_your_experience"
 							android:importantForAutofill="no"
 							android:inputType="text"
-							android:maxLines="5"
-							android:minHeight="@dimen/_120"
 							android:singleLine="true"
 							android:textColor="@color/color_on_surface"
 							android:textColorHint="@color/color_text_hint"
 							android:textSize="@dimen/normal_text_size"
 							android:textStyle="normal"
-							tools:ignore="TextContrastCheck,VisualLintTextFieldSize" />
+							tools:ignore="TextContrastCheck,VisualLintTextFieldSize,TouchTargetSizeCheck" />
 					</LinearLayout>
 				</LinearLayout>
 			</androidx.cardview.widget.CardView>

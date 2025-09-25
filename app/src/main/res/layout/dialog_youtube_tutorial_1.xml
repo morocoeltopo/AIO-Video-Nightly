@@ -15,7 +15,7 @@
 		android:layout_marginTop="@dimen/_10"
 		android:layout_marginEnd="@dimen/_5"
 		android:layout_marginBottom="@dimen/_10"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_cardview_bg"
 		app:cardCornerRadius="@dimen/_10"
 		app:cardElevation="@dimen/_5">
 
@@ -29,7 +29,7 @@
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:background="@color/color_surface"
+				android:background="@color/color_cardview_title_bg"
 				android:orientation="vertical">
 
 				<!-- Dialog title for YouTube download guide -->
@@ -92,8 +92,7 @@
 						android:gravity="center"
 						android:text="@string/text_yt_how_to_guide_1"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic" />
+						android:textSize="@dimen/message_text_size" />
 
 					<!-- Step 2: Image in card -->
 					<androidx.cardview.widget.CardView
@@ -123,8 +122,7 @@
 						android:gravity="center"
 						android:text="@string/text_yt_how_to_guide_2"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic" />
+						android:textSize="@dimen/message_text_size" />
 
 					<!-- Step 3: Image in card with adjusted margins -->
 					<androidx.cardview.widget.CardView
@@ -156,8 +154,7 @@
 						android:gravity="center"
 						android:text="@string/text_yt_how_to_guide_3"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic" />
+						android:textSize="@dimen/message_text_size" />
 
 					<!-- Step 4: Image in card -->
 					<androidx.cardview.widget.CardView
@@ -190,8 +187,7 @@
 						android:gravity="center"
 						android:text="@string/text_yt_how_to_guide_4"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic" />
+						android:textSize="@dimen/message_text_size" />
 
 					<!-- Spacer at the bottom of the scroll view -->
 					<Space

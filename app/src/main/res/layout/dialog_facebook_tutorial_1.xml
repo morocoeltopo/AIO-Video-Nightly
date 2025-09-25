@@ -89,8 +89,7 @@
 						android:gravity="center"
 						android:text="@string/text_fb_how_to_guide_1"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic" />
+						android:textSize="@dimen/message_text_size"/>
 
 					<!-- Step 2: Image and description -->
 					<androidx.cardview.widget.CardView
@@ -119,8 +118,7 @@
 						android:gravity="center"
 						android:text="@string/text_fb_how_to_guide_2"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic" />
+						android:textSize="@dimen/message_text_size"/>
 
 					<!-- Step 3: Image and description -->
 					<androidx.cardview.widget.CardView
@@ -152,7 +150,6 @@
 						android:text="@string/text_fb_how_to_guide_3"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic"
 						tools:ignore="VisualLintLongText" />
 
 					<!-- Step 4: Image and description -->
@@ -185,8 +182,7 @@
 						android:gravity="center"
 						android:text="@string/text_fb_how_to_guide_4"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/message_text_size"
-						android:textStyle="italic" />
+						android:textSize="@dimen/message_text_size"/>
 
 					<!-- Bottom spacing -->
 					<Space
@@ -200,9 +196,9 @@
 				android:id="@+id/btn_dialog_positive_container"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginStart="@dimen/_15"
+				android:layout_marginStart="@dimen/_10"
 				android:layout_marginTop="@dimen/_8"
-				android:layout_marginEnd="@dimen/_15"
+				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_8"
 				android:background="@drawable/ic_button_selector_secondary"
 				android:clickable="true"
@@ -218,7 +214,7 @@
 					android:layout_margin="@dimen/_7"
 					android:drawableStart="@drawable/ic_button_checked_circle"
 					android:drawablePadding="@dimen/_5"
-					android:drawableTint="@color/color_background"
+					android:drawableTint="@color/color_on_secondary"
 					android:fontFamily="@font/application_font_family"
 					android:gravity="center"
 					android:text="@string/title_okay"

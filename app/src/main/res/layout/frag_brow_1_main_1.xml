@@ -165,7 +165,7 @@
 		android:id="@+id/top_url_edit_section"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:background="@color/color_surface"
+		android:background="@color/transparent"
 		android:orientation="vertical"
 		android:visibility="gone">
 
@@ -178,7 +178,7 @@
 			android:layout_marginTop="@dimen/_10"
 			android:layout_marginEnd="@dimen/_10"
 			android:layout_marginBottom="@dimen/_5"
-			app:cardBackgroundColor="@color/color_background"
+			app:cardBackgroundColor="@color/color_actionbar_title_bg"
 			app:cardCornerRadius="@dimen/_10">
 
 			<RelativeLayout

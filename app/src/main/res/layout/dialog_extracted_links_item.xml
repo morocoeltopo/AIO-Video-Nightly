@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- List item layout for displaying video information -->
+<?xml version="1.0" encoding="utf-8"?><!-- List item layout for displaying video information -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
@@ -17,7 +16,7 @@
 		android:layout_marginTop="@dimen/_5"
 		android:layout_marginEnd="@dimen/_8"
 		android:layout_marginBottom="@dimen/_3"
-		android:background="@drawable/ic_button_selector_background"
+		android:background="@drawable/ic_webtab_selector_background"
 		android:clickable="true"
 		android:elevation="@dimen/_1"
 		tools:ignore="UselessParent">

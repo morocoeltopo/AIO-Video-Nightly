@@ -14,11 +14,11 @@
 		android:id="@+id/top_actionbar_section"
 		android:layout_width="match_parent"
 		android:layout_height="@dimen/_50"
-		android:layout_marginStart="@dimen/_15"
+		android:layout_marginStart="@dimen/_10"
 		android:layout_marginTop="@dimen/_10"
-		android:layout_marginEnd="@dimen/_15"
+		android:layout_marginEnd="@dimen/_10"
 		android:layout_marginBottom="@dimen/_0"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_actionbar_title_bg"
 		app:cardCornerRadius="@dimen/_10">
 
 		<RelativeLayout

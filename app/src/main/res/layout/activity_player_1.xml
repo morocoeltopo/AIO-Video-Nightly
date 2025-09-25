@@ -5,22 +5,22 @@
 	android:id="@+id/root_layout"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@color/color_pure_black"
+	android:background="@drawable/ic_background_gradient"
 	tools:context="app.ui.others.media_player.MediaPlayerActivity"
 	tools:ignore="UseAppTint">
 
 	<!-- ExoPlayer video surface -->
 	<androidx.media3.ui.PlayerView
 		android:id="@+id/video_player_view"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
 		android:layout_centerInParent="true"
-		android:background="@color/color_pure_black"
+		android:background="@color/color_surface"
 		app:player_layout_id="@layout/activity_player_3_con_layout_1"
 		app:resize_mode="fit"
-		app:show_buffering="when_playing"
+		app:show_buffering="always"
 		app:show_timeout="4000"
-		app:shutter_background_color="@color/color_pure_black"
+		app:shutter_background_color="@color/color_surface"
 		app:surface_type="surface_view"
 		app:use_controller="false" />
 
@@ -75,8 +75,8 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_centerInParent="true"
-		android:layout_marginStart="@dimen/_15"
-		android:layout_marginEnd="@dimen/_15"
+		android:layout_marginStart="@dimen/_10"
+		android:layout_marginEnd="@dimen/_10"
 		android:background="@drawable/rounded_transparent_black">
 
 		<TextView
@@ -121,11 +121,11 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_alignParentBottom="true"
-			android:layout_marginStart="@dimen/_15"
+			android:layout_marginStart="@dimen/_10"
 			android:layout_marginTop="@dimen/_10"
-			android:layout_marginEnd="@dimen/_15"
-			android:layout_marginBottom="@dimen/_30"
-			app:cardBackgroundColor="@color/color_background"
+			android:layout_marginEnd="@dimen/_10"
+			android:layout_marginBottom="@dimen/_20"
+			app:cardBackgroundColor="@color/color_actionbar_title_bg"
 			app:cardCornerRadius="@dimen/_10"
 			app:cardElevation="@dimen/_5">
 

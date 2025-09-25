@@ -13,9 +13,9 @@
 	<RelativeLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginStart="@dimen/_15"
+		android:layout_marginStart="@dimen/_10"
 		android:layout_marginTop="@dimen/_3"
-		android:layout_marginEnd="@dimen/_15"
+		android:layout_marginEnd="@dimen/_10"
 		android:layout_marginBottom="@dimen/_5"
 		android:background="@drawable/ic_button_selector_background"
 		android:elevation="@dimen/_1"
@@ -32,7 +32,7 @@
 			android:layout_marginEnd="@dimen/_10"
 			android:adjustViewBounds="true"
 			android:importantForAccessibility="no"
-			android:src="@drawable/ic_button_information"
+			android:src="@drawable/ic_image_default_favicon"
 			android:visibility="visible"
 			tools:ignore="ImageContrastCheck" />
 
