@@ -312,7 +312,7 @@ class VideoResolutionPicker(
 				val btnDownload = dialogLayout.findViewById<TextView>(R.id.btn_dialog_positive)
 				btnDownload.let {
 					it.setLeftSideDrawable(R.drawable.ic_button_video)
-					it.setText(R.string.text_watch_ad_to_download)
+					it.setText(R.string.title_watch_ad_to_download)
 				}
 			}
 		}

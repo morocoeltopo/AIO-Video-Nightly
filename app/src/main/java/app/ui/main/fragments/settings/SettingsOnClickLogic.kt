@@ -293,7 +293,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 				val dialogLayout = dialogBuilder.view
 				val currentBrowserHomepageString = safeActivityRef.getString(
-					R.string.text_current_homepage, aioSettings.browserDefaultHomepage
+					R.string.title_current_homepage, aioSettings.browserDefaultHomepage
 				)
 
 				dialogLayout.findViewById<TextView>(R.id.txt_current_homepage).text =

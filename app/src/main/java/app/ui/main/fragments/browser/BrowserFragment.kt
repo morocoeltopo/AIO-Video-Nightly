@@ -139,7 +139,7 @@ class BrowserFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		val url = getBrowserWebEngine().currentWebView?.url.toString()
 		if (isYouTubeUrl(url) && !IS_ULTIMATE_VERSION_UNLOCKED) {
 			browserFragmentBody.videoGrabberButton.visibility = GONE
-			val msgYtNotSupported = CommonTextUtils.getText(R.string.text_youtube_download_not_supported)
+			val msgYtNotSupported = CommonTextUtils.getText(R.string.title_youtube_download_not_supported)
 			browserFragmentBody.webviewEngine.showQuickBrowserInfo(msgYtNotSupported)
 		} else {
 			analyzeUrl(getBrowserWebEngine().currentWebView?.url, getBrowserWebEngine())

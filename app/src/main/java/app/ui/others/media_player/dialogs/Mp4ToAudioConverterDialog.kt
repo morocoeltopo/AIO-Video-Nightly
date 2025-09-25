@@ -53,7 +53,7 @@ object Mp4ToAudioConverterDialog {
 			// Create waiting dialog to display conversion progress
 			val waitingDialog = WaitingDialog(
 				baseActivityInf = safeActivityRef,
-				loadingMessage = getText(R.string.text_converting_audio_progress_0),
+				loadingMessage = getText(R.string.title_converting_audio_progress_0),
 				isCancelable = false,
 				shouldHideOkayButton = false
 			)
@@ -66,7 +66,7 @@ object Mp4ToAudioConverterDialog {
 
 				// Configure Cancel button
 				findViewById<TextView>(R.id.btn_dialog_positive)?.apply {
-					this.setText(R.string.text_cancel_converting)
+					this.setText(R.string.title_cancel_converting)
 					this.setLeftSideDrawable(R.drawable.ic_button_cancel)
 				}
 
@@ -108,7 +108,7 @@ object Mp4ToAudioConverterDialog {
 								override fun onProgress(progress: Int) {
 									// Update progress on UI thread
 									executeOnMainThread {
-										val resId = R.string.text_converting_audio_progress
+										val resId = R.string.title_converting_audio_progress
 										val progressString = INSTANCE.getString(resId, "${progress}%")
 										logger.d("Conversion progress: $progress%")
 										messageTextView?.text = progressString

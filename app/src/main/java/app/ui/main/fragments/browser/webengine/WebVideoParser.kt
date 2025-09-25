@@ -41,7 +41,7 @@ object WebVideoParser {
 		// Handle YouTube case
 		if (!IS_ULTIMATE_VERSION_UNLOCKED && isYouTubeUrl(webpageUrl)) {
 			videoGrabberButton.visibility = View.GONE
-			val msgYtNotSupported = getText(R.string.text_youtube_download_not_supported)
+			val msgYtNotSupported = getText(R.string.title_youtube_download_not_supported)
 			webviewEngine.showQuickBrowserInfo(msgYtNotSupported)
 			return
 		} else {

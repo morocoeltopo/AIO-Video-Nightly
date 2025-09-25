@@ -695,7 +695,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
     private fun playVideoFromDownloadModel(downloadModel: DownloadDataModel) {
         val mediaFile = fromFile(File("${downloadModel.fileDirectory}/${downloadModel.fileName}"))
         if (mediaFile.exists()) playVideoFromFile(mediaFile = mediaFile, subtitleFile = null)
-        else showQuickPlayerInfo(msgText = getString(string.text_media_file_is_not_existed))
+        else showQuickPlayerInfo(msgText = getString(string.title_media_file_is_not_existed))
     }
 
     /**
@@ -1219,7 +1219,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
                     isTitleVisible = true,
                     isNegativeButtonVisible = false,
                     titleTextViewCustomize = { titleView ->
-                        titleView.setText(string.text_unavailable_for_streaming)
+                        titleView.setText(string.title_unavailable_for_streaming)
                         titleView.setTextColorKT(color.color_error)
                     },
                     positiveButtonTextCustomize = { positiveButton ->
@@ -1448,7 +1448,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
         downloadSystem.finishedDownloadDataModels.remove(deletedDownloadDataModel)
         downloadSystem.sortFinishedDownloadDataModels()
         deletedDownloadDataModel.deleteModelFromDisk()
-        executeOnMainThread { showToast(getString(string.text_media_file_has_deleted)) }
+        executeOnMainThread { showToast(getString(string.title_media_file_has_deleted)) }
     }
 
     /**
@@ -1535,7 +1535,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
                     isTitleVisible = true,
                     isNegativeButtonVisible = false,
                     titleTextViewCustomize = { titleView ->
-                        titleView.setText(string.text_unavailable_for_streaming)
+                        titleView.setText(string.title_unavailable_for_streaming)
                         titleView.setTextColorKT(color.color_error)
                     },
                     positiveButtonTextCustomize = { positiveButton ->

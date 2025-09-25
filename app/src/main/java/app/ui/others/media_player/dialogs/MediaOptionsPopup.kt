@@ -111,7 +111,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
                     isTitleVisible = true,
                     isNegativeButtonVisible = false,
                     titleTextViewCustomize = { titleView ->
-                        titleView.setText(string.text_unavailable_for_streaming)
+                        titleView.setText(string.title_unavailable_for_streaming)
                         titleView.setTextColorKT(R.color.color_error)
                     },
                     positiveButtonTextCustomize = { positiveButton ->
@@ -163,7 +163,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
                     isTitleVisible = true,
                     isNegativeButtonVisible = false,
                     titleTextViewCustomize = { titleView ->
-                        titleView.setText(string.text_unavailable_for_streaming)
+                        titleView.setText(string.title_unavailable_for_streaming)
                         titleView.setTextColorKT(R.color.color_error)
                     }, messageTextViewCustomize = { msgTextView ->
                         msgTextView.setText(string.text_no_discovery_during_streaming)
@@ -181,7 +181,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
                     playerActivityRef.startActivity(intent)
                 } catch (error: Exception) {
                     error.printStackTrace()
-                    showToast(msgId = string.text_no_app_can_handle_this_request)
+                    showToast(msgId = string.title_no_app_can_handle_this_request)
                 }
             }
         }

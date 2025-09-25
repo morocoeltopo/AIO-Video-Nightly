@@ -45,10 +45,10 @@ class WebVideosLibrary {
 						override fun onResolutions(resolutions: List<String>) {
 							val infoText: String
 							if (resolutions.size > 1) {
-								val stringResId = R.string.type_video_type_m3u8_available_resolutions
+								val stringResId = R.string.title_video_available_resolutions
 								infoText = INSTANCE.getString(stringResId, "${resolutions.size}")
 							} else {
-								val stringResId = R.string.text_video_type_m3u8_resolution
+								val stringResId = R.string.title_video_type_m3u8_resolution
 								infoText = INSTANCE.getString(stringResId, resolutions[0])
 							}
 							
@@ -69,7 +69,7 @@ class WebVideosLibrary {
 						executeOnMainThread {
 							videoUrlInfo.totalResolutions = 1
 							videoUrlInfo.fileResolution = "${resolution.second}p"
-							val stringResId = R.string.text_video_type_mp4_resolution
+							val stringResId = R.string.title_video_type_mp4_resolution
 							val infoText = INSTANCE.getString(stringResId, videoUrlInfo.fileResolution)
 							videoUrlInfo.infoCached = infoText
 							videoUrlInfo.isM3U8 = false

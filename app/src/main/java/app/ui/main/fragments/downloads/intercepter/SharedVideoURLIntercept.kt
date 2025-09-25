@@ -204,7 +204,7 @@ class SharedVideoURLIntercept(
 						if (videoInfo.videoFormats.isEmpty()) {
 							logger.d("No video formats found")
 							if (shouldOpenBrowserAsFallback) openInBuiltInBrowser(videoUrl)
-							else showToast(msgId = R.string.text_no_video_found)
+							else showToast(msgId = R.string.title_no_video_found)
 
 						} else {
 							logger.d("Showing resolution picker with ${videoInfo.videoFormats.size} formats")

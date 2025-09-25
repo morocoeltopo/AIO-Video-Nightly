@@ -227,7 +227,7 @@ class BrowserFragmentBody(val browserFragment: BrowserFragment) {
                             currentTabPosition,
                             it
                         )
-                        webviewEngine.showQuickBrowserInfo(getText(R.string.text_closed_tab))
+                        webviewEngine.showQuickBrowserInfo(getText(R.string.title_closed_tab))
                     }
                 } catch (error: Exception) {
                     error.printStackTrace()

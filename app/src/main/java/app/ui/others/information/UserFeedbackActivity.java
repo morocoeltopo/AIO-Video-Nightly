@@ -119,7 +119,7 @@ public class UserFeedbackActivity extends BaseActivity {
 			String messageToSend = generateMessage();
 			if (messageToSend.isEmpty()) {
 				doSomeVibration(50);
-				showToast(getString(R.string.text_enter_your_email_message_first), -1);
+				showToast(getString(R.string.title_enter_your_email_message_first), -1);
 				return;
 			}
 
@@ -166,7 +166,7 @@ public class UserFeedbackActivity extends BaseActivity {
 		if (isUserMessageValid()) {
 			msgBuilder.append(getString(R.string.title_user_message))
 					.append(userMessage).append("\n\n");
-			msgBuilder.append(getString(R.string.text_user_email))
+			msgBuilder.append(getString(R.string.title_user_email))
 					.append(userEmail).append("\n\n");
 		} else return "";
 

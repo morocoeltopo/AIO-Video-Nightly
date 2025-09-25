@@ -20,7 +20,6 @@ import app.core.engines.browser.history.HistoryModel
 import app.ui.main.MotherActivity
 import com.aio.R
 import com.bumptech.glide.Glide
-import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.normalizeEncodedUrl
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
@@ -119,7 +118,7 @@ class BrowserWebChromeClient(val webviewEngine: WebViewEngine) : WebChromeClient
             resultMsg.sendToTarget() // Allow popup
         } else {
             // Block popup and show user feedback
-            val messageResId = getText(R.string.text_blocked_unwanted_popup_links)
+            val messageResId = getText(R.string.title_blocked_unwanted_popup_links)
             webviewEngine.showQuickBrowserInfo(messageResId)
         }
 

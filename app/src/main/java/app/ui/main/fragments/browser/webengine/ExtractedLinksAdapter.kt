@@ -141,11 +141,11 @@ class ExtractedLinksAdapter(
 							override fun onResolutions(resolutions: List<String>) {
 								closeAnyAnimation(linkItemInfo)
 								if (resolutions.size > 1) {
-									val stringResId = R.string.type_video_type_m3u8_available_resolutions
+									val stringResId = R.string.title_video_available_resolutions
 									val infoText = motherActivity.getString(stringResId, "${resolutions.size}")
 									linkItemInfo.text = infoText
 								} else {
-									val stringResId = R.string.text_video_type_m3u8_resolution
+									val stringResId = R.string.title_video_type_m3u8_resolution
 									val infoText = motherActivity.getString(stringResId, resolutions[0])
 									linkItemInfo.text = infoText
 								}
@@ -173,7 +173,7 @@ class ExtractedLinksAdapter(
             safeMotherActivity?.let { safeMotherActivity ->
                 executeInBackground {
                     executeOnMainThread {
-                        linkItemInfo.text = getText(R.string.text_fetching_file_info)
+                        linkItemInfo.text = getText(R.string.title_fetching_file_info)
                         animateFadInOutAnim(linkItemInfo)
                     }
 
@@ -190,7 +190,7 @@ class ExtractedLinksAdapter(
                                 closeAnyAnimation(linkItemInfo)
                                 videoUrlInfo.totalResolutions = 1
                                 videoUrlInfo.fileResolution = "${resolution.second}p"
-                                val stringResId = R.string.text_video_type_mp4_resolution
+                                val stringResId = R.string.title_video_type_mp4_resolution
                                 val infoText = safeMotherActivity.getString(
                                     stringResId,
                                     videoUrlInfo.fileResolution
@@ -203,7 +203,7 @@ class ExtractedLinksAdapter(
                             closeAnyAnimation(linkItemInfo)
                             videoUrlInfo.totalResolutions = 1
                             videoUrlInfo.fileResolution = getText(R.string.title_unknown)
-                            val stringResId = R.string.text_video_type_mp4_resolution
+                            val stringResId = R.string.title_video_type_mp4_resolution
                             val infoText = safeMotherActivity.getString(
                                 stringResId,
                                 videoUrlInfo.fileResolution
@@ -220,8 +220,8 @@ class ExtractedLinksAdapter(
                         executeOnMainThread {
                             closeAnyAnimation(linkItemInfo)
                             safeMotherActivity.getString(
-                                R.string.text_video_type_mp4,
-                                safeMotherActivity.getText(R.string.text_click_to_get_info)
+                                R.string.title_video_type_mp4,
+                                safeMotherActivity.getText(R.string.title_click_to_get_info)
                             ).let { linkItemInfo.text = it }
                             textLinkItemInfo = linkItemInfo.text.toString()
                             layoutView.visibility = GONE

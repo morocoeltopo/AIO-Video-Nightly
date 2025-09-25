@@ -144,7 +144,7 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 					if (numberOfDownloadsUserDid >= maxDownloadThreshold) {
 						if (!IS_PREMIUM_USER && !IS_ULTIMATE_VERSION_UNLOCKED) {
 							it.setLeftSideDrawable(R.drawable.ic_button_video)
-							it.setText(R.string.text_watch_ad_to_download)
+							it.setText(R.string.title_watch_ad_to_download)
 						}
 					}
 				},
