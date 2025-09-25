@@ -59,7 +59,7 @@ class M3U8InfoExtractor {
 	private fun fetchResolutionsFromM3U8(m3u8Url: String): List<String> {
 		// Configure HTTP data source with user agent
 		val factory = DefaultHttpDataSource.Factory()
-		val userAgent = getText(R.string.text_mobile_user_agent)
+		val userAgent = getText(R.string.title_mobile_user_agent)
 		val dataSourceFactory = factory.setUserAgent(userAgent)
 		val playlistParser = HlsPlaylistParser()
 		

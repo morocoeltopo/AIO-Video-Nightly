@@ -494,7 +494,7 @@ class BookmarksActivity : BaseActivity(),
 				.text = getText(R.string.text_no_bookmark_matched_with_search)
 		} else {
 			findViewById<TextView>(R.id.txt_empty_bookmark_indicator)
-				.text = getText(R.string.text_your_bookmark_collection_empty)
+				.text = getText(R.string.title_your_bookmark_collection_empty)
 		}
 
 		val bookmarkSize = if (containerSearchLayout.isVisible) bookmarksAdapter.count

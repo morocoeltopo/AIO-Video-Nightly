@@ -70,7 +70,7 @@
 					android:drawablePadding="@dimen/_5"
 					android:drawableTint="@color/color_secondary"
 					android:gravity="center_vertical"
-					android:hint="@string/text_type_new_file_name_hint"
+					android:hint="@string/title_type_new_file_name_hint"
 					android:importantForAutofill="no"
 					android:inputType="textUri"
 					android:maxLines="1"

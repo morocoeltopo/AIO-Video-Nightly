@@ -62,7 +62,7 @@ class DownloadFileRenamer(
 					// Show error if file name is empty
 					if (userGivenText.isEmpty()) {
 						safeMotherActivityRef.doSomeVibration(50)
-						showToast(getText(string.text_file_name_must_not_be_empty))
+						showToast(getText(string.title_file_name_must_not_be_empty))
 						return@setOnClickForPositiveButton
 					}
 					
@@ -86,7 +86,7 @@ class DownloadFileRenamer(
 						safeMotherActivityRef.doSomeVibration(50)
 						showMessageDialog(
 							baseActivityInf = safeMotherActivityRef,
-							messageTxt = getText(string.text_error_advice_on_renaming_download_file),
+							messageTxt = getText(string.title_error_advice_renaming_download_file),
 							negativeButtonTextCustomize = { it.setLeftSideDrawable(R.drawable.ic_button_cancel) },
 							positiveButtonTextCustomize = { it.setLeftSideDrawable(R.drawable.ic_button_checked_circle) })
 						return@setOnClickForPositiveButton

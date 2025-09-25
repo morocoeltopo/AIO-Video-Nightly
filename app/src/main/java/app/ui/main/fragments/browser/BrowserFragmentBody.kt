@@ -145,7 +145,7 @@ class BrowserFragmentBody(val browserFragment: BrowserFragment) {
             val waitingDialog = WaitingDialog(
                 isCancelable = false,
                 baseActivityInf = safeMotherActivityRef,
-                loadingMessage = getText(R.string.text_analyzing_url_please_wait),
+                loadingMessage = getText(R.string.title_analyzing_url_please_wait),
                 dialogCancelListener = { dialog ->
                     isParsingTitleFromUrlAborted = true
                     dialog.dismiss()

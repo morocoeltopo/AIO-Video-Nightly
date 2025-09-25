@@ -216,7 +216,7 @@
 				android:layout_marginBottom="@dimen/_10"
 				android:fontFamily="@font/application_font_family"
 				android:gravity="center"
-				android:text="@string/text_your_bookmark_collection_empty"
+				android:text="@string/title_your_bookmark_collection_empty"
 				android:textColor="@color/color_text_primary"
 				android:textFontWeight="600"
 				android:textSize="@dimen/message_text_size" />

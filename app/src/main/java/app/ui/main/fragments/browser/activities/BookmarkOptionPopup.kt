@@ -178,7 +178,7 @@ class BookmarkOptionPopup(
 			} else {
 				logger.d("Invalid homepage URL entered")
 				activity.doSomeVibration(50)
-				showToast(msgId = R.string.text_invalid_url)
+				showToast(msgId = R.string.title_invalid_url)
 			}
 		}
 	}

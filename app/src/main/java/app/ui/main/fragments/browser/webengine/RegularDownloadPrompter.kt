@@ -169,7 +169,7 @@ class RegularDownloadPrompter(
             if (currentWebUrl.isNullOrEmpty()) return
             openLinkInSystemBrowser(currentWebUrl, safeMotherActivityRef) {
                 safeMotherActivityRef.doSomeVibration(40)
-                showToast(getText(R.string.text_failed_open_the_video))
+                showToast(getText(R.string.title_failed_open_the_video))
             }
         }
     }

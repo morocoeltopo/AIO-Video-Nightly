@@ -509,7 +509,7 @@ class MotherActivity : BaseActivity() {
 		if (URLUtility.isValidURL(clipboardText)) {
 			if (isSocialMediaUrl(clipboardText)) {
 				logger.d("URL is social media, parsing title and thumbnail")
-				val waitingMsg = getText(R.string.text_analyzing_url_please_wait)
+				val waitingMsg = getText(R.string.title_analyzing_url_please_wait)
 				val waitingDialog = WaitingDialog(
 					isCancelable = false,
 					baseActivityInf = safeMotherActivityRef,
@@ -568,7 +568,7 @@ class MotherActivity : BaseActivity() {
 	private fun invalidUrlErrorToast(safeMotherActivity: MotherActivity) {
 		logger.d("Showing invalid URL error toast")
 		safeMotherActivity.doSomeVibration(50)
-		ToastView.showToast(msgId = R.string.text_file_url_not_valid)
+		ToastView.showToast(msgId = R.string.title_file_url_not_valid)
 	}
 
 	/**

@@ -67,7 +67,7 @@
 				android:maxLines="1"
 				android:scrollHorizontally="true"
 				android:singleLine="true"
-				android:text="@string/text__"
+				android:text="@string/title__"
 				android:textSize="@dimen/normal_text_size"
 				android:textStyle="bold" />
 

@@ -921,7 +921,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				val msgTxt = getText(R.string.text_missing_webpage_link_info)
 				MsgDialogUtils.showMessageDialog(
 					baseActivityInf = safeMotherActivityRef,
-					titleText = getText(R.string.text_missing_associate_webpage),
+					titleText = getText(R.string.title_missing_associate_webpage),
 					isTitleVisible = true,
 					messageTxt = msgTxt,
 					isNegativeButtonVisible = false
@@ -1028,6 +1028,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					finishedTasksListAdapter.notifyDataSetChangedOnSort(true)
 
 					logger.d("Thumbnail visibility toggled successfully")
+					safeMotherActivityRef.homeFragment?.refreshRecentDownloadListUI()
 				} catch (error: Exception) {
 					logger.e("Error found at hide/show thumbnail -", error)
 					showToast(msgId = R.string.title_something_went_wrong)

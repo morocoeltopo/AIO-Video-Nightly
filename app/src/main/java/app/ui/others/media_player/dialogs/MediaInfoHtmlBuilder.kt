@@ -94,37 +94,37 @@ object MediaInfoHtmlBuilder {
 			else getText(R.string.title_sounds)
 			
 			// Append basic file information
-			append(INSTANCE.getString(R.string.text_file_name_b_br, fileName))
-			append(INSTANCE.getString(R.string.text_file_directory_b, fileDirectory))
-			append(INSTANCE.getString(R.string.text_file_size_b_br, fileSize))
-			append(INSTANCE.getString(R.string.text_file_type_b_br, mediaFileType))
+			append(INSTANCE.getString(R.string.title_file_name_b_br, fileName))
+			append(INSTANCE.getString(R.string.title_file_directory_b, fileDirectory))
+			append(INSTANCE.getString(R.string.title_file_size_b_br, fileSize))
+			append(INSTANCE.getString(R.string.title_file_type_b_br, mediaFileType))
 			
 			append("------------------------<br>")
 			
 			// Append format and duration information
-			append(INSTANCE.getString(R.string.text_file_format_b_br, format))
-			append(INSTANCE.getString(R.string.text_duration_b_br, durationFormatted))
+			append(INSTANCE.getString(R.string.title_file_format_b_br, format))
+			append(INSTANCE.getString(R.string.title_duration_b_br, durationFormatted))
 			
 			// Append download status information
 			val downloadStatusText = getDownloadStatusText(downloadDataModel.status)
-			append(INSTANCE.getString(R.string.text_download_status_b_br, downloadStatusText))
-			append(INSTANCE.getString(R.string.text_downloaded_date_b_br, downloadDateFormatted))
+			append(INSTANCE.getString(R.string.title_download_status_b_br, downloadStatusText))
+			append(INSTANCE.getString(R.string.title_downloaded_date_b_br, downloadDateFormatted))
 			append("------------------------<br>")
 			
 			// Append video-specific information if file is a video
 			if (isVideo) {
 				if (width == null && height == null) {
-					val resolution = INSTANCE.getString(R.string.text_resolution_b_x_br, "-- ", " --")
+					val resolution = INSTANCE.getString(R.string.title_resolution_b_x_br, "-- ", " --")
 					append(resolution).append(getVideoCodec(videoCodec))
 				} else {
-					val resolution = INSTANCE.getString(R.string.text_resolution_b_x_br, width, height)
+					val resolution = INSTANCE.getString(R.string.title_resolution_b_x_br, width, height)
 					append(resolution).append(getVideoCodec(videoCodec))
 				}
 			}
 			
 			// Append audio and bitrate information
-			append(INSTANCE.getString(R.string.text_bitrate_b_bps_br, bitRate))
-			append(INSTANCE.getString(R.string.text_audio_codec_b_br, audioCodec))
+			append(INSTANCE.getString(R.string.title_bitrate_b_bps_br, bitRate))
+			append(INSTANCE.getString(R.string.title_audio_codec_b_br, audioCodec))
 		}.toString()
 	}
 	
@@ -135,7 +135,7 @@ object MediaInfoHtmlBuilder {
 	 * @return Formatted string with video codec information
 	 */
 	private fun getVideoCodec(videoCodec: String?): String {
-		return INSTANCE.getString(R.string.text_video_codec_b_br, videoCodec)
+		return INSTANCE.getString(R.string.title_video_codec_b_br, videoCodec)
 	}
 	
 	/**
@@ -174,7 +174,7 @@ object MediaInfoHtmlBuilder {
 	 */
 	private fun getDownloadStatusText(status: Int): String {
 		return when (status) {
-			CLOSE -> getText(R.string.text_closed)
+			CLOSE -> getText(R.string.title_closed)
 			DOWNLOADING -> getText(R.string.title_in_progress)
 			COMPLETE -> getText(R.string.title_completed)
 			else -> getText(R.string.title_unknown)

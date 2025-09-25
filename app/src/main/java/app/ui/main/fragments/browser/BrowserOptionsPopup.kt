@@ -156,7 +156,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			})
 			
 			aioBookmark.updateInStorage()
-			showToast(msgId = R.string.text_bookmark_saved)
+			showToast(msgId = R.string.title_bookmark_saved)
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
@@ -207,7 +207,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			}
 			
 			copyTextToClipboard(safeMotherActivityRef, currentWebpageUrl)
-			showToast(msgId = R.string.text_copied_to_clipboard)
+			showToast(msgId = R.string.title_copied_to_clipboard)
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
@@ -236,7 +236,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 	 * Shows a toast indicating that the URL is invalid.
 	 */
 	private fun showInvalidUrlToast() {
-		showToast(msgId = R.string.text_invalid_url)
+		showToast(msgId = R.string.title_invalid_url)
 	}
 	
 	/**

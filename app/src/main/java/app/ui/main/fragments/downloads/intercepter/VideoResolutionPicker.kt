@@ -284,7 +284,7 @@ class VideoResolutionPicker(
 	private fun madeUpTitleFromSelectedVideoFormat(): String {
 		if (videoFormatAdapter.selectedPosition < 0) {
 			// Default text when no format selected
-			val textResID = R.string.text_pick_video_resolution_for_getting_file_name
+			val textResID = R.string.title_pick_video_resolution_for_file_name
 			return getText(textResID)
 		}
 
@@ -333,14 +333,14 @@ class VideoResolutionPicker(
 			if (selectedFormat < 0) {
 				// No format selected feedback
 				safeBaseActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_select_a_video_resolution)
+				showToast(msgId = R.string.title_select_a_video_resolution)
 				return
 			}
 
 			if (videoInfo.videoTitle.isNullOrEmpty()) {
 				// Wait for title to load feedback
 				safeBaseActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.text_wait_for_video_title)
+				showToast(msgId = R.string.title_wait_till_server_return_video_title)
 				return
 			}
 
@@ -454,7 +454,7 @@ class VideoResolutionPicker(
 		safeBaseActivityRef?.let { safeBaseActivityRef ->
 			openLinkInSystemBrowser(videoInfo.videoUrl, safeBaseActivityRef) {
 				safeBaseActivityRef.doSomeVibration(40)
-				showToast(getText(R.string.text_failed_open_the_video))
+				showToast(getText(R.string.title_failed_open_the_video))
 			}
 		}
 	}

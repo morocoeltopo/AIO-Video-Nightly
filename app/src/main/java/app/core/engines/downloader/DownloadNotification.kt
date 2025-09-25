@@ -122,8 +122,8 @@ class DownloadNotification {
 	 * @return The appropriate status message text
 	 */
 	private fun getContentTextByStatus(downloadDataModel: DownloadDataModel): String {
-		val completedText = getText(R.string.text_download_complete_click_to_open)
-		val pausedText = getText(R.string.text_download_has_been_paused)
+		val completedText = getText(R.string.title_download_complete_click_to_open)
+		val pausedText = getText(R.string.title_download_has_been_paused)
 		val runningText = downloadDataModel.generateDownloadInfoInString()
 
 		val result = when {

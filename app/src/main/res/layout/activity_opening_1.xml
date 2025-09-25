@@ -88,7 +88,7 @@
 		android:layout_centerHorizontal="true"
 		android:layout_marginBottom="@dimen/_50"
 		android:fontFamily="@font/application_font_family"
-		android:text="@string/text__"
+		android:text="@string/title__"
 		android:textColor="@color/color_text_primary"
 		android:textSize="@dimen/small_text_size" />
 

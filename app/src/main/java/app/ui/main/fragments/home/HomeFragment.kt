@@ -177,6 +177,12 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		}
 	}
 
+	fun refreshRecentDownloadListUI() {
+		safeHomeFragmentRef?.safeFragmentLayoutRef?.let {
+			setupRecentDownloadsSitesAdapter(it)
+		}
+	}
+
 	/**
 	 * Updates the downloads-related UI components.
 	 * @param layout The fragment's root view

@@ -112,7 +112,7 @@ public class AIOForegroundService extends Service {
     private void createNotification() {
         NotificationChannel serviceChannel = new NotificationChannel(
                 CHANNEL_ID,
-                getString(R.string.text_aio_system_service),
+                getString(R.string.title_aio_system_service),
                 NotificationManager.IMPORTANCE_LOW
         );
         NotificationManager manager = getSystemService(NotificationManager.class);
@@ -133,7 +133,7 @@ public class AIOForegroundService extends Service {
 
         return new Builder(this, CHANNEL_ID)
                 .setContentTitle(getString(R.string.title_aio_video_downloader))
-                .setContentText(getString(R.string.text_app_running_in_the_background))
+                .setContentText(getString(R.string.title_search_and_download_your_videos))
                 .setSmallIcon(R.drawable.ic_launcher_logo_v4)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)

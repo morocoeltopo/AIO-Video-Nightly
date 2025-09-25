@@ -70,7 +70,7 @@ class IntentInterceptActivity : BaseActivity() {
         val intentUrl = getIntentDataURI(getActivity())
         if (URLUtility.isValidURL(intentUrl) == false) {
             doSomeVibration(50)
-            showToast(msgId = R.string.text_invalid_url)
+            showToast(msgId = R.string.title_invalid_url)
             onBackPressActivity()
             return
         }
@@ -87,7 +87,7 @@ class IntentInterceptActivity : BaseActivity() {
                         val waitingDialog = WaitingDialog(
                             isCancelable = false,
                             baseActivityInf = it,
-                            loadingMessage = getString(R.string.text_analyzing_url_please_wait),
+                            loadingMessage = getString(R.string.title_analyzing_url_please_wait),
                             dialogCancelListener = { dialog -> dialog.dismiss() }
                         )
                         waitingDialog.show()

@@ -121,7 +121,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private fun updateFileName(downloadModel: DownloadDataModel) {
 		fileNameTextView.text = downloadModel.fileName.ifEmpty {
 			logger.d("Filename not available yet for id=${downloadModel.id}, showing placeholder")
-			getText(R.string.text_getting_name_from_server)
+			getText(R.string.title_getting_name_from_server)
 		}
 	}
 
@@ -424,7 +424,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 				if (!isShowingAnyDialog) {
 					MsgDialogUtils.showMessageDialog(
 						baseActivityInf = it.safeBaseActivityRef,
-						titleText = getText(R.string.txt_download_failed),
+						titleText = getText(R.string.title_download_failed),
 						isTitleVisible = true,
 						isCancelable = false,
 						messageTxt = downloadDataModel.msgToShowUserViaDialog,

@@ -181,7 +181,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:singleLine="true"
-						android:text="@string/text__"
+						android:text="@string/title__"
 						android:textColor="@color/color_text_hint"
 						android:textFontWeight="300"
 						android:textSize="@dimen/smallest_text_size"

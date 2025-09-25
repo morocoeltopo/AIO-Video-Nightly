@@ -548,7 +548,7 @@ object VideoFormatsUtils {
      */
     private fun formatDownloadLineStage5(input: String): String {
         return if (input.startsWith("Destination:")) {
-            getText(R.string.text_setting_destination_files)
+            getText(R.string.title_setting_destination_files)
         } else {
             formatDownloadingLineStage6(input)
         }

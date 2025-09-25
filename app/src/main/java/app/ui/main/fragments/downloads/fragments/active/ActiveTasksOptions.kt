@@ -499,7 +499,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				// Show loading dialog while stream is prepared
 				val waitingDialog = WaitingDialog(
 					baseActivityInf = safeMotherActivityRef,
-					loadingMessage = getText(string.text_preparing_video_please_wait)
+					loadingMessage = getText(string.title_preparing_video_please_wait)
 				)
 				waitingDialog.show()
 
@@ -707,7 +707,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				// Check if already paused
 				if (downloadSystem.searchActiveDownloadTaskWith(downloadModel) == null) {
 					logger.d("Download ID: ${downloadModel.id} is already paused")
-					showToast(getText(string.text_download_task_already_paused))
+					showToast(getText(string.title_download_task_already_paused))
 					return
 				}
 
@@ -1004,7 +1004,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		logger.d("Attempting to share download URL")
 
 		downloadDataModel?.fileURL?.takeIf { isValidURL(it) }?.let { fileUrl ->
-			val titleText = getText(string.text_share_download_file_url)
+			val titleText = getText(string.title_share_download_file_url)
 			logger.d("Valid URL found for sharing: $fileUrl")
 			shareUrl(safeMotherActivityRef, fileUrl, titleText) {
 				logger.d("Share intent completed, closing dialog")
@@ -1012,7 +1012,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 			}
 		} ?: run {
 			logger.d("No valid download URL found to share")
-			showToast(getText(string.text_dont_have_anything_to_share))
+			showToast(getText(string.title_dont_have_anything_to_share))
 		}
 	}
 

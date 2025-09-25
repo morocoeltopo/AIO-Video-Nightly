@@ -159,8 +159,8 @@ class FinishedTasksViewHolder(val layout: View) {
 				fileInfo.apply {
 					val detail = fromHtmlStringToSpanned(
 						context.getString(
-							R.string.text_b_b_b_date_b,
-							getText(R.string.text_info), category.removePrefix("AIO"),
+							R.string.title_b_b_b_date_b,
+							getText(R.string.title_info), category.removePrefix("AIO"),
 							fileSize, playbackTime, modifyDate
 						)
 					)

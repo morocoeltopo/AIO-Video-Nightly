@@ -207,7 +207,7 @@ object VideoParserUtility {
             videoInfo.videoTitle = madeUpTitle
 
             return if (videoInfo.videoTitle.isNullOrEmpty()) {
-                getText(R.string.text_unknown_video_title)
+                getText(R.string.title_unknown_video_title)
             } else videoInfo.videoTitle!!
 
         } else {

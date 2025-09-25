@@ -88,7 +88,7 @@ class SharedVideoURLIntercept(
 		waitingDialog = WaitingDialog(
 			isCancelable = false,
 			baseActivityInf = safeBaseActivityRef,
-			loadingMessage = getText(R.string.text_analyzing_url_please_wait),
+			loadingMessage = getText(R.string.title_analyzing_url_please_wait),
 			dialogCancelListener = {
 				waitingDialog?.let { waitingDialog ->
 					logger.d("Waiting dialog cancelled by user")
@@ -355,14 +355,14 @@ class SharedVideoURLIntercept(
 	private fun openInSystemBrowser(urlFromIntent: String) {
 		logger.d("Opening URL in system browser: $urlFromIntent")
 		openLinkInSystemBrowser(urlFromIntent, safeBaseActivityRef) {
-			showToast(getText(R.string.text_failed_open_the_video))
+			showToast(getText(R.string.title_failed_open_the_video))
 		}
 	}
 
 	/** Shows a toast indicating invalid or malformed URL. */
 	private fun showInvalidUrlToast() {
 		logger.d("Showing invalid URL toast")
-		showToast(msgId = R.string.text_invalid_url)
+		showToast(msgId = R.string.title_invalid_url)
 	}
 
 	/**

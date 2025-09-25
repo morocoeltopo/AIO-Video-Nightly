@@ -169,7 +169,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:maxLines="1"
-						android:text="@string/text_no_sound"
+						android:text="@string/title_no_sound"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
@@ -189,7 +189,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:maxLines="1"
-						android:text="@string/text_incomplete_video"
+						android:text="@string/title_incomplete_video"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
@@ -209,7 +209,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:maxLines="1"
-						android:text="@string/text_app_crashed"
+						android:text="@string/title_app_crashed"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
@@ -229,7 +229,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:maxLines="1"
-						android:text="@string/text_glitch_in_video"
+						android:text="@string/title_glitch_in_video"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
@@ -249,7 +249,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:maxLines="1"
-						android:text="@string/text_showing_many_ads"
+						android:text="@string/title_showing_many_ads"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
@@ -269,7 +269,7 @@
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:maxLines="1"
-						android:text="@string/text_other_problems"
+						android:text="@string/title_other_problems"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size"
 						tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
@@ -351,7 +351,7 @@
 							android:drawablePadding="@dimen/_8"
 							android:drawableTint="@color/color_secondary"
 							android:gravity="start"
-							android:hint="@string/text_describe_your_experience"
+							android:hint="@string/title_describe_your_experience"
 							android:importantForAutofill="no"
 							android:inputType="text"
 							android:singleLine="true"

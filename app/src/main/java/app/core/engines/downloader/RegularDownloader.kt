@@ -189,7 +189,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		downloadDataModel.isRunning = false
 		downloadDataModel.isWaitingForNetwork = false
 		downloadDataModel.totalConnectionRetries = 0
-		downloadDataModel.statusInfo = getText(string.text_waiting_to_join)
+		downloadDataModel.statusInfo = getText(string.title_waiting_to_join)
 		downloadDataModel.updateInStorage()
 	}
 
@@ -248,7 +248,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		val isPreviousDataFound = downloadDataModel.downloadedByte > 0
 
 		if (isPreviousDataFound) {
-			updateDownloadStatus(getText(string.text_old_data_found))
+			updateDownloadStatus(getText(string.title_old_data_found))
 
 			if (!destinationFile.exists()) {
 				downloadDataModel.isFailedToAccessFile = true
@@ -262,7 +262,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 	 * Disables max error limit if auto-resume is not enabled.
 	 */
 	private fun configureDownloadAutoResumeSettings() {
-		updateDownloadStatus(getText(string.text_configuring_auto_resume))
+		updateDownloadStatus(getText(string.title_configuring_auto_resume))
 		if (!downloadDataModelConfig.downloadAutoResume) {
 			downloadDataModelConfig.downloadAutoResumeMaxErrors = 0
 		}
@@ -273,7 +273,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 	 * Disables removal timing if auto-remove is not enabled.
 	 */
 	private fun configureDownloadAutoRemoveSettings() {
-		updateDownloadStatus(statusInfo = getText(string.text_configuring_auto_remove))
+		updateDownloadStatus(statusInfo = getText(string.title_configuring_auto_remove))
 		if (!downloadDataModelConfig.downloadAutoRemoveTasks) {
 			downloadDataModelConfig.downloadAutoRemoveTaskAfterNDays = 0
 		}
@@ -285,7 +285,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 	 */
 	private fun configureDownloadAutoFilterURL() {
 		if (downloadDataModelConfig.downloadAutoLinkRedirection) {
-			updateDownloadStatus(statusInfo = getText(string.text_filtering_url))
+			updateDownloadStatus(statusInfo = getText(string.title_filtering_url))
 			val originalURL = getOriginalURL(downloadDataModel.fileURL)
 			if (originalURL != null) downloadDataModel.fileURL = originalURL
 		}
@@ -478,19 +478,19 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		if (isRetryingAllowed()) {
 			if (!isNetworkAvailable()) {
 				downloadDataModel.isWaitingForNetwork = true
-				updateDownloadStatus(getText(string.text_waiting_for_network))
+				updateDownloadStatus(getText(string.title_waiting_for_network))
 				return
 			}
 
 			if (downloadDataModelConfig.downloadWifiOnly && !isWifiEnabled()) {
 				downloadDataModel.isWaitingForNetwork = true
-				updateDownloadStatus(getText(string.text_waiting_for_wifi))
+				updateDownloadStatus(getText(string.title_waiting_for_wifi))
 				return
 			}
 
 			if (!downloadPart.isInternetConnected()) {
 				downloadDataModel.isWaitingForNetwork = true
-				updateDownloadStatus(getText(string.text_waiting_for_internet))
+				updateDownloadStatus(getText(string.title_waiting_for_internet))
 				return
 			}
 

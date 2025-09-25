@@ -54,7 +54,7 @@
 				android:layout_toStartOf="@+id/bookmark_url_date"
 				android:fontFamily="@font/application_font_family"
 				android:singleLine="true"
-				android:text="@string/text__"
+				android:text="@string/title__"
 				android:textColor="@color/color_on_surface"
 				android:textSize="@dimen/message_text_size"
 				android:textFontWeight="600"
@@ -72,7 +72,7 @@
 				android:fontFamily="@font/application_font_family"
 				android:gravity="center_vertical"
 				android:singleLine="true"
-				android:text="@string/text__"
+				android:text="@string/title__"
 				android:textColor="@color/color_on_surface"
 				android:textSize="@dimen/small_text_size" />
 
@@ -104,7 +104,7 @@
 			android:layout_toEndOf="@+id/bookmark_url_favicon_indicator"
 			android:fontFamily="@font/application_font_family"
 			android:singleLine="true"
-			android:text="@string/text__"
+			android:text="@string/title__"
 			android:textColor="@color/color_text_hint"
 			android:textSize="@dimen/smaller_text_size"
 			android:textStyle="italic"

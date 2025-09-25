@@ -318,7 +318,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 					// Show explanation dialog when permissions are denied
 					callback.showRequestReasonDialog(
 						permissions = deniedList,
-						message = getString(R.string.text_allow_the_permissions),
+						message = getString(R.string.title_allow_the_permissions),
 						positiveText = getString(R.string.title_allow_now)
 					)
 				}.onForwardToSettings { scope, deniedList ->
@@ -385,7 +385,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	 */
 	override fun exitActivityOnDoubleBackPress() {
 		if (isBackButtonEventFired == 0) {
-			showToast(msgId = R.string.text_press_back_button_to_exit)
+			showToast(msgId = R.string.title_press_back_button_to_exit)
 			isBackButtonEventFired = 1
 			delay(2000, object : OnTaskFinishListener {
 				override fun afterDelay() {
@@ -490,7 +490,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			showMessageDialog(
 				baseActivityInf = safeActivityRef,
 				isTitleVisible = true,
-				titleText = getString(R.string.text_feature_isnt_implemented),
+				titleText = getString(R.string.title_feature_isnt_implemented),
 				isNegativeButtonVisible = false,
 				positiveButtonText = getString(R.string.title_okay),
 				messageTextViewCustomize = { messageTextView ->

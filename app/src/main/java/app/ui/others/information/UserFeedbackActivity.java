@@ -124,7 +124,7 @@ public class UserFeedbackActivity extends BaseActivity {
 			}
 
 			INSTANCE.getAIOBackend().saveUserFeedback(messageToSend);
-			showToast(getString(R.string.text_feedbacks_sent_successfully), -1);
+			showToast(getString(R.string.title_feedbacks_sent_successfully), -1);
 			resetFormFields();
 		});
 
@@ -164,37 +164,37 @@ public class UserFeedbackActivity extends BaseActivity {
 		String userEmail = getUserEmail();
 
 		if (isUserMessageValid()) {
-			msgBuilder.append(getString(R.string.text_user_message))
+			msgBuilder.append(getString(R.string.title_user_message))
 					.append(userMessage).append("\n\n");
 			msgBuilder.append(getString(R.string.text_user_email))
 					.append(userEmail).append("\n\n");
 		} else return "";
 
 		// Append selected issues
-		msgBuilder.append(getString(R.string.text_issues_reported));
+		msgBuilder.append(getString(R.string.title_issues_reported));
 		if (checkBoxNoSound.isChecked())
-			msgBuilder.append(getString(R.string.text_no_sound_in_videos));
+			msgBuilder.append(getString(R.string.title_no_sound_in_videos));
 		if (checkBoxIncompleteVideo.isChecked())
-			msgBuilder.append(getString(R.string.text_videos_are_incomplete));
+			msgBuilder.append(getString(R.string.title_videos_are_incomplete));
 		if (checkBoxAppCrashed.isChecked())
-			msgBuilder.append(getString(R.string.text_app_crashed_during_use));
+			msgBuilder.append(getString(R.string.title_app_crashed_during_use));
 		if (checkBoxGlitchedVideos.isChecked())
-			msgBuilder.append(getString(R.string.text_videos_are_glitching));
+			msgBuilder.append(getString(R.string.title_videos_are_glitching));
 		if (checkBoxShowingManyAds.isChecked())
-			msgBuilder.append(getString(R.string.text_too_many_ads_are_being_shown));
+			msgBuilder.append(getString(R.string.title_too_many_ads_are_being_shown));
 		if (checkBoxOtherProblem.isChecked())
-			msgBuilder.append(getString(R.string.text_other_problems_experienced));
+			msgBuilder.append(getString(R.string.title_other_problems_experienced));
 
 		// No specific issues
 		if (!checkBoxNoSound.isChecked() && !checkBoxIncompleteVideo.isChecked() &&
 				!checkBoxAppCrashed.isChecked() && !checkBoxGlitchedVideos.isChecked() &&
 				!checkBoxShowingManyAds.isChecked() && !checkBoxOtherProblem.isChecked()) {
-			msgBuilder.append(getString(R.string.text_no_specific_issues_reported));
+			msgBuilder.append(getString(R.string.title_no_specific_issues_reported));
 		}
 
 		// Append device information
 		String deviceInfo = getDeviceInformation(this);
-		msgBuilder.append(getString(R.string.text_device_information)).append(deviceInfo);
+		msgBuilder.append(getString(R.string.title_device_information)).append(deviceInfo);
 		return msgBuilder.toString();
 	}
 
@@ -208,7 +208,7 @@ public class UserFeedbackActivity extends BaseActivity {
 
 			DialogBuilder dialogBuilder = showMessageDialog(
 					this, false, true,
-					getString(R.string.text_oops_app_was_crashed),
+					getString(R.string.title_oops_app_was_crashed),
 					getString(R.string.text_app_crash_feedback_message),
 					getString(R.string.title_send_feedback),
 					getString(R.string.title_cancel),
@@ -237,7 +237,7 @@ public class UserFeedbackActivity extends BaseActivity {
 
 			dialogBuilder.setOnClickForPositiveButton(view -> {
 				dialogBuilder.close();
-				showToast(null, R.string.text_feedbacks_sent_successfully);
+				showToast(null, R.string.title_feedbacks_sent_successfully);
 
 				delay(200, () -> {
 					try {

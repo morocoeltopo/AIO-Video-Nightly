@@ -6,7 +6,6 @@ import android.view.View.GONE
 import android.view.View.OnClickListener
 import android.widget.RelativeLayout
 import android.widget.TextView
-import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.bases.interfaces.BaseActivityInf
 import com.aio.R
@@ -56,7 +55,7 @@ object MsgDialogUtils {
 		baseActivityInf: BaseActivityInf?,
 		isCancelable: Boolean = true,
 		isTitleVisible: Boolean = false,
-		titleText: CharSequence = getText(R.string.text_title_goes_here),
+		titleText: CharSequence = getText(R.string.title_title_goes_here),
 		messageTxt: CharSequence = applicationContext.getString(R.string.title_message_goes_here),
 		positiveButtonText: CharSequence = applicationContext.getString(R.string.title_okay),
 		negativeButtonText: CharSequence = applicationContext.getString(R.string.title_cancel),
@@ -121,7 +120,7 @@ object MsgDialogUtils {
 		baseActivityInf: BaseActivityInf?,
 		isCancelable: Boolean = true,
 		isTitleVisible: Boolean = false,
-		titleText: CharSequence = getText(R.string.text_title_goes_here),
+		titleText: CharSequence = getText(R.string.title_title_goes_here),
 		messageTxt: CharSequence = getText(R.string.title_message_goes_here),
 		positiveButtonText: CharSequence = INSTANCE.getString(R.string.title_okay),
 		negativeButtonText: CharSequence = INSTANCE.getString(R.string.title_cancel),
@@ -171,7 +170,7 @@ object MsgDialogUtils {
 				
 				titleTextView.visibility = when {
 					!isTitleVisible -> GONE
-					titleTextView.text.toString() == getText(R.string.text_title_goes_here) -> GONE
+					titleTextView.text.toString() == getText(R.string.title_title_goes_here) -> GONE
 					else -> View.VISIBLE
 				}
 				

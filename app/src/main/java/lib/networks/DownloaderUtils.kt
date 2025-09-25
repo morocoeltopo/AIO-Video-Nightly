@@ -142,7 +142,7 @@ object DownloaderUtils {
 	fun getRemainingDownloadTimeInFormat(
 		bytesRemaining: Long, downloadSpeed: Long
 	): String {
-		if (downloadSpeed <= 0) return INSTANCE.getString(R.string.calculating)
+		if (downloadSpeed <= 0) return INSTANCE.getString(R.string.title_calculating)
 		val remainingMillis = (bytesRemaining * 1000) / downloadSpeed
 		return calculateTime(remainingMillis.toFloat())
 	}

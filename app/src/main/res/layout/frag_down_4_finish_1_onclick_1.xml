@@ -168,7 +168,7 @@
 						android:marqueeRepeatLimit="marquee_forever"
 						android:scrollHorizontally="true"
 						android:singleLine="true"
-						android:text="@string/text__"
+						android:text="@string/title__"
 						android:textColor="@color/color_on_primary"
 						android:textSize="@dimen/normal_text_size"
 						android:textStyle="bold" />
@@ -195,7 +195,7 @@
 							android:ellipsize="end"
 							android:fontFamily="@font/application_font_family"
 							android:singleLine="true"
-							android:text="@string/text__"
+							android:text="@string/title__"
 							android:textColor="@color/color_on_primary"
 							android:textSize="@dimen/small_text_size"
 							tools:ignore="TextContrastCheck" />

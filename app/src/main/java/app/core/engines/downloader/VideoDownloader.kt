@@ -153,7 +153,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		downloadDataModel.isRunning = false
 		downloadDataModel.isWaitingForNetwork = false
 		downloadDataModel.totalConnectionRetries = 0
-		downloadDataModel.statusInfo = getText(R.string.text_waiting_to_join)
+		downloadDataModel.statusInfo = getText(R.string.title_waiting_to_join)
 		initBasicDownloadModelInfo()
 		logger.d("Saving initial state to storage...")
 		downloadDataModel.updateInStorage()
@@ -1193,7 +1193,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 				downloadDataModel.isRunning = false
 				downloadDataModel.isComplete = true
-				updateDownloadStatus(getText(R.string.text_completed), COMPLETE)
+				updateDownloadStatus(getText(R.string.title_completed), COMPLETE)
 				executeOnMainThread { retryingDownloadTimer?.cancel() }
 
 				logger.d("Download status updated to COMPLETE.")
@@ -1416,7 +1416,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		if (!isNetworkAvailable()) {
 			// Case: No network connection
 			downloadDataModel.isWaitingForNetwork = true
-			updateDownloadStatus(getText(R.string.text_waiting_for_network))
+			updateDownloadStatus(getText(R.string.title_waiting_for_network))
 			logger.d("Network unavailable. Waiting for network.")
 			return
 		}
@@ -1425,7 +1425,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		if (downloadDataModelConfig.downloadWifiOnly && !isWifiEnabled()) {
 			// Case: Wi-Fi required but not enabled
 			downloadDataModel.isWaitingForNetwork = true
-			updateDownloadStatus(getText(R.string.text_waiting_for_wifi))
+			updateDownloadStatus(getText(R.string.title_waiting_for_wifi))
 			logger.d("Wi-Fi not enabled. Waiting for Wi-Fi.")
 			return
 		}
@@ -1434,7 +1434,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		if (!isInternetConnected()) {
 			// Case: No internet access despite network connection
 			downloadDataModel.isWaitingForNetwork = true
-			updateDownloadStatus(getText(R.string.text_waiting_for_internet))
+			updateDownloadStatus(getText(R.string.title_waiting_for_internet))
 			logger.d("Internet unavailable. Waiting for internet.")
 			return
 		}

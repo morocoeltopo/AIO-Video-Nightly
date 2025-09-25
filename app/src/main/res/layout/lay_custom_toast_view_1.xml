@@ -45,7 +45,7 @@
 			android:layout_marginBottom="@dimen/_5"
 			android:fontFamily="@font/application_font_family"
 			android:gravity="center_vertical"
-			android:text="@string/text_100_percentage"
+			android:text="@string/title_100_percentage"
 			android:textColor="@color/color_text_primary"
 			android:textFontWeight="600"
 			android:textSize="@dimen/message_text_size" />

@@ -268,7 +268,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			MsgDialogUtils.showMessageDialog(
 				baseActivityInf = it,
 				isTitleVisible = true,
-				titleText = getText(R.string.text_feature_isnt_implemented),
+				titleText = getText(R.string.title_feature_isnt_implemented),
 				messageTextViewCustomize = { msgTextView ->
 					msgTextView.setText(R.string.text_feature_isnt_available_yet)
 				}, isNegativeButtonVisible = false
@@ -314,7 +314,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 					} else {
 						logger.d("Invalid homepage URL entered: $userEnteredURL")
 						safeActivityRef.doSomeVibration(50)
-						showToast(msgId = R.string.text_invalid_url)
+						showToast(msgId = R.string.title_invalid_url)
 					}
 				}
 				dialogBuilder.show()
@@ -429,7 +429,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		safeSettingsFragmentRef?.safeMotherActivityRef?.let { context ->
 			ShareUtility.shareText(
 				context = context,
-				title = getText(R.string.text_share_with_others),
+				title = getText(R.string.title_share_with_others),
 				text = getApplicationShareText(context)
 			)
 		} ?: run {

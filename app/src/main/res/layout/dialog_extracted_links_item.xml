@@ -54,7 +54,7 @@
 				android:layout_toStartOf="@+id/img_link_open_indicator"
 				android:fontFamily="@font/application_font_family"
 				android:singleLine="true"
-				android:text="@string/text__"
+				android:text="@string/title__"
 				android:textColor="@color/color_text_hint"
 				android:textSize="@dimen/small_text_size"
 				tools:ignore="TextContrastCheck" />
@@ -86,7 +86,7 @@
 			android:layout_toEndOf="@+id/img_video_type_indicator"
 			android:fontFamily="@font/application_font_family"
 			android:singleLine="true"
-			android:text="@string/text__"
+			android:text="@string/title__"
 			android:textColor="@color/color_text_primary"
 			android:textSize="@dimen/message_text_size"
 			android:textFontWeight="600" />

@@ -210,7 +210,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
     override fun onBackPressActivity() {
         if (areVideoControllersLocked) {
             doSomeVibration(20)
-            val quickInfoText = getString(string.text_player_is_locked_unlock_first)
+            val quickInfoText = getString(string.title_player_is_locked_unlock_first)
             showQuickPlayerInfo(quickInfoText); return
         }; stopAndReleasePlayer()
 
@@ -983,7 +983,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
         if (!::exoMediaPlayer.isInitialized) return
 
         if (isPlayingStreamingVideo()) {
-            val infoText = getString(string.text_no_next_item_to_play)
+            val infoText = getString(string.title_no_next_item_to_play)
             showQuickPlayerInfo(infoText); return
         }
 
@@ -1015,7 +1015,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
                 val nextDownloadDataModel = mediaFiles[nextIndex]
                 playVideoFromDownloadModel(nextDownloadDataModel)
             } else {
-                val infoText = getString(string.text_no_next_item_to_play)
+                val infoText = getString(string.title_no_next_item_to_play)
                 showQuickPlayerInfo(infoText)
             }
         }
@@ -1028,7 +1028,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
         if (!::exoMediaPlayer.isInitialized) return
 
         if (isPlayingStreamingVideo()) {
-            val infoText = getString(string.text_no_previous_item_to_play)
+            val infoText = getString(string.title_no_previous_item_to_play)
             showQuickPlayerInfo(infoText); return
         }
 
@@ -1063,7 +1063,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
                 val nextDownloadDataModel = mediaFiles[previousIndex]
                 playVideoFromDownloadModel(nextDownloadDataModel)
             } else {
-                val infoText = getString(string.text_no_previous_item_to_play)
+                val infoText = getString(string.title_no_previous_item_to_play)
                 showQuickPlayerInfo(infoText)
             }
         }
@@ -1111,7 +1111,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
         textProgressTimer.text = formatTimeDuration(exoMediaPlayer.currentPosition)
         val tmpTimer = formatTimeDuration(exoMediaPlayer.duration)
         if (!tmpTimer.startsWith("-")) textVideoDuration.text = tmpTimer
-        else textVideoDuration.text = getString(string.text_00_00)
+        else textVideoDuration.text = getString(string.title_00_00)
 
         val duration = exoMediaPlayer.duration
         val position = exoMediaPlayer.currentPosition
@@ -1252,7 +1252,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
      */
     private fun invalidMediaFileToast() {
         doSomeVibration(timeInMillis = 50)
-        showToast(msg = getString(string.text_invalid_media_file))
+        showToast(msg = getString(string.title_invalid_media_file))
     }
 
     /**
@@ -1300,7 +1300,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
     private fun validateSelectedSubtitleFileByUser() {
         scopedStorageHelper?.onFileSelected = { _, files ->
             if (!isFileReadable(files)) {
-                val errorMsg = getString(string.text_file_not_readable)
+                val errorMsg = getString(string.title_file_not_readable)
                 throw Exception(errorMsg)
             }
 
@@ -1309,7 +1309,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
                 subtitleFile.name?.let { fileName -> getFileExtension(fileName) ?: "" }
             }
 
-            if (fileExtension.isNullOrEmpty()) throw Exception(getString(string.text_file_not_readable))
+            if (fileExtension.isNullOrEmpty()) throw Exception(getString(string.title_file_not_readable))
             if (!isSubtitleFileExtension(fileExtension)) showUnsupportedSubtitleFileMessage() else {
                 getDownloadModelFromIntent()?.let { downloadDataModel ->
                     val videoFile = downloadDataModel.getDestinationDocumentFile()

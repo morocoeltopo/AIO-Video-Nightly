@@ -94,7 +94,7 @@ object ShareUtility {
 			if (openFileIntent.resolveActivity(safeContextRef.packageManager) != null) {
 				safeContextRef.startActivity(openFileIntent)
 			} else {
-				showToast(getText(R.string.txt_no_app_found_to_open_this_file))
+				showToast(getText(R.string.title_no_app_found_to_open_this_file))
 			}
 		}
 	}

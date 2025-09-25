@@ -131,7 +131,7 @@ class VideoLinkPasteEditor(
 			if (!URLUtility.isValidURL(userGivenURL)) {
 				logger.d("Invalid URL entered: $userGivenURL")
 				safeActivity.doSomeVibration(50)
-				showToast(getText(R.string.text_file_url_not_valid))
+				showToast(getText(R.string.title_file_url_not_valid))
 				return
 			} else {
 				logger.d("Valid URL detected. Closing dialog and processing.")
@@ -142,7 +142,7 @@ class VideoLinkPasteEditor(
 					val waitingDialog = WaitingDialog(
 						isCancelable = false,
 						baseActivityInf = motherActivity,
-						loadingMessage = getText(R.string.text_analyzing_url_please_wait),
+						loadingMessage = getText(R.string.title_analyzing_url_please_wait),
 						dialogCancelListener = { dialog ->
 							isParsingTitleFromUrlAborted = true
 							logger.d("Parsing aborted by user.")

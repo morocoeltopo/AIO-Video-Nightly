@@ -191,7 +191,7 @@ object DownloadInfoUtils {
 	 */
 	private fun getHttpProxy(downloadModel: DownloadDataModel): String {
 		return downloadModel.globalSettings.downloadHttpProxyServer.ifEmpty {
-			getText(R.string.text_not_configured)
+			getText(R.string.title_not_configured)
 		}
 	}
 	
@@ -235,7 +235,7 @@ object DownloadInfoUtils {
 	 */
 	private fun isUnknownFile(downloadModel: DownloadDataModel): String {
 		return if (downloadModel.isUnknownFileSize)
-			getText(R.string.title_yes) else getText(R.string.text_no)
+			getText(R.string.title_yes) else getText(R.string.title_no)
 	}
 	
 	/**
@@ -246,7 +246,7 @@ object DownloadInfoUtils {
 	 */
 	private fun isResumeSupported(downloadModel: DownloadDataModel): String {
 		return if (downloadModel.isResumeSupported)
-			getText(R.string.title_yes) else getText(R.string.text_no)
+			getText(R.string.title_yes) else getText(R.string.title_no)
 	}
 	
 	/**
@@ -257,7 +257,7 @@ object DownloadInfoUtils {
 	 */
 	private fun isMultithreadingSupported(downloadModel: DownloadDataModel): String {
 		return if (downloadModel.isMultiThreadSupported)
-			getText(R.string.title_yes) else getText(R.string.text_no)
+			getText(R.string.title_yes) else getText(R.string.title_no)
 	}
 	
 	/**
@@ -288,6 +288,6 @@ object DownloadInfoUtils {
 	 * @return HTML anchor tag string
 	 */
 	private fun buildUrlTag(url: String): String {
-		return "<a href=\"$url\">${getText(R.string.text_click_here_to_open_link)}</a>"
+		return "<a href=\"$url\">${getText(R.string.title_click_here_to_open_link)}</a>"
 	}
 }

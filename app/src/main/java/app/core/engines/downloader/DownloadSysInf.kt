@@ -218,7 +218,7 @@ interface DownloadSysInf {
 						}
 					}
 					
-					it.statusInfo = getText(R.string.text_completed)
+					it.statusInfo = getText(R.string.title_completed)
 					addAndSortFinishedDownloadDataModels(it)
 				}
 				

@@ -148,7 +148,7 @@ class HistoryOptionPopup(
 
 			aioBookmark.getBookmarkLibrary().add(0, bookmarkModel)
 			aioBookmark.updateInStorage()
-			showToast(msgId = R.string.text_bookmark_saved)
+			showToast(msgId = R.string.title_bookmark_saved)
 		} catch (error: Exception) {
 			logger.d("Error adding bookmark: ${error.message}")
 			error.printStackTrace()
