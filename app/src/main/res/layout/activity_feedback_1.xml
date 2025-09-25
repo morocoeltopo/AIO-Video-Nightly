@@ -64,7 +64,7 @@
 				android:maxLines="1"
 				android:text="@string/title_share_feedback"
 				android:textSize="@dimen/title_text_size"
-				android:textStyle="bold" />
+				android:textFontWeight="600" />
 
 			<!-- Send button -->
 			<RelativeLayout
@@ -109,7 +109,7 @@
 				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
-				app:cardBackgroundColor="@color/color_background"
+				app:cardBackgroundColor="@color/color_cardview_bg"
 				app:cardCornerRadius="@dimen/_10">
 
 				<LinearLayout
@@ -142,7 +142,7 @@
 				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
-				app:cardBackgroundColor="@color/color_background"
+				app:cardBackgroundColor="@color/color_cardview_bg"
 				app:cardCornerRadius="@dimen/_10">
 
 				<LinearLayout
@@ -285,7 +285,7 @@
 				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
-				app:cardBackgroundColor="@color/color_background"
+				app:cardBackgroundColor="@color/color_cardview_bg"
 				app:cardCornerRadius="@dimen/_10">
 
 				<LinearLayout

@@ -16,7 +16,7 @@
 		android:layout_marginTop="@dimen/_10"
 		android:layout_marginEnd="@dimen/_5"
 		android:layout_marginBottom="@dimen/_10"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_cardview_bg"
 		app:cardCornerRadius="@dimen/_10"
 		app:cardElevation="@dimen/_5">
 
@@ -29,7 +29,7 @@
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:background="@color/color_surface"
+				android:background="@color/color_cardview_title_bg"
 				android:orientation="vertical"
 				android:visibility="visible">
 
@@ -45,7 +45,7 @@
 					android:text="@string/title_download_location"
 					android:textColor="@color/color_text_primary"
 					android:textSize="@dimen/normal_text_size"
-					android:textStyle="bold" />
+					android:textFontWeight="600" />
 			</LinearLayout>
 
 			<!-- Radio button group for location options -->
@@ -103,7 +103,7 @@
 							android:text="@string/title_private_folder"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size"
-							android:textStyle="bold" />
+							android:textFontWeight="600" />
 
 						<TextView
 							android:id="@+id/txt_private_folder_description"
@@ -164,7 +164,7 @@
 							android:text="@string/title_system_gallery"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size"
-							android:textStyle="bold" />
+							android:textFontWeight="600" />
 
 						<TextView
 							android:id="@+id/txt_system_gallery_description"
@@ -210,7 +210,7 @@
 					android:text="@string/title_apply_changes"
 					android:textColor="@color/color_on_secondary"
 					android:textSize="@dimen/normal_text_size"
-					android:textStyle="bold" />
+					android:textFontWeight="600" />
 			</RelativeLayout>
 
 			<!-- Informational footnote -->

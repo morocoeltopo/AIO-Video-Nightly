@@ -57,7 +57,7 @@
 				android:text="@string/text__"
 				android:textColor="@color/color_on_surface"
 				android:textSize="@dimen/message_text_size"
-				android:textStyle="bold"
+				android:textFontWeight="600"
 				tools:ignore="TextContrastCheck" />
 
 			<!-- Bookmark creation date -->

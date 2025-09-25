@@ -46,7 +46,7 @@
 					android:text="@string/title_no_videos_found"
 					android:textColor="@color/color_text_primary"
 					android:textSize="@dimen/normal_text_size"
-					android:textStyle="bold" />
+					android:textFontWeight="600" />
 			</LinearLayout>
 
 			<!-- "No videos found" illustration image -->
@@ -103,7 +103,7 @@
 					android:text="@string/title_how_to_download"
 					android:textColor="@color/color_on_secondary"
 					android:textSize="@dimen/normal_text_size"
-					android:textStyle="bold" />
+					android:textFontWeight="600" />
 			</RelativeLayout>
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>

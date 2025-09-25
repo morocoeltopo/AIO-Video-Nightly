@@ -63,7 +63,7 @@
 				android:maxLines="1"
 				android:text="@string/title_browser_settings"
 				android:textSize="@dimen/title_text_size"
-				android:textStyle="bold" />
+				android:textFontWeight="600" />
 
 		</RelativeLayout>
 	</androidx.cardview.widget.CardView>
@@ -91,7 +91,7 @@
 				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
-				app:cardBackgroundColor="@color/color_background"
+				app:cardBackgroundColor="@color/color_cardview_bg"
 				app:cardCornerRadius="@dimen/_10">
 
 				<LinearLayout
@@ -489,7 +489,7 @@
 				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_10"
 				android:orientation="vertical"
-				app:cardBackgroundColor="@color/color_background"
+				app:cardBackgroundColor="@color/color_cardview_bg"
 				app:cardCornerRadius="@dimen/_10">
 
 				<LinearLayout
@@ -500,7 +500,7 @@
 					<LinearLayout
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
-						android:background="@color/color_surface"
+						android:background="@color/color_cardview_title_bg"
 						android:orientation="vertical"
 						tools:ignore="TooManyViews">
 
@@ -517,7 +517,7 @@
 							android:text="@string/title_reset_settings"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size"
-							android:textStyle="bold" />
+							android:textFontWeight="600" />
 					</LinearLayout>
 
 					<!-- Reset settings description -->
@@ -563,7 +563,7 @@
 							android:text="@string/title_reset_settings"
 							android:textColor="@color/color_on_secondary"
 							android:textSize="@dimen/normal_text_size"
-							android:textStyle="bold" />
+							android:textFontWeight="600" />
 					</RelativeLayout>
 
 				</LinearLayout>

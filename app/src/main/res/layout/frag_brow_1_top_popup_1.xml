@@ -16,7 +16,7 @@
 		android:layout_marginTop="@dimen/_10"
 		android:layout_marginEnd="@dimen/_5"
 		android:layout_marginBottom="@dimen/_10"
-		app:cardBackgroundColor="@color/color_background"
+		app:cardBackgroundColor="@color/color_cardview_bg"
 		app:cardCornerRadius="@dimen/_10"
 		app:cardElevation="@dimen/_2">
 
@@ -34,7 +34,7 @@
 				android:layout_marginTop="@dimen/_0"
 				android:layout_marginEnd="@dimen/_0"
 				android:layout_marginBottom="@dimen/_0"
-				android:background="@color/color_surface"
+				android:background="@color/color_cardview_title_bg"
 				android:orientation="horizontal">
 
 				<!-- Back button to navigate to previous page -->
