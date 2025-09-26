@@ -18,6 +18,7 @@ import kotlin.text.RegexOption.IGNORE_CASE
  */
 object SupportedURLs {
 
+	// Logger instance for debugging
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
@@ -25,38 +26,12 @@ object SupportedURLs {
 	 * This includes popular video, music, and media platforms.
 	 */
 	private val supportedBaseDomains = setOf(
-		"youtube",
-		"youtu",
-		"facebook",
-		"instagram",
-		"twitter",
-		"x",
-		"tiktok",
-		"reddit",
-		"tumblr",
-		"soundcloud",
-		"bandcamp",
-		"9gag",
-		"vk",
-		"imdb",
-		"dailymotion",
-		"bilibili",
-		"twitch",
-		"likee",
-		"snapchat",
-		"pinterest",
-		"linkedin",
-		"mixcloud",
-		"audiomack",
-		"periscope",
-		"jiosaavn",
-		"hotstar",
-		"youku",
-		"rumble",
-		"odysee",
-		"peertube",
-		"bitchute",
-		"liveleak"
+		"youtube", "youtu", "facebook", "instagram", "twitter", "x",
+		"tiktok", "reddit", "tumblr", "soundcloud", "bandcamp", "9gag",
+		"vk", "imdb", "dailymotion", "bilibili", "twitch", "likee",
+		"snapchat", "pinterest", "linkedin", "mixcloud", "audiomack",
+		"periscope", "jiosaavn", "hotstar", "youku", "rumble", "odysee",
+		"peertube", "bitchute", "liveleak"
 	)
 
 	/**
@@ -98,8 +73,7 @@ object SupportedURLs {
 			logger.d("Normalized YouTube URL: $normalizedUrl")
 			normalizedUrl
 		} catch (error: Exception) {
-			error.printStackTrace()
-			logger.d("Error normalizing YouTube URL: ${error.message}")
+			logger.e("Error normalizing YouTube URL: ${error.message}", error)
 			url
 		}
 	}
@@ -114,81 +88,114 @@ object SupportedURLs {
 		return try {
 			val parsedUrl = URL(url)
 			val host = parsedUrl.host
+
 			host.endsWith("youtube.com", ignoreCase = true) ||
 					host.endsWith("youtu.be", ignoreCase = true) ||
 					url.contains("music.youtube", ignoreCase = true)
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while checking if URL is a YouTube link: ${error.message}", error)
 			false
 		}
 	}
 
-	/** Checks whether the given URL is from Instagram. */
+	/**
+	 * Determines if the given URL belongs to Instagram.
+	 * Supports common Instagram short links like `instagr.am`, `ig.me`, and `ig.com`.
+	 * These short domains are often used for shared posts, reels, or profiles.
+	 */
 	fun isInstagramUrl(url: String): Boolean {
 		return try {
-			val host = URL(url).host
-			host.contains("instagram.com", ignoreCase = true)
+			val host = URL(url).host.lowercase()
+			host.contains("instagram.com") ||
+					host.contains("instagr.am") ||        // Official Instagram short URL
+					host.contains("ig.me") ||             // Often used in DMs for sharing
+					host.contains("ig.com")               // Sometimes used for redirects
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while checking Instagram URL: ${error.message}", error)
 			false
 		}
 	}
 
-	/** Checks whether the given URL is from Facebook. */
+	/**
+	 * Determines if the given URL belongs to Facebook.
+	 * Includes short and alternative domains like `fb.me`, `fb.watch`, and `m.facebook.com`
+	 * that Facebook uses for links to posts, videos, or mobile pages.
+	 */
 	fun isFacebookUrl(url: String): Boolean {
 		return try {
-			val host = URL(url).host
-			host.contains("facebook.com", ignoreCase = true)
+			val host = URL(url).host.lowercase()
+			host.contains("facebook.com") ||
+					host.contains("m.facebook.com") ||    // Mobile site version
+					host.contains("fb.me") ||             // Facebook’s official short links
+					host.contains("fb.watch")             // Facebook video/watch pages
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while checking Facebook URL: ${error.message}", error)
 			false
 		}
 	}
 
-	/** Checks whether the given URL is from TikTok. */
+	/**
+	 * Determines if the given URL belongs to TikTok.
+	 * Supports the official short URL format `vm.tiktok.com` often used for shared videos.
+	 */
 	fun isTiktokUrl(url: String): Boolean {
 		return try {
-			val host = URL(url).host
-			host.contains("tiktok.com", ignoreCase = true)
+			val host = URL(url).host.lowercase()
+			host.contains("tiktok.com") ||
+					host.contains("vm.tiktok.com")        // TikTok’s shortened links
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while checking TikTok URL: ${error.message}", error)
 			false
 		}
 	}
 
-	/** Checks whether the given URL is from Pinterest. */
+	/**
+	 * Determines if the given URL belongs to Pinterest.
+	 * Recognizes standard Pinterest domain as well as `pin.it` used for compact sharing links.
+	 */
 	fun isPinterestUrl(url: String): Boolean {
 		return try {
 			val host = URL(url).host.lowercase()
-			host.contains("pinterest.com") || host.contains("pin.it")
+			host.contains("pinterest.com") ||
+					host.contains("pin.it")               // Common short domain for pins
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while checking Pinterest URL: ${error.message}", error)
 			false
 		}
 	}
 
-	/** Checks whether the given URL is from Twitter or X.com. */
+	/**
+	 * Determines if the given URL belongs to Twitter or X.
+	 * Handles `twitter.com`, `x.com`, and `t.co`, the official shortener Twitter/X uses for shared links.
+	 */
 	fun isTwitterOrXUrl(url: String): Boolean {
 		return try {
 			val host = URL(url).host.lowercase()
-			host.contains("twitter.com") || host.contains("x.com")
+			host.contains("twitter.com") ||
+					host.contains("x.com") ||             // New official Twitter domain
+					host.contains("t.co")                 // Twitter/X short URLs for posts
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while checking Twitter/X URL: ${error.message}", error)
 			false
 		}
 	}
 
-	/** Checks whether the given URL is from Snapchat. */
+	/**
+	 * Determines if the given URL belongs to Snapchat.
+	 * Supports standard domain and short links like `snp.ac` and `snap.link`
+	 * often used for quick sharing of stories or spotlight content.
+	 */
 	fun isSnapchatUrl(url: String): Boolean {
 		return try {
 			val host = URL(url).host.lowercase()
-			host.contains("snapchat.com")
+			host.contains("snapchat.com") ||
+					host.contains("snp.ac") ||            // Snapchat’s short sharing links
+					host.contains("snap.link")            // Promotional or spotlight links
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while checking Snapchat URL: ${error.message}", error)
 			false
 		}
 	}
-
 
 	/**
 	 * Checks whether the given URL is from a supported social media platform

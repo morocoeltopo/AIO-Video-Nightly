@@ -217,7 +217,7 @@
 			android:layout_marginEnd="@dimen/_10"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			android:visibility="visible"
+			android:visibility="gone"
 			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
