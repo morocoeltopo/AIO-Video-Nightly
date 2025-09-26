@@ -1,15 +1,13 @@
 package app.core.engines.video_parser.parsers
 
-import okhttp3.ConnectionPool
-import okhttp3.Dispatcher
-import okhttp3.OkHttpClient
+import lib.networks.HttpClientProvider
+import lib.process.LogHelperUtils
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.schabi.newpipe.extractor.downloader.Downloader
 import org.schabi.newpipe.extractor.downloader.Request
 import org.schabi.newpipe.extractor.downloader.Response
 import org.schabi.newpipe.extractor.exceptions.ReCaptchaException
 import java.io.IOException
-import java.util.concurrent.TimeUnit
 import okhttp3.Request as OkHttpRequest
 import okhttp3.Response as OkHttpResponse
 
@@ -22,19 +20,12 @@ import okhttp3.Response as OkHttpResponse
  */
 class YTDownloaderImpl : Downloader() {
 
+	private val logger = LogHelperUtils.from(javaClass)
+
 	/**
 	 * The OkHttp client instance used for all HTTP requests.
 	 */
-	private val client = OkHttpClient.Builder()
-		.followRedirects(true)
-		.followSslRedirects(true)
-		.connectTimeout(10, TimeUnit.SECONDS)
-		.readTimeout(10, TimeUnit.SECONDS)
-		.connectionPool(ConnectionPool(10, 5, TimeUnit.MINUTES))
-		.dispatcher(Dispatcher().apply {
-			maxRequests = 64
-			maxRequestsPerHost = 8
-		}).build()
+	private val okHttpClient = HttpClientProvider.okHttpClient
 
 	/**
 	 * Executes a network request using OkHttp.
@@ -59,30 +50,16 @@ class YTDownloaderImpl : Downloader() {
 	override fun execute(request: Request): Response {
 		val method = request.httpMethod().uppercase()
 
-		// Special fast path: HEAD request for file size check
-		if (method == "HEAD") {
-			val builder = OkHttpRequest.Builder()
-				.url(request.url())
-				.head()
-
-			request.headers().forEach { (key, values) ->
-				values.forEach { value -> builder.addHeader(key, value) }
-			}
-
-			val headResponse = client.newCall(builder.build()).execute()
-			return Response(
-				headResponse.code,
-				headResponse.message,
-				headResponse.headers.toMultimap(),
-				"", // No body for HEAD
-				headResponse.request.url.toString()
-			)
-		}
-
-		// Build OkHttp request
 		val builder = OkHttpRequest.Builder().url(request.url())
 
+		// Add headers once
+		request.headers().forEach { (key, values) ->
+			values.forEach { builder.addHeader(key, it) }
+		}
+
+		// Set HTTP method and body efficiently
 		when (method) {
+			"HEAD" -> builder.head()
 			"GET" -> builder.get()
 			"POST" -> builder.post((request.dataToSend() ?: ByteArray(0)).toRequestBody())
 			"PUT" -> builder.put((request.dataToSend() ?: ByteArray(0)).toRequestBody())
@@ -94,19 +71,17 @@ class YTDownloaderImpl : Downloader() {
 			else -> builder.get()
 		}
 
-		// Add headers
-		request.headers().forEach { (key, values) ->
-			values.forEach { value -> builder.addHeader(key, value) }
-		}
-
 		// Execute request
-		val okResponse: OkHttpResponse = client.newCall(builder.build()).execute()
+		val okResponse: OkHttpResponse = okHttpClient.newCall(builder.build()).execute()
+
+		// Read body efficiently
+		val responseBody = okResponse.body.string()
 
 		return Response(
 			okResponse.code,
 			okResponse.message,
 			okResponse.headers.toMultimap(),
-			okResponse.body.source().readUtf8(), // Slightly faster UTF-8 read
+			responseBody,
 			okResponse.request.url.toString()
 		)
 	}
