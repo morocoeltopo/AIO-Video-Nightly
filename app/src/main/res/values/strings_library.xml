@@ -70,7 +70,6 @@
 	<string name="text_reset_browser_settings">Reset your browser settings to their original defaults. <b>All custom configurations will be removed.</b></string>
 	<string name="text_empty_string" translatable="false" />
 
-
 	<string name="title_home">Home</string>
 	<string name="title_browser">Browser</string>
 	<string name="title_check_new_update">Check New Update</string>
@@ -166,7 +165,6 @@
 	<string name="title_failed_deleted_paused">File Deleted: Paused</string>
 	<string name="title_download_complete_click_to_open">Download\'s Completed, Click Here To Open</string>
 	<string name="title_media_file_has_deleted">Media File Has Been Deleted</string>
-	<string name="title_show_download_info">Show Download Info…</string>
 	<string name="title_rename_the_file">Rename The File</string>
 	<string name="title_you_dont_have_any_downloads"><b> You Don\'t Have Any Downloads</b>\nGo And Download Something!</string>
 	<string name="title_open_link_in_browser">Open With Browser</string>
@@ -450,7 +448,6 @@
 	<string name="title_downloading_client_config">Downloading Client Config…</string>
 	<string name="title_extracting_player_api">Extracting Player API…</string>
 	<string name="text_open_externally">Open externally</string>
-	<string name="title_open_link">Open File Link</string>
 	<string name="text_setting_applied">Setting has applied.</string>
 	<string name="title_application_settings">Application Settings</string>
 	<string name="title_app_version">Application Version</string>
@@ -466,12 +463,9 @@
 	<string name="title_download_yt_videos">Download YouTube Videos</string>
 	<string name="title_new_version_available">New Version Available</string>
 	<string name="title_update_now">Update Now</string>
-	<string name="text_show_dialog_at_bottom">Show dialogs at bottom</string>
-	<string name="text_show_startup_splash_screen">Show startup splash screen</string>
 	<string name="title_customer_service">Customer Services</string>
 	<string name="text_checking_for_new_update">Checking for new update, Please wait…</string>
 	<string name="text_you_are_using_the_latest_version">You\'re using the latest version.</string>
-	<string name="title_user_information">User Information</string>
 	<string name="text_search_something">Search something…</string>
 	<string name="title_downloading_m3u8_manifest">Downloading M3U8 Manifest…</string>
 	<string name="text_edit_the_bookmark_info">Edit bookmark</string>
@@ -485,10 +479,6 @@
 	<string name="text_bookmark_url_can_not_be_empty">Bookname url can not be empty.</string>
 	<string name="text_bookmark_url_not_valid">Bookname url is not valid.</string>
 	<string name="title_update_history_info">Update Browser History</string>
-	<string name="title_your_full_name">Your Full Name</string>
-	<string name="title_downloads">Downloads</string>
-	<string name="title_subscriptions">Subscriptions</string>
-	<string name="title_web_history">Web History</string>
 	<string name="title_sign_in_register">Sign In / Register</string>
 	<string name="text_enable_browser_javascript">Enable javascript</string>
 	<string name="title_enable_browser_adblock">Enable Adblocker</string>
@@ -499,13 +489,11 @@
 	<string name="text_clear_browser_caches">Clear Browser Caches</string>
 	<string name="text_sample_email">youremailaddress@email.com</string>
 	<string name="title_sample_username">Your Name</string>
-	<string name="text_enable_startup_splash">Enable startup splash</string>
 	<string name="title_default_download_folder">Default Download Folder</string>
 	<string name="title_enable_daily_suggestions">Enable Daily Suggestions</string>
 	<string name="title_preferred_content_region">Preferred Content Region</string>
 	<string name="text_enable_desktop_mode">Enable desktop mode</string>
 	<string name="title_reset_settings">Reset Settings</string>
-	<string name="title_reset_browser_settings">Reset Browser Settings</string>
 	<string name="text_enable_private_mode">Enable Private mode</string>
 	<string name="text_export_browser_bookmark">Export Bookmarks/history</string>
 	<string name="text_import_browser_bookmark">Import Bookmarks/history</string>
@@ -539,7 +527,6 @@
 	<string name="title_downloading_metadata_json">Downloading Metadata JSON…</string>
 	<string name="title_downloading_video_info">Downloading Video Info…</string>
 	<string name="title_processing_fragments">Processing Fragments (Wait…)</string>
-	<string name="title_downloading">Downloading…</string>
 	<string name="title_advanced_download_settings">Advanced Download Settings</string>
 	<string name="title_no_videos_found">No Videos Found</string>
 

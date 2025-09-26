@@ -22,6 +22,7 @@ import lib.networks.URLUtility
 import lib.networks.URLUtilityKT.fetchWebPageContent
 import lib.networks.URLUtilityKT.getWebpageTitleOrDescription
 import lib.process.AsyncJobUtils.executeOnMainThread
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.ui.builders.ToastView.Companion.showToast
 import lib.ui.builders.WaitingDialog
@@ -36,6 +37,8 @@ import java.lang.ref.WeakReference
  * If user is not premium, it forwards the intent to MotherActivity.
  */
 class IntentInterceptActivity : BaseActivity() {
+
+    private val logger = LogHelperUtils.from(javaClass)
 
     // Weak reference to avoid memory leaks in background thread operations
     private val weakSelfReference = WeakReference(this)
@@ -173,18 +176,24 @@ class IntentInterceptActivity : BaseActivity() {
      * preserving the original data and intent action.
      */
     private fun forwardIntentToMotherActivity(dontParseURLAnymore: Boolean = false) {
-        val originalIntent = intent
-        val targetIntent = Intent(getActivity(), MotherActivity::class.java).apply {
-            action = originalIntent.action
-            setDataAndType(originalIntent.data, originalIntent.type)
-            putExtras(originalIntent)
-            putExtra(DONT_PARSE_URL_ANYMORE, dontParseURLAnymore)
-            flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
-        }
+		try {
+			val originalIntent = intent
+			val targetIntent = Intent(getActivity(), MotherActivity::class.java).apply {
+				action = originalIntent.action
+				setDataAndType(originalIntent.data, originalIntent.type)
+				putExtras(originalIntent)
+				putExtra(DONT_PARSE_URL_ANYMORE, dontParseURLAnymore)
+				flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
+			}
 
-        startActivity(targetIntent)
-        closeActivityWithFadeAnimation(true)
-    }
+			startActivity(targetIntent)
+			closeActivityWithFadeAnimation(true)
+		} catch (error: Exception) {
+            logger.e("Error in launching mother activity", error)
+            openActivity(MotherActivity::class.java, shouldAnimate = true)
+            closeActivityWithFadeAnimation(true)
+		}
+	}
 
     /**
      * Configure the activity window:
