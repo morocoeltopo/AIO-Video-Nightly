@@ -185,14 +185,14 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 
 	/**
 	 * Updates the downloads-related UI components.
-	 * @param layout The fragment's root view
+	 * @param fragmentLayout The fragment's root view
 	 */
-	private fun updateDownloadsUI(layout: View) {
-		val activeDownloadsContainer = layout.findViewById<View>(R.id.container_active_downloads)
-		val recentContainer = layout.findViewById<View>(R.id.container_recent_downloads)
-		val emptyDownloadContainer = layout.findViewById<View>(R.id.container_empty_downloads)
-		val buttonHowToDownload = layout.findViewById<View>(R.id.btn_how_to_download)
-		val loadingDownloadsContainer = layout.findViewById<View>(R.id.container_loading_downloads)
+	private fun updateDownloadsUI(fragmentLayout: View) {
+		val activeDownloadsContainer = fragmentLayout.findViewById<View>(R.id.container_active_downloads)
+		val recentContainer = fragmentLayout.findViewById<View>(R.id.container_recent_downloads)
+		val emptyDownloadContainer = fragmentLayout.findViewById<View>(R.id.container_empty_downloads)
+		val buttonHowToDownload = fragmentLayout.findViewById<View>(R.id.btn_how_to_download)
+		val loadingDownloadsContainer = fragmentLayout.findViewById<View>(R.id.container_loading_downloads)
 
 		buttonHowToDownload.setOnClickListener { GuidePlatformPicker(safeMotherActivityRef).show() }
 		val finishedDownloadModels = downloadSystem.finishedDownloadDataModels
@@ -203,9 +203,14 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			recentContainer = recentContainer,
 			emptyDownloadContainer = emptyDownloadContainer,
 			loadingDownloadsContainer = loadingDownloadsContainer,
-			fragmentLayout = layout
+			fragmentLayout = fragmentLayout
 		)
-		updateActiveDownloadsUI(activeDownloadModels, activeDownloadsContainer, layout)
+
+		updateActiveDownloadsUI(
+			activeDownloadModels = activeDownloadModels,
+			activeDownloadsContainer = activeDownloadsContainer,
+			fragmentLayout = fragmentLayout
+		)
 	}
 
 	/**
