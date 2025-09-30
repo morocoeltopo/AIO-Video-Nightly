@@ -75,6 +75,7 @@ import lib.ui.ActivityAnimator.animActivityFade
 import lib.ui.ActivityAnimator.animActivitySwipeRight
 import lib.ui.MsgDialogUtils
 import lib.ui.MsgDialogUtils.showMessageDialog
+import lib.ui.ViewUtility
 import lib.ui.ViewUtility.setLeftSideDrawable
 import lib.ui.builders.ToastView.Companion.showToast
 import java.lang.Thread.setDefaultUncaughtExceptionHandler
@@ -147,7 +148,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			setDefaultUncaughtExceptionHandler(CrashHandler())
 
 			// Configure system UI
-			if (isDarkModeActive()) setDarkSystemBarTheme() else setLightSystemBarTheme()
+			setThemeAppearance()
 
 			// Initialize storage helper
 			scopedStorageHelper = SimpleStorageHelper(safeActivityRef)
@@ -567,6 +568,25 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		)
 	}
 
+	/**
+	 * Applies the app’s theme appearance based on user preference or system setting.
+	 *
+	 * -1 = Follow system (auto)
+	 *  1 = Force Dark
+	 *  2 = Force Light
+	 */
+	fun setThemeAppearance() {
+		safeBaseActivityRef?.let { ViewUtility.changesSystemTheme(it) }
+	}
+
+	/**
+	 * Checks whether the system’s Dark Mode is currently active.
+	 *
+	 * Uses the device’s current UI mode configuration to determine
+	 * if the interface is set to use a dark theme.
+	 *
+	 * @return true if the current UI mode is Dark Mode, false otherwise.
+	 */
 	fun isDarkModeActive(): Boolean {
 		val currentNightMode = resources.configuration.uiMode and
 				Configuration.UI_MODE_NIGHT_MASK

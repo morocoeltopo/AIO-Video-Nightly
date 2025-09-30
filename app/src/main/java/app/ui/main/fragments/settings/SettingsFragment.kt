@@ -160,7 +160,7 @@ class SettingsFragment : BaseFragment() {
 			R.id.btn_login_register_to_cloud to { settingsOnClickLogic?.showLoginOrRegistrationDialog() },
 			R.id.btn_default_download_location to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() },
 			R.id.btn_language_picker to { settingsOnClickLogic?.showApplicationLanguageChanger() },
-			R.id.btn_dark_mode_ui to { settingsOnClickLogic?.selectThemeAppearance() },
+			R.id.btn_dark_mode_ui to { settingsOnClickLogic?.togglesDarkModeUISettings() },
 			R.id.btn_content_location to { settingsOnClickLogic?.changeDefaultContentRegion() },
 			R.id.btn_daily_suggestions to { settingsOnClickLogic?.enableDailyContentSuggestions() },
 

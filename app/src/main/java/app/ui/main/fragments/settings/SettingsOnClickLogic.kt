@@ -14,7 +14,6 @@ import app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActiv
 import app.ui.main.fragments.settings.dialogs.ContentRegionSelector
 import app.ui.main.fragments.settings.dialogs.CustomDownloadFolderSelector
 import app.ui.main.fragments.settings.dialogs.DownloadLocationSelector
-import app.ui.main.fragments.settings.dialogs.ThemeAppearanceSelector
 import app.ui.others.information.UserFeedbackActivity
 import app.ui.others.startup.LanguagePickerDialog
 import com.aio.R
@@ -30,6 +29,7 @@ import lib.process.OSProcessUtils.restartApp
 import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.MsgDialogUtils
+import lib.ui.ViewUtility
 import lib.ui.ViewUtility.setLeftSideDrawable
 import lib.ui.ViewUtility.showOnScreenKeyboard
 import lib.ui.builders.DialogBuilder
@@ -117,27 +117,22 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	}
 
 	/**
-	 * Opens the Theme Appearance selection dialog.
-	 *
-	 * Allows the user to choose between System Default, Dark Mode, and Light Mode.
-	 * Handles errors gracefully and logs both normal flow and exceptions.
+	 * Toggles the Dark Mode UI setting.
+	 * When enabled, the app interface will switch between light and dark themes.
 	 */
-	fun selectThemeAppearance() {
-		logger.d("Opening Theme Appearance selection dialog.")
+	fun togglesDarkModeUISettings() {
+		logger.d("Toggling Dark Mode UI setting")
 		try {
-			safeSettingsFragmentRef?.safeMotherActivityRef?.let { activity ->
-				logger.d("Valid activity reference found. Showing ThemeAppearanceSelector dialog.")
-				ThemeAppearanceSelector(activity)
-					.apply {
-						onApplyListener = {
-							activity.doSomeVibration(50)
-							showToast(msgId = R.string.title_setting_applied)
-						}
-					}
-					.show()
-			} ?: logger.d("No valid activity reference. Dialog cannot be shown.")
+			aioSettings.enableDarkUIMode = !aioSettings.enableDarkUIMode
+			aioSettings.updateInStorage()
+			updateSettingStateUI()
+			safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+				ViewUtility.changesSystemTheme(this)
+				logger.d("Dark Mode UI is now: ${aioSettings.enableDarkUIMode}")
+			}
 		} catch (error: Exception) {
-			logger.e("Failed to open Theme Appearance dialog: ${error.message}", error)
+			logger.e("Error toggling Dark Mode UI: ${error.message}", error)
+			error.printStackTrace()
 		}
 	}
 
@@ -560,6 +555,10 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		logger.d("Updating Setting State UI")
 		safeSettingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
 			listOf(
+				SettingViewConfig(
+					viewId = R.id.txt_dark_mode_ui,
+					isEnabled = aioSettings.enableDarkUIMode
+				),
 				SettingViewConfig(
 					viewId = R.id.txt_daily_suggestions,
 					isEnabled = aioSettings.enableDailyContentSuggestion
