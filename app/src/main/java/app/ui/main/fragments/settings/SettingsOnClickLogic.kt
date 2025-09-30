@@ -58,11 +58,21 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
 	// Application settings section
 
+	fun showUsernameEditor() {
+		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+			doSomeVibration(50)
+			showUpcomingFeatures()
+		}
+	}
+
 	/**
 	 * Launches the application sign-in or register prompt dialog to the user.
 	 */
 	fun showLoginOrRegistrationDialog() {
-
+		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+			doSomeVibration(50)
+			showUpcomingFeatures()
+		}
 	}
 
 	/**

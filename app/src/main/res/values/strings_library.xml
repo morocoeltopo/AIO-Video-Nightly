@@ -535,5 +535,6 @@
 	<string name="title_system_default">System Default</string>
 	<string name="title_dark_mode_ui">Dark Mode UI</string>
 	<string name="title_light_mode_ui">Light Mode UI</string>
+	<string name="text_changing_theme_require_restart">Changing the theme requires restarting the application.</string>
 
 </resources>

@@ -331,6 +331,10 @@ class DownloadDataModel : Serializable {
 	@JsonAttribute(name = "mediaFilePlaybackDuration")
 	var mediaFilePlaybackDuration: String = ""
 
+	/** Indicator that reflect whether the download data model is sync to cloud or not */
+	@JsonAttribute(name = "isSyncToCloudBackup")
+	var isSyncToCloudBackup = false
+
 	/** Snapshot of application settings at the time download was initiated */
 	@JsonAttribute(name = "globalSettings")
 	lateinit var globalSettings: AIOSettings
