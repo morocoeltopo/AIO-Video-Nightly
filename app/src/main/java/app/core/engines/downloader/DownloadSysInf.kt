@@ -185,10 +185,11 @@ interface DownloadSysInf {
 	 * @return The matching task if found (either running or waiting), null otherwise
 	 */
 	fun searchActiveDownloadTaskWith(downloadModel: DownloadDataModel): DownloadTaskInf? {
-		return runningDownloadTasks.find { it.downloadDataModel.id == downloadModel.id }
-			?: waitingDownloadTasks.find { it.downloadDataModel.id == downloadModel.id }
+		return runningDownloadTasks.toList().find { it.downloadDataModel.id == downloadModel.id }
+			?: waitingDownloadTasks.toList().find { it.downloadDataModel.id == downloadModel.id }
 	}
-	
+
+
 	/**
 	 * Checks if a download can be paused (is either running or waiting).
 	 * @param downloadModel The download to check
