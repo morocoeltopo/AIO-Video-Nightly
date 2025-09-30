@@ -448,7 +448,7 @@
 	<string name="title_downloading_client_config">Downloading Client Config…</string>
 	<string name="title_extracting_player_api">Extracting Player API…</string>
 	<string name="text_open_externally">Open externally</string>
-	<string name="text_setting_applied">Setting has applied.</string>
+	<string name="title_setting_applied">Setting Has Applied</string>
 	<string name="title_application_settings">Application Settings</string>
 	<string name="title_app_version">Application Version</string>
 	<string name="title_acknowledgement">Acknowledgement</string>
@@ -529,5 +529,11 @@
 	<string name="title_processing_fragments">Processing Fragments (Wait…)</string>
 	<string name="title_advanced_download_settings">Advanced Download Settings</string>
 	<string name="title_no_videos_found">No Videos Found</string>
+	<string name="title_configuring_connection">Configuring Connection…</string>
+	<string name="title_parsing_json_data">Parsing JSON Information…</string>
+	<string name="title_theme_appearance">Theme Appearance</string>
+	<string name="title_system_default">System Default</string>
+	<string name="title_dark_mode_ui">Dark Mode UI</string>
+	<string name="title_light_mode_ui">Light Mode UI</string>
 
 </resources>

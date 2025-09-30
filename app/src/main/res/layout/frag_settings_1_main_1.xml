@@ -78,8 +78,8 @@
 							android:gravity="center_vertical"
 							android:text="@string/title_sample_username"
 							android:textColor="@color/color_text_primary"
-							android:textSize="@dimen/normal_text_size"
 							android:textFontWeight="600"
+							android:textSize="@dimen/normal_text_size"
 							tools:ignore="TouchTargetSizeCheck" />
 
 						<!-- User email address -->
@@ -148,8 +148,8 @@
 							android:gravity="center"
 							android:text="@string/title_sign_in_register"
 							android:textColor="@color/color_on_secondary"
-							android:textSize="@dimen/normal_text_size"
-							android:textFontWeight="600" />
+							android:textFontWeight="600"
+							android:textSize="@dimen/normal_text_size" />
 					</RelativeLayout>
 				</LinearLayout>
 
@@ -192,8 +192,8 @@
 						android:maxLines="1"
 						android:text="@string/title_application_settings"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size"
-						android:textFontWeight="600" />
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
 				<!-- Download location setting button -->
@@ -274,11 +274,11 @@
 						android:layout_height="match_parent"
 						android:layout_margin="@dimen/_8"
 						android:drawableStart="@drawable/ic_button_dark_mode"
-						android:drawableEnd="@drawable/ic_button_unchecked_circle_small"
+						android:drawableEnd="@drawable/ic_button_open_small"
 						android:drawablePadding="@dimen/_5"
 						android:drawableTint="@color/color_secondary"
 						android:fontFamily="@font/application_font_family"
-						android:text="@string/title_enable_dark_mode"
+						android:text="@string/title_theme_appearance"
 						android:textColor="@color/color_text_primary"
 						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
@@ -390,8 +390,8 @@
 						android:maxLines="1"
 						android:text="@string/title_download_settings"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size"
-						android:textFontWeight="600" />
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
 				<!-- Default download folder setting -->
@@ -630,8 +630,8 @@
 						android:maxLines="1"
 						android:text="@string/title_browser_settings"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size"
-						android:textFontWeight="600" />
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
 				<!-- Browser homepage setting -->
@@ -879,8 +879,8 @@
 						android:maxLines="1"
 						android:text="@string/title_customer_service"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size"
-						android:textFontWeight="600" />
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
 				<!-- Feedback button -->
@@ -1088,8 +1088,8 @@
 						android:maxLines="1"
 						android:text="@string/title_app_version"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size"
-						android:textFontWeight="600"/>
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
 				<!-- Version info text -->
@@ -1141,8 +1141,8 @@
 						android:gravity="center"
 						android:text="@string/title_check_new_update"
 						android:textColor="@color/color_on_secondary"
-						android:textSize="@dimen/normal_text_size"
-						android:textFontWeight="600"/>
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size" />
 				</RelativeLayout>
 
 				<!-- Restart explain message -->
@@ -1177,8 +1177,8 @@
 					android:maxLines="1"
 					android:text="@string/title_restart_application"
 					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/message_text_size"
 					android:textFontWeight="600"
+					android:textSize="@dimen/message_text_size"
 					tools:ignore="TouchTargetSizeCheck" />
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
@@ -1219,8 +1219,8 @@
 						android:maxLines="1"
 						android:text="@string/title_acknowledgement"
 						android:textColor="@color/color_text_primary"
-						android:textSize="@dimen/normal_text_size"
-						android:textFontWeight="600"/>
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size" />
 				</LinearLayout>
 
 				<!-- Thank you message -->
