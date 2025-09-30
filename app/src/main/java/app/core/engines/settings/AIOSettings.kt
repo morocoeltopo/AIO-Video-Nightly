@@ -67,7 +67,7 @@ class AIOSettings : Serializable {
 
 	// Default download location
 	@JsonAttribute(name = "defaultDownloadLocation")
-	var defaultDownloadLocation : Int = PRIVATE_FOLDER
+	var defaultDownloadLocation: Int = PRIVATE_FOLDER
 
 	// Language & regions settings
 	@JsonAttribute(name = "userSelectedUILanguage")
@@ -75,6 +75,11 @@ class AIOSettings : Serializable {
 
 	@JsonAttribute(name = "userSelectedContentRegion")
 	var userSelectedContentRegion: String = "IN"
+
+	// Other settings
+	@JsonAttribute(name = "themeAppearance")
+	//-1 for automatic, 1 for dark, 2 for light
+	var themeAppearance: Int = -1
 
 	// Other settings
 	@JsonAttribute(name = "enableDarkUIMode")
