@@ -633,18 +633,19 @@ object VideoFormatsUtils {
      */
     private fun formatDownloadLineStage11(input: String): String {
         val map = mapOf(
-            "Extracting url" to R.string.title_extracting_source_url,
+            "extracting url" to R.string.title_extracting_source_url,
             "Checking m3u8 live status" to R.string.title_checking_m3u8_live_status,
-            "Fixing MPEG-TS in MP4 container" to R.string.title_fixing_mpeg_ts_in_mp4_container,
-            "Downloading webpage" to R.string.title_downloading_webpage,
-            "tv client config" to R.string.title_downloading_client_config,
+            "fixing mpeg-ts in mp4 container" to R.string.title_fixing_mpeg_ts_in_mp4_container,
+            "webpage" to R.string.title_downloading_webpage,
+            "tv client" to R.string.title_downloading_client_config,
             "player" to R.string.title_extracting_player_api,
-            "Downloading m3u8 manifest" to R.string.title_downloading_m3u8_manifest,
-            "Downloading media JSON metadata" to R.string.title_downloading_media_json_metadata,
-            "Downloading metadata JSON" to R.string.title_downloading_metadata_json,
-            "Downloading video info" to R.string.title_downloading_video_info,
+            "m3u8 manifest" to R.string.title_downloading_m3u8_manifest,
+            "media json metadata" to R.string.title_downloading_media_json_metadata,
+            "metadata json" to R.string.title_downloading_metadata_json,
+            "video info" to R.string.title_downloading_video_info,
+            "json" to R.string.title_parsing_json_data
         )
-        return map.entries.firstOrNull { input.contains(it.key, true) }
+        return map.entries.firstOrNull { input.contains(it.key, ignoreCase = true) }
             ?.let { getText(it.value) }
             ?: input
     }

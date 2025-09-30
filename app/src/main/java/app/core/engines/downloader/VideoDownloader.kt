@@ -1,7 +1,6 @@
 package app.core.engines.downloader
 
 import android.annotation.SuppressLint
-import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.webkit.CookieManager
@@ -50,6 +49,7 @@ import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.AudioPlayerUtils
 import lib.process.LogHelperUtils
+import lib.process.SimpleTimerUtils
 import lib.process.ThreadsUtility.executeInBackground
 import lib.texts.CommonTextUtils.capitalizeWords
 import lib.texts.CommonTextUtils.generateRandomString
@@ -58,6 +58,7 @@ import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
 import java.lang.System.currentTimeMillis
+import kotlin.concurrent.Volatile
 
 /**
  * A class that handles video downloads using the youtube-dl/yt-dlp engine.
@@ -68,25 +69,41 @@ import java.lang.System.currentTimeMillis
  */
 class VideoDownloader(override val downloadDataModel: DownloadDataModel) : DownloadTaskInf {
 
-	// Logger utility for debugging and tracking state changes
+	/** Logger for debugging and tracking state changes. */
 	private val logger = LogHelperUtils.from(javaClass)
 
-	// Configuration settings loaded from the download model's global settings
+	/** Global configuration loaded from the download model. */
 	private val downloadDataModelConfig = downloadDataModel.globalSettings
 
-	// Destination file where the download will be saved
+	/** Destination file where the downloaded content will be saved. */
 	private var destinationFile = downloadDataModel.getDestinationFile()
 
-	// Timer to handle automatic retries if network issues are detected or download stalls
-	private var retryingDownloadTimer: CountDownTimer? = null
+	/**
+	 * Timer for automatic retries when network issues occur or downloads stall.
+	 * Marked volatile for cross-thread visibility.
+	 */
+	@Volatile
+	private var retryingDownloadTimer: SimpleTimerUtils? = null
 
-	// Listener interface to communicate download status updates to UI or other components
+	/**
+	 * Listener for reporting download status updates such as progress or errors.
+	 * Volatile ensures the latest reference is visible across threads.
+	 */
+	@Volatile
 	override var statusListener: DownloadTaskListener? = null
 
-	// Flag indicating if a WebView is currently loading, used for cookie extraction
+	/**
+	 * Indicates whether a WebView is currently loading (e.g., for cookie extraction).
+	 * Volatile keeps flag updates visible between threads.
+	 */
+	@Volatile
 	private var isWebViewLoading = false
 
-	// Timestamp of the last progress update; used to detect stalled downloads
+	/**
+	 * Timestamp of the last progress update, used to detect stalled downloads.
+	 * Volatile ensures fresh values are read by monitoring threads.
+	 */
+	@Volatile
 	private var lastUpdateTime = 0L
 
 	/**
@@ -172,7 +189,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				return@executeOnMainThread
 			}
 			logger.d("Setting up new CountDownTimer for download retries.")
-			retryingDownloadTimer = object : CountDownTimer((1000 * 60), 10000) {
+			retryingDownloadTimer = SimpleTimerUtils((1000 * 60), 10000)
+			retryingDownloadTimer?.setTimerListener(object : SimpleTimerUtils.TimerListener {
 				@Synchronized
 				override fun onTick(millisUntilFinished: Long) {
 					logger.d("Timer tick: Checking download state...")
@@ -206,9 +224,9 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					logger.d("Timer finished.")
 					if (downloadDataModel.isRunning == false) return
 					logger.d("Download is still active, restarting timer...")
-					start()
+					retryingDownloadTimer?.start()
 				}
-			}
+			})
 		}
 	}
 
@@ -220,7 +238,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 *
 	 * @param retryingDownloadTimer Optional timer that can be cancelled during restart.
 	 */
-	private fun forcedRestartDownload(retryingDownloadTimer: CountDownTimer? = null) {
+	private fun forcedRestartDownload(retryingDownloadTimer: SimpleTimerUtils? = null) {
 		logger.d("Attempting forced restart of the download...")
 		executeInBackground(codeBlock = {
 			if (downloadDataModel.totalUnresetConnectionRetries < 10) {
