@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import app.core.AIOApp.Companion.INSTANCE
+import app.core.bases.BaseActivity
 import com.aio.R.id
 import com.aio.R.layout
 import lib.networks.URLUtility.isValidURL
@@ -44,14 +44,15 @@ class ToastView(context: Context) : Toast(context) {
 		 * Shows a toast message. This method accepts either a string message or a resource ID.
 		 * It automatically avoids displaying if the message is a valid URL.
 		 *
+		 * @param activity The activity reference needed.
 		 * @param msg The string message to display. Optional.
 		 * @param msgId The resource ID for the message string. Optional.
 		 */
 		@JvmStatic
-		fun showToast(msg: String? = null, msgId: Int = -1) {
+		fun showToast(activity: BaseActivity, msg: String? = null, msgId: Int = -1) {
 			when {
-				msgId != -1 -> showResourceToast(msgId)
-				msg != null -> showTextToast(msg)
+				msgId != -1 -> showResourceToast(activity, msgId)
+				msg != null -> showTextToast(activity, msg)
 			}
 		}
 		
@@ -59,54 +60,56 @@ class ToastView(context: Context) : Toast(context) {
 		 * Displays a toast using a string resource ID.
 		 * Skips displaying if the resolved message is a URL.
 		 *
+		 * @param activity The activity reference needed.
 		 * @param msgId The resource ID of the message string.
 		 */
-		private fun showResourceToast(msgId: Int) {
+		private fun showResourceToast(activity: BaseActivity, msgId: Int) {
 			val message = getText(msgId)
 			if (isValidURL(message)) return
-			makeText(INSTANCE, message).show()
+			makeText(activity, message).show()
 		}
 		
 		/**
 		 * Displays a toast using a string message.
 		 * Skips displaying if the message is a URL.
 		 *
+		 * @param activity The activity reference needed.
 		 * @param msg The message string to show.
 		 */
-		private fun showTextToast(msg: String) {
+		private fun showTextToast(activity: BaseActivity, msg: String) {
 			if (isValidURL(msg)) return
-			makeText(INSTANCE, msg).show()
+			makeText(activity, msg).show()
 		}
 		
 		/**
 		 * Creates and configures a [ToastView] instance using a custom layout and duration.
 		 *
-		 * @param context The context used to create the toast.
+		 * @param activity The context used to create the toast.
 		 * @param message The message to display in the toast.
 		 * @param duration The duration of the toast. Defaults to [Toast.LENGTH_LONG].
 		 * @return A configured [ToastView] instance.
 		 */
 		private fun makeText(
-			context: Context, message: CharSequence?, duration: Int = LENGTH_LONG
+			activity: BaseActivity, message: CharSequence?, duration: Int = LENGTH_LONG
 		): ToastView {
-			return WeakReference(context).get()?.let { safeContext ->
+			return WeakReference(activity).get()?.let { safeContext ->
 				configureToastView(safeContext, message, duration)
-			} ?: run { ToastView(context) }
+			} ?: run { ToastView(activity) }
 		}
 		
 		/**
 		 * Inflates the custom toast layout and sets its properties.
 		 *
-		 * @param context The context used to inflate the view.
+		 * @param activity The context used to inflate the view.
 		 * @param message The text to display.
 		 * @param duration How long to display the toast.
 		 * @return A [ToastView] instance with the custom layout and message.
 		 */
 		@SuppressLint("InflateParams") private fun configureToastView(
-			context: Context, message: CharSequence?, duration: Int
+			activity: BaseActivity, message: CharSequence?, duration: Int
 		): ToastView {
-			return ToastView(context).apply {
-				val inflater = context.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+			return ToastView(activity).apply {
+				val inflater = activity.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
 				val toastView = inflater.inflate(layout.lay_custom_toast_view_1, null)
 				toastView.findViewById<TextView>(id.txt_toast_message).text = message
 				view = toastView
