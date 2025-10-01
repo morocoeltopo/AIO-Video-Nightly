@@ -42,7 +42,8 @@ import java.lang.ref.WeakReference
 class SharedVideoURLIntercept(
 	private val baseActivity: BaseActivity?,
 	private val userGivenVideoInfo: VideoInfo? = null,
-	private val onOpenBrowser: (() -> Unit?)? = null
+	private val onOpenBrowser: (() -> Unit?)? = null,
+	private val closeActivityOnSuccessfulDownload: Boolean = false
 ) {
 
 	private val logger = LogHelperUtils.from(javaClass)
@@ -214,14 +215,17 @@ class SharedVideoURLIntercept(
 
 						} else {
 							logger.d("Showing resolution picker with ${videoInfo.videoFormats.size} formats")
+							val activityClosingCondition = closeActivityOnSuccessfulDownload
 							VideoResolutionPicker(
 								baseActivity = safeBaseActivityRef,
 								videoInfo = videoInfo,
+								onDialogClose = { safelyCloseBaseActivity() },
+								closeActivityOnSuccessfulDownload = activityClosingCondition,
 								errorCallBack = {
-									if (shouldOpenBrowserAsFallback) {
-										showOpeningInBrowserPrompt(videoUrl)
-									} else onOpenBrowser?.invoke()
-								}, onDialogClose = { safelyCloseBaseActivity() }).show()
+									if (shouldOpenBrowserAsFallback) showOpeningInBrowserPrompt(videoUrl)
+									else onOpenBrowser?.invoke()
+								}
+							).show()
 						}
 					}
 				}
@@ -446,8 +450,7 @@ class SharedVideoURLIntercept(
 				val condition = safeBaseActivityRef is IntentInterceptActivity
 				if (condition) safeBaseActivityRef?.finish()
 			} catch (error: Exception) {
-				logger.d("Error closing activity: ${error.message}")
-				error.printStackTrace()
+				logger.e("Error closing activity: ${error.message}", error)
 			}
 		}
 	}

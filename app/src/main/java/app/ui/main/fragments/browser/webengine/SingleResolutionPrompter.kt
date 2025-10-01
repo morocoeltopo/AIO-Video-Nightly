@@ -57,7 +57,8 @@ class SingleResolutionPrompter(
 	private val isSocialMediaUrl: Boolean = false,
 	private val dontParseFBTitle: Boolean = false,
 	private val thumbnailUrlProvided: String? = null,
-	private val isDownloadFromBrowser: Boolean = false
+	private val isDownloadFromBrowser: Boolean = false,
+	private val closeActivityOnSuccessfulDownload: Boolean = false
 ) {
 	private val logger = LogHelperUtils.from(javaClass)
 
@@ -311,16 +312,19 @@ class SingleResolutionPrompter(
 					// Add download to system
 					downloadSystem.addDownload(downloadModel) {
 						executeOnMainThread {
+							// Update download counters
+							aioSettings.numberOfDownloadsUserDid++
+							aioSettings.totalNumberOfSuccessfulDownloads++
+							aioSettings.updateInStorage()
+
+							// Show user toast
 							val toastMsgResId = R.string.title_download_added_successfully
 							showToast(activity = safeBaseActivityRef, msgId = toastMsgResId)
+							if (closeActivityOnSuccessfulDownload) {
+								baseActivity.closeActivityWithFadeAnimation(true)
+							}
 						}
 					}
-
-					// Update download counters
-					aioSettings.numberOfDownloadsUserDid++
-					aioSettings.totalNumberOfSuccessfulDownloads++
-					aioSettings.updateInStorage()
-
 				} catch (error: Exception) {
 					error.printStackTrace()
 					val failedToAddResId = R.string.title_failed_to_add_download_task

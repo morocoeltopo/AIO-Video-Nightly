@@ -115,7 +115,7 @@ class IntentInterceptActivity : BaseActivity() {
 								if (validIntentUrl && userDidNotCancelExecution) {
 									// Show prompter dialog in UI thread
 									executeOnMainThread {
-										val prompter = SingleResolutionPrompter(
+										SingleResolutionPrompter(
 											baseActivity = it,
 											singleResolutionName = getText(R.string.title_high_quality).toString(),
 											extractedVideoLink = intentUrl,
@@ -125,23 +125,17 @@ class IntentInterceptActivity : BaseActivity() {
 											dontParseFBTitle = true,
 											thumbnailUrlProvided = thumbnailUrl,
 											isSocialMediaUrl = true,
-											isDownloadFromBrowser = false
-										)
-
-										prompter.show()
-
-										// Close this activity when dialog is cancelled or dismissed
-										with(prompter.getDialogBuilder().dialog) {
-											setOnCancelListener { onBackPressActivity() }
-											setOnDismissListener { onBackPressActivity() }
-										}
+											isDownloadFromBrowser = false,
+											closeActivityOnSuccessfulDownload = true
+										).show()
 									}
 								} else {
 									executeOnMainThread {
-										safeIntentInterceptActivityRef.doSomeVibration(50)
-										showToast(
-											activity = safeIntentInterceptActivityRef,
-											msgId = R.string.title_server_busy_opening_browser)
+										val activityRef = safeIntentInterceptActivityRef
+										activityRef.doSomeVibration(50)
+
+										val stringResId = R.string.title_server_busy_opening_browser
+										showToast(activity = activityRef, msgId = stringResId)
 										forwardIntentToMotherActivity(dontParseURLAnymore = true)
 									}
 								}
@@ -151,7 +145,8 @@ class IntentInterceptActivity : BaseActivity() {
 						// Use generic interceptor for non-social media URLs
 						val interceptor = SharedVideoURLIntercept(
 							baseActivity = safeIntentInterceptActivityRef,
-							onOpenBrowser = { forwardIntentToMotherActivity() }
+							onOpenBrowser = { forwardIntentToMotherActivity() },
+							closeActivityOnSuccessfulDownload = true
 						)
 
 						interceptor.interceptIntentURI(

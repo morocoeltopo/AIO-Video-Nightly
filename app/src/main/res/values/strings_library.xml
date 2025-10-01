@@ -207,7 +207,7 @@
 	<string name="title_download_added_successfully">Download\'s Added Successfully</string>
 	<string name="title_player_is_locked_unlock_first">Player Is Locked, Unlock First</string>
 	<string name="title_getting_name_from_server">Getting Name From Server…</string>
-	<string name="title_select_a_video_resolution">Select Your Desired Resolution First</string>
+	<string name="title_select_a_video_resolution">Select Your Desired Resolution</string>
 	<string name="title_wait_till_server_return_video_title">Wait Till Server Return The Video Title</string>
 	<string name="title_something_went_wrong">Something\'s Wrong, Try Again Later</string>
 	<string name="title_bookmark_saved">Bookmark Is Saved</string>

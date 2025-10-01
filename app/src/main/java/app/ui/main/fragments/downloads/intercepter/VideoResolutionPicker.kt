@@ -57,7 +57,9 @@ class VideoResolutionPicker(
 	private val baseActivity: BaseActivity?,
 	private val videoInfo: VideoInfo,
 	private val errorCallBack: () -> Unit = {},
-	private val onDialogClose: () -> Unit = {}
+	private val onDialogClose: () -> Unit = {},
+	private val closeActivityOnSuccessfulDownload: Boolean = false
+
 ) {
 
 	private val logger = LogHelperUtils.from(javaClass)
@@ -405,14 +407,18 @@ class VideoResolutionPicker(
 						if (hasEnoughSpace) {
 							// Add to download system
 							downloadSystem.addDownload(downloadModel, onAdded = {
+								// Update download stats
+								aioSettings.numberOfDownloadsUserDid++
+								aioSettings.totalNumberOfSuccessfulDownloads++
+								aioSettings.updateInStorage()
+
+								// Show user toast
 								val toastMsgResId = R.string.title_download_added_successfully
 								showToast(activity = safeBaseActivityRef, msgId = toastMsgResId)
+								if (closeActivityOnSuccessfulDownload){
+									baseActivity?.closeActivityWithFadeAnimation(true)
+								}
 							})
-
-							// Update download stats
-							aioSettings.numberOfDownloadsUserDid++
-							aioSettings.totalNumberOfSuccessfulDownloads++
-							aioSettings.updateInStorage()
 						} else {
 							// Show not enough space warning
 							executeOnMainThread {
