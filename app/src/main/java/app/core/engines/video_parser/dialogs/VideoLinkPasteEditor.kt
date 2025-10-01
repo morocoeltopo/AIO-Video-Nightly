@@ -131,7 +131,7 @@ class VideoLinkPasteEditor(
 			if (!URLUtility.isValidURL(userGivenURL)) {
 				logger.d("Invalid URL entered: $userGivenURL")
 				safeActivity.doSomeVibration(50)
-				showToast(getText(R.string.title_file_url_not_valid))
+				showToast(activity = safeActivity, msg = getText(R.string.title_file_url_not_valid))
 				return
 			} else {
 				logger.d("Valid URL detected. Closing dialog and processing.")
@@ -182,7 +182,10 @@ class VideoLinkPasteEditor(
 								logger.d("Failed to extract title. Opening browser fallback.")
 								executeOnMainThread {
 									safeMotherActivityRef.doSomeVibration(50)
-									showToast(msgId = R.string.text_server_busy_opening_browser)
+									showToast(
+										activity = safeActivity,
+										msgId = R.string.title_server_busy_opening_browser
+									)
 
 									safeMotherActivityRef.browserFragment?.getBrowserWebEngine()?.let {
 										safeMotherActivityRef.sideNavigation?.addNewBrowsingTab(userGivenURL, it)

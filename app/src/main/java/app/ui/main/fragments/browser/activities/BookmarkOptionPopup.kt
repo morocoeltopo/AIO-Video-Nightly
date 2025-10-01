@@ -146,17 +146,26 @@ class BookmarkOptionPopup(
 					onApply = { result ->
 						if (result) {
 							activity.updateBookmarkListAdapter()
-							showToast(msgId = R.string.title_successful)
+							showToast(
+								activity = safeBookmarksActivityRef,
+								msgId = R.string.title_successful
+							)
 							logger.d("Bookmark updated successfully: ${bookmarkModel.bookmarkUrl}")
 						} else {
 							activity.doSomeVibration(50)
-							showToast(msgId = R.string.title_something_went_wrong)
+							showToast(
+								activity = safeBookmarksActivityRef,
+								msgId = R.string.title_something_went_wrong
+							)
 							logger.d("Bookmark update failed for: ${bookmarkModel.bookmarkUrl}")
 						}
 					}).show(bookmarkModel)
 			} catch (error: Exception) {
 				activity.doSomeVibration(50)
-				showToast(msgId = R.string.title_something_went_wrong)
+				showToast(
+					activity = safeBookmarksActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 				logger.d("Exception while editing bookmark: ${error.message}")
 			}
 		}
@@ -174,11 +183,17 @@ class BookmarkOptionPopup(
 				aioSettings.browserDefaultHomepage = finalNormalizedURL
 				aioSettings.updateInStorage()
 				logger.d("Homepage updated: $finalNormalizedURL")
-				showToast(msgId = R.string.title_successful)
+				showToast(
+					activity = safeBookmarksActivityRef,
+					msgId = R.string.title_successful
+				)
 			} else {
 				logger.d("Invalid homepage URL entered")
 				activity.doSomeVibration(50)
-				showToast(msgId = R.string.title_invalid_url)
+				showToast(
+					activity = safeBookmarksActivityRef,
+					msgId = R.string.title_invalid_url
+				)
 			}
 		}
 	}
@@ -189,7 +204,10 @@ class BookmarkOptionPopup(
 	private fun copyBookmarkInClipboard() {
 		safeBookmarksActivityRef?.let { activity ->
 			copyTextToClipboard(activity, bookmarkModel.bookmarkUrl)
-			showToast(msgId = R.string.title_copied_url_to_clipboard)
+			showToast(
+				activity = safeBookmarksActivityRef,
+				msgId = R.string.title_copied_url_to_clipboard
+			)
 			logger.d("Copied bookmark to clipboard: ${bookmarkModel.bookmarkUrl}")
 		}
 	}
@@ -211,11 +229,17 @@ class BookmarkOptionPopup(
 				aioBookmark.getBookmarkLibrary().remove(bookmarkModel)
 				aioBookmark.updateInStorage()
 				safeMotherActivityRef.updateBookmarkListAdapter()
-				showToast(msgId = R.string.title_successful)
+				showToast(
+					activity = safeBookmarksActivityRef,
+					msgId = R.string.title_successful
+				)
 				logger.d("Deleted bookmark: ${bookmarkModel.bookmarkUrl}")
 			} catch (error: Exception) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_something_went_wrong)
+				showToast(
+					activity = safeBookmarksActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 				logger.d("Failed to delete bookmark: ${error.message}")
 			}
 		}
@@ -240,7 +264,10 @@ class BookmarkOptionPopup(
 			} catch (error: Exception) {
 				error.printStackTrace()
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_something_went_wrong)
+				showToast(
+					activity = safeBookmarksActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 				logger.d("Failed to share bookmark: ${error.message}")
 			}
 		}

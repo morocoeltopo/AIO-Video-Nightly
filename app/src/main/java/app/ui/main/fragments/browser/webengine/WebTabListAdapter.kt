@@ -138,12 +138,18 @@ class WebTabListAdapter(
 						if (currentWebUrl.isNotEmpty()) {
 							copyTextToClipboard(safeMotherActivityRef, currentWebUrl)
 							safeMotherActivityRef?.doSomeVibration(50)
-							ToastView.showToast(msgId = R.string.title_copied_url_to_clipboard)
+							ToastView.showToast(
+								activity = safeMotherActivityRef,
+								msgId = R.string.title_copied_url_to_clipboard
+							)
 						}
 					} catch (error: Exception) {
 						error.printStackTrace()
 						safeMotherActivityRef?.doSomeVibration(50)
-						ToastView.showToast(msgId = R.string.title_something_went_wrong)
+						ToastView.showToast(
+							activity = safeMotherActivityRef,
+							msgId = R.string.title_something_went_wrong
+						)
 					}
 					return@setOnLongClickListener true
 				}

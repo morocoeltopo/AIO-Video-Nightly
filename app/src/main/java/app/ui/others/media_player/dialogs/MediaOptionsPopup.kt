@@ -181,7 +181,8 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
                     playerActivityRef.startActivity(intent)
                 } catch (error: Exception) {
                     error.printStackTrace()
-                    showToast(msgId = string.title_no_app_can_handle_this_request)
+                    showToast(activity = safeMediaPlayerActivityRef,
+                        msgId = string.title_no_app_can_handle_this_request)
                 }
             }
         }

@@ -65,7 +65,10 @@ class UpdateBookmarkDialog(
 					if (enteredBookmarkName.isEmpty()) {
 						logger.d("Validation failed: bookmark name is empty.")
 						safeBookmarkActivity?.doSomeVibration(50)
-						ToastView.showToast(msgId = R.string.text_bookmark_name_can_not_be_empty)
+						ToastView.showToast(
+							activity = safeBookmarkActivity,
+							msgId = R.string.title_bookmark_name_can_not_be_empty
+						)
 						return@setOnClickListener
 					}
 
@@ -73,14 +76,20 @@ class UpdateBookmarkDialog(
 					if (enteredBookmarkUrl.isEmpty()) {
 						logger.d("Validation failed: bookmark URL is empty.")
 						safeBookmarkActivity?.doSomeVibration(50)
-						ToastView.showToast(msgId = R.string.text_bookmark_url_can_not_be_empty)
+						ToastView.showToast(
+							activity = safeBookmarkActivity,
+							msgId = R.string.title_bookmark_url_can_not_be_empty
+						)
 						return@setOnClickListener
 					}
 
 					if (!isValidURL(enteredBookmarkUrl)) {
 						logger.d("Validation failed: invalid bookmark URL = $enteredBookmarkUrl")
 						safeBookmarkActivity?.doSomeVibration(50)
-						ToastView.showToast(msgId = R.string.text_bookmark_url_not_valid)
+						ToastView.showToast(
+							activity = safeBookmarkActivity,
+							msgId = R.string.title_bookmark_url_not_valid
+						)
 						return@setOnClickListener
 					}
 
@@ -126,7 +135,10 @@ class UpdateBookmarkDialog(
 		} catch (error: Exception) {
 			logger.e("Can't show Bookmark Update Dialog:", error)
 			safeBookmarkActivity?.doSomeVibration(50)
-			ToastView.showToast(msgId = R.string.title_something_went_wrong)
+			ToastView.showToast(
+				activity = safeBookmarkActivity,
+				msgId = R.string.title_something_went_wrong
+			)
 		}
 	}
 
@@ -144,7 +156,10 @@ class UpdateBookmarkDialog(
 		} catch (error: Exception) {
 			logger.e("Can't close bookmark update dialog:", error)
 			safeBookmarkActivity?.doSomeVibration(50)
-			ToastView.showToast(msgId = R.string.title_something_went_wrong)
+			ToastView.showToast(
+				activity = safeBookmarkActivity,
+				msgId = R.string.title_something_went_wrong
+			)
 		}
 	}
 

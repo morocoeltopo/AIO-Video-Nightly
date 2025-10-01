@@ -5,7 +5,7 @@ import android.widget.ListView
 import app.ui.main.fragments.browser.webengine.WebVideoParser.analyzeUrl
 import com.aio.R
 import lib.ui.builders.DialogBuilder
-import lib.ui.builders.ToastView
+import lib.ui.builders.ToastView.Companion.showToast
 
 /**
  * A dialog that displays a list of extracted video URLs from a web page.
@@ -92,7 +92,7 @@ class ExtractedLinksDialog(
 			}
 			
 			analyzeUrl(webviewEngine.currentWebView?.url, webviewEngine)
-			ToastView.showToast(msgId = R.string.title_successful)
+			showToast(activity = motherActivity, msgId = R.string.title_successfully_cleared)
 			close()
 		} catch (error: Exception) {
 			error.printStackTrace()

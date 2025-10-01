@@ -33,109 +33,109 @@ import java.lang.ref.WeakReference
  * @param listOfVideoUrlInfos List of extracted video URL information to display.
  */
 class ExtractedLinksAdapter(
-    private val extractedLinksDialog: ExtractedLinksDialog,
-    private val webviewEngine: WebViewEngine,
-    private val listOfVideoUrlInfos: ArrayList<VideoUrlInfo>
+	private val extractedLinksDialog: ExtractedLinksDialog,
+	private val webviewEngine: WebViewEngine,
+	private val listOfVideoUrlInfos: ArrayList<VideoUrlInfo>
 ) : BaseAdapter() {
 
-    /** Reference to the safe [MotherActivity] from the WebViewEngine. */
-    private val safeMotherActivityRef = WeakReference(webviewEngine.safeMotherActivityRef).get()
+	/** Reference to the safe [MotherActivity] from the WebViewEngine. */
+	private val safeMotherActivityRef = WeakReference(webviewEngine.safeMotherActivityRef).get()
 
-    override fun getCount(): Int = listOfVideoUrlInfos.size
+	override fun getCount(): Int = listOfVideoUrlInfos.size
 
-    override fun getItem(position: Int): VideoUrlInfo = listOfVideoUrlInfos[position]
+	override fun getItem(position: Int): VideoUrlInfo = listOfVideoUrlInfos[position]
 
-    override fun getItemId(position: Int): Long = position.toLong()
+	override fun getItemId(position: Int): Long = position.toLong()
 
-    /**
-     * Binds view for each video item in the list.
-     * @param position Index of the item.
-     * @param convertView Reusable view if available.
-     * @param parent Parent view group.
-     */
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val extractedVideoLink = listOfVideoUrlInfos[position]
-        var itemLayout = convertView
+	/**
+	 * Binds view for each video item in the list.
+	 * @param position Index of the item.
+	 * @param convertView Reusable view if available.
+	 * @param parent Parent view group.
+	 */
+	override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+		val extractedVideoLink = listOfVideoUrlInfos[position]
+		var itemLayout = convertView
 
-        if (itemLayout == null) {
-            val layoutResId = R.layout.dialog_extracted_links_item
-            itemLayout = inflate(safeMotherActivityRef, layoutResId, null)
-        }
+		if (itemLayout == null) {
+			val layoutResId = R.layout.dialog_extracted_links_item
+			itemLayout = inflate(safeMotherActivityRef, layoutResId, null)
+		}
 
-        if (itemLayout!!.tag == null) {
-            ViewHolder(
-                extractedLinksDialog = extractedLinksDialog,
-                webviewEngine = webviewEngine,
-                position = position,
-                layoutView = itemLayout,
-                safeMotherActivity = safeMotherActivityRef
-            ).apply {
-                updateView(extractedVideoLink)
-                itemLayout.tag = this
-            }
-        } else {
-            itemLayout.tag as ViewHolder
-        }
+		if (itemLayout!!.tag == null) {
+			ViewHolder(
+				extractedLinksDialog = extractedLinksDialog,
+				webviewEngine = webviewEngine,
+				position = position,
+				layoutView = itemLayout,
+				safeMotherActivity = safeMotherActivityRef
+			).apply {
+				updateView(extractedVideoLink)
+				itemLayout.tag = this
+			}
+		} else {
+			itemLayout.tag as ViewHolder
+		}
 
-        return itemLayout
-    }
+		return itemLayout
+	}
 
-    /**
-     * ViewHolder class for caching views and logic per extracted video item.
-     */
-    class ViewHolder(
-        private val extractedLinksDialog: ExtractedLinksDialog,
-        private val webviewEngine: WebViewEngine,
-        private val position: Int,
-        private val layoutView: View,
-        private val safeMotherActivity: MotherActivity?
-    ) {
-        private val m3U8InfoExtractor = M3U8InfoExtractor()
-        private var itemClickableContainer: View = layoutView.findViewById(R.id.main_container)
-        private var linkItemUrl: TextView = layoutView.findViewById(R.id.txt_video_url)
-        private var linkItemInfo: TextView = layoutView.findViewById(R.id.txt_video_info)
-        private var textLinkItemInfo: String = ""
-        private var currentWebpageVideoThumb = ""
+	/**
+	 * ViewHolder class for caching views and logic per extracted video item.
+	 */
+	class ViewHolder(
+		private val extractedLinksDialog: ExtractedLinksDialog,
+		private val webviewEngine: WebViewEngine,
+		private val position: Int,
+		private val layoutView: View,
+		private val safeMotherActivity: MotherActivity?
+	) {
+		private val m3U8InfoExtractor = M3U8InfoExtractor()
+		private var itemClickableContainer: View = layoutView.findViewById(R.id.main_container)
+		private var linkItemUrl: TextView = layoutView.findViewById(R.id.txt_video_url)
+		private var linkItemInfo: TextView = layoutView.findViewById(R.id.txt_video_info)
+		private var textLinkItemInfo: String = ""
+		private var currentWebpageVideoThumb = ""
 
-        /**
-         * Updates the UI with video URL and metadata.
-         * Triggers resolution extraction and sets click listeners.
-         */
-        fun updateView(videoUrlInfo: VideoUrlInfo) {
-            linkItemUrl.text = videoUrlInfo.fileUrl
-            if (currentWebpageVideoThumb.isEmpty()) {
-                webviewEngine.currentWebView?.getCurrentOgImage {
-                    currentWebpageVideoThumb = it ?: ""
-                }
-            }
+		/**
+		 * Updates the UI with video URL and metadata.
+		 * Triggers resolution extraction and sets click listeners.
+		 */
+		fun updateView(videoUrlInfo: VideoUrlInfo) {
+			linkItemUrl.text = videoUrlInfo.fileUrl
+			if (currentWebpageVideoThumb.isEmpty()) {
+				webviewEngine.currentWebView?.getCurrentOgImage {
+					currentWebpageVideoThumb = it ?: ""
+				}
+			}
 
-            if (textLinkItemInfo.isNotEmpty()) {
-                linkItemInfo.text = textLinkItemInfo; return
-            } else {
-                if (isM3U8Url(videoUrlInfo.fileUrl)) showHSLVideoLinkInfo(videoUrlInfo)
-                else showNormalVideoLinkInfo(videoUrlInfo)
-            }
+			if (textLinkItemInfo.isNotEmpty()) {
+				linkItemInfo.text = textLinkItemInfo; return
+			} else {
+				if (isM3U8Url(videoUrlInfo.fileUrl)) showHSLVideoLinkInfo(videoUrlInfo)
+				else showNormalVideoLinkInfo(videoUrlInfo)
+			}
 
-            setupLongClickItemListener(videoUrlInfo.fileUrl)
-            setupOnClickItemListener(videoUrlInfo)
-        }
+			setupLongClickItemListener(videoUrlInfo.fileUrl)
+			setupOnClickItemListener(videoUrlInfo)
+		}
 
-        /**
-         * Displays metadata for HLS/M3U8 streams.
-         * Handles async resolution extraction and caching.
-         */
-        private fun showHSLVideoLinkInfo(videoUrlInfo: VideoUrlInfo) {
-            safeMotherActivity?.let { motherActivity ->
-                ThreadsUtility.executeInBackground(codeBlock = {
-                    ThreadsUtility.executeOnMain { animateFadInOutAnim(linkItemInfo) }
+		/**
+		 * Displays metadata for HLS/M3U8 streams.
+		 * Handles async resolution extraction and caching.
+		 */
+		private fun showHSLVideoLinkInfo(videoUrlInfo: VideoUrlInfo) {
+			safeMotherActivity?.let { motherActivity ->
+				ThreadsUtility.executeInBackground(codeBlock = {
+					ThreadsUtility.executeOnMain { animateFadInOutAnim(linkItemInfo) }
 
-                    if (videoUrlInfo.infoCached.isNotEmpty()) {
-                        linkItemInfo.text = videoUrlInfo.infoCached
-                        ThreadsUtility.executeOnMain { closeAnyAnimation(linkItemInfo) }
-                        return@executeInBackground
-                    }
+					if (videoUrlInfo.infoCached.isNotEmpty()) {
+						linkItemInfo.text = videoUrlInfo.infoCached
+						ThreadsUtility.executeOnMain { closeAnyAnimation(linkItemInfo) }
+						return@executeInBackground
+					}
 
-                    m3U8InfoExtractor.extractResolutions(
+					m3U8InfoExtractor.extractResolutions(
 						m3u8Url = videoUrlInfo.fileUrl,
 						callback = object : InfoCallback {
 							override fun onResolutions(resolutions: List<String>) {
@@ -161,160 +161,166 @@ class ExtractedLinksAdapter(
 								layoutView.visibility = GONE
 							}
 						})
-                })
-            }
-        }
+				})
+			}
+		}
 
-        /**
-         * Displays metadata for regular (non-HLS) video URLs.
-         * Uses async resolution detection and caches result.
-         */
-        private fun showNormalVideoLinkInfo(videoUrlInfo: VideoUrlInfo) {
-            safeMotherActivity?.let { safeMotherActivity ->
-                executeInBackground {
-                    executeOnMainThread {
-                        linkItemInfo.text = getText(R.string.title_fetching_file_info)
-                        animateFadInOutAnim(linkItemInfo)
-                    }
+		/**
+		 * Displays metadata for regular (non-HLS) video URLs.
+		 * Uses async resolution detection and caches result.
+		 */
+		private fun showNormalVideoLinkInfo(videoUrlInfo: VideoUrlInfo) {
+			safeMotherActivity?.let { safeMotherActivity ->
+				executeInBackground {
+					executeOnMainThread {
+						linkItemInfo.text = getText(R.string.title_fetching_file_info)
+						animateFadInOutAnim(linkItemInfo)
+					}
 
-                    if (videoUrlInfo.infoCached.isNotEmpty()) {
-                        executeOnMainThread {
-                            linkItemInfo.text = videoUrlInfo.infoCached
-                            closeAnyAnimation(linkItemInfo)
-                        }; return@executeInBackground
-                    }
+					if (videoUrlInfo.infoCached.isNotEmpty()) {
+						executeOnMainThread {
+							linkItemInfo.text = videoUrlInfo.infoCached
+							closeAnyAnimation(linkItemInfo)
+						}; return@executeInBackground
+					}
 
-                    try {
-                        getVideoResolutionFromUrl(videoUrlInfo.fileUrl)?.let { resolution ->
-                            executeOnMainThread {
-                                closeAnyAnimation(linkItemInfo)
-                                videoUrlInfo.totalResolutions = 1
-                                videoUrlInfo.fileResolution = "${resolution.second}p"
-                                val stringResId = R.string.title_video_type_mp4_resolution
-                                val infoText = safeMotherActivity.getString(
-                                    stringResId,
-                                    videoUrlInfo.fileResolution
-                                )
-                                linkItemInfo.text = infoText
-                                videoUrlInfo.infoCached = infoText
-                                videoUrlInfo.isM3U8 = false
-                            }
-                        } ?: run {
-                            closeAnyAnimation(linkItemInfo)
-                            videoUrlInfo.totalResolutions = 1
-                            videoUrlInfo.fileResolution = getText(R.string.title_unknown)
-                            val stringResId = R.string.title_video_type_mp4_resolution
-                            val infoText = safeMotherActivity.getString(
-                                stringResId,
-                                videoUrlInfo.fileResolution
-                            )
-                            linkItemInfo.text = infoText
-                            videoUrlInfo.infoCached = infoText
-                            videoUrlInfo.isM3U8 = false
-                        }
+					try {
+						getVideoResolutionFromUrl(videoUrlInfo.fileUrl)?.let { resolution ->
+							executeOnMainThread {
+								closeAnyAnimation(linkItemInfo)
+								videoUrlInfo.totalResolutions = 1
+								videoUrlInfo.fileResolution = "${resolution.second}p"
+								val stringResId = R.string.title_video_type_mp4_resolution
+								val infoText = safeMotherActivity.getString(
+									stringResId,
+									videoUrlInfo.fileResolution
+								)
+								linkItemInfo.text = infoText
+								videoUrlInfo.infoCached = infoText
+								videoUrlInfo.isM3U8 = false
+							}
+						} ?: run {
+							closeAnyAnimation(linkItemInfo)
+							videoUrlInfo.totalResolutions = 1
+							videoUrlInfo.fileResolution = getText(R.string.title_unknown)
+							val stringResId = R.string.title_video_type_mp4_resolution
+							val infoText = safeMotherActivity.getString(
+								stringResId,
+								videoUrlInfo.fileResolution
+							)
+							linkItemInfo.text = infoText
+							videoUrlInfo.infoCached = infoText
+							videoUrlInfo.isM3U8 = false
+						}
 
-                        textLinkItemInfo = linkItemInfo.text.toString()
+						textLinkItemInfo = linkItemInfo.text.toString()
 
-                    } catch (error: Exception) {
-                        error.printStackTrace()
-                        executeOnMainThread {
-                            closeAnyAnimation(linkItemInfo)
-                            safeMotherActivity.getString(
-                                R.string.title_video_type_mp4,
-                                safeMotherActivity.getText(R.string.title_click_to_get_info)
-                            ).let { linkItemInfo.text = it }
-                            textLinkItemInfo = linkItemInfo.text.toString()
-                            layoutView.visibility = GONE
-                        }
-                    }
-                }
-            }
-        }
+					} catch (error: Exception) {
+						error.printStackTrace()
+						executeOnMainThread {
+							closeAnyAnimation(linkItemInfo)
+							safeMotherActivity.getString(
+								R.string.title_video_type_mp4,
+								safeMotherActivity.getText(R.string.title_click_to_get_info)
+							).let { linkItemInfo.text = it }
+							textLinkItemInfo = linkItemInfo.text.toString()
+							layoutView.visibility = GONE
+						}
+					}
+				}
+			}
+		}
 
-        /**
-         * Handles click event to prompt download or show further options
-         * depending on whether it's M3U8 or regular video.
-         */
-        private fun setupOnClickItemListener(videoUrlInfo: VideoUrlInfo) {
-            itemClickableContainer.setOnClickListener {
-                if (videoUrlInfo.infoCached.isEmpty()) {
-                    safeMotherActivity?.doSomeVibration(50)
-                    showToast(msgId = R.string.text_wait_for_video_info)
-                    return@setOnClickListener
-                }
+		/**
+		 * Handles click event to prompt download or show further options
+		 * depending on whether it's M3U8 or regular video.
+		 */
+		private fun setupOnClickItemListener(videoUrlInfo: VideoUrlInfo) {
+			itemClickableContainer.setOnClickListener {
+				if (videoUrlInfo.infoCached.isEmpty()) {
+					safeMotherActivity?.doSomeVibration(50)
+					showToast(
+						activity = safeMotherActivity,
+						msgId = R.string.title_wait_for_video_info
+					)
+					return@setOnClickListener
+				}
 
-                val videoTitle = webviewEngine.currentWebView?.title
-                if (isM3U8Url(videoUrlInfo.fileUrl)) {
-                    val currentWebUrl = webviewEngine.currentWebView?.url
-                    val videoCookie = webviewEngine.getCurrentWebViewCookies()
+				val videoTitle = webviewEngine.currentWebView?.title
+				if (isM3U8Url(videoUrlInfo.fileUrl)) {
+					val currentWebUrl = webviewEngine.currentWebView?.url
+					val videoCookie = webviewEngine.getCurrentWebViewCookies()
 
-                    if (videoUrlInfo.totalResolutions > 1) {
-                        executeOnMainThread {
-                            SharedVideoURLIntercept(
-                                baseActivity = safeMotherActivity,
-                                userGivenVideoInfo = VideoFormatsUtils.VideoInfo(
-                                    videoTitle = videoTitle,
-                                    videoUrlReferer = currentWebUrl,
-                                    videoThumbnailUrl = currentWebpageVideoThumb.ifEmpty { null },
-                                    videoThumbnailByReferer = true,
-                                    videoCookie = videoCookie
-                                )
-                            ).interceptIntentURI(videoUrlInfo.fileUrl, false)
-                            extractedLinksDialog.close()
-                        }
-                    } else {
-                        safeMotherActivity?.let { safeMotherActivity ->
-                            extractedLinksDialog.close()
-                            SingleResolutionPrompter(
-                                baseActivity = safeMotherActivity,
-                                singleResolutionName = videoUrlInfo.fileResolution,
-                                extractedVideoLink = videoUrlInfo.fileUrl,
-                                thumbnailUrlProvided = currentWebpageVideoThumb.ifEmpty { null },
-                                currentWebUrl = currentWebUrl,
-                                videoCookie = videoCookie,
-                                videoTitle = videoTitle,
-                                videoUrlReferer = currentWebUrl,
-                                isSocialMediaUrl = false,
-                                isDownloadFromBrowser = true,
-                            ).show()
-                        }
-                    }
-                } else {
-                    try {
-                        val currentWebUrl = webviewEngine.currentWebView?.url
-                        val videoCookie = webviewEngine.getCurrentWebViewCookies()
+					if (videoUrlInfo.totalResolutions > 1) {
+						executeOnMainThread {
+							SharedVideoURLIntercept(
+								baseActivity = safeMotherActivity,
+								userGivenVideoInfo = VideoFormatsUtils.VideoInfo(
+									videoTitle = videoTitle,
+									videoUrlReferer = currentWebUrl,
+									videoThumbnailUrl = currentWebpageVideoThumb.ifEmpty { null },
+									videoThumbnailByReferer = true,
+									videoCookie = videoCookie
+								)
+							).interceptIntentURI(videoUrlInfo.fileUrl, false)
+							extractedLinksDialog.close()
+						}
+					} else {
+						safeMotherActivity?.let { safeMotherActivity ->
+							extractedLinksDialog.close()
+							SingleResolutionPrompter(
+								baseActivity = safeMotherActivity,
+								singleResolutionName = videoUrlInfo.fileResolution,
+								extractedVideoLink = videoUrlInfo.fileUrl,
+								thumbnailUrlProvided = currentWebpageVideoThumb.ifEmpty { null },
+								currentWebUrl = currentWebUrl,
+								videoCookie = videoCookie,
+								videoTitle = videoTitle,
+								videoUrlReferer = currentWebUrl,
+								isSocialMediaUrl = false,
+								isDownloadFromBrowser = true,
+							).show()
+						}
+					}
+				} else {
+					try {
+						val currentWebUrl = webviewEngine.currentWebView?.url
+						val videoCookie = webviewEngine.getCurrentWebViewCookies()
 
-                        safeMotherActivity?.let { safeMotherActivity ->
-                            extractedLinksDialog.close()
-                            RegularDownloadPrompter(
-                                motherActivity = safeMotherActivity,
-                                singleResolutionName = videoUrlInfo.fileResolution,
-                                extractedVideoLink = videoUrlInfo.fileUrl,
-                                thumbnailUrlProvided = currentWebpageVideoThumb.ifEmpty { null },
-                                currentWebUrl = currentWebUrl,
-                                videoCookie = videoCookie,
-                                videoTitle = videoTitle,
-                                videoUrlReferer = currentWebUrl,
-                                isFromSocialMedia = false
-                            ).show()
-                        }
-                    } catch (error: Exception) {
-                        extractedLinksDialog.close()
-                        error.printStackTrace()
-                    }
-                }
-            }
-        }
+						safeMotherActivity?.let { safeMotherActivity ->
+							extractedLinksDialog.close()
+							RegularDownloadPrompter(
+								motherActivity = safeMotherActivity,
+								singleResolutionName = videoUrlInfo.fileResolution,
+								extractedVideoLink = videoUrlInfo.fileUrl,
+								thumbnailUrlProvided = currentWebpageVideoThumb.ifEmpty { null },
+								currentWebUrl = currentWebUrl,
+								videoCookie = videoCookie,
+								videoTitle = videoTitle,
+								videoUrlReferer = currentWebUrl,
+								isFromSocialMedia = false
+							).show()
+						}
+					} catch (error: Exception) {
+						extractedLinksDialog.close()
+						error.printStackTrace()
+					}
+				}
+			}
+		}
 
-        /**
-         * Placeholder: Set up long-click functionality to copy URL or other future actions.
-         */
-        private fun setupLongClickItemListener(extractedVideoLink: String) {
-            itemClickableContainer.setOnLongClickListener {
-                copyTextToClipboard(safeMotherActivity, extractedVideoLink)
-                showToast(msgId = R.string.title_copied_url_to_clipboard)
-                return@setOnLongClickListener true
-            }
-        }
-    }
+		/**
+		 * Placeholder: Set up long-click functionality to copy URL or other future actions.
+		 */
+		private fun setupLongClickItemListener(extractedVideoLink: String) {
+			itemClickableContainer.setOnLongClickListener {
+				copyTextToClipboard(safeMotherActivity, extractedVideoLink)
+				showToast(
+					activity = safeMotherActivity,
+					msgId = R.string.title_copied_url_to_clipboard
+				)
+				return@setOnLongClickListener true
+			}
+		}
+	}
 }

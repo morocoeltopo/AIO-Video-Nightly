@@ -221,7 +221,10 @@ class BookmarksActivity : BaseActivity(),
 			} catch (error: Exception) {
 				logger.d("Error displaying options popup: ${error.message}")
 				error.printStackTrace()
-				showToast(msgId = R.string.title_something_went_wrong)
+				showToast(
+					activity = safeBookmarksActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 			}
 		}
 	}
@@ -308,7 +311,10 @@ class BookmarksActivity : BaseActivity(),
 		buttonLoadMoreBookmarks.setOnClickListener {
 			logger.d("Load More button clicked: Loading additional bookmarks")
 			bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
-			showToast(msgId = R.string.text_loaded_successfully)
+			showToast(
+				activity = safeBookmarksActivityRef,
+				msgId = R.string.text_loaded_successfully
+			)
 		}
 	}
 

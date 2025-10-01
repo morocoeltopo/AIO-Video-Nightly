@@ -128,7 +128,10 @@ object Mp4ToAudioConverterDialog {
 
 										// Add converted audio to media store
 										FileSystemUtility.addToMediaStore(outputMediaFile)
-										showToast(msgId = R.string.title_converted_successfully)
+										showToast(
+											activity = safeActivityRef,
+											msgId = R.string.title_converted_successfully
+										)
 
 										try {
 											addNewDownloadModelToSystem(downloadDataModel, outputMediaFile)
@@ -146,7 +149,10 @@ object Mp4ToAudioConverterDialog {
 										if (safeActivityRef is MediaPlayerActivity) {
 											safeActivityRef.resumePlayer()
 											logger.d("Resumed MediaPlayer after failure")
-										}; showToast(msgId = R.string.title_converting_failed)
+										}; showToast(
+										activity = safeActivityRef,
+										msgId = R.string.title_converting_failed
+									)
 									}
 								}
 							}
@@ -159,7 +165,12 @@ object Mp4ToAudioConverterDialog {
 						if (safeActivityRef is MediaPlayerActivity) {
 							safeActivityRef.resumePlayer()
 							logger.d("Resumed MediaPlayer after unexpected error")
-						}; showToast(msgId = R.string.title_something_went_wrong)
+						}
+
+						showToast(
+							activity = safeActivityRef,
+							msgId = R.string.title_something_went_wrong
+						)
 					}
 				}
 			})

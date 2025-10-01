@@ -74,6 +74,8 @@ class AIOFavicons {
 	 * @return The absolute path to the favicon image, or null if it couldn't be retrieved.
 	 */
 	fun getFavicon(url: String): String? {
+		if (url.isEmpty()) return null
+
 		val baseDomain = getBaseDomain(url) ?: run {
 			logger.d("Invalid URL, cannot extract domain: $url")
 			return null

@@ -126,7 +126,10 @@ class HistoryActivity : BaseActivity(),
 			} catch (error: Exception) {
 				error.printStackTrace()
 				logger.d("Failed to show history option popup: ${error.message}")
-				showToast(msgId = R.string.title_something_went_wrong)
+				showToast(
+					activity = safeActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 			}
 		}
 	}
@@ -160,7 +163,10 @@ class HistoryActivity : BaseActivity(),
 		buttonLoadMoreHistory.setOnClickListener {
 			logger.d("Load More button clicked")
 			historyAdapter.loadMoreHistory()
-			showToast(msgId = R.string.text_loaded_successfully)
+			showToast(
+				activity = safeHistoryActivityRef,
+				msgId = R.string.text_loaded_successfully
+			)
 		}
 	}
 

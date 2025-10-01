@@ -105,7 +105,8 @@ class DownloadLocationSelector(private val baseActivity: BaseActivity) {
 					hasSettingApplied = true
 					aioSettings.updateInStorage()
 					safeBaseActivity?.doSomeVibration(50)
-					ToastView.showToast(msgId = R.string.title_setting_applied)
+					ToastView.showToast(activity = safeBaseActivity,
+						msgId = R.string.title_setting_applied)
 					close()
 				}
 			}

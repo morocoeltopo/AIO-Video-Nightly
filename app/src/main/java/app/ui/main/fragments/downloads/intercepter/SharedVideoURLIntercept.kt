@@ -140,7 +140,10 @@ class SharedVideoURLIntercept(
 					ThreadsUtility.executeOnMain {
 						waitingDialog.close()
 						safeBaseActivityRef?.doSomeVibration(50)
-						showToast(msgId = R.string.text_unsupported_video_link)
+						showToast(
+							activity = safeBaseActivityRef,
+							msgId = R.string.text_unsupported_video_link
+						)
 						openInBuiltInBrowser(targetVideoUrl)
 					}; return@executeInBackground
 				} else {
@@ -204,7 +207,10 @@ class SharedVideoURLIntercept(
 						if (videoInfo.videoFormats.isEmpty()) {
 							logger.d("No video formats found")
 							if (shouldOpenBrowserAsFallback) openInBuiltInBrowser(videoUrl)
-							else showToast(msgId = R.string.title_no_video_found)
+							else showToast(
+								activity = safeBaseActivityRef,
+								msgId = R.string.title_no_video_found
+							)
 
 						} else {
 							logger.d("Showing resolution picker with ${videoInfo.videoFormats.size} formats")
@@ -355,14 +361,20 @@ class SharedVideoURLIntercept(
 	private fun openInSystemBrowser(urlFromIntent: String) {
 		logger.d("Opening URL in system browser: $urlFromIntent")
 		openLinkInSystemBrowser(urlFromIntent, safeBaseActivityRef) {
-			showToast(getText(R.string.title_failed_open_the_video))
+			showToast(
+				activity = safeBaseActivityRef,
+				msgId = R.string.title_failed_open_the_video
+			)
 		}
 	}
 
 	/** Shows a toast indicating invalid or malformed URL. */
 	private fun showInvalidUrlToast() {
 		logger.d("Showing invalid URL toast")
-		showToast(msgId = R.string.title_invalid_url)
+		showToast(
+			activity = safeBaseActivityRef,
+			msgId = R.string.title_invalid_url
+		)
 	}
 
 	/**

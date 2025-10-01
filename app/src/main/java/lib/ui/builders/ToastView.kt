@@ -110,16 +110,15 @@ class ToastView(context: Context) : Toast(context) {
 		): ToastView {
 			// Wrap the activity with its current theme
 			val themedCtx = ContextThemeWrapper(activity, R.style.style_application)
-
 			val inflater = LayoutInflater.from(themedCtx)
-			val toastView = inflater.inflate(R.layout.lay_custom_toast_view_1, null)
-			toastView.findViewById<TextView>(R.id.txt_toast_message).text = message
 
 			// Create toast with activity (not application) context
-			return Toast(themedCtx).apply {
+			return ToastView(activity).apply {
+				val toastView = inflater.inflate(R.layout.lay_custom_toast_view_1, null)
+				toastView.findViewById<TextView>(R.id.txt_toast_message).text = message
 				view = toastView
 				setDuration(duration)
-			} as ToastView
+			}
 		}
 	}
 }

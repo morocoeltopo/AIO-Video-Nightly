@@ -108,7 +108,10 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 		// If content length is invalid (zero or negative), show unsupported file warning
 		if (contentLength < 1) {
 			safeActivityRef.doSomeVibration(50)
-			showToast(msgId = R.string.text_unsupported_file_link)
+			showToast(
+				activity = safeActivityRef,
+				msgId = R.string.text_unsupported_file_link
+			)
 			return
 		}
 
@@ -236,7 +239,10 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 						downloadSystem.addDownload(downloadModel)
 						executeOnMainThread {
 							val toastMsgResId = R.string.title_download_added_successfully
-							showToast(msgId = toastMsgResId)
+							showToast(
+								activity = safeWebEngineRef?.safeMotherActivityRef,
+								msgId = toastMsgResId
+							)
 						}
 
 						// Update user settings for successful download
@@ -264,7 +270,10 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 				executeOnMain {
 					// Show failure feedback
 					safeWebEngineRef?.safeMotherActivityRef?.doSomeVibration(50)
-					showToast(msgId = R.string.title_failed_to_add_download_task)
+					showToast(
+						activity = safeWebEngineRef?.safeMotherActivityRef,
+						msgId = R.string.title_failed_to_add_download_task
+					)
 				}
 			}
 		})

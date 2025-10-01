@@ -252,7 +252,7 @@ class SingleResolutionPrompter(
 			openLinkInSystemBrowser(currentWebUrl, safeMotherActivityRef) {
 				// Handle browser open failure
 				safeMotherActivityRef.doSomeVibration(40)
-				showToast(getText(R.string.title_failed_open_the_video))
+				showToast(activity = safeMotherActivityRef, msgId = R.string.title_failed_open_the_video)
 			}
 		}
 	}
@@ -270,7 +270,7 @@ class SingleResolutionPrompter(
 					if (extractedVideoLink.isEmpty()) {
 						executeOnMain {
 							safeBaseActivityRef.doSomeVibration(50)
-							showToast(msgId = R.string.title_something_went_wrong)
+							showToast(activity = safeBaseActivityRef, msgId = R.string.title_something_went_wrong)
 						}; return@executeInBackground
 					}
 
@@ -312,7 +312,7 @@ class SingleResolutionPrompter(
 					downloadSystem.addDownload(downloadModel) {
 						executeOnMainThread {
 							val toastMsgResId = R.string.title_download_added_successfully
-							showToast(msgId = toastMsgResId)
+							showToast(activity = safeBaseActivityRef, msgId = toastMsgResId)
 						}
 					}
 
@@ -326,7 +326,7 @@ class SingleResolutionPrompter(
 					val failedToAddResId = R.string.title_failed_to_add_download_task
 					executeOnMain {
 						safeBaseActivityRef.doSomeVibration(20)
-						showToast(msgId = failedToAddResId)
+						showToast(activity = safeBaseActivityRef, msgId = failedToAddResId)
 					}
 				}
 			}

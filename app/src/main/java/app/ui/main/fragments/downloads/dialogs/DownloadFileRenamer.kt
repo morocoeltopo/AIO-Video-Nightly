@@ -44,13 +44,13 @@ class DownloadFileRenamer(
 	var downloadDataModel: DownloadDataModel,
 	val oneDone: () -> Unit
 ) {
-	
+
 	// Safe reference to the activity to prevent memory leaks
 	val safeMotherActivityRef = WeakReference(motherActivity).get()
-	
+
 	// Builder used to construct and show the renaming dialog
 	val dialogBuilder: DialogBuilder = DialogBuilder(safeMotherActivityRef)
-	
+
 	init {
 		// Only proceed if activity reference is still valid
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
@@ -58,22 +58,25 @@ class DownloadFileRenamer(
 				setView(layout.frag_down_2_file_renamer_1)
 				setOnClickForPositiveButton {
 					val userGivenText = view.findViewById<EditText>(id.edit_field_file_name).text.toString()
-					
+
 					// Show error if file name is empty
 					if (userGivenText.isEmpty()) {
 						safeMotherActivityRef.doSomeVibration(50)
-						showToast(getText(string.title_file_name_must_not_be_empty))
+						showToast(
+							activity = safeMotherActivityRef,
+							msgId = string.title_file_name_must_not_be_empty
+						)
 						return@setOnClickForPositiveButton
 					}
-					
+
 					try {
 						val fileDirectory = downloadDataModel.fileDirectory
-						
+
 						// Sanitize and finalize the file name
 						sanitizedFileName(fileDirectory, userGivenText) { sanitizedName ->
 							val fileExtension = getFileExtension(downloadDataModel.fileName)
 							val generatedFileName = "$sanitizedName.$fileExtension"
-							
+
 							// Perform the actual rename operation
 							renameDownloadTask(downloadDataModel, generatedFileName) {
 								dialogBuilder.close()
@@ -95,7 +98,7 @@ class DownloadFileRenamer(
 			}
 		}
 	}
-	
+
 	/**
 	 * Displays the rename dialog and initializes the input field.
 	 *
@@ -107,13 +110,13 @@ class DownloadFileRenamer(
 			dialogBuilder.apply {
 				val editTextFiledContainer = view.findViewById<View>(id.edit_field_file_name_container)
 				val editTextFiled = view.findViewById<EditText>(id.edit_field_file_name)
-				
+
 				// Pre-fill file name without extension
 				editTextFiled.setText(getFileNameWithoutExtension(downloadModel.fileName))
 				editTextFiledContainer.setOnClickListener { editTextFiled.requestFocus() }
-				
+
 				show()
-				
+
 				// Automatically select text and show keyboard after delay
 				CommonTimeUtils.delay(200, object : CommonTimeUtils.OnTaskFinishListener {
 					override fun afterDelay() {
@@ -125,7 +128,7 @@ class DownloadFileRenamer(
 			}
 		}
 	}
-	
+
 	/**
 	 * Sanitizes the given file name and ensures it is unique within the directory.
 	 *
@@ -136,17 +139,18 @@ class DownloadFileRenamer(
 	private fun sanitizedFileName(
 		directory: String,
 		fileName: String,
-		onSanitized: (sanitizedName: String) -> Unit) {
+		onSanitized: (sanitizedName: String) -> Unit
+	) {
 		executeInBackground {
 			var sanitizedFileName = sanitizeFileNameNormal(fileName)
-			
+
 			// Use extreme sanitization if normal is not valid
 			if (!isFileNameValid(sanitizedFileName))
 				sanitizedFileName = sanitizeFileNameExtreme(fileName)
-			
+
 			val removedDoubleSlashes = removeEmptyLines(sanitizedFileName)
 			sanitizedFileName = cutTo60Chars(removedDoubleSlashes ?: "") ?: ""
-			
+
 			// Ensure file name is unique by prepending a numeric index if needed
 			var index: Int
 			val regex = Regex("^(\\d+)_")
@@ -164,7 +168,7 @@ class DownloadFileRenamer(
 			executeOnMainThread { onSanitized(sanitizedFileName) }
 		}
 	}
-	
+
 	/**
 	 * Renames the actual download file and updates the model.
 	 *
@@ -179,21 +183,21 @@ class DownloadFileRenamer(
 	) {
 		val isRunningTask = model.isRunning
 		downloadSystem.pauseDownload(model)
-		
+
 		executeInBackground {
 			// Rename physical file
 			model.getDestinationDocumentFile().renameTo(sanitizedName)
 			model.fileName = sanitizedName
-			
+
 			// Update associated video info if applicable
 			if (model.videoInfo != null && model.videoFormat != null) {
 				model.videoInfo!!.videoTitle = model.fileName
 			}
-			
+
 			// Persist changes
 			model.updateInStorage()
 			downloadSystem.downloadsUIManager.updateActiveUI(model)
-			
+
 			// Resume if it was running before
 			if (isRunningTask) downloadSystem.resumeDownload(model)
 			onDone()

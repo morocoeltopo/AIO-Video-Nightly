@@ -250,10 +250,12 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				ViewUtility.unbindDrawables(correspondingWebView)
 				System.gc()
 			} catch (error: Exception) {
-				logger.d("Error closing web view tab: ${error.message}")
-				error.printStackTrace()
+				logger.e("Error closing web view tab: ${error.message}", error)
 				safeMotherActivityRef.doSomeVibration(50)
-				ToastView.showToast(msgId = R.string.title_something_went_wrong)
+				ToastView.showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 			}
 		}
 	}
@@ -300,10 +302,12 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 					}
 				}
 			} catch (error: Exception) {
-				logger.d("Error opening web view tab: ${error.message}")
-				error.printStackTrace()
+				logger.e("Error opening web view tab: ${error.message}", error)
 				safeMotherActivityRef.doSomeVibration(50)
-				ToastView.showToast(msgId = R.string.title_something_went_wrong)
+				ToastView.showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 			}
 		}
 	}

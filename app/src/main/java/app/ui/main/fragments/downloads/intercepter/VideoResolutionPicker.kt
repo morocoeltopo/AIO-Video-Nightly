@@ -333,14 +333,20 @@ class VideoResolutionPicker(
 			if (selectedFormat < 0) {
 				// No format selected feedback
 				safeBaseActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_select_a_video_resolution)
+				showToast(
+					activity = safeBaseActivityRef,
+					msgId = R.string.title_select_a_video_resolution
+				)
 				return
 			}
 
 			if (videoInfo.videoTitle.isNullOrEmpty()) {
 				// Wait for title to load feedback
 				safeBaseActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_wait_till_server_return_video_title)
+				showToast(
+					activity = safeBaseActivityRef,
+					msgId = R.string.title_wait_till_server_return_video_title
+				)
 				return
 			}
 
@@ -400,7 +406,7 @@ class VideoResolutionPicker(
 							// Add to download system
 							downloadSystem.addDownload(downloadModel, onAdded = {
 								val toastMsgResId = R.string.title_download_added_successfully
-								showToast(msgId = toastMsgResId)
+								showToast(activity = safeBaseActivityRef, msgId = toastMsgResId)
 							})
 
 							// Update download stats
@@ -440,7 +446,7 @@ class VideoResolutionPicker(
 					val failedToAddResId = R.string.title_failed_to_add_download_task
 					executeOnMain {
 						safeBaseActivityRef.doSomeVibration(20)
-						showToast(msgId = failedToAddResId)
+						showToast(activity = safeBaseActivityRef, msgId = failedToAddResId)
 					}
 				}
 			}
@@ -454,7 +460,10 @@ class VideoResolutionPicker(
 		safeBaseActivityRef?.let { safeBaseActivityRef ->
 			openLinkInSystemBrowser(videoInfo.videoUrl, safeBaseActivityRef) {
 				safeBaseActivityRef.doSomeVibration(40)
-				showToast(getText(R.string.title_failed_open_the_video))
+				showToast(
+					activity = safeBaseActivityRef,
+					msgId = R.string.title_failed_open_the_video
+				)
 			}
 		}
 	}

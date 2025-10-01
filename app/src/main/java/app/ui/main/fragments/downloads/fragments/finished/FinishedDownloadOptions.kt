@@ -315,15 +315,17 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 
 				logger.d("Updating file type indicator image view")
 				// Show file type indicator based on file name
-				imgFileTypeIndicator.setImageResource(when {
-					isImageByName(downloadModel.fileName) -> R.drawable.ic_button_images
-					isAudioByName(downloadModel.fileName) -> R.drawable.ic_button_audio
-					isVideoByName(downloadModel.fileName) -> R.drawable.ic_button_video
-					isDocumentByName(downloadModel.fileName) -> R.drawable.ic_button_document
-					isArchiveByName(downloadModel.fileName) -> R.drawable.ic_button_archives
-					isProgramByName(downloadModel.fileName) -> R.drawable.ic_button_programs
-					else -> R.drawable.ic_button_file
-				})
+				imgFileTypeIndicator.setImageResource(
+					when {
+						isImageByName(downloadModel.fileName) -> R.drawable.ic_button_images
+						isAudioByName(downloadModel.fileName) -> R.drawable.ic_button_audio
+						isVideoByName(downloadModel.fileName) -> R.drawable.ic_button_video
+						isDocumentByName(downloadModel.fileName) -> R.drawable.ic_button_document
+						isArchiveByName(downloadModel.fileName) -> R.drawable.ic_button_archives
+						isProgramByName(downloadModel.fileName) -> R.drawable.ic_button_programs
+						else -> R.drawable.ic_button_file
+					}
+				)
 			}
 		}
 	}
@@ -337,7 +339,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 */
 	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel, imgFavicon: ImageView) {
 		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
-		val defaultFaviconResId = R.drawable.ic_button_information
+		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 
 		// Skip favicon loading if video thumbnails are not allowed
@@ -371,8 +373,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				})
 			}
 		}, errorHandler = {
-			logger.d("Error loading favicon: ${it.message}")
-			it.printStackTrace()
+			logger.e("Error loading favicon: ${it.message}", it)
+			imgFavicon.setImageDrawable(defaultFaviconDrawable)
 		})
 	}
 
@@ -717,10 +719,16 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			?.takeIf { isValidURL(it) }
 			?.let { fileUrl ->
 				copyTextToClipboard(safeMotherActivityRef, fileUrl)
-				showToast(getText(R.string.title_file_url_has_been_copied))
+				showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_file_url_has_been_copied
+				)
 				close()
 			} ?: run {
-			showToast(getText(R.string.title_dont_have_anything_to_copy))
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_dont_have_anything_to_copy
+			)
 		}
 	}
 
@@ -785,7 +793,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 						downloadSystem.finishedDownloadDataModels.remove(downloadDataModel!!)
 
 						// Notify user of success
-						showToast(getText(R.string.title_successfully_cleared))
+						showToast(
+							activity = safeMotherActivityRef,
+							msgId = R.string.title_successfully_cleared
+						)
 					}
 					show()
 				}
@@ -839,7 +850,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 
 							// Show success toast on main thread after deletion
 							executeOnMainThread {
-								showToast(getText(R.string.title_successfully_deleted))
+								showToast(
+									activity = safeMotherActivityRef,
+									msgId = R.string.title_successfully_deleted
+								)
 							}
 						}
 					}
@@ -1031,7 +1045,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					safeMotherActivityRef.homeFragment?.refreshRecentDownloadListUI()
 				} catch (error: Exception) {
 					logger.e("Error found at hide/show thumbnail -", error)
-					showToast(msgId = R.string.title_something_went_wrong)
+					showToast(
+						activity = safeMotherActivityRef,
+						msgId = R.string.title_something_went_wrong
+					)
 				}
 			}
 		}
@@ -1080,7 +1097,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					// Validate file existence before continuing
 					if (destinationFile == null || destinationFile.exists() == false) {
 						safeMotherActivityRef.doSomeVibration(50)
-						showToast(msgId = R.string.title_something_went_wrong)
+						showToast(
+							activity = safeMotherActivityRef,
+							msgId = R.string.title_something_went_wrong
+						)
 						return@setOnClickForPositiveButton
 					}
 
@@ -1103,7 +1123,10 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 
 							// Notify success back on the UI thread
 							ThreadsUtility.executeOnMain {
-								showToast(msgId = R.string.title_fixing_mp4_done_successfully)
+								showToast(
+									activity = safeMotherActivityRef,
+									msgId = R.string.title_fixing_mp4_done_successfully
+								)
 								waitingDialog.close()
 							}
 						} catch (error: Exception) {

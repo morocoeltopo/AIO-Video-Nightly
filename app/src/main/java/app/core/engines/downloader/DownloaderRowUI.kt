@@ -234,7 +234,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	 */
 	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
 		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
-		val defaultFaviconResId = R.drawable.ic_button_information
+		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = ResourcesCompat.getDrawable(
 			INSTANCE.resources, defaultFaviconResId, null
 		)
@@ -270,8 +270,8 @@ class DownloaderRowUI(private val rowLayout: View) {
 				})
 			}
 		}, errorHandler = {
-			logger.d("Error loading favicon: ${it.message}")
-			it.printStackTrace()
+			logger.e("Error loading favicon: ${it.message}", it)
+			favicon.setImageDrawable(defaultFaviconDrawable)
 		})
 	}
 

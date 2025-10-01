@@ -119,12 +119,12 @@ public class UserFeedbackActivity extends BaseActivity {
 			String messageToSend = generateMessage();
 			if (messageToSend.isEmpty()) {
 				doSomeVibration(50);
-				showToast(getString(R.string.title_enter_your_email_message_first), -1);
+				showToast(this, getString(R.string.title_enter_your_email_message_first), -1);
 				return;
 			}
 
 			INSTANCE.getAIOBackend().saveUserFeedback(messageToSend);
-			showToast(getString(R.string.title_feedbacks_sent_successfully), -1);
+			showToast(this, getString(R.string.title_feedbacks_sent_successfully), -1);
 			resetFormFields();
 		});
 
@@ -237,7 +237,7 @@ public class UserFeedbackActivity extends BaseActivity {
 
 			dialogBuilder.setOnClickForPositiveButton(view -> {
 				dialogBuilder.close();
-				showToast(null, R.string.title_feedbacks_sent_successfully);
+				showToast(this, null, R.string.title_feedbacks_sent_successfully);
 
 				delay(200, () -> {
 					try {

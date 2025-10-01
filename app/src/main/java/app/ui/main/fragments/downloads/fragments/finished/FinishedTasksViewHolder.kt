@@ -217,7 +217,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	 */
 	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
 		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
-		val defaultFaviconResId = R.drawable.ic_button_information
+		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 
 		// Skip favicon loading if video thumbnails are not allowed
@@ -251,8 +251,8 @@ class FinishedTasksViewHolder(val layout: View) {
 				})
 			}
 		}, errorHandler = {
-			logger.d("Error loading favicon: ${it.message}")
-			it.printStackTrace()
+			logger.e("Error loading favicon: ${it.message}", it)
+			favicon.setImageDrawable(defaultFaviconDrawable)
 		})
 	}
 

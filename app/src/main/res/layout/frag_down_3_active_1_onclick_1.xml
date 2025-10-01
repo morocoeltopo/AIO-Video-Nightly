@@ -74,7 +74,7 @@
 						android:adjustViewBounds="true"
 						android:elevation="@dimen/_5"
 						android:importantForAccessibility="no"
-						android:src="@drawable/ic_button_information"
+						android:src="@drawable/ic_image_default_favicon"
 						android:visibility="visible"
 						tools:ignore="ImageContrastCheck" />
 

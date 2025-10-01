@@ -246,7 +246,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	 */
 	private fun updateFaviconInfo(favicon: ImageView, downloadDataModel: DownloadDataModel) {
 		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
-		val defaultFaviconResId = R.drawable.ic_button_information
+		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 
 		// Skip favicon loading if video thumbnails are not allowed
@@ -280,8 +280,8 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				})
 			}
 		}, errorHandler = {
-			logger.d("Error loading favicon: ${it.message}")
-			it.printStackTrace()
+			logger.e("Error loading favicon: ${it.message}", it)
+			favicon.setImageDrawable(defaultFaviconDrawable)
 		})
 	}
 
@@ -707,7 +707,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				// Check if already paused
 				if (downloadSystem.searchActiveDownloadTaskWith(downloadModel) == null) {
 					logger.d("Download ID: ${downloadModel.id} is already paused")
-					showToast(getText(string.title_download_task_already_paused))
+					showToast(
+						activity = safeMotherActivityRef,
+						msgId = string.title_download_task_already_paused
+					)
 					return
 				}
 
@@ -824,7 +827,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 						downloadSystem.clearDownload(it) {
 							executeOnMainThread {
 								logger.d("Download ID: ${it.id} cleared successfully (file retained)")
-								showToast(getText(string.title_successfully_cleared))
+								showToast(
+									activity = safeMotherActivityRef,
+									msgId = string.title_successfully_cleared
+								)
 							}
 						}
 					}
@@ -907,7 +913,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 						downloadSystem.deleteDownload(it) {
 							executeOnMainThread {
 								logger.d("Download ID: ${it.id} deleted successfully")
-								showToast(getText(string.title_successfully_deleted))
+								showToast(
+									activity = safeMotherActivityRef,
+									msgId = string.title_successfully_deleted
+								)
 							}
 						}
 					}
@@ -969,9 +978,12 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	private fun toggleDownloadThumbnail() {
-		safeMotherActivityRef?.let { motherActivity ->
-			motherActivity.doSomeVibration(50)
-			showToast(msgId = string.title_experimental_feature)
+		safeMotherActivityRef?.let { safeMotherActivity ->
+			safeMotherActivity.doSomeVibration(50)
+			showToast(
+				activity = safeMotherActivity,
+				msgId = string.title_experimental_feature
+			)
 		}
 	}
 
@@ -986,12 +998,18 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		downloadDataModel?.fileURL?.takeIf { isValidURL(it) }?.let { fileUrl ->
 			logger.d("Valid URL found: $fileUrl")
 			copyTextToClipboard(safeMotherActivityRef, fileUrl)
-			showToast(getText(string.title_file_url_has_been_copied))
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = string.title_file_url_has_been_copied
+			)
 			close()
 			logger.d("Download URL copied to clipboard and dialog closed")
 		} ?: run {
 			logger.d("No valid download URL found to copy")
-			showToast(getText(string.title_dont_have_anything_to_copy))
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = string.title_dont_have_anything_to_copy
+			)
 		}
 	}
 
@@ -1012,7 +1030,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 			}
 		} ?: run {
 			logger.d("No valid download URL found to share")
-			showToast(getText(string.title_dont_have_anything_to_share))
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = string.title_dont_have_anything_to_share
+			)
 		}
 	}
 
@@ -1030,7 +1051,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 			if (downloadSiteReferrerLink.isNullOrEmpty()) {
 				logger.d("No referrer link found for this download")
 				safeMotherActivityRef.doSomeVibration(50)
-				showToast(msgId = string.text_no_referer_link_found)
+				showToast(
+					activity = safeMotherActivityRef,
+					msgId = string.text_no_referer_link_found
+				)
 				return
 			}
 
@@ -1071,9 +1095,12 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	 * Open advanced download settings dialog.
 	 */
 	private fun openAdvancedDownloadSettings() {
-		safeMotherActivityRef?.let { motherActivity ->
-			motherActivity.doSomeVibration(50)
-			showToast(msgId = string.title_experimental_feature)
+		safeMotherActivityRef?.let { safeMotherActivity ->
+			safeMotherActivity.doSomeVibration(50)
+			showToast(
+				activity = safeMotherActivity,
+				msgId = string.title_experimental_feature
+			)
 		}
 	}
 

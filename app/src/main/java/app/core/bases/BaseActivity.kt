@@ -662,7 +662,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			// Show fallback message
 			showToast(
 				activity = safeBaseActivityRef,
-				msgId = R.string.text_please_install_web_browser
+				msgId = R.string.title_please_install_web_browser
 			)
 			logger.d("Displayed toast: Please install a web browser")
 		}

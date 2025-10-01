@@ -38,144 +38,149 @@ import java.lang.ref.WeakReference
  */
 class IntentInterceptActivity : BaseActivity() {
 
-    private val logger = LogHelperUtils.from(javaClass)
+	private val logger = LogHelperUtils.from(javaClass)
 
-    // Weak reference to avoid memory leaks in background thread operations
-    private val weakSelfReference = WeakReference(this)
-    private val safeIntentInterceptActivityRef = weakSelfReference.get()
+	// Weak reference to avoid memory leaks in background thread operations
+	private val weakSelfReference = WeakReference(this)
+	private val safeIntentInterceptActivityRef = weakSelfReference.get()
 
-    // Flag to abort processing if the user exits during metadata fetching
-    private var isParsingTitleFromUrlAborted = false
+	// Flag to abort processing if the user exits during metadata fetching
+	private var isParsingTitleFromUrlAborted = false
 
-    /**
-     * No layout is rendered directly for this activity.
-     * It performs background operations and forwards/redirects based on the intent.
-     */
-    override fun onRenderingLayout(): Int {
-        return -1
-    }
+	/**
+	 * No layout is rendered directly for this activity.
+	 * It performs background operations and forwards/redirects based on the intent.
+	 */
+	override fun onRenderingLayout(): Int {
+		return -1
+	}
 
-    /**
-     * Handles the back press to close the activity with fade animation.
-     */
-    override fun onBackPressActivity() {
-        closeActivityWithFadeAnimation(true)
-    }
+	/**
+	 * Handles the back press to close the activity with fade animation.
+	 */
+	override fun onBackPressActivity() {
+		closeActivityWithFadeAnimation(true)
+	}
 
-    /**
-     * This is called after the layout is "rendered" (in this case, skipped).
-     * Handles the intent URL processing and dispatches to proper flow based on logic.
-     */
-    override fun onAfterLayoutRender() {
-        setUpWindowConfiguration()
-        downloadSystem.isInitializing
+	/**
+	 * This is called after the layout is "rendered" (in this case, skipped).
+	 * Handles the intent URL processing and dispatches to proper flow based on logic.
+	 */
+	override fun onAfterLayoutRender() {
+		setUpWindowConfiguration()
+		downloadSystem.isInitializing
 
-        val intentUrl = getIntentDataURI(getActivity())
-        if (URLUtility.isValidURL(intentUrl) == false) {
-            doSomeVibration(50)
-            showToast(msgId = R.string.title_invalid_url)
-            onBackPressActivity()
-            return
-        }
+		val intentUrl = getIntentDataURI(getActivity())
+		if (URLUtility.isValidURL(intentUrl) == false) {
+			doSomeVibration(50)
+			showToast(
+				activity = safeIntentInterceptActivityRef,
+				msgId = R.string.title_invalid_url
+			)
+			onBackPressActivity()
+			return
+		}
 
-        // No valid URL found, exit activity
-        if (intentUrl.isNullOrEmpty()) {
-            onBackPressActivity()
-        } else {
-            // Only premium users with ultimate unlocked can access parsing features
-            if (IS_PREMIUM_USER && IS_ULTIMATE_VERSION_UNLOCKED) {
-                safeIntentInterceptActivityRef?.let {
-                    // Handle social media URLs with advanced parser
-                    if (isSocialMediaUrl(intentUrl)) {
-                        val waitingDialog = WaitingDialog(
-                            isCancelable = false,
-                            baseActivityInf = it,
-                            loadingMessage = getString(R.string.title_analyzing_url_please_wait),
-                            dialogCancelListener = { dialog -> dialog.dismiss() }
-                        )
-                        waitingDialog.show()
+		// No valid URL found, exit activity
+		if (intentUrl.isNullOrEmpty()) {
+			onBackPressActivity()
+		} else {
+			// Only premium users with ultimate unlocked can access parsing features
+			if (IS_PREMIUM_USER && IS_ULTIMATE_VERSION_UNLOCKED) {
+				safeIntentInterceptActivityRef?.let {
+					// Handle social media URLs with advanced parser
+					if (isSocialMediaUrl(intentUrl)) {
+						val waitingDialog = WaitingDialog(
+							isCancelable = false,
+							baseActivityInf = it,
+							loadingMessage = getString(R.string.title_analyzing_url_please_wait),
+							dialogCancelListener = { dialog -> dialog.dismiss() }
+						)
+						waitingDialog.show()
 
-                        // Perform parsing in background
-                        ThreadsUtility.executeInBackground(codeBlock = {
-                            val htmlBody = fetchWebPageContent(intentUrl, true)
-                            val thumbnailUrl = startParsingVideoThumbUrl(intentUrl, htmlBody)
+						// Perform parsing in background
+						ThreadsUtility.executeInBackground(codeBlock = {
+							val htmlBody = fetchWebPageContent(intentUrl, true)
+							val thumbnailUrl = startParsingVideoThumbUrl(intentUrl, htmlBody)
 
-                            getWebpageTitleOrDescription(
-                                websiteUrl = intentUrl,
-                                userGivenHtmlBody = htmlBody
-                            ) { resultedTitle ->
-                                waitingDialog.close()
+							getWebpageTitleOrDescription(
+								websiteUrl = intentUrl,
+								userGivenHtmlBody = htmlBody
+							) { resultedTitle ->
+								waitingDialog.close()
 
-                                val userDidNotCancelExecution = !isParsingTitleFromUrlAborted
-                                val validIntentUrl = !resultedTitle.isNullOrEmpty()
+								val userDidNotCancelExecution = !isParsingTitleFromUrlAborted
+								val validIntentUrl = !resultedTitle.isNullOrEmpty()
 
-                                if (validIntentUrl && userDidNotCancelExecution) {
-                                    // Show prompter dialog in UI thread
-                                    executeOnMainThread {
-                                        val prompter = SingleResolutionPrompter(
-                                            baseActivity = it,
-                                            singleResolutionName = getText(R.string.title_high_quality).toString(),
-                                            extractedVideoLink = intentUrl,
-                                            currentWebUrl = intentUrl,
-                                            videoTitle = resultedTitle,
-                                            videoUrlReferer = intentUrl,
-                                            dontParseFBTitle = true,
-                                            thumbnailUrlProvided = thumbnailUrl,
-                                            isSocialMediaUrl = true,
-                                            isDownloadFromBrowser = false
-                                        )
+								if (validIntentUrl && userDidNotCancelExecution) {
+									// Show prompter dialog in UI thread
+									executeOnMainThread {
+										val prompter = SingleResolutionPrompter(
+											baseActivity = it,
+											singleResolutionName = getText(R.string.title_high_quality).toString(),
+											extractedVideoLink = intentUrl,
+											currentWebUrl = intentUrl,
+											videoTitle = resultedTitle,
+											videoUrlReferer = intentUrl,
+											dontParseFBTitle = true,
+											thumbnailUrlProvided = thumbnailUrl,
+											isSocialMediaUrl = true,
+											isDownloadFromBrowser = false
+										)
 
-                                        prompter.show()
+										prompter.show()
 
-                                        // Close this activity when dialog is cancelled or dismissed
-                                        with(prompter.getDialogBuilder().dialog) {
-                                            setOnCancelListener { onBackPressActivity() }
-                                            setOnDismissListener { onBackPressActivity() }
-                                        }
-                                    }
-                                } else {
-                                    executeOnMainThread {
-                                        safeIntentInterceptActivityRef.doSomeVibration(50)
-                                        showToast(msgId = R.string.text_server_busy_opening_browser)
-                                        forwardIntentToMotherActivity(dontParseURLAnymore = true)
-                                    }
-                                }
-                            }
-                        })
-                    } else {
-                        // Use generic interceptor for non-social media URLs
-                        val interceptor = SharedVideoURLIntercept(
-                            baseActivity = safeIntentInterceptActivityRef,
-                            onOpenBrowser = { forwardIntentToMotherActivity() }
-                        )
+										// Close this activity when dialog is cancelled or dismissed
+										with(prompter.getDialogBuilder().dialog) {
+											setOnCancelListener { onBackPressActivity() }
+											setOnDismissListener { onBackPressActivity() }
+										}
+									}
+								} else {
+									executeOnMainThread {
+										safeIntentInterceptActivityRef.doSomeVibration(50)
+										showToast(
+											activity = safeIntentInterceptActivityRef,
+											msgId = R.string.title_server_busy_opening_browser)
+										forwardIntentToMotherActivity(dontParseURLAnymore = true)
+									}
+								}
+							}
+						})
+					} else {
+						// Use generic interceptor for non-social media URLs
+						val interceptor = SharedVideoURLIntercept(
+							baseActivity = safeIntentInterceptActivityRef,
+							onOpenBrowser = { forwardIntentToMotherActivity() }
+						)
 
-                        interceptor.interceptIntentURI(
-                            intentUrl = intentUrl,
-                            shouldOpenBrowserAsFallback = false
-                        )
-                    }
-                }
-            } else {
-                // Non-premium users are forwarded directly to the main activity
-                forwardIntentToMotherActivity()
-            }
-        }
-    }
+						interceptor.interceptIntentURI(
+							intentUrl = intentUrl,
+							shouldOpenBrowserAsFallback = false
+						)
+					}
+				}
+			} else {
+				// Non-premium users are forwarded directly to the main activity
+				forwardIntentToMotherActivity()
+			}
+		}
+	}
 
-    /**
-     * Clears the weak reference to this activity.
-     * Ensures that memory is released when activity is destroyed.
-     */
-    override fun clearWeakActivityReference() {
-        weakSelfReference.clear()
-        super.clearWeakActivityReference()
-    }
+	/**
+	 * Clears the weak reference to this activity.
+	 * Ensures that memory is released when activity is destroyed.
+	 */
+	override fun clearWeakActivityReference() {
+		weakSelfReference.clear()
+		super.clearWeakActivityReference()
+	}
 
-    /**
-     * Forward the intercepted intent directly to MotherActivity (main screen),
-     * preserving the original data and intent action.
-     */
-    private fun forwardIntentToMotherActivity(dontParseURLAnymore: Boolean = false) {
+	/**
+	 * Forward the intercepted intent directly to MotherActivity (main screen),
+	 * preserving the original data and intent action.
+	 */
+	private fun forwardIntentToMotherActivity(dontParseURLAnymore: Boolean = false) {
 		try {
 			val originalIntent = intent
 			val targetIntent = Intent(getActivity(), MotherActivity::class.java).apply {
@@ -189,25 +194,25 @@ class IntentInterceptActivity : BaseActivity() {
 			startActivity(targetIntent)
 			closeActivityWithFadeAnimation(true)
 		} catch (error: Exception) {
-            logger.e("Error in launching mother activity", error)
-            openActivity(MotherActivity::class.java, shouldAnimate = true)
-            closeActivityWithFadeAnimation(true)
+			logger.e("Error in launching mother activity", error)
+			openActivity(MotherActivity::class.java, shouldAnimate = true)
+			closeActivityWithFadeAnimation(true)
 		}
 	}
 
-    /**
-     * Configure the activity window:
-     * - Make background transparent
-     * - Hide action bar
-     * - Remove layout limits for a clean overlay style
-     */
-    private fun setUpWindowConfiguration() {
-        try {
-            window.setBackgroundDrawable(TRANSPARENT.toDrawable())
-            supportActionBar?.hide()
-            window.setFlags(FLAG_LAYOUT_NO_LIMITS, FLAG_LAYOUT_NO_LIMITS)
-        } catch (error: Exception) {
-            error.printStackTrace()
-        }
-    }
+	/**
+	 * Configure the activity window:
+	 * - Make background transparent
+	 * - Hide action bar
+	 * - Remove layout limits for a clean overlay style
+	 */
+	private fun setUpWindowConfiguration() {
+		try {
+			window.setBackgroundDrawable(TRANSPARENT.toDrawable())
+			supportActionBar?.hide()
+			window.setFlags(FLAG_LAYOUT_NO_LIMITS, FLAG_LAYOUT_NO_LIMITS)
+		} catch (error: Exception) {
+			error.printStackTrace()
+		}
+	}
 }

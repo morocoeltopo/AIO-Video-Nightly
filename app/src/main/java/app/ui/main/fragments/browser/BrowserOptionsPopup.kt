@@ -34,19 +34,19 @@ import java.util.Date
  * accessing bookmarks/history, and more.
  */
 class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
-	
+
 	// Safe reference to the parent activity hosting the fragment
 	private val safeMotherActivityRef = browserFragment.safeBaseActivityRef!! as MotherActivity
-	
+
 	// Builder instance used to show and configure the popup UI
 	private lateinit var popupBuilder: PopupBuilder
-	
+
 	// Initialization block sets up the popup UI and its click handlers
 	init {
 		setupPopupBuilder()
 		setupClickEvents()
 	}
-	
+
 	/**
 	 * Displays the popup menu with all the browser options.
 	 */
@@ -58,14 +58,14 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		safeMotherActivityRef.sideNavigation?.closeDrawerNavigation()
 		popupBuilder.show()
 	}
-	
+
 	/**
 	 * Closes the popup menu.
 	 */
 	fun close() {
 		popupBuilder.close()
 	}
-	
+
 	/**
 	 * Initializes the popup builder with layout and anchor information.
 	 */
@@ -76,7 +76,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			popupAnchorView = browserFragment.browserFragmentTop.webviewOptionPopup
 		)
 	}
-	
+
 	/**
 	 * Binds click listeners for each option in the popup.
 	 * Each button triggers a specific browser-related action.
@@ -96,13 +96,13 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 				findViewById<View>(R.id.btn_how_to_use) to { openHowToDownload() },
 				findViewById<View>(R.id.btn_open_feedback) to { openFeedbackActivity() }
 			)
-			
+
 			clickActions.forEach { (view, action) ->
 				view.setOnClickListener { action() }
 			}
 		}
 	}
-	
+
 	/**
 	 * Navigates the current webview to the previous page if available.
 	 */
@@ -114,11 +114,14 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 				webView.goBack()
 			} else {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_reached_limit_for_going_back)
+				showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_reached_limit_for_going_back
+				)
 			}
 		}
 	}
-	
+
 	/**
 	 * Navigates the current webview to the next page if available.
 	 */
@@ -129,11 +132,14 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 				webView.goForward()
 			} else {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_reached_limit_for_going_forward)
+				showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_reached_limit_for_going_forward
+				)
 			}
 		}
 	}
-	
+
 	/**
 	 * Saves the current webpage as a bookmark.
 	 */
@@ -144,7 +150,10 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			val currentWebpageTitle = getCurrentWebpageTitle()
 			if (currentWebpageUrl.isNullOrEmpty()) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_webpage_url_invalid)
+				showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_webpage_url_invalid
+				)
 				return
 			}
 			aioBookmark.getBookmarkLibrary().add(0, BookmarkModel().apply {
@@ -154,16 +163,22 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 				bookmarkName = if (currentWebpageTitle.isNullOrEmpty())
 					getText(R.string.title_unknown) else currentWebpageTitle
 			})
-			
+
 			aioBookmark.updateInStorage()
-			showToast(msgId = R.string.title_bookmark_saved)
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_bookmark_saved
+			)
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
-			showToast(msgId = R.string.title_something_went_wrong)
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_something_went_wrong
+			)
 		}
 	}
-	
+
 	/**
 	 * Opens a system share dialog to share the current webpage URL.
 	 */
@@ -173,26 +188,35 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			val currentWebviewUrl = getCurrentWebpageURL()
 			if (currentWebviewUrl == null) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_webpage_url_invalid)
+				showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_webpage_url_invalid
+				)
 				return
 			}
-			
+
 			val shareIntent = Intent().apply {
 				action = ACTION_SEND
 				putExtra(EXTRA_TEXT, currentWebviewUrl)
 				type = "text/plain"
 			}
-			
+
 			safeMotherActivityRef.startActivity(
-				Intent.createChooser(shareIntent,
-					safeMotherActivityRef.getString(R.string.title_share_with_others)))
+				Intent.createChooser(
+					shareIntent,
+					safeMotherActivityRef.getString(R.string.title_share_with_others)
+				)
+			)
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
-			showToast(msgId = R.string.title_something_went_wrong)
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_something_went_wrong
+			)
 		}
 	}
-	
+
 	/**
 	 * Copies the current webpage URL to clipboard.
 	 */
@@ -202,19 +226,28 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			val currentWebpageUrl = getCurrentWebpageURL()
 			if (currentWebpageUrl.isNullOrEmpty()) {
 				safeMotherActivityRef.doSomeVibration(20)
-				showToast(msgId = R.string.title_webpage_url_invalid)
+				showToast(
+					activity = safeMotherActivityRef,
+					msgId = R.string.title_webpage_url_invalid
+				)
 				return
 			}
-			
+
 			copyTextToClipboard(safeMotherActivityRef, currentWebpageUrl)
-			showToast(msgId = R.string.title_copied_to_clipboard)
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_copied_to_clipboard
+			)
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
-			showToast(msgId = R.string.title_something_went_wrong)
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_something_went_wrong
+			)
 		}
 	}
-	
+
 	/**
 	 * Opens the current URL using an external browser app.
 	 */
@@ -228,24 +261,30 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			} else showInvalidUrlToast()
 		} catch (err: Exception) {
 			err.printStackTrace()
-			showToast(msgId = R.string.text_please_install_web_browser)
+			showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_please_install_web_browser
+			)
 		}
 	}
-	
+
 	/**
 	 * Shows a toast indicating that the URL is invalid.
 	 */
 	private fun showInvalidUrlToast() {
-		showToast(msgId = R.string.title_invalid_url)
+		showToast(
+			activity = safeMotherActivityRef,
+			msgId = R.string.title_invalid_url
+		)
 	}
-	
+
 	/**
 	 * Opens a dialog to manually add a new video/download task.
 	 */
 	private fun openNewDownloadTaskEditor() {
 		close().let { VideoLinkPasteEditor(safeMotherActivityRef).show() }
 	}
-	
+
 	/**
 	 * Shows the platform picker guide on how to download videos.
 	 */
@@ -253,7 +292,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		close()
 		GuidePlatformPicker(safeMotherActivityRef).show()
 	}
-	
+
 	/**
 	 * Launches the bookmarks activity.
 	 */
@@ -262,7 +301,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		val input = Intent(safeMotherActivityRef, BookmarksActivity::class.java)
 		safeMotherActivityRef.resultLauncher.launch(input)
 	}
-	
+
 	/**
 	 * Launches the browsing history activity.
 	 */
@@ -271,7 +310,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		val input = Intent(safeMotherActivityRef, HistoryActivity::class.java)
 		safeMotherActivityRef.resultLauncher.launch(input)
 	}
-	
+
 	/**
 	 * Opens the feedback activity for user input.
 	 */
@@ -279,7 +318,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		close()
 		safeMotherActivityRef.openActivity(UserFeedbackActivity::class.java, false)
 	}
-	
+
 	/**
 	 * Gets the URL of the current page displayed in the webview.
 	 */
@@ -289,7 +328,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		val url = webviewEngine.currentWebView?.url
 		return url
 	}
-	
+
 	/**
 	 * Gets the title of the current page displayed in the webview.
 	 */

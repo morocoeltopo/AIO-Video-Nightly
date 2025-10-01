@@ -23,7 +23,7 @@ import java.lang.ref.WeakReference
  * A utility object for sharing and opening files, URLs, media, and text using Android Intents.
  */
 object ShareUtility {
-	
+
 	/**
 	 * Shares a plain text URL using Android's share intent chooser.
 	 *
@@ -35,7 +35,8 @@ object ShareUtility {
 	@JvmStatic
 	fun shareUrl(
 		context: Context?, fileURL: String,
-		titleText: String = "Share", onDone: () -> Unit = {}) {
+		titleText: String = "Share", onDone: () -> Unit = {}
+	) {
 		WeakReference(context).get()?.let { safeContextRef ->
 			Intent(ACTION_SEND).apply {
 				type = "text/plain"
@@ -45,7 +46,7 @@ object ShareUtility {
 			}
 		}
 	}
-	
+
 	/**
 	 * Shares a [DocumentFile] via a content URI with read permission.
 	 *
@@ -57,12 +58,15 @@ object ShareUtility {
 	@JvmStatic
 	fun shareDocumentFile(
 		context: Context?, documentFile: DocumentFile,
-		titleText: String = "Share", onDone: () -> Unit = {}) {
+		titleText: String = "Share", onDone: () -> Unit = {}
+	) {
 		WeakReference(context).get()?.let { safeContextRef ->
 			val file = File(documentFile.uri.path ?: return)
-			val fileUri: Uri = getUriForFile(safeContextRef,
-				"${safeContextRef.packageName}.provider", file)
-			
+			val fileUri: Uri = getUriForFile(
+				safeContextRef,
+				"${safeContextRef.packageName}.provider", file
+			)
+
 			Intent(ACTION_SEND).apply {
 				type = safeContextRef.contentResolver.getType(documentFile.uri)
 				putExtra(EXTRA_STREAM, fileUri)
@@ -72,7 +76,7 @@ object ShareUtility {
 			}
 		}
 	}
-	
+
 	/**
 	 * Opens a file with an appropriate app based on its MIME type.
 	 *
@@ -82,23 +86,30 @@ object ShareUtility {
 	@JvmStatic
 	fun openFile(file: File, context: Context?) {
 		WeakReference(context).get()?.let { safeContextRef ->
-			val fileUri: Uri = getUriForFile(safeContextRef,
-				"${safeContextRef.packageName}.provider", file)
+			val fileUri: Uri = getUriForFile(
+				safeContextRef,
+				"${safeContextRef.packageName}.provider", file
+			)
 			val mimeType = getSingleton().getMimeTypeFromExtension(file.extension) ?: "*/*"
-			
+
 			val openFileIntent = Intent(ACTION_VIEW).apply {
 				setDataAndType(fileUri, mimeType)
 				addFlags(FLAG_GRANT_READ_URI_PERMISSION)
 			}
-			
+
 			if (openFileIntent.resolveActivity(safeContextRef.packageManager) != null) {
 				safeContextRef.startActivity(openFileIntent)
 			} else {
-				showToast(getText(R.string.title_no_app_found_to_open_this_file))
+				if (safeContextRef is BaseActivity) {
+					showToast(
+						activity = safeContextRef,
+						msgId = R.string.title_no_app_found_to_open_this_file
+					)
+				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Shares a media file such as audio, video, or image using content URI.
 	 *
@@ -109,8 +120,10 @@ object ShareUtility {
 	fun shareMediaFile(context: Context?, file: File) {
 		WeakReference(context).get()?.let { safeContextRef ->
 			try {
-				val fileUri: Uri = getUriForFile(safeContextRef,
-					"${safeContextRef.packageName}.provider", file)
+				val fileUri: Uri = getUriForFile(
+					safeContextRef,
+					"${safeContextRef.packageName}.provider", file
+				)
 				val shareIntent = Intent(ACTION_SEND).apply {
 					type = safeContextRef.contentResolver.getType(fileUri) ?: "audio/*"
 					putExtra(EXTRA_STREAM, fileUri)
@@ -123,7 +136,7 @@ object ShareUtility {
 			}
 		}
 	}
-	
+
 	/**
 	 * Shares a video file via a [DocumentFile] using a generic video MIME type.
 	 *
@@ -135,7 +148,8 @@ object ShareUtility {
 	@JvmStatic
 	fun shareVideo(
 		context: Context?, videoFile: DocumentFile,
-		title: String = "Share", onDone: () -> Unit = {}) {
+		title: String = "Share", onDone: () -> Unit = {}
+	) {
 		WeakReference(context).get()?.let { safeContextRef ->
 			Intent(ACTION_SEND).apply {
 				val videoUri = videoFile.uri
@@ -147,7 +161,7 @@ object ShareUtility {
 			}
 		}
 	}
-	
+
 	/**
 	 * Shares plain text using Android's share intent.
 	 *
@@ -170,7 +184,7 @@ object ShareUtility {
 			}
 		}
 	}
-	
+
 	/**
 	 * Opens an APK file for installation using the system package installer.
 	 *

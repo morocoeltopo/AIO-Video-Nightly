@@ -568,7 +568,10 @@ class MotherActivity : BaseActivity() {
 	private fun invalidUrlErrorToast(safeMotherActivity: MotherActivity) {
 		logger.d("Showing invalid URL error toast")
 		safeMotherActivity.doSomeVibration(50)
-		ToastView.showToast(msgId = R.string.title_file_url_not_valid)
+		ToastView.showToast(
+			activity = safeMotherActivity,
+			msgId = R.string.title_file_url_not_valid
+		)
 	}
 
 	/**
@@ -598,7 +601,10 @@ class MotherActivity : BaseActivity() {
 			logger.d("Error opening browser fragment: ${error.message}")
 			error.printStackTrace()
 			doSomeVibration(50)
-			ToastView.showToast(msgId = R.string.title_something_went_wrong)
+			ToastView.showToast(
+				activity = safeMotherActivityRef,
+				msgId = R.string.title_something_went_wrong
+			)
 		}
 	}
 

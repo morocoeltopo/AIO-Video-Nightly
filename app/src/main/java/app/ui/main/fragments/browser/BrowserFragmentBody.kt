@@ -178,7 +178,10 @@ class BrowserFragmentBody(val browserFragment: BrowserFragment) {
                     } else {
                         executeOnMainThread {
                             safeMotherActivityRef.doSomeVibration(50)
-                            showToast(msgId = R.string.text_server_busy_opening_browser)
+                            showToast(
+                                activity = safeMotherActivityRef,
+                                msgId = R.string.title_server_busy_opening_browser
+                            )
                         }
                     }
                 }
