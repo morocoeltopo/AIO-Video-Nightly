@@ -74,6 +74,7 @@
 					android:layout_height="@dimen/_40"
 					android:layout_alignParentEnd="true"
 					android:layout_centerVertical="true"
+					android:layout_marginEnd="@dimen/_5"
 					android:background="@drawable/ic_button_negative_selector"
 					android:clickable="true"
 					tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck">
