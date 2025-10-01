@@ -101,152 +101,247 @@ import kotlin.system.exitProcess
  */
 abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 
+	// Logger instance for debugging and tracing lifecycle events
 	private val logger = LogHelperUtils.from(javaClass)
 
-	// Weak reference to the activity instance for safe access
+	/**
+	 * Weak reference to the activity instance.
+	 * Helps prevent memory leaks when referencing the activity
+	 * in callbacks or background operations.
+	 */
 	private var weakBaseActivityRef: WeakReference<BaseActivity>? = null
+
+	/**
+	 * A safe (non-leaking) reference to the current activity,
+	 * retrieved from [weakBaseActivityRef].
+	 */
 	private var safeBaseActivityRef: BaseActivity? = null
 
-	// Flag to track if permission check is in progress
+	/** Flag to track if a user permission check is currently in progress. */
 	private var isUserPermissionCheckingActive = false
 
-	// Flag to track activity running state
+	/** Flag to indicate whether the activity is currently running (visible/resumed). */
 	private var isActivityRunning = false
 
-	// Counter for back button presses
+	/** Counter for handling double-back press to exit or similar behavior. */
 	private var isBackButtonEventFired = 0
 
-	// Helper for scoped storage access
+	/** Helper for handling scoped storage permissions and operations. */
 	open var scopedStorageHelper: SimpleStorageHelper? = null
 
-	// Listener for permission check results
+	/** Listener for permission check results to propagate callbacks to subclasses. */
 	open var permissionCheckListener: PermissionsResult? = null
 
-	// Vibrator instance for haptic feedback
+	/**
+	 * Vibrator instance for haptic feedback.
+	 * Obtained lazily to optimize resource usage.
+	 * Uses [VibratorManager] on Android 12 (S) and above.
+	 */
 	private val vibrator: Vibrator by lazy {
+		logger.d("Initializing Vibrator instance")
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			logger.d("Using VibratorManager for Android 12+")
 			val vmClass = VibratorManager::class.java
 			val vibratorManager = getSystemService(vmClass)
 			vibratorManager.defaultVibrator
-		} else getSystemService(Vibrator::class.java)
+		} else {
+			logger.d("Using legacy Vibrator service")
+			getSystemService(Vibrator::class.java)
+		}
 	}
 
+	/**
+	 * Called when the activity becomes visible to the user.
+	 * Marks the activity as running.
+	 */
 	override fun onStart() {
 		super.onStart()
 		isActivityRunning = true
+		logger.d("onStart() called — activity is now running")
 	}
 
+	/**
+	 * Initializes the activity and sets up references, UI, and helpers.
+	 */
 	@SuppressLint("SourceLockedOrientationActivity")
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		// Initialize weak reference to this activity
+		logger.d("onCreate() called — initializing activity")
+
+		// Initialize weak reference to avoid memory leaks
 		weakBaseActivityRef = WeakReference(this)
 		safeBaseActivityRef = weakBaseActivityRef?.get()
 
 		safeBaseActivityRef?.let { safeActivityRef ->
-			// Set up crash handler
+			logger.d("Safe activity reference acquired")
+
+			// Set global crash handler for uncaught exceptions
+			logger.d("Setting default uncaught exception handler")
 			setDefaultUncaughtExceptionHandler(CrashHandler())
 
-			// Configure system UI
+			// Configure theme, status bar, and other system UI aspects
+			logger.d("Applying theme appearance")
 			setThemeAppearance()
 
-			// Initialize storage helper
+			// Initialize scoped storage helper for file access
+			logger.d("Initializing ScopedStorageHelper")
 			scopedStorageHelper = SimpleStorageHelper(safeActivityRef)
 
-			// Apply user selected language
+			// Apply user-selected language for localization
+			logger.d("Applying user-selected language")
 			aioLanguage.applyUserSelectedLanguage(safeActivityRef)
 
-			// Lock orientation to portrait
+			// Lock activity orientation to portrait
+			logger.d("Locking orientation to portrait")
 			requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
 
-			// Set up back press handler
+			// Set up custom back-press handling
+			logger.d("Configuring back press handler")
 			WeakReference(object : OnBackPressedCallback(true) {
 				override fun handleOnBackPressed() = onBackPressActivity()
 			}).get()?.let { onBackPressedDispatcher.addCallback(safeActivityRef, it) }
 
-			// Set content view if layout is specified
-			if (onRenderingLayout() > -1) setContentView(onRenderingLayout())
-		}
+			// Inflate layout if provided by subclass
+			val layoutId = onRenderingLayout()
+			if (layoutId > -1) {
+				logger.d("Setting content view with layoutId=$layoutId")
+				setContentView(layoutId)
+			} else {
+				logger.d("No layout provided by subclass")
+			}
+		} ?: logger.d("Failed to acquire safe activity reference — initialization skipped")
 	}
 
+	/**
+	 * Called after [onCreate]; often used for final UI setup.
+	 */
 	override fun onPostCreate(savedInstanceState: Bundle?) {
 		super.onPostCreate(savedInstanceState)
-		// Called after onCreate() has completed
+		logger.d("onPostCreate() called — performing post-creation setup")
+
+		// Allow subclasses to set up UI or logic after layout inflation
+		logger.d("Calling onAfterLayoutRender() for additional UI setup")
 		onAfterLayoutRender()
 
-		// Check out for latest apk version
+		// Check for app updates after rendering the layout
+		logger.d("Checking for latest available app update")
 		checkForLatestUpdate()
 	}
 
+	/**
+	 * Called when the activity moves to the foreground.
+	 * Re-establishes references, permissions, and service states.
+	 */
 	override fun onResume() {
 		super.onResume()
-		// Reinitialize weak reference if null
-		if (safeBaseActivityRef == null) safeBaseActivityRef = WeakReference(this).get()
+		logger.d("onResume() called — preparing activity for interaction")
+
+		// Reinitialize activity reference if needed
+		if (safeBaseActivityRef == null) {
+			logger.d("Re-initializing safe activity reference")
+			safeBaseActivityRef = WeakReference(this).get()
+		}
 
 		safeBaseActivityRef?.let { safeActivityRef ->
 			isActivityRunning = true
+			logger.d("Activity marked as running")
 
-			// Check and request permissions if needed
+			// Ensure permissions are granted or request if needed
+			logger.d("Checking and requesting required permissions")
 			requestForPermissionIfRequired()
 
-			// Update foreground service state
+			// Update the state of foreground services
+			logger.d("Updating foreground service state")
 			AIOForegroundService.updateService()
 
-			// Validate user selected folder
+			// Validate user-selected folders for storage
+			logger.d("Validating user-selected download folder")
 			aioSettings.validateUserSelectedFolder()
 
-			// Initialize YouTube DL
+			// Initialize YouTube-DLP for video downloading
+			logger.d("Initializing YtDLP engine")
 			INSTANCE.initializeYtDLP()
 
-			// Call subclass resume handler
+			// Invoke any subclass-specific resume logic
+			logger.d("Calling subclass onResumeActivity()")
 			onResumeActivity()
 
-			// Check for language changes
+			// Handle language changes and restart if necessary
+			logger.d("Checking for language changes")
 			aioLanguage.closeActivityIfLanguageChanged(safeActivityRef)
 
-			// Update ad blocker filters
+			// Refresh ad-blocking filters
+			logger.d("Fetching latest ad-blocker filters")
 			aioAdblocker.fetchAdFilters()
 
-			//self destruct activate if ordered
+			// Handle self-destruct mode if enabled
+			logger.d("Checking self-destruct activation status")
 			shouldSelfDestructApplication()
-		}
+		} ?: logger.d("safeBaseActivityRef is null — skipping onResume tasks")
 	}
 
+	/**
+	 * Called when the activity is about to move to the background.
+	 * Updates flags and invokes subclass pause logic.
+	 */
 	override fun onPause() {
 		super.onPause()
 		isActivityRunning = false
-		// Call subclass pause handler
+		logger.d("onPause() called — activity moved to background")
+
+		// Allow subclass to handle pause-specific behavior
+		logger.d("Calling subclass onPauseActivity()")
 		onPauseActivity()
 	}
 
+	/**
+	 * Called when the activity is being destroyed.
+	 * Cleans up resources such as vibration feedback.
+	 */
 	override fun onDestroy() {
 		super.onDestroy()
+		logger.d("onDestroy() called — cleaning up resources")
+
 		isActivityRunning = false
-		// Cancel any ongoing vibration
-		if (vibrator.hasVibrator()) vibrator.cancel()
+
+		// Cancel ongoing vibrations to release hardware
+		if (vibrator.hasVibrator()) {
+			logger.d("Cancelling active vibration")
+			vibrator.cancel()
+		}
 	}
 
 	/**
-	 * Called when activity is paused. Subclasses can override to add custom behavior.
+	 * Called when the activity is paused.
+	 * Subclasses can override this to implement custom pause logic.
 	 */
 	override fun onPauseActivity() {
-		// Default implementation does nothing
+		logger.d("onPauseActivity() called — default implementation does nothing")
+		// Default implementation intentionally left blank
 	}
 
 	/**
-	 * Called when activity is resumed. Subclasses can override to add custom behavior.
+	 * Called when the activity is resumed.
+	 * Subclasses can override this to implement custom resume logic.
 	 */
 	override fun onResumeActivity() {
-		// Default implementation does nothing
+		logger.d("onResumeActivity() called — default implementation does nothing")
+		// Default implementation intentionally left blank
 	}
 
 	/**
-	 * Configures system bars (status bar and navigation bar) appearance.
+	 * Configures the appearance of system bars (status bar and navigation bar).
 	 *
-	 * @param statusBarColorResId Resource ID for status bar color
-	 * @param navigationBarColorResId Resource ID for navigation bar color
-	 * @param isLightStatusBar Whether status bar icons should be light (for dark backgrounds)
-	 * @param isLightNavigationBar Whether navigation bar icons should be light (for dark backgrounds)
+	 * This method allows customizing:
+	 * - Colors for both status and navigation bars.
+	 * - Whether to use light or dark icons on these bars.
+	 *
+	 * It handles both modern (Android R and above) and legacy versions of Android.
+	 *
+	 * @param statusBarColorResId Resource ID for the status bar color.
+	 * @param navigationBarColorResId Resource ID for the navigation bar color.
+	 * @param isLightStatusBar Whether to use dark icons on a light status bar background.
+	 * @param isLightNavigationBar Whether to use dark icons on a light navigation bar background.
 	 */
 	override fun setSystemBarsColors(
 		statusBarColorResId: Int,
@@ -254,49 +349,90 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		isLightStatusBar: Boolean,
 		isLightNavigationBar: Boolean,
 	) {
+		logger.d(
+			"setSystemBarsColors() called with " +
+					"statusBarColorResId=$statusBarColorResId, " +
+					"navigationBarColorResId=$navigationBarColorResId, " +
+					"isLightStatusBar=$isLightStatusBar, " +
+					"isLightNavigationBar=$isLightNavigationBar"
+		)
+
 		val activityWindow = window
+
+		// Apply colors to system bars
 		activityWindow.statusBarColor = getColor(this, statusBarColorResId)
 		activityWindow.navigationBarColor = getColor(this, navigationBarColorResId)
+		logger.d("Applied status and navigation bar colors")
+
 		val decorView = activityWindow.decorView
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			logger.d("Using WindowInsetsController for Android R and above")
+
 			val insetsController = activityWindow.insetsController
+
+			// Configure status bar icon appearance
 			insetsController?.setSystemBarsAppearance(
 				if (isLightStatusBar) APPEARANCE_LIGHT_STATUS_BARS else 0,
 				APPEARANCE_LIGHT_STATUS_BARS
 			)
 
+			// Configure navigation bar icon appearance
 			insetsController?.setSystemBarsAppearance(
 				if (isLightNavigationBar) APPEARANCE_LIGHT_NAVIGATION_BARS else 0,
 				APPEARANCE_LIGHT_NAVIGATION_BARS
 			)
-		} else {
-			if (isLightStatusBar) decorView.systemUiVisibility =
-				decorView.systemUiVisibility or
-						SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-			else decorView.systemUiVisibility =
-				decorView.systemUiVisibility and
-						SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
 
-			if (isLightNavigationBar) decorView.systemUiVisibility =
-				decorView.systemUiVisibility or
-						SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-			else decorView.systemUiVisibility =
-				decorView.systemUiVisibility and
-						SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+			logger.d("Applied light/dark appearance for system bars (R+)")
+		} else {
+			logger.d("Using legacy systemUiVisibility flags for pre-R devices")
+
+			// Legacy approach for status bar
+			if (isLightStatusBar) {
+				decorView.systemUiVisibility =
+					decorView.systemUiVisibility or
+							SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+			} else {
+				decorView.systemUiVisibility =
+					decorView.systemUiVisibility and
+							SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+			}
+
+			// Legacy approach for navigation bar
+			if (isLightNavigationBar) {
+				decorView.systemUiVisibility =
+					decorView.systemUiVisibility or
+							SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+			} else {
+				decorView.systemUiVisibility =
+					decorView.systemUiVisibility and
+							SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+			}
+
+			logger.d("Applied light/dark appearance for system bars (legacy mode)")
 		}
 	}
 
 	/**
-	 * Handles touch events to dismiss soft keyboard when touching outside EditText.
+	 * Intercepts touch events to dismiss the keyboard when the user taps outside an EditText.
+	 *
+	 * @param motionEvent The motion event describing the user’s interaction.
+	 * @return `true` if the event was handled, otherwise passes it to the superclass.
 	 */
 	override fun dispatchTouchEvent(motionEvent: MotionEvent): Boolean {
 		if (motionEvent.action == MotionEvent.ACTION_DOWN) {
 			val focusedView = currentFocus
+
 			if (focusedView is EditText) {
+				logger.d("dispatchTouchEvent(): User touched outside EditText — checking keyboard dismissal")
+
 				val outRect = Rect()
 				focusedView.getGlobalVisibleRect(outRect)
+
 				if (!outRect.contains(motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
+					logger.d("Tapped outside EditText — hiding keyboard and clearing focus")
+
+					// Clear focus and hide keyboard
 					focusedView.clearFocus()
 					val service = getSystemService(INPUT_METHOD_SERVICE)
 					val imm = service as InputMethodManager
@@ -304,41 +440,67 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 				}
 			}
 		}
+
 		return super.dispatchTouchEvent(motionEvent)
 	}
 
 	/**
 	 * Launches a permission request dialog for the specified permissions.
 	 *
-	 * @param permissions List of permissions to request
+	 * Handles:
+	 * - Showing an explanation dialog when permissions are denied.
+	 * - Prompting the user to go to settings when permissions are permanently denied.
+	 * - Returning the result to the [permissionCheckListener].
+	 *
+	 * @param permissions The list of permissions to request from the user.
 	 */
 	override fun launchPermissionRequest(permissions: ArrayList<String>) {
+		logger.d("launchPermissionRequest() called with permissions=$permissions")
+
 		safeBaseActivityRef?.let { safeActivityRef ->
-			PermissionX.init(safeActivityRef).permissions(permissions)
+			logger.d("Starting permission request flow")
+
+			PermissionX.init(safeActivityRef)
+				.permissions(permissions)
+
+				// Show explanation dialog when permissions are denied
 				.onExplainRequestReason { callback, deniedList ->
-					// Show explanation dialog when permissions are denied
+					logger.d("Showing explanation dialog for denied permissions: $deniedList")
 					callback.showRequestReasonDialog(
 						permissions = deniedList,
 						message = getString(R.string.title_allow_the_permissions),
 						positiveText = getString(R.string.title_allow_now)
 					)
-				}.onForwardToSettings { scope, deniedList ->
-					// Show dialog to redirect to settings when permissions are permanently denied
+				}
+
+				// Show dialog to redirect user to app settings
+				.onForwardToSettings { scope, deniedList ->
+					logger.d("Permissions permanently denied — forwarding to settings: $deniedList")
 					scope.showForwardToSettingsDialog(
 						permissions = deniedList,
 						message = getString(R.string.text_allow_permission_in_setting),
 						positiveText = getString(R.string.title_allow_now)
 					)
-				}.request { allGranted, grantedList, deniedList ->
-					// Handle permission request results
+				}
+
+				// Handle final permission result
+				.request { allGranted, grantedList, deniedList ->
+					logger.d(
+						"Permission request completed — " +
+								"allGranted=$allGranted, granted=$grantedList, denied=$deniedList"
+					)
+
 					isUserPermissionCheckingActive = false
 					permissionCheckListener?.onPermissionResultFound(
 						isGranted = allGranted,
 						grantedList = grantedList,
 						deniedList = deniedList
 					)
-				}; isUserPermissionCheckingActive = true
-		}
+				}
+
+			isUserPermissionCheckingActive = true
+			logger.d("Permission request initiated — waiting for user response")
+		} ?: logger.d("launchPermissionRequest() skipped — safeBaseActivityRef is null")
 	}
 
 	/**
@@ -386,7 +548,10 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 	 */
 	override fun exitActivityOnDoubleBackPress() {
 		if (isBackButtonEventFired == 0) {
-			showToast(msgId = R.string.title_press_back_button_to_exit)
+			showToast(
+				activity = safeBaseActivityRef,
+				msgId = R.string.title_press_back_button_to_exit
+			)
 			isBackButtonEventFired = 1
 			delay(2000, object : OnTaskFinishListener {
 				override fun afterDelay() {
@@ -426,7 +591,10 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 		} catch (error: Exception) {
 			error.printStackTrace()
-			showToast(msgId = R.string.text_please_install_web_browser)
+			showToast(
+				activity = safeBaseActivityRef,
+				msgId = R.string.text_please_install_web_browser
+			)
 		}
 	}
 
