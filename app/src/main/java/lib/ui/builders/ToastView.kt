@@ -4,14 +4,13 @@ package lib.ui.builders
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Context.LAYOUT_INFLATER_SERVICE
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.view.ContextThemeWrapper
 import app.core.bases.BaseActivity
-import com.aio.R.id
-import com.aio.R.layout
+import com.aio.R
 import lib.networks.URLUtility.isValidURL
 import lib.texts.CommonTextUtils.getText
 import java.lang.ref.WeakReference
@@ -34,7 +33,7 @@ class ToastView(context: Context) : Toast(context) {
 	 * @param iconResId The resource ID of the drawable to use as the icon.
 	 */
 	fun setIcon(iconResId: Int) {
-		view?.findViewById<ImageView>(id.img_toast_app_icon)
+		view?.findViewById<ImageView>(R.id.img_toast_app_icon)
 			?.apply { setImageResource(iconResId) }
 	}
 	
@@ -108,13 +107,18 @@ class ToastView(context: Context) : Toast(context) {
 		@SuppressLint("InflateParams") private fun configureToastView(
 			activity: BaseActivity, message: CharSequence?, duration: Int
 		): ToastView {
-			return ToastView(activity).apply {
-				val inflater = activity.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
-				val toastView = inflater.inflate(layout.lay_custom_toast_view_1, null)
-				toastView.findViewById<TextView>(id.txt_toast_message).text = message
+			// Wrap the activity with its current theme
+			val themedCtx = ContextThemeWrapper(activity, R.style.style_application)
+
+			val inflater = LayoutInflater.from(themedCtx)
+			val toastView = inflater.inflate(R.layout.lay_custom_toast_view_1, null)
+			toastView.findViewById<TextView>(R.id.txt_toast_message).text = message
+
+			// Create toast with activity (not application) context
+			return Toast(themedCtx).apply {
 				view = toastView
 				setDuration(duration)
-			}
+			} as ToastView
 		}
 	}
 }
