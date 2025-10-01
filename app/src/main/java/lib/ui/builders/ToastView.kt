@@ -48,7 +48,8 @@ class ToastView(context: Context) : Toast(context) {
 		 * @param msgId The resource ID for the message string. Optional.
 		 */
 		@JvmStatic
-		fun showToast(activity: BaseActivity, msg: String? = null, msgId: Int = -1) {
+		fun showToast(activity: BaseActivity?, msg: String? = null, msgId: Int = -1) {
+			if (activity == null) return
 			when {
 				msgId != -1 -> showResourceToast(activity, msgId)
 				msg != null -> showTextToast(activity, msg)

@@ -17,54 +17,57 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 /**
- * A dialog that notifies the user when a new version of the app is available
- * and provides an option to install it.
+ * Displays a dialog prompting the user to install a new version of the app.
  *
- * This dialog shows:
- * - The latest version available.
- * - The currently installed version.
- * - A changelog link (clickable).
+ * The dialog provides:
+ * - The **latest available version** of the app.
+ * - The **currently installed version** (if included in [UpdateInfo]).
+ * - A **clickable changelog link**.
+ * - An **Install** button that opens the downloaded APK file.
  *
- * When the user accepts, the downloaded APK is opened for installation.
+ * This dialog uses a [DialogBuilder] and a weak reference to the hosting
+ * [BaseActivity] to avoid memory leaks.
  *
- * @param baseActivity The hosting [BaseActivity], held weakly to prevent leaks.
- * @param latestVersionApkFile The downloaded APK file for the latest version.
- * @param versionInfo Metadata about the new update (version, changelog URL, etc.).
+ * @property baseActivity The activity that hosts the dialog. Stored as a weak reference.
+ * @property latestVersionApkFile The APK file for the new version to be installed.
+ * @property versionInfo Metadata for the update (latest version string, changelog URL, etc.).
  */
 class UpdaterDialog(
 	private val baseActivity: BaseActivity?,
 	private val latestVersionApkFile: File,
 	private val versionInfo: UpdateInfo
 ) {
+	/** Logger for debug and error messages. */
 	private val logger = LogHelperUtils.from(javaClass)
 
-	// Weak reference to parent activity to prevent memory leaks
+	/** A safe reference to the parent activity to avoid leaks. */
 	private val safeBaseActivityRef = WeakReference(baseActivity).get()
 
-	// Builder for creating and managing the update dialog
+	/** Builder instance used to create and manage the dialog UI. */
 	private val dialogBuilder: DialogBuilder = DialogBuilder(safeBaseActivityRef)
 
 	init {
-		safeBaseActivityRef?.let {
+		safeBaseActivityRef?.let { activity ->
 			logger.d("Initializing UpdaterDialog")
 
-			// Configure dialog layout
+			// Set up dialog UI
 			dialogBuilder.setView(R.layout.dialog_new_version_updater_1)
 			dialogBuilder.setCancelable(false)
 
-			// Populate message text with styled HTML and enable clickable links
+			// Populate message text with version info
 			dialogBuilder.view.apply {
-				findViewById<TextView>(R.id.txt_dialog_message).let { textView ->
-					val htmlMsg = """
-                        <b>Latest version:</b> ${versionInfo.latestVersion}                   
-                    """.trimIndent()
+				findViewById<TextView>(R.id.txt_dialog_message)?.let { textView ->
+					val htmlMsg = activity.getString(
+						/* resId = */ R.string.title_b_latest_version_b,
+						/* ...formatArgs = */ versionInfo.latestVersion
+					).trimIndent()
 
 					textView.text = Html.fromHtml(htmlMsg, FROM_HTML_MODE_COMPACT)
 					textView.movementMethod = LinkMovementMethod.getInstance()
 				}
 			}
 
-			// Setup button click listeners
+			// Attach button click handler
 			setViewOnClickListener(
 				{ button: View -> this.setupClickEvents(button) },
 				dialogBuilder.view,
@@ -74,9 +77,9 @@ class UpdaterDialog(
 	}
 
 	/**
-	 * Handles click events for dialog buttons.
+	 * Handles user interactions with dialog buttons.
 	 *
-	 * @param button The view that was clicked.
+	 * @param button The clicked button view.
 	 */
 	private fun setupClickEvents(button: View) {
 		logger.d("Button clicked with id=${button.id}")
@@ -87,25 +90,25 @@ class UpdaterDialog(
 				safeBaseActivityRef?.let { activity ->
 					val authority = "${activity.packageName}.provider"
 					openApkFile(activity, latestVersionApkFile, authority)
-				} ?: showToast(msgId = R.string.title_something_went_wrong)
+				} ?: showToast(activity = baseActivity, msgId = R.string.title_something_went_wrong)
 			}
 		}
 	}
 
 	/**
-	 * Shows the update dialog if it's not already visible.
+	 * Displays the dialog if it is not already visible.
 	 */
 	fun show() {
 		if (!dialogBuilder.isShowing) {
 			logger.d("Showing UpdaterDialog")
 			dialogBuilder.show()
 		} else {
-			logger.d("UpdaterDialog already showing — skipping show()")
+			logger.d("UpdaterDialog already visible — skipping show()")
 		}
 	}
 
 	/**
-	 * Closes the update dialog if it's currently visible.
+	 * Dismisses the dialog if it is currently visible.
 	 */
 	fun close() {
 		if (dialogBuilder.isShowing) {

@@ -164,7 +164,7 @@
 	<string name="title_old_data_found">Old Data Found…</string>
 	<string name="title_failed_deleted_paused">File Deleted: Paused</string>
 	<string name="title_download_complete_click_to_open">Download\'s Completed, Click Here To Open</string>
-	<string name="title_media_file_has_deleted">Media File Has Been Deleted</string>
+	<string name="title_media_file_has_deleted">Media File\'s Deleted</string>
 	<string name="title_rename_the_file">Rename The File</string>
 	<string name="title_you_dont_have_any_downloads"><b> You Don\'t Have Any Downloads</b>\nGo And Download Something!</string>
 	<string name="title_open_link_in_browser">Open With Browser</string>
@@ -536,5 +536,6 @@
 	<string name="title_dark_mode_ui">Dark Mode UI</string>
 	<string name="title_light_mode_ui">Light Mode UI</string>
 	<string name="text_changing_theme_require_restart">Changing the theme requires restarting the application.</string>
+	<string name="title_b_latest_version_b"><![CDATA["\n<b>Latest Version:</b> %1$s\n"]]></string>
 
 </resources>
