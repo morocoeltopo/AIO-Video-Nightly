@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import lib.networks.HttpClientProvider
 import lib.networks.URLUtilityKT.isInternetConnected
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.LogHelperUtils
@@ -105,6 +106,10 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		startupManager.apply {
 			// Load essential settings and raw resources
 			addCriticalTask {
+				logger.d("Preloading OK-Http Client builder")
+				HttpClientProvider.initialize()
+				logger.d("Preloaded OK-Http Client builder")
+
 				logger.d("Loading critical settings and resources")
 				aioSettings = AIOSettings().apply(AIOSettings::readObjectFromStorage)
 				aioRawFiles = AIORawFiles().apply(AIORawFiles::preloadLottieAnimation)
