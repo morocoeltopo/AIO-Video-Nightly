@@ -63,12 +63,13 @@ import androidx.core.graphics.get
 import androidx.core.graphics.scale
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
-import app.core.AIOApp
+import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioSettings
 import app.core.bases.BaseActivity
 import com.aio.R
 import com.bumptech.glide.Glide
 import lib.files.FileSystemUtility
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import java.io.BufferedInputStream
 import java.io.File
@@ -81,15 +82,23 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 /**
- * Utility object providing commonly used view-related helper functions for Android UI components.
+ * Utility object providing commonly used view-related helper functions for
+ * Android UI components.
  *
- * Includes methods for retrieving screen dimensions, dynamically adjusting layout properties of views
- * like GridView, unbinding view resources for memory optimization, setting click listeners efficiently
- * across multiple views, retrieving nested views safely, and triggering basic view animations.
+ * Includes methods for retrieving screen dimensions, dynamically adjusting
+ * layout properties of views like GridView, unbinding view resources for memory
+ * optimization, setting click listeners efficiently across multiple views, retrieving
+ * nested views safely, and triggering basic view animations.
  *
- * These utilities help in maintaining cleaner UI code and ensure better compatibility across Android versions.
+ * These utilities help in maintaining cleaner UI code and ensure better compatibility
+ * across all supported Android versions.
  */
 object ViewUtility {
+
+	/**
+	 * Logger instance for debugging functions.
+	 */
+	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
 	 * Retrieves the width of the device screen in pixels.
@@ -118,7 +127,7 @@ object ViewUtility {
 	 */
 	@RequiresApi(VERSION_CODES.R)
 	private fun getCurrentWindowMetrics(): WindowMetrics {
-		val windowService = AIOApp.INSTANCE.getSystemService(WINDOW_SERVICE)
+		val windowService = INSTANCE.getSystemService(WINDOW_SERVICE)
 		val windowManager = windowService as WindowManager
 		return windowManager.currentWindowMetrics
 	}
@@ -135,7 +144,7 @@ object ViewUtility {
 	@Suppress("DEPRECATION")
 	private fun getLegacyDisplayMetrics(): DisplayMetrics {
 		return DisplayMetrics().apply {
-			val windowService = AIOApp.INSTANCE.getSystemService(WINDOW_SERVICE)
+			val windowService = INSTANCE.getSystemService(WINDOW_SERVICE)
 			val windowManager = windowService as WindowManager
 			windowManager.defaultDisplay.getRealMetrics(this)
 		}
@@ -213,7 +222,8 @@ object ViewUtility {
 	 * of its children and then removes all views. This can be useful in `onDestroy()`
 	 * or when a view is no longer needed to free up resources.
 	 *
-	 * @param view The [View] or [ViewGroup] to unbind drawables from. Can be null, in which case nothing happens.
+	 * @param view The [View] or [ViewGroup] to unbind drawables from. Can be null, in
+	 * which case nothing happens.
 	 */
 	@JvmStatic
 	fun unbindDrawables(view: View?) {
@@ -227,7 +237,7 @@ object ViewUtility {
 				if (view !is AdapterView<*>) view.removeAllViews()
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while unbinding drawables from views:", error)
 		}
 	}
 
@@ -240,7 +250,8 @@ object ViewUtility {
 	 * if the listener outlives the activity (though in most common `OnClickListener`
 	 * implementations, this is not a concern).
 	 *
-	 * @param clickListener The [View.OnClickListener] to set on the views. Can be null to clear existing listeners.
+	 * @param clickListener The [View.OnClickListener] to set on the views. Can be null to
+	 * clear existing listeners.
 	 * @param activity The [Activity] containing the views. Using a [WeakReference] to avoid leaks.
 	 * @param ids A vararg of integer IDs ([IdRes]) of the views to set the listener on.
 	 */
@@ -262,7 +273,8 @@ object ViewUtility {
 	 * This function takes a common [View.OnClickListener] and an array of view IDs
 	 * and sets the listener on each found [View] within the provided parent [View].
 	 *
-	 * @param onClickListener The [View.OnClickListener] to set on the views. Can be null to clear existing listeners.
+	 * @param onClickListener The [View.OnClickListener] to set on the views. Can be null to
+	 * clear existing listeners.
 	 * @param layout The parent [View] containing the views.
 	 * @param ids A vararg of integer IDs ([IdRes]) of the views to set the listener on.
 	 */
@@ -394,7 +406,7 @@ object ViewUtility {
 	@JvmStatic
 	fun tintDrawableWithPrimaryColor(targetDrawable: Drawable?) {
 		if (targetDrawable == null) return
-		val tintColor = getColor(AIOApp.INSTANCE, R.color.color_primary)
+		val tintColor = getColor(INSTANCE, R.color.color_primary)
 		DrawableCompat.setTint(targetDrawable, tintColor)
 	}
 
@@ -409,7 +421,7 @@ object ViewUtility {
 	@JvmStatic
 	fun tintDrawableWithSecondaryColor(targetDrawable: Drawable?) {
 		if (targetDrawable == null) return
-		val tintColor = getColor(AIOApp.INSTANCE, R.color.color_secondary)
+		val tintColor = getColor(INSTANCE, R.color.color_secondary)
 		DrawableCompat.setTint(targetDrawable, tintColor)
 	}
 
@@ -425,7 +437,7 @@ object ViewUtility {
 	@JvmStatic
 	fun tintDrawableWithProvidedColor(targetDrawable: Drawable?, colorResId: Int) {
 		if (targetDrawable == null) return
-		val tintColor = getColor(AIOApp.INSTANCE, colorResId)
+		val tintColor = getColor(INSTANCE, colorResId)
 		DrawableCompat.setTint(targetDrawable, tintColor)
 	}
 
@@ -1004,7 +1016,7 @@ object ViewUtility {
 						.load(rotatedBitmap).into(targetImageView)
 				}
 			} catch (error: Exception) {
-				error.printStackTrace() // Print error stack trace in case of failure
+				logger.e("Error while loading thumbnail from a remote url:", error)
 				// Set placeholder image if provided, or leave it unchanged
 				if (placeHolderDrawableId != null) {
 					targetImageView.setImageResource(placeHolderDrawableId)
@@ -1044,8 +1056,8 @@ object ViewUtility {
 	/**
 	 * Retrieves a thumbnail image for a given file, either from the file itself or a provided URL.
 	 *
-	 * The method handles different file types, including audio, image, APK, and video files. It uses the
-	 * file's name to determine the type and attempts to extract a corresponding thumbnail:
+	 * The method handles different file types, including audio, image, APK, and video files.
+	 * It uses the file's name to determine the type and attempts to extract a corresponding thumbnail:
 	 * - For audio files, it attempts to extract the album art.
 	 * - For image files, it scales the image to the required width.
 	 * - For APK files, it attempts to extract the app's icon.
@@ -1108,8 +1120,7 @@ object ViewUtility {
 				return it.scale(requiredThumbWidth, targetHeight, false)
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
-
+			logger.e("Error while retrieving thumbnail from a file:", error)
 		} finally {
 			retriever.release()
 		}
@@ -1139,7 +1150,7 @@ object ViewUtility {
 			return false
 		}
 
-		val packageManager = AIOApp.INSTANCE.packageManager
+		val packageManager = INSTANCE.packageManager
 		return try {
 			val apkPath = apkFile.absolutePath
 			val packageInfo = packageManager.getPackageArchiveInfo(
@@ -1167,7 +1178,7 @@ object ViewUtility {
 			imageViewHolder?.setImageDrawable(defaultThumbDrawable)
 			false
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error found while extracting app icon thumbnail from an apk file:", error)
 			imageViewHolder?.apply {
 				scaleType = ImageView.ScaleType.FIT_CENTER
 				setPadding(0, 0, 0, 0)
@@ -1206,8 +1217,7 @@ object ViewUtility {
 			// Return the created bitmap
 			bitmap
 		} catch (error: Exception) {
-			// Handle any exception that may occur during bitmap creation
-			error.printStackTrace()
+			logger.e("Error found while converting drawable to a bitmap:", error)
 			null
 		}
 	}
@@ -1268,7 +1278,7 @@ object ViewUtility {
 
 			decodeByteArray(embeddedPicture, 0, embeddedPicture.size, decodeOptions)
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error found while extracting audio album-art frm an audio file", error)
 			null
 		} finally {
 			retriever.release()
@@ -1311,7 +1321,7 @@ object ViewUtility {
 				null
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error found while getting thumbnail from a remote url:",error)
 			null
 		} finally {
 			try {
@@ -1340,7 +1350,7 @@ object ViewUtility {
 	): String? {
 		return try {
 			val modePrivate = Context.MODE_PRIVATE
-			val appContext = AIOApp.INSTANCE
+			val appContext = INSTANCE
 			appContext.openFileOutput(fileName, modePrivate).use { outputStream ->
 				// Compress and write bitmap to output stream
 				if (!bitmapToSave.compress(format, quality, outputStream)) return null
@@ -1348,7 +1358,7 @@ object ViewUtility {
 
 			"${appContext.filesDir}/$fileName"
 		} catch (error: Throwable) {
-			error.printStackTrace()
+			logger.e("Error found while saving bitmap to a file:", error)
 			null
 		}
 	}
@@ -1368,7 +1378,7 @@ object ViewUtility {
 				null
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error found while decoding bitmap from a image file:",error)
 			null
 		}
 	}
@@ -1438,7 +1448,7 @@ object ViewUtility {
 	@Suppress("DEPRECATION")
 	fun blurBitmap(bitmap: Bitmap, radius: Float = 20f): Bitmap {
 		val safeConfig = bitmap.config ?: Bitmap.Config.ARGB_8888
-		val rs = RenderScript.create(AIOApp.INSTANCE)
+		val rs = RenderScript.create(INSTANCE)
 
 		// Create input allocation from the bitmap
 		val input = Allocation.createFromBitmap(rs, bitmap)
@@ -1470,7 +1480,7 @@ object ViewUtility {
 	 */
 	@JvmStatic
 	fun TextView.setLeftSideDrawable(drawableResIdRes: Int) {
-		val drawable = getDrawable(AIOApp.INSTANCE, drawableResIdRes)
+		val drawable = getDrawable(INSTANCE, drawableResIdRes)
 		drawable?.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
 		this.setCompoundDrawables(drawable, null, null, null)
 	}
@@ -1514,7 +1524,7 @@ object ViewUtility {
 	 */
 	@JvmStatic
 	fun TextView.setTextColorKT(colorResId: Int) {
-		this.setTextColor(AIOApp.INSTANCE.getColor(colorResId))
+		this.setTextColor(INSTANCE.getColor(colorResId))
 	}
 
 	/**
@@ -1544,6 +1554,7 @@ object ViewUtility {
 					setDefaultNightMode(MODE_NIGHT_YES)
 					setDarkSystemBarTheme()
 				}
+
 				false -> {
 					setDefaultNightMode(MODE_NIGHT_NO)
 					setLightSystemBarTheme()

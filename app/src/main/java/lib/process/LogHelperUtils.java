@@ -17,9 +17,10 @@ import app.core.AIOApp;
  * This class automatically prefixes logs with the associated class name and only logs
  * messages when {@link AIOApp#IS_DEBUG_MODE_ON} is set to true.
  *
- * <p>This helps in maintaining clean logs in production and providing verbose logging during development.</p>
+ * <p>This helps in maintaining clean logs in production and providing verbose logging
+ * during rapid development.</p>
  *
- * Usage:
+ * <b>Usage:</b>
  * <pre>{@code
  *     LogHelperUtils logger = LogHelperUtils.from(MyClass.class);
  *     logger.d("Debug message");
@@ -31,7 +32,7 @@ public final class LogHelperUtils implements Serializable {
     /** The associated class whose name will be used as the tag in logs. */
     private final Class<?> class_;
 
-    /** Flag to determine if debugging mode is enabled (driven by AIOApp.IS_DEBUG_MODE_ON). */
+    /** Flag to determine if debugging mode is enabled (driven by {@link AIOApp#IS_DEBUG_MODE_ON}). */
     private final boolean isDebuggingMode;
 
     /**
@@ -41,7 +42,7 @@ public final class LogHelperUtils implements Serializable {
      */
     private LogHelperUtils(Class<?> class_) {
         this.class_ = class_;
-        this.isDebuggingMode = BuildConfig.IS_DEBUG_MODE_ON;
+        this.isDebuggingMode = AIOApp.IS_DEBUG_MODE_ON;
     }
 
     /**
