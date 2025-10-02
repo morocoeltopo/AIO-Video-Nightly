@@ -36,40 +36,71 @@ import java.lang.ref.WeakReference
  */
 class IntentInterceptActivity : BaseActivity() {
 
+	/**
+	 * Logger instance for debugging and error reporting.
+	 */
 	private val logger = LogHelperUtils.from(javaClass)
 
-	// Weak reference to avoid memory leaks in background thread operations
+	/**
+	 * Weak reference to avoid potential memory leaks by not holding a strong reference to the activity.
+	 */
 	private val weakSelfReference = WeakReference(this)
+
+	/**
+	 * Safe reference to the activity obtained from the weak reference.
+	 * Used to prevent crashes if the activity is destroyed or unavailable.
+	 */
 	private val safeIntentInterceptActivityRef = weakSelfReference.get()
 
-	// Flag to abort processing if the user exits during metadata fetching
+	/**
+	 * Flag to signal cancellation of title parsing if the user exits or the activity finishes.
+	 */
 	private var isParsingTitleFromUrlAborted = false
 
 	/**
-	 * No layout is rendered directly for this activity.
-	 * It performs background operations and forwards/redirects based on the intent.
+	 * Provides the layout resource to render.
+	 * In this case, the activity uses a transparent placeholder layout
+	 * and applies a fade animation for a smooth appearance.
+	 *
+	 * @return The layout resource ID for this transparent activity.
 	 */
 	override fun onRenderingLayout(): Int {
+		logger.d("onRenderingLayout: Applying fade animation to activity.")
 		animActivityFade(safeIntentInterceptActivityRef)
 		return R.layout.activity_transparent_1
 	}
 
 	/**
-	 * Handles the back press to close the activity with fade animation.
+	 * Handles back button press.
+	 * Ensures the activity closes with a fade-out animation for a better user experience.
 	 */
 	override fun onBackPressActivity() {
+		logger.d("onBackPressActivity: User pressed back, closing with fade animation.")
 		closeActivityWithFadeAnimation(true)
 	}
 
 	/**
-	 * This is called after the layout is "rendered" (in this case, skipped).
-	 * Handles the intent URL processing and dispatches to proper flow based on logic.
+	 * Called after the layout is set.
+	 * This function drives the core logic of:
+	 * - Validating the incoming shared URL
+	 * - Handling premium/non-premium user flows
+	 * - Parsing and analyzing social media URLs
+	 * - Displaying prompts or forwarding intent as needed
 	 */
 	override fun onAfterLayoutRender() {
+		logger.d("onAfterLayoutRender: Starting intent processing.")
+
+		// Ensure the system download manager or setup is initialized
+		logger.d("onAfterLayoutRender: Checking download system initialization.")
 		downloadSystem.isInitializing
 
+		// Retrieve the shared URL from the incoming intent
 		val intentUrl = getIntentDataURI(getActivity())
+		logger.d("onAfterLayoutRender: Retrieved intent URL = $intentUrl")
+
+		// Handle invalid URLs
 		if (URLUtility.isValidURL(intentUrl) == false) {
+			logger.d("onAfterLayoutRender: Invalid URL detected.")
 			doSomeVibration(50)
 			showToast(
 				activityInf = safeIntentInterceptActivityRef,
@@ -79,54 +110,73 @@ class IntentInterceptActivity : BaseActivity() {
 			return
 		}
 
-		// No valid URL found, exit activity
+		// If no URL is provided, exit the activity
 		if (intentUrl.isNullOrEmpty()) {
+			logger.d("onAfterLayoutRender: No URL found in the intent.")
 			onBackPressActivity()
 			return
 		}
 
-		// Non-premium users are forwarded directly to the main activity
+		// If user is not premium or ultimate version is not unlocked, forward to the main activity
 		if (IS_PREMIUM_USER == false || IS_ULTIMATE_VERSION_UNLOCKED == false) {
+			logger.d("onAfterLayoutRender: Non-premium user detected. Forwarding to main activity.")
 			forwardIntentToMotherActivity()
 			return
 		}
 
-		// Only premium users with ultimate unlocked can access parsing features
+		// Handle premium user flow
 		safeIntentInterceptActivityRef?.let { safeActivityRef ->
+			logger.d("onAfterLayoutRender: Premium user detected. Processing URL.")
+
 			if (isSocialMediaUrl(intentUrl) == false) {
-				// Use generic interceptor for non-social media URLs
+				logger.d("onAfterLayoutRender: Non-social media URL detected. Using generic interceptor.")
 				interceptNonSocialMediaUrl(safeActivityRef, intentUrl)
 				return
 			}
 
-			// Handle social media URLs with advanced parser
+			logger.d("onAfterLayoutRender: Social media URL detected. Starting advanced parsing.")
+
+			// Show "analyzing URL" waiting dialog
 			val waitingDialog = WaitingDialog(
 				isCancelable = false,
 				baseActivityInf = safeActivityRef,
 				loadingMessage = getString(R.string.title_analyzing_url_please_wait),
-				dialogCancelListener = { dialog -> dialog.dismiss() }
+				dialogCancelListener = { dialog ->
+					logger.d("WaitingDialog: User cancelled analyzing process.")
+					dialog.dismiss()
+					isParsingTitleFromUrlAborted = true
+					closeActivityWithFadeAnimation(shouldAnimate = true)
+				}
 			)
-
-			// Show the "analyzing url" waiting dialog
 			waitingDialog.show()
+			logger.d("WaitingDialog: Displayed analyzing message.")
 
-			// Perform parsing in background
+			// Perform parsing in the background
 			ThreadsUtility.executeInBackground(codeBlock = {
-				val htmlBody = fetchWebPageContent(intentUrl, true)
-				val thumbnailUrl = startParsingVideoThumbUrl(intentUrl, htmlBody)
+				logger.d("Background Task: Fetching HTML content for URL.")
+				val htmlBody = fetchWebPageContent(url = intentUrl, retry = true, numOfRetry = 3)
 
+				logger.d("Background Task: Parsing thumbnail URL.")
+				val thumbnailUrl = startParsingVideoThumbUrl(videoUrl = intentUrl, userGivenHtmlBody = htmlBody)
+
+				logger.d("Background Task: Extracting webpage title or description.")
 				getWebpageTitleOrDescription(
 					websiteUrl = intentUrl, userGivenHtmlBody = htmlBody
 				) { resultedTitle ->
 
-					// Close the "analyzing url" waiting dialog
+					// Close the waiting dialog in UI thread
+					logger.d("Background Task: Parsing completed. Closing waiting dialog.")
 					executeOnMainThread { waitingDialog.close() }
 
-					val userDidNotCancelExecution = !isParsingTitleFromUrlAborted
 					val validIntentUrl = !resultedTitle.isNullOrEmpty()
+					logger.d(
+						"Background Task: Parsing result: " +
+								"validTitle=$validIntentUrl, cancelled=$isParsingTitleFromUrlAborted"
+					)
 
-					if (validIntentUrl && userDidNotCancelExecution) {
-						// Show prompter dialog in UI thread
+					if (validIntentUrl && isParsingTitleFromUrlAborted == false) {
+						// Show resolution prompter dialog in UI thread
+						logger.d("Background Task: Showing SingleResolutionPrompter dialog.")
 						executeOnMainThread {
 							val resolutionName = getText(R.string.title_high_quality).toString()
 							SingleResolutionPrompter(
@@ -145,6 +195,8 @@ class IntentInterceptActivity : BaseActivity() {
 							).show()
 						}
 					} else {
+						// Fallback for busy server or cancelled execution
+						logger.d("Background Task: Invalid result or cancelled. Forwarding to browser.")
 						executeOnMainThread {
 							val activityRef = safeActivityRef
 							activityRef.doSomeVibration(50)
@@ -159,37 +211,68 @@ class IntentInterceptActivity : BaseActivity() {
 		}
 	}
 
+	/**
+	 * Handles interception of non-social media URLs.
+	 * Uses a shared video URL interceptor to process the link.
+	 *
+	 * @param safeActivityRef Reference to the current activity.
+	 * @param intentUrl The URL received from the intent.
+	 */
 	private fun interceptNonSocialMediaUrl(
-		safeActivityRef: IntentInterceptActivity, intentUrl: String
+		safeActivityRef: IntentInterceptActivity,
+		intentUrl: String
 	) {
+		logger.d("interceptNonSocialMediaUrl: Starting interception for URL: $intentUrl")
+
+		// Initialize the generic URL interceptor for non-social media links
 		val interceptor = SharedVideoURLIntercept(
 			baseActivity = safeActivityRef,
-			onOpenBrowser = { forwardIntentToMotherActivity() },
-			closeActivityOnSuccessfulDownload = true
+			closeActivityOnSuccessfulDownload = true,
+			onOpenBrowser = {
+				logger.d("interceptNonSocialMediaUrl: Opening browser as fallback.")
+				forwardIntentToMotherActivity()
+			}
 		)
 
+		// Process the given URL
+		logger.d("interceptNonSocialMediaUrl: Passing URL to interceptor.")
 		interceptor.interceptIntentURI(
-			intentUrl = intentUrl,
-			shouldOpenBrowserAsFallback = false
+			intentUrl = intentUrl, shouldOpenBrowserAsFallback = true
 		)
+		logger.d("interceptNonSocialMediaUrl: Interception process initiated.")
 	}
 
 	/**
 	 * Clears the weak reference to this activity.
-	 * Ensures that memory is released when activity is destroyed.
+	 * Prevents memory leaks by allowing the garbage collector to reclaim the activity instance.
 	 */
 	override fun clearWeakActivityReference() {
+		logger.d("clearWeakActivityReference: Clearing weak reference to activity.")
 		weakSelfReference.clear()
 		super.clearWeakActivityReference()
+		logger.d("clearWeakActivityReference: Weak reference cleared successfully.")
 	}
 
 	/**
-	 * Forward the intercepted intent directly to MotherActivity (main screen),
-	 * preserving the original data and intent action.
+	 * Forwards the intercepted intent to the [MotherActivity].
+	 * Preserves original intent data and action, ensuring seamless redirection.
+	 *
+	 * @param dontParseURLAnymore Flag to signal that no further parsing is required.
 	 */
 	private fun forwardIntentToMotherActivity(dontParseURLAnymore: Boolean = false) {
+		logger.d(
+			"forwardIntentToMotherActivity: Preparing to forward intent. " +
+					"dontParseURLAnymore=$dontParseURLAnymore"
+		)
+
 		try {
 			val originalIntent = intent
+			logger.d(
+				"forwardIntentToMotherActivity: Retrieved original intent: " +
+						"action=${originalIntent.action}, data=${originalIntent.data}"
+			)
+
+			// Create intent for MotherActivity with necessary flags and extras
 			val targetIntent = Intent(getActivity(), MotherActivity::class.java).apply {
 				action = originalIntent.action
 				setDataAndType(originalIntent.data, originalIntent.type)
@@ -198,12 +281,21 @@ class IntentInterceptActivity : BaseActivity() {
 				flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 			}
 
+			// Launch MotherActivity
+			logger.d("forwardIntentToMotherActivity: Launching MotherActivity with preserved intent.")
 			startActivity(targetIntent)
+
+			// Close current activity with fade animation
 			closeActivityWithFadeAnimation(true)
+			logger.d("forwardIntentToMotherActivity: Activity forwarded and closed with fade animation.")
+
 		} catch (error: Exception) {
-			logger.e("Error in launching mother activity", error)
-			openActivity(MotherActivity::class.java, shouldAnimate = true)
-			closeActivityWithFadeAnimation(true)
+			logger.e("forwardIntentToMotherActivity: Error occurred while launching MotherActivity", error)
+
+			// Fallback: open MotherActivity with default animation if forwarding fails
+			openActivity(activity = MotherActivity::class.java, shouldAnimate = true)
+			closeActivityWithFadeAnimation(shouldAnimate = true)
+			logger.d("forwardIntentToMotherActivity: Fallback - opened MotherActivity and closed current activity.")
 		}
 	}
 }
