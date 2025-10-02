@@ -142,7 +142,7 @@ class SharedVideoURLIntercept(
 						waitingDialog.close()
 						safeBaseActivityRef?.doSomeVibration(50)
 						showToast(
-							activity = safeBaseActivityRef,
+							activityInf = safeBaseActivityRef,
 							msgId = R.string.text_unsupported_video_link
 						)
 						openInBuiltInBrowser(targetVideoUrl)
@@ -209,7 +209,7 @@ class SharedVideoURLIntercept(
 							logger.d("No video formats found")
 							if (shouldOpenBrowserAsFallback) openInBuiltInBrowser(videoUrl)
 							else showToast(
-								activity = safeBaseActivityRef,
+								activityInf = safeBaseActivityRef,
 								msgId = R.string.title_no_video_found
 							)
 
@@ -366,7 +366,7 @@ class SharedVideoURLIntercept(
 		logger.d("Opening URL in system browser: $urlFromIntent")
 		openLinkInSystemBrowser(urlFromIntent, safeBaseActivityRef) {
 			showToast(
-				activity = safeBaseActivityRef,
+				activityInf = safeBaseActivityRef,
 				msgId = R.string.title_failed_open_the_video
 			)
 		}
@@ -376,7 +376,7 @@ class SharedVideoURLIntercept(
 	private fun showInvalidUrlToast() {
 		logger.d("Showing invalid URL toast")
 		showToast(
-			activity = safeBaseActivityRef,
+			activityInf = safeBaseActivityRef,
 			msgId = R.string.title_invalid_url
 		)
 	}

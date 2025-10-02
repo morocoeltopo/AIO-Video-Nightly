@@ -102,7 +102,7 @@ object ShareUtility {
 			} else {
 				if (safeContextRef is BaseActivity) {
 					showToast(
-						activity = safeContextRef,
+						activityInf = safeContextRef,
 						msgId = R.string.title_no_app_found_to_open_this_file
 					)
 				}

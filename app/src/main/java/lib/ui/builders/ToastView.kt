@@ -10,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import app.core.bases.BaseActivity
+import app.core.bases.interfaces.BaseActivityInf
 import com.aio.R
 import lib.networks.URLUtility.isValidURL
 import lib.texts.CommonTextUtils.getText
@@ -26,7 +27,7 @@ import java.lang.ref.WeakReference
  * @param context The context to use. Usually your Application or Activity context.
  */
 class ToastView(context: Context) : Toast(context) {
-	
+
 	/**
 	 * Sets the icon for the toast if a valid view is available.
 	 *
@@ -36,26 +37,29 @@ class ToastView(context: Context) : Toast(context) {
 		view?.findViewById<ImageView>(R.id.img_toast_app_icon)
 			?.apply { setImageResource(iconResId) }
 	}
-	
+
 	companion object {
-		
+
 		/**
 		 * Shows a toast message. This method accepts either a string message or a resource ID.
 		 * It automatically avoids displaying if the message is a valid URL.
 		 *
-		 * @param activity The activity reference needed.
+		 * @param activityInf The activity interface reference needed.
 		 * @param msg The string message to display. Optional.
 		 * @param msgId The resource ID for the message string. Optional.
 		 */
 		@JvmStatic
-		fun showToast(activity: BaseActivity?, msg: String? = null, msgId: Int = -1) {
+		fun showToast(activityInf: BaseActivityInf?, msg: String? = null, msgId: Int = -1) {
+			if (activityInf == null) return
+			val activity = activityInf.getActivity()
 			if (activity == null) return
+
 			when {
 				msgId != -1 -> showResourceToast(activity, msgId)
 				msg != null -> showTextToast(activity, msg)
 			}
 		}
-		
+
 		/**
 		 * Displays a toast using a string resource ID.
 		 * Skips displaying if the resolved message is a URL.
@@ -68,7 +72,7 @@ class ToastView(context: Context) : Toast(context) {
 			if (isValidURL(message)) return
 			makeText(activity, message).show()
 		}
-		
+
 		/**
 		 * Displays a toast using a string message.
 		 * Skips displaying if the message is a URL.
@@ -80,7 +84,7 @@ class ToastView(context: Context) : Toast(context) {
 			if (isValidURL(msg)) return
 			makeText(activity, msg).show()
 		}
-		
+
 		/**
 		 * Creates and configures a [ToastView] instance using a custom layout and duration.
 		 *
@@ -96,7 +100,7 @@ class ToastView(context: Context) : Toast(context) {
 				configureToastView(safeContext, message, duration)
 			} ?: run { ToastView(activity) }
 		}
-		
+
 		/**
 		 * Inflates the custom toast layout and sets its properties.
 		 *

@@ -131,7 +131,7 @@ class VideoLinkPasteEditor(
 			if (!URLUtility.isValidURL(userGivenURL)) {
 				logger.d("Invalid URL entered: $userGivenURL")
 				safeActivity.doSomeVibration(50)
-				showToast(activity = safeActivity, msg = getText(R.string.title_file_url_not_valid))
+				showToast(activityInf = safeActivity, msg = getText(R.string.title_file_url_not_valid))
 				return
 			} else {
 				logger.d("Valid URL detected. Closing dialog and processing.")
@@ -183,7 +183,7 @@ class VideoLinkPasteEditor(
 								executeOnMainThread {
 									safeMotherActivityRef.doSomeVibration(50)
 									showToast(
-										activity = safeActivity,
+										activityInf = safeActivity,
 										msgId = R.string.title_server_busy_opening_browser
 									)
 

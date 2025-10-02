@@ -15,6 +15,7 @@ import android.widget.PopupWindow
 import androidx.core.content.res.ResourcesCompat
 import app.core.bases.interfaces.BaseActivityInf
 import com.aio.R
+import lib.process.LogHelperUtils
 import java.lang.ref.WeakReference
 
 /**
@@ -32,21 +33,51 @@ class PopupBuilder(
 	private val popupContentView: View? = null,
 	private val popupAnchorView: View
 ) {
+	/**
+	 * Logger instance for recording debug and error messages.
+	 * Used for tracking popup lifecycle events and troubleshooting issues.
+	 */
+	private val logger = LogHelperUtils.from(javaClass)
+
+	/**
+	 * Holds a weak reference to the activity to avoid memory leaks.
+	 * Ensures that the popup does not prevent the activity from being garbage collected.
+	 */
 	private val safeActivityRef = WeakReference(activityInf)
+
+	/**
+	 * The PopupWindow instance that will be displayed on the screen.
+	 * It is initialized using the activity from the weak reference.
+	 */
 	private val popupWindow = PopupWindow(safeActivityRef.get()?.getActivity())
+
+	/**
+	 * The main content view for the popup.
+	 * This is either inflated from the provided layout resource or set directly from a given view.
+	 * It is initialized during popup setup.
+	 */
 	private lateinit var popupLayout: View
-	
+
+	/**
+	 * Initialization block for the PopupBuilder.
+	 *
+	 * - Sets up the popup content by inflating a layout or using the provided view.
+	 * - Validates that a valid content view is available.
+	 * - Configures the PopupWindow (size, background, and touch handling).
+	 *
+	 * If any step fails, the error is logged and rethrown.
+	 */
 	init {
 		try {
 			initializePopupContent() // Inflate or assign the content view
 			validateContentView()    // Ensure valid content is provided
 			setupPopupWindow()       // Setup dimensions, background, interaction handlers
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error found while initializing the Popup Builder:", error)
 			throw error
 		}
 	}
-	
+
 	/**
 	 * Displays the popup window at a calculated position relative to the anchor view.
 	 * Optionally enables immersive mode to hide system UI.
@@ -59,10 +90,10 @@ class PopupBuilder(
 			if (shouldHideStatusAndNavbar) enableImmersiveMode()
 			showPopupWindow()
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error found while showing popup-view:", error)
 		}
 	}
-	
+
 	/**
 	 * Closes the popup if it's currently showing and the activity is valid.
 	 */
@@ -73,20 +104,20 @@ class PopupBuilder(
 				popupWindow.dismiss()
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error found while closing popup-view:", error)
 		}
 	}
-	
+
 	/**
 	 * @return The content view displayed inside the popup.
 	 */
 	fun getPopupView(): View = popupWindow.contentView
-	
+
 	/**
 	 * @return The PopupWindow instance used by this builder.
 	 */
 	fun getPopupWindow(): PopupWindow = popupWindow
-	
+
 	/**
 	 * Initializes the popup layout either by inflating the given layout ID or using the provided view.
 	 * Throws if both are invalid.
@@ -97,10 +128,11 @@ class PopupBuilder(
 				val inflater = LayoutInflater.from(safeActivityRef.get()?.getActivity())
 				popupLayout = inflater.inflate(popupLayoutId, null, false)
 			}
+
 			popupContentView != null -> popupLayout = popupContentView
 		}
 	}
-	
+
 	/**
 	 * Validates that popupLayout has been initialized.
 	 * Throws IllegalArgumentException if not initialized properly.
@@ -112,31 +144,48 @@ class PopupBuilder(
 			)
 		}
 	}
-	
+
 	/**
-	 * Configures the popup window properties such as size, background, and touch behavior.
+	 * Sets up the popup window with required properties.
+	 *
+	 * - Makes the popup touchable, focusable, and dismissible when touched outside.
+	 * - Sets a transparent background for proper outside-click detection.
+	 * - Applies touch handling behavior for popup interactions.
+	 * - Defines default width and height as `WRAP_CONTENT`.
+	 * - Assigns the content view to display inside the popup.
 	 */
 	private fun setupPopupWindow() {
+		logger.d("Setting up popup window properties")
+
 		popupWindow.apply {
 			isTouchable = true
 			isFocusable = true
 			isOutsideTouchable = true
-			
+
+			logger.d("Applying transparent background to popup window")
 			setBackgroundDrawable(createTransparentBackground())
+
+			logger.d("Configuring touch handling for popup window")
 			configureTouchHandling()
-			
+
+			logger.d("Setting popup window width and height to WRAP_CONTENT")
 			width = WindowManager.LayoutParams.WRAP_CONTENT
 			height = WindowManager.LayoutParams.WRAP_CONTENT
+
+			logger.d("Assigning content view to popup window")
 			contentView = popupLayout
 		}
+
+		logger.d("Popup window setup complete")
 	}
-	
+
 	/**
-	 * Creates a transparent background drawable using a predefined resource.
+	 * Creates a transparent background drawable for the popup window.
 	 *
-	 * @return A transparent background drawable or null if context is invalid.
+	 * @return A transparent Drawable or null if the activity context is unavailable.
 	 */
 	private fun createTransparentBackground(): Drawable? {
+		logger.d("Creating transparent background for popup window")
 		return safeActivityRef.get()?.getActivity()?.let { ctx ->
 			ResourcesCompat.getDrawable(
 				ctx.resources,
@@ -145,11 +194,14 @@ class PopupBuilder(
 			)
 		}
 	}
-	
+
 	/**
-	 * Configures how the popup should behave on various touch events such as outside taps and click releases.
+	 * Sets up touch handling for the popup window.
+	 * - Performs click action when user lifts finger inside the popup.
+	 * - Dismisses popup if touched outside.
 	 */
 	private fun configureTouchHandling() {
+		logger.d("Configuring touch behavior for popup window")
 		popupWindow.setTouchInterceptor { view, event ->
 			when (event.action) {
 				ACTION_UP -> view.performClick().let { false }
@@ -158,46 +210,52 @@ class PopupBuilder(
 			}
 		}
 	}
-	
+
 	/**
-	 * Enables full immersive mode to hide status and navigation bars.
-	 * Uses deprecated API flags for backward compatibility.
+	 * Enables immersive mode to hide status and navigation bars.
+	 * Uses deprecated system flags for backward compatibility.
 	 */
 	@Suppress("DEPRECATION")
 	private fun enableImmersiveMode() {
+		logger.d("Enabling immersive mode for popup window")
 		val s1 = SYSTEM_UI_FLAG_FULLSCREEN
 		val s2 = SYSTEM_UI_FLAG_HIDE_NAVIGATION
 		val s3 = SYSTEM_UI_FLAG_IMMERSIVE_STICKY
 		popupWindow.contentView.systemUiVisibility = (s1 or s2 or s3)
 	}
-	
+
 	/**
-	 * Measures and positions the popup window on the screen relative to the anchor view.
+	 * Positions and shows the popup window relative to the anchor view.
+	 * Calculates X offset to align to screen width minus a margin.
 	 */
 	private fun showPopupWindow() {
+		logger.d("Measuring and positioning popup window on screen")
 		val anchorLocation = IntArray(2)
 		popupAnchorView.getLocationOnScreen(anchorLocation)
 		val anchorY = anchorLocation[1]
-		
+
 		val endMarginInPx = popupLayout.resources.getDimensionPixelSize(R.dimen._10)
 		val displayMetrics = popupLayout.resources.displayMetrics
 		val screenWidth = displayMetrics.widthPixels
-		
+
 		popupLayout.measure(UNSPECIFIED, UNSPECIFIED)
 		val popupWidth = popupLayout.measuredWidth
-		
+
 		val xOffset = screenWidth - popupWidth - endMarginInPx
 		popupWindow.showAtLocation(popupAnchorView, NO_GRAVITY, xOffset, anchorY)
+		logger.d("Popup window shown at X=$xOffset, Y=$anchorY")
 	}
-	
+
 	/**
-	 * Checks if the activity is in a valid state to perform window operations such as showing or dismissing a popup.
+	 * Checks if the activity is valid for window operations (not finishing or destroyed).
 	 *
-	 * @return True if the activity is not finishing or destroyed, false otherwise.
+	 * @return True if the activity is safe to show/dismiss popup, false otherwise.
 	 */
 	private fun BaseActivityInf?.isValidForWindowManagement(): Boolean {
-		this?.getActivity()?.let { activity ->
-			return !activity.isFinishing && !activity.isDestroyed
-		}; return false
+		val valid = this?.getActivity()?.let { activity ->
+			!activity.isFinishing && !activity.isDestroyed
+		} ?: false
+		logger.d("Activity valid for window management: $valid")
+		return valid
 	}
 }

@@ -16,7 +16,7 @@ import java.lang.ref.WeakReference
  * to avoid memory leaks.
  */
 object ClipboardUtils {
-	
+
 	/**
 	 * Clears the system clipboard by setting an empty plain text clip.
 	 *
@@ -30,7 +30,7 @@ object ClipboardUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * Checks if the clipboard currently contains any non-empty plain text.
 	 *
@@ -46,7 +46,7 @@ object ClipboardUtils {
 			} != null
 		} ?: false
 	}
-	
+
 	/**
 	 * Retrieves the HTML content from the clipboard, if available.
 	 *
@@ -60,7 +60,7 @@ object ClipboardUtils {
 			clipboard.primaryClip?.takeIf { clip -> clip.itemCount > 0 }?.getItemAt(0)?.htmlText ?: ""
 		} ?: ""
 	}
-	
+
 	/**
 	 * Copies the provided HTML content to the clipboard.
 	 *
@@ -77,7 +77,7 @@ object ClipboardUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * Appends the provided text to the current clipboard content.
 	 *
@@ -93,7 +93,7 @@ object ClipboardUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * Retrieves plain text content from the clipboard.
 	 *
@@ -109,7 +109,7 @@ object ClipboardUtils {
 			}?.getItemAt(0)?.text?.toString() ?: ""
 		} ?: ""
 	}
-	
+
 	/**
 	 * Copies plain text to the clipboard.
 	 *
@@ -126,7 +126,7 @@ object ClipboardUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * Registers a clipboard listener to be notified when the primary clip changes.
 	 *
@@ -146,7 +146,7 @@ object ClipboardUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * Unregisters a clipboard listener from the clipboard manager.
 	 *

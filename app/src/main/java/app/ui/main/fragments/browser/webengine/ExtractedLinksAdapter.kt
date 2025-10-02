@@ -240,7 +240,7 @@ class ExtractedLinksAdapter(
 				if (videoUrlInfo.infoCached.isEmpty()) {
 					safeMotherActivity?.doSomeVibration(50)
 					showToast(
-						activity = safeMotherActivity,
+						activityInf = safeMotherActivity,
 						msgId = R.string.title_wait_for_video_info
 					)
 					return@setOnClickListener
@@ -316,7 +316,7 @@ class ExtractedLinksAdapter(
 			itemClickableContainer.setOnLongClickListener {
 				copyTextToClipboard(safeMotherActivity, extractedVideoLink)
 				showToast(
-					activity = safeMotherActivity,
+					activityInf = safeMotherActivity,
 					msgId = R.string.title_copied_url_to_clipboard
 				)
 				return@setOnLongClickListener true

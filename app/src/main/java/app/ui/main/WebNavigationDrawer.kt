@@ -253,7 +253,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				logger.e("Error closing web view tab: ${error.message}", error)
 				safeMotherActivityRef.doSomeVibration(50)
 				ToastView.showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_something_went_wrong
 				)
 			}
@@ -305,7 +305,7 @@ class WebNavigationDrawer(motherActivity: MotherActivity?) {
 				logger.e("Error opening web view tab: ${error.message}", error)
 				safeMotherActivityRef.doSomeVibration(50)
 				ToastView.showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_something_went_wrong
 				)
 			}

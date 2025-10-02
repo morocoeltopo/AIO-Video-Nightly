@@ -129,7 +129,7 @@ object Mp4ToAudioConverterDialog {
 										// Add converted audio to media store
 										FileSystemUtility.addToMediaStore(outputMediaFile)
 										showToast(
-											activity = safeActivityRef,
+											activityInf = safeActivityRef,
 											msgId = R.string.title_converted_successfully
 										)
 
@@ -150,7 +150,7 @@ object Mp4ToAudioConverterDialog {
 											safeActivityRef.resumePlayer()
 											logger.d("Resumed MediaPlayer after failure")
 										}; showToast(
-										activity = safeActivityRef,
+										activityInf = safeActivityRef,
 										msgId = R.string.title_converting_failed
 									)
 									}
@@ -168,7 +168,7 @@ object Mp4ToAudioConverterDialog {
 						}
 
 						showToast(
-							activity = safeActivityRef,
+							activityInf = safeActivityRef,
 							msgId = R.string.title_something_went_wrong
 						)
 					}

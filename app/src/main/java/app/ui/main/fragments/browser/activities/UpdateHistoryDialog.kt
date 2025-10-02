@@ -59,7 +59,7 @@ class UpdateHistoryDialog(
 						logger.d("Validation failed: history title is empty.")
 						safeHistoryActivity?.doSomeVibration(50)
 						showToast(
-							activity = safeHistoryActivity,
+							activityInf = safeHistoryActivity,
 							msgId = R.string.title_bookmark_name_can_not_be_empty
 						)
 						return@setOnClickListener
@@ -70,7 +70,7 @@ class UpdateHistoryDialog(
 						logger.d("Validation failed: history URL is empty.")
 						safeHistoryActivity?.doSomeVibration(50)
 						showToast(
-							activity = safeHistoryActivity,
+							activityInf = safeHistoryActivity,
 							msgId = R.string.title_bookmark_url_can_not_be_empty
 						)
 						return@setOnClickListener
@@ -80,7 +80,7 @@ class UpdateHistoryDialog(
 						logger.d("Validation failed: invalid history URL = $enteredHistoryUrl")
 						safeHistoryActivity?.doSomeVibration(50)
 						showToast(
-							activity = safeHistoryActivity,
+							activityInf = safeHistoryActivity,
 							msgId = R.string.title_bookmark_url_not_valid
 						)
 						return@setOnClickListener
@@ -129,7 +129,7 @@ class UpdateHistoryDialog(
 			logger.e("Can't show History Update Dialog:", error)
 			safeHistoryActivity?.doSomeVibration(50)
 			showToast(
-				activity = safeHistoryActivity,
+				activityInf = safeHistoryActivity,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -150,7 +150,7 @@ class UpdateHistoryDialog(
 			logger.e("Can't close History Update Dialog:", error)
 			safeHistoryActivity?.doSomeVibration(50)
 			showToast(
-				activity = safeHistoryActivity,
+				activityInf = safeHistoryActivity,
 				msgId = R.string.title_something_went_wrong
 			)
 		}

@@ -708,7 +708,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				if (downloadSystem.searchActiveDownloadTaskWith(downloadModel) == null) {
 					logger.d("Download ID: ${downloadModel.id} is already paused")
 					showToast(
-						activity = safeMotherActivityRef,
+						activityInf = safeMotherActivityRef,
 						msgId = string.title_download_task_already_paused
 					)
 					return
@@ -828,7 +828,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 							executeOnMainThread {
 								logger.d("Download ID: ${it.id} cleared successfully (file retained)")
 								showToast(
-									activity = safeMotherActivityRef,
+									activityInf = safeMotherActivityRef,
 									msgId = string.title_successfully_cleared
 								)
 							}
@@ -914,7 +914,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 							executeOnMainThread {
 								logger.d("Download ID: ${it.id} deleted successfully")
 								showToast(
-									activity = safeMotherActivityRef,
+									activityInf = safeMotherActivityRef,
 									msgId = string.title_successfully_deleted
 								)
 							}
@@ -981,7 +981,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		safeMotherActivityRef?.let { safeMotherActivity ->
 			safeMotherActivity.doSomeVibration(50)
 			showToast(
-				activity = safeMotherActivity,
+				activityInf = safeMotherActivity,
 				msgId = string.title_experimental_feature
 			)
 		}
@@ -999,7 +999,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 			logger.d("Valid URL found: $fileUrl")
 			copyTextToClipboard(safeMotherActivityRef, fileUrl)
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = string.title_file_url_has_been_copied
 			)
 			close()
@@ -1007,7 +1007,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		} ?: run {
 			logger.d("No valid download URL found to copy")
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = string.title_dont_have_anything_to_copy
 			)
 		}
@@ -1031,7 +1031,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		} ?: run {
 			logger.d("No valid download URL found to share")
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = string.title_dont_have_anything_to_share
 			)
 		}
@@ -1052,7 +1052,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				logger.d("No referrer link found for this download")
 				safeMotherActivityRef.doSomeVibration(50)
 				showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = string.text_no_referer_link_found
 				)
 				return
@@ -1098,7 +1098,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		safeMotherActivityRef?.let { safeMotherActivity ->
 			safeMotherActivity.doSomeVibration(50)
 			showToast(
-				activity = safeMotherActivity,
+				activityInf = safeMotherActivity,
 				msgId = string.title_experimental_feature
 			)
 		}

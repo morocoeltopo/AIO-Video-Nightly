@@ -1253,7 +1253,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	private fun invalidMediaFileToast() {
 		doSomeVibration(timeInMillis = 50)
 		showToast(
-			activity = safeSelfReference,
+			activityInf = safeSelfReference,
 			msg = getString(string.title_invalid_media_file)
 		)
 	}
@@ -1453,7 +1453,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		deletedDownloadDataModel.deleteModelFromDisk()
 		executeOnMainThread {
 			showToast(
-				activity = safeSelfReference,
+				activityInf = safeSelfReference,
 				msg = getString(string.title_successfully_deleted)
 			)
 		}

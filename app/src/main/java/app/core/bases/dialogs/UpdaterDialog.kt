@@ -90,7 +90,7 @@ class UpdaterDialog(
 				safeBaseActivityRef?.let { activity ->
 					val authority = "${activity.packageName}.provider"
 					openApkFile(activity, latestVersionApkFile, authority)
-				} ?: showToast(activity = baseActivity, msgId = R.string.title_something_went_wrong)
+				} ?: showToast(activityInf = baseActivity, msgId = R.string.title_something_went_wrong)
 			}
 		}
 	}

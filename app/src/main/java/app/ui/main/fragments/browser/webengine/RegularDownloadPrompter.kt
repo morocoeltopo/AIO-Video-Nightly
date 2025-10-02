@@ -169,7 +169,7 @@ class RegularDownloadPrompter(
 			if (currentWebUrl.isNullOrEmpty()) return
 			openLinkInSystemBrowser(currentWebUrl, safeMotherActivityRef) {
 				safeMotherActivityRef.doSomeVibration(40)
-				showToast(activity = safeMotherActivity, msgId = R.string.title_failed_open_the_video)
+				showToast(activityInf = safeMotherActivity, msgId = R.string.title_failed_open_the_video)
 			}
 		}
 	}
@@ -197,7 +197,7 @@ class RegularDownloadPrompter(
 							downloadSystem.addDownload(downloadModel) {
 								executeOnMainThread {
 									val toastMsgResId = R.string.title_download_added_successfully
-									showToast(activity = safeBaseActivityRef, msgId = toastMsgResId)
+									showToast(activityInf = safeBaseActivityRef, msgId = toastMsgResId)
 								}
 							}
 							aioSettings.numberOfDownloadsUserDid++
@@ -228,7 +228,7 @@ class RegularDownloadPrompter(
 					val failedToAddResId = R.string.title_failed_to_add_download_task
 					executeOnMain {
 						safeBaseActivityRef.doSomeVibration(50)
-						showToast(activity = safeBaseActivityRef, msgId = failedToAddResId)
+						showToast(activityInf = safeBaseActivityRef, msgId = failedToAddResId)
 					}
 				}
 			}
@@ -239,7 +239,7 @@ class RegularDownloadPrompter(
 		if (extractedVideoLink.isEmpty()) {
 			executeOnMain {
 				safeMotherActivity?.doSomeVibration(50)
-				showToast(activity = safeMotherActivity, msgId = R.string.title_something_went_wrong)
+				showToast(activityInf = safeMotherActivity, msgId = R.string.title_something_went_wrong)
 			}; return false
 		} else return true
 	}

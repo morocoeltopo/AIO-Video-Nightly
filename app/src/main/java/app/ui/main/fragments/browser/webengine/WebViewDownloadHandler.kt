@@ -109,7 +109,7 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 		if (contentLength < 1) {
 			safeActivityRef.doSomeVibration(50)
 			showToast(
-				activity = safeActivityRef,
+				activityInf = safeActivityRef,
 				msgId = R.string.text_unsupported_file_link
 			)
 			return
@@ -240,7 +240,7 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 						executeOnMainThread {
 							val toastMsgResId = R.string.title_download_added_successfully
 							showToast(
-								activity = safeWebEngineRef?.safeMotherActivityRef,
+								activityInf = safeWebEngineRef?.safeMotherActivityRef,
 								msgId = toastMsgResId
 							)
 						}
@@ -271,7 +271,7 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 					// Show failure feedback
 					safeWebEngineRef?.safeMotherActivityRef?.doSomeVibration(50)
 					showToast(
-						activity = safeWebEngineRef?.safeMotherActivityRef,
+						activityInf = safeWebEngineRef?.safeMotherActivityRef,
 						msgId = R.string.title_failed_to_add_download_task
 					)
 				}

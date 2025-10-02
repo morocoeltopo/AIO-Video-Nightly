@@ -74,7 +74,7 @@ class IntentInterceptActivity : BaseActivity() {
 		if (URLUtility.isValidURL(intentUrl) == false) {
 			doSomeVibration(50)
 			showToast(
-				activity = safeIntentInterceptActivityRef,
+				activityInf = safeIntentInterceptActivityRef,
 				msgId = R.string.title_invalid_url
 			)
 			onBackPressActivity()
@@ -135,7 +135,7 @@ class IntentInterceptActivity : BaseActivity() {
 										activityRef.doSomeVibration(50)
 
 										val stringResId = R.string.title_server_busy_opening_browser
-										showToast(activity = activityRef, msgId = stringResId)
+										showToast(activityInf = activityRef, msgId = stringResId)
 										forwardIntentToMotherActivity(dontParseURLAnymore = true)
 									}
 								}

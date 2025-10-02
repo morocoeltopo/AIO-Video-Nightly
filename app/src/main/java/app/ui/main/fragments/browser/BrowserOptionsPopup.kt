@@ -115,7 +115,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			} else {
 				safeMotherActivityRef.doSomeVibration(20)
 				showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_reached_limit_for_going_back
 				)
 			}
@@ -133,7 +133,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			} else {
 				safeMotherActivityRef.doSomeVibration(20)
 				showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_reached_limit_for_going_forward
 				)
 			}
@@ -151,7 +151,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			if (currentWebpageUrl.isNullOrEmpty()) {
 				safeMotherActivityRef.doSomeVibration(20)
 				showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_webpage_url_invalid
 				)
 				return
@@ -166,14 +166,14 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 
 			aioBookmark.updateInStorage()
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_bookmark_saved
 			)
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -189,7 +189,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			if (currentWebviewUrl == null) {
 				safeMotherActivityRef.doSomeVibration(20)
 				showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_webpage_url_invalid
 				)
 				return
@@ -211,7 +211,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -227,7 +227,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 			if (currentWebpageUrl.isNullOrEmpty()) {
 				safeMotherActivityRef.doSomeVibration(20)
 				showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_webpage_url_invalid
 				)
 				return
@@ -235,14 +235,14 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 
 			copyTextToClipboard(safeMotherActivityRef, currentWebpageUrl)
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_copied_to_clipboard
 			)
 		} catch (error: Exception) {
 			error.printStackTrace()
 			safeMotherActivityRef.doSomeVibration(20)
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -262,7 +262,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 		} catch (err: Exception) {
 			err.printStackTrace()
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_please_install_web_browser
 			)
 		}
@@ -273,7 +273,7 @@ class BrowserOptionsPopup(val browserFragment: BrowserFragment) {
 	 */
 	private fun showInvalidUrlToast() {
 		showToast(
-			activity = safeMotherActivityRef,
+			activityInf = safeMotherActivityRef,
 			msgId = R.string.title_invalid_url
 		)
 	}

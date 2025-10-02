@@ -720,13 +720,13 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			?.let { fileUrl ->
 				copyTextToClipboard(safeMotherActivityRef, fileUrl)
 				showToast(
-					activity = safeMotherActivityRef,
+					activityInf = safeMotherActivityRef,
 					msgId = R.string.title_file_url_has_been_copied
 				)
 				close()
 			} ?: run {
 			showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_dont_have_anything_to_copy
 			)
 		}
@@ -794,7 +794,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 
 						// Notify user of success
 						showToast(
-							activity = safeMotherActivityRef,
+							activityInf = safeMotherActivityRef,
 							msgId = R.string.title_successfully_cleared
 						)
 					}
@@ -851,7 +851,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 							// Show success toast on main thread after deletion
 							executeOnMainThread {
 								showToast(
-									activity = safeMotherActivityRef,
+									activityInf = safeMotherActivityRef,
 									msgId = R.string.title_successfully_deleted
 								)
 							}
@@ -1046,7 +1046,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				} catch (error: Exception) {
 					logger.e("Error found at hide/show thumbnail -", error)
 					showToast(
-						activity = safeMotherActivityRef,
+						activityInf = safeMotherActivityRef,
 						msgId = R.string.title_something_went_wrong
 					)
 				}
@@ -1098,7 +1098,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 					if (destinationFile == null || destinationFile.exists() == false) {
 						safeMotherActivityRef.doSomeVibration(50)
 						showToast(
-							activity = safeMotherActivityRef,
+							activityInf = safeMotherActivityRef,
 							msgId = R.string.title_something_went_wrong
 						)
 						return@setOnClickForPositiveButton
@@ -1124,7 +1124,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 							// Notify success back on the UI thread
 							ThreadsUtility.executeOnMain {
 								showToast(
-									activity = safeMotherActivityRef,
+									activityInf = safeMotherActivityRef,
 									msgId = R.string.title_fixing_mp4_done_successfully
 								)
 								waitingDialog.close()

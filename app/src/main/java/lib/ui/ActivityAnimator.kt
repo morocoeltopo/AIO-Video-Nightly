@@ -10,9 +10,9 @@ import java.lang.ref.WeakReference
 /**
  * A utility object to handle different types of activity transition animations.
  *
- * This object provides a set of functions to apply various animation effects during activity transitions.
- * These animations are applied using the `overridePendingTransition` method, which specifies the animation
- * for entering and exiting the activity.
+ * This object provides a set of functions to apply various animation effects during
+ * activity transitions. These animations are applied using the `overridePendingTransition` method,
+ * which specifies the animation for entering and exiting the activity.
  */
 object ActivityAnimator {
 	
@@ -125,7 +125,8 @@ object ActivityAnimator {
 	 * This uses a sliding in from the left and sliding out to the right animation.
 	 *
 	 * @param activity The activity where the transition animation is applied.
-	 * @return An [ActivityOptionsCompat] object with the specified animation options, or `null` if the activity is null.
+	 * @return An [ActivityOptionsCompat] object with the specified animation options,
+	 * or `null` if the activity is null.
 	 */
 	@JvmStatic
 	fun getMaterialSlideOptions(activity: Activity?): ActivityOptionsCompat? {

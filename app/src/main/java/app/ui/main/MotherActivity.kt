@@ -569,7 +569,7 @@ class MotherActivity : BaseActivity() {
 		logger.d("Showing invalid URL error toast")
 		safeMotherActivity.doSomeVibration(50)
 		ToastView.showToast(
-			activity = safeMotherActivity,
+			activityInf = safeMotherActivity,
 			msgId = R.string.title_file_url_not_valid
 		)
 	}
@@ -602,7 +602,7 @@ class MotherActivity : BaseActivity() {
 			error.printStackTrace()
 			doSomeVibration(50)
 			ToastView.showToast(
-				activity = safeMotherActivityRef,
+				activityInf = safeMotherActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}

@@ -18,9 +18,9 @@ import lib.files.FileSystemUtility.sanitizeFileNameNormal
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils
-import lib.texts.CommonTextUtils.cutTo60Chars
 import lib.texts.CommonTextUtils.getText
 import lib.texts.CommonTextUtils.removeEmptyLines
+import lib.texts.CommonTextUtils.safeCutString
 import lib.ui.MsgDialogUtils.showMessageDialog
 import lib.ui.ViewUtility
 import lib.ui.ViewUtility.setLeftSideDrawable
@@ -63,7 +63,7 @@ class DownloadFileRenamer(
 					if (userGivenText.isEmpty()) {
 						safeMotherActivityRef.doSomeVibration(50)
 						showToast(
-							activity = safeMotherActivityRef,
+							activityInf = safeMotherActivityRef,
 							msgId = string.title_file_name_must_not_be_empty
 						)
 						return@setOnClickForPositiveButton
@@ -149,7 +149,10 @@ class DownloadFileRenamer(
 				sanitizedFileName = sanitizeFileNameExtreme(fileName)
 
 			val removedDoubleSlashes = removeEmptyLines(sanitizedFileName)
-			sanitizedFileName = cutTo60Chars(removedDoubleSlashes ?: "") ?: ""
+			sanitizedFileName = safeCutString(
+				input = removedDoubleSlashes ?: "",
+				maxLength = 60
+			) ?: ""
 
 			// Ensure file name is unique by prepending a numeric index if needed
 			var index: Int

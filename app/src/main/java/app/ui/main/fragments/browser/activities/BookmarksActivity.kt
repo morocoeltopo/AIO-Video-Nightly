@@ -222,7 +222,7 @@ class BookmarksActivity : BaseActivity(),
 				logger.d("Error displaying options popup: ${error.message}")
 				error.printStackTrace()
 				showToast(
-					activity = safeBookmarksActivityRef,
+					activityInf = safeBookmarksActivityRef,
 					msgId = R.string.title_something_went_wrong
 				)
 			}
@@ -312,7 +312,7 @@ class BookmarksActivity : BaseActivity(),
 			logger.d("Load More button clicked: Loading additional bookmarks")
 			bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
 			showToast(
-				activity = safeBookmarksActivityRef,
+				activityInf = safeBookmarksActivityRef,
 				msgId = R.string.text_loaded_successfully
 			)
 		}

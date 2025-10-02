@@ -324,11 +324,11 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 						aioSettings.updateInStorage()
 						logger.d("Homepage updated to: $finalNormalizedURL")
 						dialogBuilder.close()
-						showToast(activity = safeActivityRef, msgId = R.string.title_successful)
+						showToast(activityInf = safeActivityRef, msgId = R.string.title_successful)
 					} else {
 						logger.d("Invalid homepage URL entered: $userEnteredURL")
 						safeActivityRef.doSomeVibration(50)
-						showToast(activity = safeActivityRef, msgId = R.string.title_invalid_url)
+						showToast(activityInf = safeActivityRef, msgId = R.string.title_invalid_url)
 					}
 				}
 				dialogBuilder.show()
@@ -346,7 +346,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			logger.d("Error setting browser homepage: ${error.message}")
 			error.printStackTrace()
 			showToast(
-				activity = safeSettingsFragmentRef?.safeMotherActivityRef,
+				activityInf = safeSettingsFragmentRef?.safeMotherActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -493,7 +493,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				logger.d("Error opening Privacy Policy: ${error.message}")
 				error.printStackTrace()
 				showToast(
-					activity = this@apply,
+					activityInf = this@apply,
 					msgId = R.string.title_please_install_web_browser
 				)
 			}
@@ -516,7 +516,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			} catch (error: Exception) {
 				logger.d("Error opening Terms & Conditions: ${error.message}")
 				error.printStackTrace()
-				showToast(activity = this@apply, msgId = R.string.title_please_install_web_browser)
+				showToast(activityInf = this@apply, msgId = R.string.title_please_install_web_browser)
 			}
 		} ?: run {
 			logger.d("Failed to open Terms & Conditions: safeBaseActivityRef is null")
@@ -551,7 +551,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 					ThreadsUtility.executeOnMain {
 						safeBaseActivityRef.doSomeVibration(50)
 						showToast(
-							activity = safeBaseActivityRef,
+							activityInf = safeBaseActivityRef,
 							msgId = R.string.text_you_are_using_the_latest_version
 						)
 					}
@@ -560,7 +560,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				logger.d("Error while checking updates: ${it.message}")
 				safeBaseActivityRef.doSomeVibration(50)
 				showToast(
-					activity = safeBaseActivityRef,
+					activityInf = safeBaseActivityRef,
 					msgId = R.string.title_something_went_wrong
 				)
 			})

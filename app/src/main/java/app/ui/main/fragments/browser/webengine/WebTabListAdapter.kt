@@ -139,7 +139,7 @@ class WebTabListAdapter(
 							copyTextToClipboard(safeMotherActivityRef, currentWebUrl)
 							safeMotherActivityRef?.doSomeVibration(50)
 							ToastView.showToast(
-								activity = safeMotherActivityRef,
+								activityInf = safeMotherActivityRef,
 								msgId = R.string.title_copied_url_to_clipboard
 							)
 						}
@@ -147,7 +147,7 @@ class WebTabListAdapter(
 						error.printStackTrace()
 						safeMotherActivityRef?.doSomeVibration(50)
 						ToastView.showToast(
-							activity = safeMotherActivityRef,
+							activityInf = safeMotherActivityRef,
 							msgId = R.string.title_something_went_wrong
 						)
 					}

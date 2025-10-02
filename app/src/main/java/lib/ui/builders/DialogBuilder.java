@@ -34,9 +34,25 @@ import lib.process.LogHelperUtils;
  */
 public class DialogBuilder {
 
+    /**
+     * Logger instance for this class to log debug and error messages.
+     */
     private final LogHelperUtils logger = LogHelperUtils.from(getClass());
+
+    /**
+     * Weak reference to the activity interface to safely access context
+     * without leaking the activity.
+     */
     private final WeakReference<BaseActivityInf> safeActivityRef;
+
+    /**
+     * Holds the custom view to be displayed inside the AlertDialog.
+     */
     private View customView;
+
+    /**
+     * Reference to the AlertDialog instance created and managed by this class.
+     */
     private AlertDialog dialog;
 
     /**

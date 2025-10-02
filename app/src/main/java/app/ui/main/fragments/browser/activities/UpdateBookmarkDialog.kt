@@ -66,7 +66,7 @@ class UpdateBookmarkDialog(
 						logger.d("Validation failed: bookmark name is empty.")
 						safeBookmarkActivity?.doSomeVibration(50)
 						ToastView.showToast(
-							activity = safeBookmarkActivity,
+							activityInf = safeBookmarkActivity,
 							msgId = R.string.title_bookmark_name_can_not_be_empty
 						)
 						return@setOnClickListener
@@ -77,7 +77,7 @@ class UpdateBookmarkDialog(
 						logger.d("Validation failed: bookmark URL is empty.")
 						safeBookmarkActivity?.doSomeVibration(50)
 						ToastView.showToast(
-							activity = safeBookmarkActivity,
+							activityInf = safeBookmarkActivity,
 							msgId = R.string.title_bookmark_url_can_not_be_empty
 						)
 						return@setOnClickListener
@@ -87,7 +87,7 @@ class UpdateBookmarkDialog(
 						logger.d("Validation failed: invalid bookmark URL = $enteredBookmarkUrl")
 						safeBookmarkActivity?.doSomeVibration(50)
 						ToastView.showToast(
-							activity = safeBookmarkActivity,
+							activityInf = safeBookmarkActivity,
 							msgId = R.string.title_bookmark_url_not_valid
 						)
 						return@setOnClickListener
@@ -136,7 +136,7 @@ class UpdateBookmarkDialog(
 			logger.e("Can't show Bookmark Update Dialog:", error)
 			safeBookmarkActivity?.doSomeVibration(50)
 			ToastView.showToast(
-				activity = safeBookmarkActivity,
+				activityInf = safeBookmarkActivity,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -157,7 +157,7 @@ class UpdateBookmarkDialog(
 			logger.e("Can't close bookmark update dialog:", error)
 			safeBookmarkActivity?.doSomeVibration(50)
 			ToastView.showToast(
-				activity = safeBookmarkActivity,
+				activityInf = safeBookmarkActivity,
 				msgId = R.string.title_something_went_wrong
 			)
 		}

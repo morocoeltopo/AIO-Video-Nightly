@@ -87,7 +87,7 @@ class HistoryOptionPopup(
 		logger.d("Copying history URL to clipboard: ${historyModel.historyUrl}")
 		copyTextToClipboard(safeHistoryActivityRef, historyModel.historyUrl)
 		showToast(
-			activity = safeHistoryActivityRef,
+			activityInf = safeHistoryActivityRef,
 			msgId = R.string.title_copied_url_to_clipboard
 		)
 	}
@@ -111,7 +111,7 @@ class HistoryOptionPopup(
 			cookieManager.flush()
 
 			showToast(
-				activity = safeHistoryActivityRef,
+				activityInf = safeHistoryActivityRef,
 				msgId = R.string.title_successful
 			)
 		} catch (error: Exception) {
@@ -119,7 +119,7 @@ class HistoryOptionPopup(
 			error.printStackTrace()
 			safeHistoryActivityRef?.doSomeVibration(20)
 			showToast(
-				activity = safeHistoryActivityRef,
+				activityInf = safeHistoryActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -141,7 +141,7 @@ class HistoryOptionPopup(
 			error.printStackTrace()
 			safeHistoryActivityRef?.doSomeVibration(20)
 			showToast(
-				activity = safeHistoryActivityRef,
+				activityInf = safeHistoryActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
@@ -161,7 +161,7 @@ class HistoryOptionPopup(
 			aioBookmark.getBookmarkLibrary().add(0, bookmarkModel)
 			aioBookmark.updateInStorage()
 			showToast(
-				activity = safeHistoryActivityRef,
+				activityInf = safeHistoryActivityRef,
 				msgId = R.string.title_bookmark_saved
 			)
 		} catch (error: Exception) {
@@ -169,7 +169,7 @@ class HistoryOptionPopup(
 			error.printStackTrace()
 			safeHistoryActivityRef?.doSomeVibration(20)
 			showToast(
-				activity = safeHistoryActivityRef,
+				activityInf = safeHistoryActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}

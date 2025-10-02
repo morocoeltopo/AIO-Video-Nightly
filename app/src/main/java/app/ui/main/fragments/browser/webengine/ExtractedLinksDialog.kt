@@ -92,7 +92,7 @@ class ExtractedLinksDialog(
 			}
 			
 			analyzeUrl(webviewEngine.currentWebView?.url, webviewEngine)
-			showToast(activity = motherActivity, msgId = R.string.title_successfully_cleared)
+			showToast(activityInf = motherActivity, msgId = R.string.title_successfully_cleared)
 			close()
 		} catch (error: Exception) {
 			error.printStackTrace()

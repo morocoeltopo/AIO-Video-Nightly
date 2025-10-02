@@ -586,7 +586,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 
 			// Show exit prompt toast
 			showToast(
-				activity = safeBaseActivityRef,
+				activityInf = safeBaseActivityRef,
 				msgId = R.string.title_press_back_button_to_exit
 			)
 
@@ -661,7 +661,7 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 
 			// Show fallback message
 			showToast(
-				activity = safeBaseActivityRef,
+				activityInf = safeBaseActivityRef,
 				msgId = R.string.title_please_install_web_browser
 			)
 			logger.d("Displayed toast: Please install a web browser")

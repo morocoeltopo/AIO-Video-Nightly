@@ -127,7 +127,7 @@ class HistoryActivity : BaseActivity(),
 				error.printStackTrace()
 				logger.d("Failed to show history option popup: ${error.message}")
 				showToast(
-					activity = safeActivityRef,
+					activityInf = safeActivityRef,
 					msgId = R.string.title_something_went_wrong
 				)
 			}
@@ -164,7 +164,7 @@ class HistoryActivity : BaseActivity(),
 			logger.d("Load More button clicked")
 			historyAdapter.loadMoreHistory()
 			showToast(
-				activity = safeHistoryActivityRef,
+				activityInf = safeHistoryActivityRef,
 				msgId = R.string.text_loaded_successfully
 			)
 		}

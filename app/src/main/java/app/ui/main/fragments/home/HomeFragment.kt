@@ -434,7 +434,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			} catch (error: Exception) {
 				error.printStackTrace()
 				activity.doSomeVibration(50)
-				showToast(activity= safeMotherActivityRef,
+				showToast(activityInf= safeMotherActivityRef,
 					msgId = R.string.title_something_went_wrong)
 			}
 		}
