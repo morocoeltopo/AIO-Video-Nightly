@@ -13,7 +13,7 @@ import java.lang.ref.WeakReference
  * Utility object for fetching and processing user email account details on the device.
  */
 object UserEmailFetcher {
-	
+
 	/**
 	 * Retrieves the primary Google account email address of the user.
 	 *
@@ -30,7 +30,7 @@ object UserEmailFetcher {
 			null
 		}
 	}
-	
+
 	/**
 	 * Returns all valid email addresses registered on the device.
 	 *
@@ -50,7 +50,7 @@ object UserEmailFetcher {
 		}
 		return emailList.toTypedArray()
 	}
-	
+
 	/**
 	 * Validates whether the provided email address is in a correct format.
 	 *
@@ -61,7 +61,7 @@ object UserEmailFetcher {
 	fun isValidEmail(email: String): Boolean {
 		return Patterns.EMAIL_ADDRESS.matcher(email).matches()
 	}
-	
+
 	/**
 	 * Returns the first Google account available on the device.
 	 *
@@ -73,7 +73,7 @@ object UserEmailFetcher {
 		val accounts = accountManager.getAccountsByType("com.google")
 		return if (accounts.isNotEmpty()) accounts[0] else null
 	}
-	
+
 	/**
 	 * Tries to fetch the user's display name from the account.
 	 * Uses reflection for devices running Android Q and above.
@@ -86,7 +86,7 @@ object UserEmailFetcher {
 		return try {
 			val accountManager = AccountManager.get(INSTANCE)
 			val account = getAccount(accountManager)
-			
+
 			account?.let {
 				val displayName = getDisplayNameUsingReflection(accountManager, it)
 				displayName ?: guessDisplayName(it.name)
@@ -96,7 +96,7 @@ object UserEmailFetcher {
 			null
 		}
 	}
-	
+
 	/**
 	 * Fetches the user-visible name using account user data, supported from Android Q+.
 	 *
@@ -117,7 +117,7 @@ object UserEmailFetcher {
 			}
 		} else null
 	}
-	
+
 	/**
 	 * Attempts to guess a user-friendly name from an email address.
 	 *
@@ -131,7 +131,7 @@ object UserEmailFetcher {
 			capitalizeFirstLetter(email.substring(0, atIndex))
 		} else null
 	}
-	
+
 	/**
 	 * Capitalizes the first letter of a string if it is not already capitalized.
 	 *
@@ -146,7 +146,7 @@ object UserEmailFetcher {
 			else first.uppercaseChar().toString() + it.substring(1)
 		} ?: ""
 	}
-	
+
 	/**
 	 * Extracts the domain name from the primary email address.
 	 *
@@ -161,7 +161,7 @@ object UserEmailFetcher {
 			} else null
 		}
 	}
-	
+
 	/**
 	 * Retrieves all available email accounts with their types.
 	 *

@@ -24,426 +24,429 @@ import java.lang.ref.WeakReference
  */
 object IntentHelperUtils {
 
-    /**
-     * Retrieves all activities that can handle the given intent.
-     *
-     * @param activity Context activity (uses weak reference)
-     * @param intent The intent to resolve
-     * @return List of matching activities or empty list if:
-     *         - Activity is null
-     *         - Intent is null
-     *         - No matching activities found
-     */
-    @JvmStatic
-    fun getMatchingActivities(activity: Activity?, intent: Intent?): List<ResolveInfo> {
-        if (intent == null || activity == null) return emptyList()
-        WeakReference(activity).get()?.let { safeRef ->
-            return safeRef.packageManager.queryIntentActivities(intent, 0)
-        }; return emptyList()
-    }
+	/** Logger for debugging and error tracking. */
+	private val logger = LogHelperUtils.from(javaClass)
 
-    /**
-     * Extracts shared data from an activity's intent.
-     * Supports both ACTION_SEND (sharing) and ACTION_VIEW (deep links).
-     *
-     * @param activity Source activity containing the intent
-     * @return The shared:
-     *         - Text content (for ACTION_SEND)
-     *         - URI string (for ACTION_VIEW)
-     *         - null if no matching data found
-     */
-    @JvmStatic
-    fun getIntentData(activity: Activity?): String? {
-        val intent = activity?.intent
-        val action = intent?.action
+	/**
+	 * Retrieves all activities that can handle the given intent.
+	 *
+	 * @param activity Context activity (uses weak reference)
+	 * @param intent The intent to resolve
+	 * @return List of matching activities or empty list if:
+	 *         - Activity is null
+	 *         - Intent is null
+	 *         - No matching activities found
+	 */
+	@JvmStatic
+	fun getMatchingActivities(activity: Activity?, intent: Intent?): List<ResolveInfo> {
+		if (intent == null || activity == null) return emptyList()
+		WeakReference(activity).get()?.let { safeRef ->
+			return safeRef.packageManager.queryIntentActivities(intent, 0)
+		}; return emptyList()
+	}
 
-        return when (action) {
-            Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
-            Intent.ACTION_VIEW -> intent.dataString
-            else -> null
-        }
-    }
+	/**
+	 * Extracts shared data from an activity's intent.
+	 * Supports both ACTION_SEND (sharing) and ACTION_VIEW (deep links).
+	 *
+	 * @param activity Source activity containing the intent
+	 * @return The shared:
+	 *         - Text content (for ACTION_SEND)
+	 *         - URI string (for ACTION_VIEW)
+	 *         - null if no matching data found
+	 */
+	@JvmStatic
+	fun getIntentData(activity: Activity?): String? {
+		val intent = activity?.intent
+		val action = intent?.action
 
-    /**
-     * Checks if any app can handle the given intent.
-     *
-     * @param activity Context activity (uses weak reference)
-     * @param intent Intent to verify
-     * @return true if at least one activity can handle the intent
-     */
-    @JvmStatic
-    fun canHandleIntent(activity: Activity?, intent: Intent?): Boolean {
-        if (intent == null || activity == null) return false
-        WeakReference(activity).get()?.let { safeRef ->
-            val activities = safeRef.packageManager.queryIntentActivities(intent, 0)
-            return activities.isNotEmpty()
-        }; return false
-    }
+		return when (action) {
+			Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
+			Intent.ACTION_VIEW -> intent.dataString
+			else -> null
+		}
+	}
 
-    /**
-     * Safely starts an activity if possible.
-     *
-     * @param activity Source activity (uses weak reference)
-     * @param intent Intent to launch
-     * @return true if activity was started successfully
-     */
-    @JvmStatic
-    fun startActivityIfPossible(activity: Activity?, intent: Intent?): Boolean {
-        if (intent == null || activity == null) return false
-        WeakReference(activity).get()?.let { safeRef ->
-            return if (canHandleIntent(safeRef, intent)) {
-                activity.startActivity(intent); true
-            } else false
-        }; return false
-    }
+	/**
+	 * Checks if any app can handle the given intent.
+	 *
+	 * @param activity Context activity (uses weak reference)
+	 * @param intent Intent to verify
+	 * @return true if at least one activity can handle the intent
+	 */
+	@JvmStatic
+	fun canHandleIntent(activity: Activity?, intent: Intent?): Boolean {
+		if (intent == null || activity == null) return false
+		WeakReference(activity).get()?.let { safeRef ->
+			val activities = safeRef.packageManager.queryIntentActivities(intent, 0)
+			return activities.isNotEmpty()
+		}; return false
+	}
 
-    /**
-     * Gets the package name of the primary handler for an intent.
-     *
-     * @param activity Context activity (uses weak reference)
-     * @param intent Intent to resolve
-     * @return Package name of default handler or empty string if none found
-     */
-    @JvmStatic
-    fun getPackageNameForIntent(activity: Activity?, intent: Intent?): String {
-        if (intent == null || activity == null) return ""
-        WeakReference(activity).get()?.let { safeRef ->
-            val activities = safeRef.packageManager.queryIntentActivities(intent, 0)
-            return if (activities.isNotEmpty()) activities[0].activityInfo.packageName else ""
-        }; return ""
-    }
+	/**
+	 * Safely starts an activity if possible.
+	 *
+	 * @param activity Source activity (uses weak reference)
+	 * @param intent Intent to launch
+	 * @return true if activity was started successfully
+	 */
+	@JvmStatic
+	fun startActivityIfPossible(activity: Activity?, intent: Intent?): Boolean {
+		if (intent == null || activity == null) return false
+		WeakReference(activity).get()?.let { safeRef ->
+			return if (canHandleIntent(safeRef, intent)) {
+				activity.startActivity(intent); true
+			} else false
+		}; return false
+	}
 
-    /**
-     * Opens Facebook app to a specific page, profile, or the home feed.
-     *
-     * @param context Context to start activity from
-     * @param targetUrl Optional Facebook URL (supports multiple formats):
-     *                  - Profile: "https://www.facebook.com/username"
-     *                  - Page: "https://www.facebook.com/pagename"
-     *                  - Post: "https://www.facebook.com/permalink.php?story_fbid=POST_ID"
-     *                  - Defaults to Facebook home feed ("https://www.facebook.com") if null
-     * @param onError Callback invoked when:
-     *                - Facebook app is not installed
-     *                - Invalid URL format provided
-     *                - Any other exception occurs
-     * @return true if intent was launched successfully, false otherwise
-     */
-    @JvmStatic
-    fun openFacebookApp(
-        context: Context,
-        targetUrl: String? = "https://www.facebook.com",
-        onError: (() -> Unit)? = null
-    ): Boolean {
-        return try {
-            val uri = (targetUrl ?: "https://www.facebook.com").toUri()
-            val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-                setPackage("com.facebook.katana")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+	/**
+	 * Gets the package name of the primary handler for an intent.
+	 *
+	 * @param activity Context activity (uses weak reference)
+	 * @param intent Intent to resolve
+	 * @return Package name of default handler or empty string if none found
+	 */
+	@JvmStatic
+	fun getPackageNameForIntent(activity: Activity?, intent: Intent?): String {
+		if (intent == null || activity == null) return ""
+		WeakReference(activity).get()?.let { safeRef ->
+			val activities = safeRef.packageManager.queryIntentActivities(intent, 0)
+			return if (activities.isNotEmpty()) activities[0].activityInfo.packageName else ""
+		}; return ""
+	}
 
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-                true
-            } else {
-                onError?.invoke()
-                false
-            }
-        } catch (error: Exception) {
-            onError?.invoke()
-            false
-        }
-    }
+	/**
+	 * Opens Facebook app to a specific page, profile, or the home feed.
+	 *
+	 * @param context Context to start activity from
+	 * @param targetUrl Optional Facebook URL (supports multiple formats):
+	 *                  - Profile: "https://www.facebook.com/username"
+	 *                  - Page: "https://www.facebook.com/pagename"
+	 *                  - Post: "https://www.facebook.com/permalink.php?story_fbid=POST_ID"
+	 *                  - Defaults to Facebook home feed ("https://www.facebook.com") if null
+	 * @param onError Callback invoked when:
+	 *                - Facebook app is not installed
+	 *                - Invalid URL format provided
+	 *                - Any other exception occurs
+	 * @return true if intent was launched successfully, false otherwise
+	 */
+	@JvmStatic
+	fun openFacebookApp(
+		context: Context,
+		targetUrl: String? = "https://www.facebook.com",
+		onError: (() -> Unit)? = null
+	): Boolean {
+		return try {
+			val uri = (targetUrl ?: "https://www.facebook.com").toUri()
+			val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+				setPackage("com.facebook.katana")
+				addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			}
 
-    /**
-     * Opens YouTube app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param videoOrChannelUrl Optional YouTube URL (e.g., "https://youtube.com/watch?v=VIDEO_ID"
-     *                          or "https://youtube.com/c/CHANNEL_NAME").
-     *                          Defaults to YouTube home page if null.
-     * @param onError Callback invoked if:
-     *                - YouTube app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openYouTubeApp(
-        context: Context,
-        videoOrChannelUrl: String? = "https://www.youtube.com",
-        onError: (() -> Unit)? = null
-    ) {
-        try {
-            val uri = (videoOrChannelUrl ?: "https://www.youtube.com").toUri()
-            val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-                setPackage("com.google.android.youtube")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+			if (intent.resolveActivity(context.packageManager) != null) {
+				context.startActivity(intent)
+				true
+			} else {
+				onError?.invoke()
+				false
+			}
+		} catch (error: Exception) {
+			onError?.invoke()
+			false
+		}
+	}
 
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens YouTube app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param videoOrChannelUrl Optional YouTube URL (e.g., "https://youtube.com/watch?v=VIDEO_ID"
+	 *                          or "https://youtube.com/c/CHANNEL_NAME").
+	 *                          Defaults to YouTube home page if null.
+	 * @param onError Callback invoked if:
+	 *                - YouTube app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openYouTubeApp(
+		context: Context,
+		videoOrChannelUrl: String? = "https://www.youtube.com",
+		onError: (() -> Unit)? = null
+	) {
+		try {
+			val uri = (videoOrChannelUrl ?: "https://www.youtube.com").toUri()
+			val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+				setPackage("com.google.android.youtube")
+				addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			}
 
-    /**
-     * Opens Instagram app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param profileUrl Optional Instagram profile URL (e.g., "http://instagram.com/username")
-     *                   Defaults to Instagram home page if null
-     * @param onError Callback invoked if:
-     *                - Instagram app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openInstagramApp(
-        context: Context,
-        profileUrl: String? = "http://instagram.com",
-        onError: (() -> Unit)? = null
-    ) {
-        try {
-            val uri = (profileUrl ?: "http://instagram.com").toUri()
-            val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-                setPackage("com.instagram.android")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+			if (intent.resolveActivity(context.packageManager) != null) {
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			onError?.invoke()
+		}
+	}
 
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens Instagram app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param profileUrl Optional Instagram profile URL (e.g., "http://instagram.com/username")
+	 *                   Defaults to Instagram home page if null
+	 * @param onError Callback invoked if:
+	 *                - Instagram app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openInstagramApp(
+		context: Context,
+		profileUrl: String? = "http://instagram.com",
+		onError: (() -> Unit)? = null
+	) {
+		try {
+			val uri = (profileUrl ?: "http://instagram.com").toUri()
+			val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+				setPackage("com.instagram.android")
+				addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			}
 
-    /**
-     * Opens WhatsApp app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - WhatsApp not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openWhatsappApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.whatsapp")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+			if (intent.resolveActivity(context.packageManager) != null) {
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens YouTube Music app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - YouTube Music app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openYouTubeMusicApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.google.android.apps.youtube.music")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens WhatsApp app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - WhatsApp not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openWhatsappApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.whatsapp")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening whatsapp:", error)
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens SoundCloud app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - SoundCloud app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openSoundCloudApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.soundcloud.android")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens YouTube Music app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - YouTube Music app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openYouTubeMusicApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.google.android.apps.youtube.music")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening youtube music:", error)
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens Pinterest app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - Pinterest app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openPinterestApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.pinterest")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens SoundCloud app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - SoundCloud app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openSoundCloudApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.soundcloud.android")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening soundcloud:", error)
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens TikTok app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - TikTok app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openTikTokApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.zhiliaoapp.musically")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens Pinterest app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - Pinterest app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openPinterestApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.pinterest")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening pinterest:", error)
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens Dailymotion app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - Dailymotion app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openDailymotionApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.dailymotion.dailymotion")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens TikTok app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - TikTok app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openTikTokApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.zhiliaoapp.musically")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening tiktok:", error)
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens Reddit app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - Reddit app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openRedditApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.reddit.frontpage")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens Dailymotion app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - Dailymotion app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openDailymotionApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.dailymotion.dailymotion")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening dailymotion:", error)
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens X (Twitter) app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - X app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openXApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.twitter.android")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens Reddit app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - Reddit app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openRedditApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.reddit.frontpage")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening reddit:", error)
+			onError?.invoke()
+		}
+	}
 
-    /**
-     * Opens TED Talks app with fallback handling.
-     *
-     * @param context Context to start activity
-     * @param onError Callback invoked if:
-     *                - TED Talks app not installed
-     *                - Any exception occurs
-     */
-    @JvmStatic
-    fun openTedTalksApp(context: Context, onError: (() -> Unit)? = null) {
-        try {
-            val intent = context.packageManager
-                .getLaunchIntentForPackage("com.ted.android")
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-            } else {
-                onError?.invoke()
-            }
-        } catch (error: Exception) {
-            error.printStackTrace()
-            onError?.invoke()
-        }
-    }
+	/**
+	 * Opens X (Twitter) app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - X app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openXApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.twitter.android")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening twitter:", error)
+			onError?.invoke()
+		}
+	}
+
+	/**
+	 * Opens TED Talks app with fallback handling.
+	 *
+	 * @param context Context to start activity
+	 * @param onError Callback invoked if:
+	 *                - TED Talks app not installed
+	 *                - Any exception occurs
+	 */
+	@JvmStatic
+	fun openTedTalksApp(context: Context, onError: (() -> Unit)? = null) {
+		try {
+			val intent = context.packageManager
+				.getLaunchIntentForPackage("com.ted.android")
+			if (intent != null) {
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				context.startActivity(intent)
+			} else {
+				onError?.invoke()
+			}
+		} catch (error: Exception) {
+			logger.e("Error in opening ted-talk:", error)
+			onError?.invoke()
+		}
+	}
 
 }

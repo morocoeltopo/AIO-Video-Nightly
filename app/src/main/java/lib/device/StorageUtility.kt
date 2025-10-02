@@ -8,7 +8,7 @@ import android.os.StatFs
  * Utility class for retrieving storage-related information on the device.
  */
 object StorageUtility {
-	
+
 	/**
 	 * Returns the total internal storage space available on the device in bytes.
 	 *
@@ -22,7 +22,7 @@ object StorageUtility {
 		val totalBlocks = stat.blockCountLong
 		return totalBlocks * blockSize
 	}
-	
+
 	/**
 	 * Returns the free internal storage space available on the device in bytes.
 	 *
@@ -36,7 +36,7 @@ object StorageUtility {
 		val availableBlocks = stat.availableBlocksLong
 		return availableBlocks * blockSize
 	}
-	
+
 	/**
 	 * Returns the percentage of free internal storage available.
 	 *
@@ -49,7 +49,7 @@ object StorageUtility {
 		val freePercentage = (freeSpace.toFloat() / totalSpace) * 100
 		return freePercentage
 	}
-	
+
 	/**
 	 * Returns the total external storage space available (e.g., SD card) in bytes.
 	 * This only works if the external storage is mounted.
@@ -66,7 +66,7 @@ object StorageUtility {
 			totalBlocks * blockSize
 		} else 0
 	}
-	
+
 	/**
 	 * Returns the free external storage space available (e.g., SD card) in bytes.
 	 * This only works if the external storage is mounted.
@@ -83,7 +83,7 @@ object StorageUtility {
 			availableBlocks * blockSize
 		} else 0
 	}
-	
+
 	/**
 	 * Returns the percentage of free external storage space available.
 	 * This only works if the external storage is mounted.

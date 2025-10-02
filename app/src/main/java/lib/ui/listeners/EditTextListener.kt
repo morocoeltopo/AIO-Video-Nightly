@@ -21,14 +21,14 @@ import android.text.TextWatcher
  * ```
  */
 abstract class EditTextListener : TextWatcher {
-	
+
 	/**
 	 * Called after the text is changed. Must be implemented by subclasses.
 	 *
 	 * @param editable The text after the change.
 	 */
 	abstract override fun afterTextChanged(editable: Editable)
-	
+
 	/**
 	 * Called to notify you that the characters within `charSequence` are about to be replaced
 	 * with new text. Default implementation is empty.
@@ -42,7 +42,7 @@ abstract class EditTextListener : TextWatcher {
 		charSequence: CharSequence,
 		start: Int, count: Int, after: Int
 	) = Unit
-	
+
 	/**
 	 * Called to notify you that somewhere within `charSequence`, the text has been replaced.
 	 * Default implementation is empty.

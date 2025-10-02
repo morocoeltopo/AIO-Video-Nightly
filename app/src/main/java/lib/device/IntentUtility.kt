@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference
  * in browsers or extracting intent data from activities.
  */
 object IntentUtility {
-	
+
 	/**
 	 * Opens the specified URL in the default browser if any browser app is available.
 	 *
@@ -27,7 +27,7 @@ object IntentUtility {
 	 * @throws IllegalStateException If no application is available to handle the intent.
 	 */
 	@Throws(IllegalStateException::class)
-    @JvmStatic
+	@JvmStatic
 	fun openUrlInBrowser(context: Context?, url: String) {
 		if (url.isEmpty()) return
 
@@ -41,7 +41,7 @@ object IntentUtility {
 			throw IllegalStateException("No application can handle this request. Please install a web browser.")
 		}
 	}
-	
+
 	/**
 	 * Retrieves the data URI from the given [Activity]'s intent, if available.
 	 * Supports both `ACTION_SEND` and `ACTION_VIEW`.
@@ -61,7 +61,7 @@ object IntentUtility {
 			else -> null
 		}
 	}
-	
+
 	/**
 	 * Opens the specified URL in the system's default browser. If the URL is invalid or fails to open,
 	 * the provided `onFailed` callback is invoked.

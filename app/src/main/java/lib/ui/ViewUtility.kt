@@ -1321,7 +1321,7 @@ object ViewUtility {
 				null
 			}
 		} catch (error: Exception) {
-			logger.e("Error found while getting thumbnail from a remote url:",error)
+			logger.e("Error found while getting thumbnail from a remote url:", error)
 			null
 		} finally {
 			try {
@@ -1378,7 +1378,7 @@ object ViewUtility {
 				null
 			}
 		} catch (error: Exception) {
-			logger.e("Error found while decoding bitmap from a image file:",error)
+			logger.e("Error found while decoding bitmap from a image file:", error)
 			null
 		}
 	}

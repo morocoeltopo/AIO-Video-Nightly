@@ -26,10 +26,10 @@ import kotlin.math.pow
  * file handling, and metadata extraction.
  */
 object DownloaderUtils {
-	
+
 	// Decimal formatter for consistent number formatting
 	private val decimalFormat = DecimalFormat("##.##")
-	
+
 	/**
 	 * Formats the download progress percentage.
 	 * @param model The download data model containing progress information
@@ -39,21 +39,21 @@ object DownloaderUtils {
 	fun getFormattedPercentage(model: DownloadDataModel): String {
 		return decimalFormat.format(model.progressPercentage.toDouble())
 	}
-	
+
 	/**
 	 * Formats a double value using the standard decimal format.
 	 * @param input The double value to format
 	 * @return Formatted string
 	 */
 	@JvmStatic fun getFormatted(input: Double): String = decimalFormat.format(input)
-	
+
 	/**
 	 * Formats a float value using the standard decimal format.
 	 * @param input The float value to format
 	 * @return Formatted string
 	 */
 	@JvmStatic fun getFormatted(input: Float): String = decimalFormat.format(input.toDouble())
-	
+
 	/**
 	 * Determines the optimal number of download parts based on file size and user premium status.
 	 * Premium users get more parts for better performance.
@@ -69,7 +69,7 @@ object DownloaderUtils {
 		val mb100 = (1000000 * 100)
 		val mb200 = (1000000 * 200)
 		val mb400 = (1000000 * 400)
-		
+
 		return if (IS_PREMIUM_USER) {
 			if (totalFileLength < mb1) 1
 			else if (totalFileLength < mb5) 1
@@ -90,7 +90,7 @@ object DownloaderUtils {
 			else 5
 		}
 	}
-	
+
 	/**
 	 * Calculates the chunk size for each download part.
 	 * @param isResumable Whether the download is resumable
@@ -99,11 +99,13 @@ object DownloaderUtils {
 	 * @return Size of each download chunk
 	 */
 	@JvmStatic
-	fun generateDownloadPartChunkSize(isResumable: Boolean,
-		totalFileLength: Long, numberOfParts: Int): Long {
+	fun generateDownloadPartChunkSize(
+		isResumable: Boolean,
+		totalFileLength: Long, numberOfParts: Int
+	): Long {
 		return if (isResumable) totalFileLength / numberOfParts else totalFileLength
 	}
-	
+
 	/**
 	 * Extracts and formats the playback duration of an audio or video file if available.
 	 * @param downloadDataModel The download model containing file information
@@ -118,11 +120,11 @@ object DownloaderUtils {
 				val mediaFileUri = downloadedFile.uri
 				val retriever = MediaMetadataRetriever()
 				retriever.setDataSource(INSTANCE, mediaFileUri)
-				
+
 				val extractCode = MediaMetadataRetriever.METADATA_KEY_DURATION
 				val durationMs = retriever.extractMetadata(extractCode)?.toLongOrNull()
 				retriever.release()
-				
+
 				val formattedDuration = formatVideoDuration(durationMs)
 				return "($formattedDuration)"
 			} catch (error: Exception) {
@@ -131,7 +133,7 @@ object DownloaderUtils {
 			}
 		} else return ""
 	}
-	
+
 	/**
 	 * Calculates and formats the remaining download time.
 	 * @param bytesRemaining Bytes left to download
@@ -146,7 +148,7 @@ object DownloaderUtils {
 		val remainingMillis = (bytesRemaining * 1000) / downloadSpeed
 		return calculateTime(remainingMillis.toFloat())
 	}
-	
+
 	/**
 	 * Calculates the remaining download time in milliseconds.
 	 * @param bytesRemaining Bytes left to download
@@ -161,7 +163,7 @@ object DownloaderUtils {
 		val remainingMillis = (bytesRemaining * 1000) / downloadSpeed
 		return remainingMillis
 	}
-	
+
 	/**
 	 * Converts bytes to a human-readable format (KB, MB, GB, etc.).
 	 * @param downloadedByte Number of bytes
@@ -178,7 +180,7 @@ object DownloaderUtils {
 			Locale.US, "%.1f %s", downloadedByte / 1024.0.pow(exp.toDouble()), pre
 		)
 	}
-	
+
 	/**
 	 * Calculates and formats the current download speed.
 	 * @param bytesDownloaded Bytes downloaded so far
@@ -193,7 +195,7 @@ object DownloaderUtils {
 		val speedBytesPerSecond = (bytesDownloaded * 1000).toDouble() / timeMillis
 		return formatDownloadSpeedInSimpleForm(speedBytesPerSecond)
 	}
-	
+
 	/**
 	 * Calculates the current download speed in bytes per second.
 	 * @param bytesDownloaded Bytes downloaded so far
@@ -205,7 +207,7 @@ object DownloaderUtils {
 		if (timeMillis == 0L) return 0L
 		return ((bytesDownloaded * 1000) / timeMillis)
 	}
-	
+
 	/**
 	 * Formats download speed with appropriate unit (B/s, KB/s, MB/s, etc.).
 	 * @param speedBytesPerSecond Speed in bytes per second
@@ -228,7 +230,7 @@ object DownloaderUtils {
 			else -> df.format(speedBytesPerSecond) + "B/s"
 		}
 	}
-	
+
 	/**
 	 * Generates a unique filename by appending a timestamp to prevent conflicts.
 	 * @param baseFileName Original filename
@@ -246,7 +248,7 @@ object DownloaderUtils {
 			"${baseFileName}_$timestamp"
 		}
 	}
-	
+
 	/**
 	 * Updates the download directory path based on smart catalog settings.
 	 * Creates subdirectories if smart catalog is enabled.
@@ -264,16 +266,17 @@ object DownloaderUtils {
 				}
 			}
 		} else downloadModel.fileCategoryName = ""
-		
+
 		val finalDirWithCategory = removeDuplicateSlashes(
 			"${downloadModel.fileDirectory}/${
 				if (downloadModel.fileCategoryName.isNotEmpty())
 					downloadModel.fileCategoryName + "/" else ""
-			}")
-		
+			}"
+		)
+
 		finalDirWithCategory?.let { downloadModel.fileDirectory = it }
 	}
-	
+
 	/**
 	 * Renames the download file if a file with the same name already exists.
 	 * Adds a numeric prefix to prevent conflicts.
@@ -283,7 +286,7 @@ object DownloaderUtils {
 	fun renameIfDownloadFileExistsWithSameName(downloadModel: DownloadDataModel) {
 		var index: Int
 		val regex = Regex("^(\\d+)_")
-		
+
 		while (downloadModel.getDestinationDocumentFile().exists()) {
 			val matchResult = regex.find(downloadModel.fileName)
 			if (matchResult != null) {
@@ -294,7 +297,7 @@ object DownloaderUtils {
 			downloadModel.fileName = "${index}_${downloadModel.fileName}"
 		}
 	}
-	
+
 	/**
 	 * Validates and modifies a filename if it already exists in the directory.
 	 * @param directory The target directory
@@ -306,7 +309,7 @@ object DownloaderUtils {
 		var index: Int
 		val regex = Regex("^(\\d+)_")
 		var modifiedName = fileName
-		
+
 		while (File(directory, modifiedName).exists()) {
 			val matchResult = regex.find(modifiedName)
 			if (matchResult != null) {
@@ -317,7 +320,7 @@ object DownloaderUtils {
 			modifiedName = "${index}_${modifiedName}"
 		}; return modifiedName
 	}
-	
+
 	/**
 	 * Checks if smart download catalog feature is enabled for the download.
 	 * @param downloadModel The download model to check
@@ -327,7 +330,7 @@ object DownloaderUtils {
 	fun isSmartDownloadCatalogEnabled(downloadModel: DownloadDataModel): Boolean {
 		return downloadModel.globalSettings.downloadAutoFolderCatalog
 	}
-	
+
 	/**
 	 * Converts a standard cookie string to Netscape HTTP Cookie File format.
 	 * @param cookieString Standard cookie string
@@ -340,11 +343,11 @@ object DownloaderUtils {
 		val path = "/"
 		val secure = "FALSE"
 		val expiry = "2147483647"
-		
+
 		val stringBuilder = StringBuilder()
 		stringBuilder.append("# Netscape HTTP Cookie File\n")
 		stringBuilder.append("# This file was generated by the app.\n\n")
-		
+
 		for (cookie in cookies) {
 			val parts = cookie.split("=", limit = 2)
 			if (parts.size == 2) {
@@ -356,7 +359,7 @@ object DownloaderUtils {
 		}
 		return stringBuilder.toString()
 	}
-	
+
 	/**
 	 * Extracts video resolution (width and height) from a video URL.
 	 * @param videoUrl URL of the video

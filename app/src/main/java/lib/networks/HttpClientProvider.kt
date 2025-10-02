@@ -52,7 +52,10 @@ object HttpClientProvider {
 			.dispatcher(Dispatcher().apply {
 				maxRequests = 64             // Max concurrent requests globally
 				maxRequestsPerHost = 16      // Max concurrent requests per host
-				logger.d("Dispatcher configured: maxRequests=$maxRequests, maxRequestsPerHost=$maxRequestsPerHost")
+				logger.d(
+					"Dispatcher configured: maxRequests=$maxRequests," +
+							" maxRequestsPerHost=$maxRequestsPerHost"
+				)
 			})
 			.build()
 			.also { logger.d("OkHttpClient built successfully") }

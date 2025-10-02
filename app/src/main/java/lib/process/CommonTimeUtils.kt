@@ -8,7 +8,10 @@ import java.lang.ref.WeakReference
  * Includes methods for delaying tasks, running countdowns, setting intervals, and stopwatch timers.
  */
 object CommonTimeUtils {
-	
+
+	/** Logger for debugging and error tracking. */
+	private val logger = LogHelperUtils.from(javaClass)
+
 	/**
 	 * Executes a delayed task once after a specified duration.
 	 *
@@ -21,13 +24,13 @@ object CommonTimeUtils {
 		val safeTaskRef = WeakReference(listener)
 		return object : CountDownTimer(timeInMile.toLong(), timeInMile.toLong()) {
 			override fun onTick(millisUntilFinished: Long) = Unit
-			
+
 			override fun onFinish() {
 				safeTaskRef.get()?.afterDelay()
 			}
 		}.start()
 	}
-	
+
 	/**
 	 * Starts a countdown timer with periodic tick updates and a finish callback.
 	 *
@@ -47,13 +50,13 @@ object CommonTimeUtils {
 			override fun onTick(millisUntilFinished: Long) {
 				safeTaskRef.get()?.onTick(millisUntilFinished)
 			}
-			
+
 			override fun onFinish() {
 				safeTaskRef.get()?.onFinish()
 			}
 		}.start()
 	}
-	
+
 	/**
 	 * Sets up a repeated task executed at a fixed interval indefinitely.
 	 *
@@ -68,11 +71,11 @@ object CommonTimeUtils {
 			override fun onTick(millisUntilFinished: Long) {
 				safeTaskRef.get()?.onInterval()
 			}
-			
+
 			override fun onFinish() = Unit
 		}.start()
 	}
-	
+
 	/**
 	 * Starts a stopwatch-like timer that calls back with the elapsed time at each interval.
 	 *
@@ -85,16 +88,16 @@ object CommonTimeUtils {
 		val safeTaskRef = WeakReference(listener)
 		return object : CountDownTimer(Long.MAX_VALUE, interval) {
 			private val startTime: Long = System.currentTimeMillis()
-			
+
 			override fun onTick(millisUntilFinished: Long) {
 				val elapsedTime = System.currentTimeMillis() - startTime
 				safeTaskRef.get()?.onTick(elapsedTime)
 			}
-			
+
 			override fun onFinish() = Unit
 		}.start()
 	}
-	
+
 	/**
 	 * Cancels a given [CountDownTimer] if it's running.
 	 *
@@ -104,14 +107,14 @@ object CommonTimeUtils {
 	fun cancelTimer(timer: CountDownTimer?) {
 		timer?.cancel()
 	}
-	
+
 	/**
 	 * Listener interface for delayed task completion.
 	 */
 	interface OnTaskFinishListener {
 		fun afterDelay()
 	}
-	
+
 	/**
 	 * Listener interface for countdown timers.
 	 */
@@ -119,14 +122,14 @@ object CommonTimeUtils {
 		fun onTick(millisUntilFinished: Long)
 		fun onFinish()
 	}
-	
+
 	/**
 	 * Listener interface for interval-based callbacks.
 	 */
 	interface OnIntervalListener {
 		fun onInterval()
 	}
-	
+
 	/**
 	 * Listener interface for stopwatch updates.
 	 */

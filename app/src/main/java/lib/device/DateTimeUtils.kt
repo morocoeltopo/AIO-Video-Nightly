@@ -17,22 +17,22 @@ import java.util.concurrent.TimeUnit
  * Utility object for handling date and time operations across the application.
  */
 object DateTimeUtils {
-	
+
 	/** Standard formatter for date and time (e.g., 2023-08-01 14:30:00). */
 	@JvmStatic
 	val dateFormatter: DateTimeFormatter =
 		DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
-	
+
 	/** Formatter for 12-hour clock time format (e.g., 02:30 PM). */
 	@JvmStatic
 	val timeFormatter12Hour: DateTimeFormatter =
 		DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
-	
+
 	/** Formatter for 24-hour clock time format (e.g., 14:30). */
 	@JvmStatic
 	val timeFormatter24Hour: DateTimeFormatter =
 		DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
-	
+
 	/**
 	 * Returns the current date and time formatted with the default formatter.
 	 */
@@ -40,7 +40,7 @@ object DateTimeUtils {
 	fun getCurrentDateTime(): String {
 		return LocalDateTime.now().format(dateFormatter)
 	}
-	
+
 	/**
 	 * Returns the current date formatted using the given format.
 	 */
@@ -49,7 +49,7 @@ object DateTimeUtils {
 		val formatter = DateTimeFormatter.ofPattern(format, getDefault())
 		return LocalDateTime.now().format(formatter)
 	}
-	
+
 	/**
 	 * Returns the current time formatted using the given format.
 	 */
@@ -58,7 +58,7 @@ object DateTimeUtils {
 		val formatter = DateTimeFormatter.ofPattern(format, getDefault())
 		return LocalDateTime.now().format(formatter)
 	}
-	
+
 	/**
 	 * Converts a timestamp to a formatted date string.
 	 */
@@ -68,7 +68,7 @@ object DateTimeUtils {
 		val dateTime = ofInstant(Date(timestamp).toInstant(), ZoneId.systemDefault())
 		return dateTime.format(formatter)
 	}
-	
+
 	/**
 	 * Parses a date string into a timestamp using the given format.
 	 */
@@ -78,7 +78,7 @@ object DateTimeUtils {
 		val dateTime = LocalDateTime.parse(dateString, formatter)
 		return Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()).time
 	}
-	
+
 	/**
 	 * Returns the number of days between two formatted date strings.
 	 */
@@ -89,7 +89,7 @@ object DateTimeUtils {
 		val end = LocalDateTime.parse(endDate, formatter)
 		return Duration.between(start, end).toDays()
 	}
-	
+
 	/**
 	 * Formats a date with a suffix (e.g., "1st Jan (13:00)").
 	 */
@@ -98,13 +98,13 @@ object DateTimeUtils {
 		val dayFormatter = SimpleDateFormat("d", Locale.US)
 		val monthFormatter = SimpleDateFormat("MMM", Locale.US)
 		val timeFormatter = SimpleDateFormat("HH:mm", Locale.US)
-		
+
 		val day = dayFormatter.format(date).toInt()
 		val dayWithSuffix = "$day${getDayOfMonthSuffix(day)}"
-		
+
 		return "$dayWithSuffix ${monthFormatter.format(date)} (${timeFormatter.format(date)})"
 	}
-	
+
 	/**
 	 * Checks if the current time is within a specified time range.
 	 */
@@ -116,7 +116,7 @@ object DateTimeUtils {
 		val currentTime = LocalDateTime.now()
 		return currentTime.isAfter(start) && currentTime.isBefore(end)
 	}
-	
+
 	/**
 	 * Converts a date string from one format to another.
 	 */
@@ -127,19 +127,19 @@ object DateTimeUtils {
 		val dateTime = LocalDateTime.parse(dateString, fromFormatter)
 		return dateTime.format(toFormatter)
 	}
-	
+
 	/** Returns the current time in 12-hour format. */
 	@JvmStatic
 	fun getCurrentTimeIn12HourFormat(): String {
 		return LocalDateTime.now().format(timeFormatter12Hour)
 	}
-	
+
 	/** Returns the current time in 24-hour format. */
 	@JvmStatic
 	fun getCurrentTimeIn24HourFormat(): String {
 		return LocalDateTime.now().format(timeFormatter24Hour)
 	}
-	
+
 	/**
 	 * Formats a timestamp into a readable string with a day suffix (e.g., "23rd Jul").
 	 */
@@ -152,10 +152,10 @@ object DateTimeUtils {
 		val daySuffix = getDayOfMonthSuffix(day)
 		val dateFormat = SimpleDateFormat("MMM", getDefault())
 		val month = dateFormat.format(calendar.time)
-		
+
 		return "$day$daySuffix $month"
 	}
-	
+
 	/**
 	 * Returns the appropriate suffix for a day of the month (e.g., "st", "nd", "rd", "th").
 	 */
@@ -171,26 +171,26 @@ object DateTimeUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * Formats video duration (in milliseconds) to a readable format (HH:mm:ss or mm:ss).
 	 */
 	@JvmStatic
 	fun formatVideoDuration(durationMs: Long?): String {
 		if (durationMs == null) return "00:00"
-		
+
 		val totalSeconds = durationMs / 1000
 		val hours = totalSeconds / 3600
 		val minutes = (totalSeconds % 3600) / 60
 		val seconds = totalSeconds % 60
-		
+
 		return if (hours > 0) {
 			String.format(getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
 		} else {
 			String.format(getDefault(), "%02d:%02d", minutes, seconds)
 		}
 	}
-	
+
 	/**
 	 * Formats milliseconds to time in HH:mm:ss or mm:ss format.
 	 */
@@ -200,14 +200,14 @@ object DateTimeUtils {
 		val hours = totalSeconds / 3600
 		val minutes = (totalSeconds % 3600) / 60
 		val seconds = totalSeconds % 60
-		
+
 		return if (hours > 0) {
 			String.format(getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
 		} else {
 			String.format(getDefault(), "%02d:%02d", minutes, seconds)
 		}
 	}
-	
+
 	/**
 	 * Returns the number of days passed since a given timestamp.
 	 */
@@ -217,7 +217,7 @@ object DateTimeUtils {
 		val timeDifference = currentTime - lastModifiedTime
 		return TimeUnit.MILLISECONDS.toDays(timeDifference)
 	}
-	
+
 	/**
 	 * Converts milliseconds to a formatted date-time string.
 	 */
@@ -227,7 +227,7 @@ object DateTimeUtils {
 		val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")
 		return dateTime.format(formatter)
 	}
-	
+
 	/**
 	 * Converts a formatted date-time string to milliseconds.
 	 */
@@ -237,7 +237,7 @@ object DateTimeUtils {
 		val dateTime = LocalDateTime.parse(dateTimeString, formatter)
 		return dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 	}
-	
+
 	/**
 	 * Converts milliseconds to a human-readable time with optional suffix.
 	 */
@@ -247,16 +247,16 @@ object DateTimeUtils {
 		val second = totalSeconds % 60
 		val minute = (totalSeconds / 60) % 60
 		val hour = totalSeconds / 3600
-		
+
 		val timeString = if (hour > 0) {
 			String.format(getDefault(), "%d:%02d:%02d", hour, minute, second)
 		} else {
 			String.format(getDefault(), "%02d:%02d", minute, second)
 		}
-		
+
 		return "$timeString $suffix"
 	}
-	
+
 	/**
 	 * Converts a duration in milliseconds to HH:mm:ss format string.
 	 */

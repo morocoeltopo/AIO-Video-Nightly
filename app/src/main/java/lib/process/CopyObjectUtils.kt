@@ -15,7 +15,10 @@ import java.io.Serializable
  * ensuring that the copy is entirely independent of the original.
  */
 object CopyObjectUtils {
-	
+
+	/** Logger for debugging and error tracking. */
+	private val logger = LogHelperUtils.from(javaClass)
+
 	/**
 	 * Creates a deep copy of a serializable object using serialization.
 	 *
@@ -36,18 +39,18 @@ object CopyObjectUtils {
 			oos.flush()
 			oos.close()
 			bos.close()
-			
+
 			// Deserialize the byte array back into an object
 			val bis = ByteArrayInputStream(bos.toByteArray())
 			val ois = ObjectInputStream(bis)
 			val copy = ois.readObject() as T
 			ois.close()
 			bis.close()
-			
+
 			copy
 		} catch (error: Exception) {
 			// Print stack trace and return null on failure
-			error.printStackTrace()
+			logger.e("Error while deep copping an object:", error)
 			null
 		}
 	}

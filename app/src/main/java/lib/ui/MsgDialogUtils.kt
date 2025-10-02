@@ -21,13 +21,13 @@ import java.lang.ref.WeakReference
  * callback functions for styling the views and handling button click actions.
  */
 object MsgDialogUtils {
-	
+
 	/**
 	 * The application context reference, retrieved through [AIOApp.INSTANCE].
 	 */
 	private val applicationContext: Context
 		get() = INSTANCE
-	
+
 	/**
 	 * Displays a customizable message dialog with the specified options.
 	 *
@@ -92,7 +92,7 @@ object MsgDialogUtils {
 		dialogBuilder?.show()
 		return dialogBuilder
 	}
-	
+
 	/**
 	 * Constructs a customizable message dialog and returns the [DialogBuilder] instance for further manipulation.
 	 *
@@ -140,7 +140,7 @@ object MsgDialogUtils {
 				// View Configuration
 				setView(R.layout.dialog_basic_message_1)
 				setCancelable(isCancelable)
-				
+
 				// Component References
 				val titleTextView = view.findViewById<TextView>(R.id.txt_dialog_title)
 				val messageTextView = view.findViewById<TextView>(R.id.txt_dialog_message)
@@ -148,13 +148,13 @@ object MsgDialogUtils {
 				val btnNegativeContainer = view.findViewById<RelativeLayout>(R.id.button_dialog_negative_container)
 				val btnPositiveTextView = view.findViewById<TextView>(R.id.btn_dialog_positive)
 				val btnPositiveContainer = view.findViewById<RelativeLayout>(R.id.btn_dialog_positive_container)
-				
+
 				// Set Text Content
 				titleTextView.text = titleText
 				messageTextView.text = messageTxt
 				btnPositiveTextView.text = positiveButtonText
 				btnNegativeTextView.text = negativeButtonText
-				
+
 				// Apply Custom Styling
 				messageTextViewCustomize?.invoke(messageTextView)
 				titleTextViewCustomize?.invoke(titleTextView)
@@ -163,17 +163,17 @@ object MsgDialogUtils {
 				positiveButtonContainerCustomize?.invoke(btnPositiveContainer)
 				negativeButtonTextCustomize?.invoke(btnNegativeTextView)
 				negativeButtonContainerCustomize?.invoke(btnNegativeContainer)
-				
+
 				// Set Visibility Rules
 				btnNegativeTextView.visibility = if (isNegativeButtonVisible) View.VISIBLE else GONE
 				btnNegativeContainer.visibility = if (isNegativeButtonVisible) View.VISIBLE else GONE
-				
+
 				titleTextView.visibility = when {
 					!isTitleVisible -> GONE
 					titleTextView.text.toString() == getText(R.string.title_title_goes_here) -> GONE
 					else -> View.VISIBLE
 				}
-				
+
 				// Set Click Handling
 				btnNegativeContainer.setOnClickListener(onNegativeButtonClickListener ?: OnClickListener { close() })
 				btnPositiveContainer.setOnClickListener(onPositiveButtonClickListener ?: OnClickListener { close() })

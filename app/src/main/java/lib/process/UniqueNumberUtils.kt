@@ -11,7 +11,7 @@ import java.util.Random
  * in a unique manner and for determining whether to display ads randomly.
  */
 object UniqueNumberUtils {
-	
+
 	/**
 	 * Generates a pseudo-unique long number using the current time in milliseconds and a random component.
 	 *
@@ -26,7 +26,7 @@ object UniqueNumberUtils {
 		val randomComponent = random.nextInt(1000)
 		return currentTime * 1000 + randomComponent
 	}
-	
+
 	/**
 	 * Generates a unique integer ID for a new download model by checking the existing files.
 	 *
@@ -39,11 +39,11 @@ object UniqueNumberUtils {
 	fun getUniqueNumberForDownloadModels(): Int {
 		val existingFiles = internalDataFolder.listFiles()
 			.filter { it.name!!.endsWith(DOWNLOAD_MODEL_FILE_JSON_EXTENSION) }
-		
+
 		val existingNumbers = existingFiles.mapNotNull { file ->
 			file.name!!.split("_").firstOrNull()?.toIntOrNull()
 		}
-		
+
 		val maxNumber = existingNumbers.maxOrNull() ?: 0
 		return maxNumber + 1
 	}

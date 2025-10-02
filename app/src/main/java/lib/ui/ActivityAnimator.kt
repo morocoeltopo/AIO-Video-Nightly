@@ -15,7 +15,7 @@ import java.lang.ref.WeakReference
  * which specifies the animation for entering and exiting the activity.
  */
 object ActivityAnimator {
-	
+
 	/**
 	 * Applies a fade-in and fade-out animation for the activity transition.
 	 *
@@ -28,7 +28,7 @@ object ActivityAnimator {
 			R.anim.anim_fade_exit
 		)
 	}
-	
+
 	/**
 	 * Applies an in-and-out slide animation for the activity transition.
 	 *
@@ -41,7 +41,7 @@ object ActivityAnimator {
 			R.anim.anim_in_out_exit
 		)
 	}
-	
+
 	/**
 	 * Applies a slide-down animation for the activity transition.
 	 *
@@ -54,7 +54,7 @@ object ActivityAnimator {
 			R.anim.anim_slide_down_exit
 		)
 	}
-	
+
 	/**
 	 * Applies a slide-left animation for the activity transition.
 	 *
@@ -67,7 +67,7 @@ object ActivityAnimator {
 			R.anim.anim_slide_left_exit
 		)
 	}
-	
+
 	/**
 	 * Applies a swipe-right animation for the activity transition.
 	 *
@@ -80,7 +80,7 @@ object ActivityAnimator {
 			R.anim.anim_swipe_right_exit
 		)
 	}
-	
+
 	/**
 	 * Applies a slide-up animation for the activity transition.
 	 *
@@ -93,7 +93,7 @@ object ActivityAnimator {
 			R.anim.anim_slide_up_exit
 		)
 	}
-	
+
 	/**
 	 * Applies a swipe-left animation for the activity transition.
 	 *
@@ -106,7 +106,7 @@ object ActivityAnimator {
 			R.anim.anim_swipe_left_exit
 		)
 	}
-	
+
 	/**
 	 * Applies a slide-in-left and slide-out-right animation for the activity transition.
 	 *
@@ -119,7 +119,7 @@ object ActivityAnimator {
 			R.anim.anim_slide_out_right
 		)
 	}
-	
+
 	/**
 	 * Creates a material slide animation for activity transition.
 	 * This uses a sliding in from the left and sliding out to the right animation.

@@ -83,8 +83,10 @@ object VideoFilesUtility {
 				// Extract the 4-byte signature at offset 4 and compare with "ftyp"
 				val signature = String(buffer, 4, 4, Charsets.US_ASCII)
 				val isValid = (signature == "ftyp")
-				if (!isValid) logger.d("File signature mismatch. " +
-						"Expected 'ftyp', found '$signature' for ${file.name}")
+				if (!isValid) logger.d(
+					"File signature mismatch. " +
+							"Expected 'ftyp', found '$signature' for ${file.name}"
+				)
 
 				isValid
 			}
@@ -184,8 +186,10 @@ object VideoFilesUtility {
 
 			// Validate the temporary file
 			if (!isValidMp4File(tempFile)) {
-				logger.e("Temporary file validation failed - " +
-						"optimization may have corrupted the file")
+				logger.e(
+					"Temporary file validation failed - " +
+							"optimization may have corrupted the file"
+				)
 				tempFile.delete()
 				return false
 			}
@@ -196,16 +200,20 @@ object VideoFilesUtility {
 			val sizeRatio = tempSize.toDouble() / inputSize.toDouble()
 
 			if (sizeRatio < 0.5 || sizeRatio > 1.5) {
-				logger.e("Suspicious file size ratio" +
-						": $sizeRatio (input: $inputSize, output: $tempSize)")
+				logger.e(
+					"Suspicious file size ratio" +
+							": $sizeRatio (input: $inputSize, output: $tempSize)"
+				)
 				tempFile.delete()
 				return false
 			}
 
 			// Atomic move from temp to final location
 			if (tempFile.renameTo(outputFile)) {
-				logger.d("Optimization completed successfully. " +
-						"Output file size: ${outputFile.length()} bytes")
+				logger.d(
+					"Optimization completed successfully. " +
+							"Output file size: ${outputFile.length()} bytes"
+				)
 
 				logger.d("Output file created at: ${outputFile.absolutePath}")
 
@@ -231,8 +239,10 @@ object VideoFilesUtility {
 					tempFile.delete()
 					logger.d("Cleaned up temporary file after failure")
 				} catch (cleanupError: Exception) {
-					logger.e("Failed to clean up temporary file" +
-							": ${cleanupError.message}", cleanupError)
+					logger.e(
+						"Failed to clean up temporary file" +
+								": ${cleanupError.message}", cleanupError
+					)
 				}
 			}
 
@@ -242,8 +252,10 @@ object VideoFilesUtility {
 					outputFile.delete()
 					logger.d("Cleaned up output file after failure")
 				} catch (cleanupError: Exception) {
-					logger.e("Failed to clean up output file" +
-							": ${cleanupError.message}", cleanupError)
+					logger.e(
+						"Failed to clean up output file" +
+								": ${cleanupError.message}", cleanupError
+					)
 				}
 			}
 

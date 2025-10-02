@@ -19,7 +19,7 @@ import app.core.AIOApp
  * These are helpful for logging, analytics, debugging, or showing version info in the UI.
  */
 object AppVersionUtility {
-	
+
 	/**
 	 * Gets the version name of the application, as specified in the `build.gradle` file.
 	 *
@@ -32,7 +32,7 @@ object AppVersionUtility {
 			val packageName = context.packageName
 			return try {
 				val packageManager = context.packageManager
-				
+
 				// Use appropriate method based on SDK version
 				val packageInfo = if (SDK_INT >= TIRAMISU) {
 					val flags = of(GET_SIGNING_CERTIFICATES.toLong())
@@ -41,7 +41,7 @@ object AppVersionUtility {
 					@Suppress("DEPRECATION")
 					packageManager.getPackageInfo(packageName, GET_SIGNATURES)
 				}
-				
+
 				packageInfo.versionName
 			} catch (error: NameNotFoundException) {
 				// Log the error and return null if package info cannot be found
@@ -49,7 +49,7 @@ object AppVersionUtility {
 				null
 			}
 		}
-	
+
 	/**
 	 * Gets the version code of the application, which is an incrementing number defined in the build file.
 	 *
@@ -62,7 +62,7 @@ object AppVersionUtility {
 			val packageName = context.packageName
 			return try {
 				val packageManager = context.packageManager
-				
+
 				// Use proper method depending on the Android version
 				val packageInfo = if (SDK_INT >= TIRAMISU) {
 					val flags = of(GET_SIGNING_CERTIFICATES.toLong())
@@ -71,7 +71,7 @@ object AppVersionUtility {
 					@Suppress("DEPRECATION")
 					packageManager.getPackageInfo(packageName, GET_SIGNATURES)
 				}
-				
+
 				packageInfo.longVersionCode
 			} catch (error: NameNotFoundException) {
 				// Print error and return default version code
@@ -79,7 +79,7 @@ object AppVersionUtility {
 				0
 			}
 		}
-	
+
 	/**
 	 * Gets the Android SDK version of the device (e.g., 33 for Android 13).
 	 *

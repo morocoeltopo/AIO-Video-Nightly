@@ -20,16 +20,19 @@ import java.lang.ref.WeakReference
  * @param context The application context (held weakly to prevent memory leaks)
  */
 class AudioPlayerUtils(private val context: Context?) {
-	
+
+	/** Logger for debugging and error tracking. */
+	private val logger = LogHelperUtils.from(javaClass)
+
 	// MediaPlayer instance for audio playback
 	private var mediaPlayer: MediaPlayer? = null
-	
+
 	// Callback for when playback completes naturally
 	private var onCompletionListener: (() -> Unit)? = null
-	
+
 	// Callback for playback errors
 	private var onErrorListener: ((Int, Int) -> Unit)? = null
-	
+
 	/**
 	 * Starts playback of an audio resource.
 	 *
@@ -38,18 +41,18 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun play(resId: Int) {
 		// Stop any existing playback first
 		stop()
-		
+
 		// Use WeakReference to avoid context leaks
 		WeakReference(context).get()?.let { safeContextRef ->
 			mediaPlayer = MediaPlayer.create(safeContextRef, resId)?.apply {
 				start()
-				
+
 				// Set completion listener to clean up after playback finishes
 				setOnCompletionListener {
 					onCompletionListener?.invoke()
 					stop()
 				}
-				
+
 				// Set error listener to handle playback errors
 				setOnErrorListener { _, what, extra ->
 					onErrorListener?.invoke(what, extra)
@@ -59,7 +62,7 @@ class AudioPlayerUtils(private val context: Context?) {
 			}
 		}
 	}
-	
+
 	/**
 	 * Pauses the current playback.
 	 * Does nothing if no playback is active or already paused.
@@ -67,7 +70,7 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun pause() {
 		mediaPlayer?.takeIf { it.isPlaying }?.pause()
 	}
-	
+
 	/**
 	 * Resumes playback from paused state.
 	 * Does nothing if playback is not paused or no media is loaded.
@@ -75,7 +78,7 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun resume() {
 		mediaPlayer?.takeIf { !it.isPlaying }?.start()
 	}
-	
+
 	/**
 	 * Seeks to a specific position in the audio track.
 	 *
@@ -84,7 +87,7 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun seekTo(positionMs: Int) {
 		mediaPlayer?.seekTo(positionMs)
 	}
-	
+
 	/**
 	 * Sets the playback volume.
 	 *
@@ -94,7 +97,7 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun setVolume(leftVolume: Float, rightVolume: Float) {
 		mediaPlayer?.setVolume(leftVolume, rightVolume)
 	}
-	
+
 	/**
 	 * Gets the current playback position.
 	 *
@@ -103,14 +106,14 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun getCurrentPosition(): Int {
 		return mediaPlayer?.currentPosition ?: 0
 	}
-	
+
 	/**
 	 * Gets the duration of the current audio track.
 	 *
 	 * @return Duration in milliseconds, or 0 if no media loaded
 	 */
 	fun getDuration(): Int = mediaPlayer?.duration ?: 0
-	
+
 	/**
 	 * Stops playback and releases MediaPlayer resources.
 	 * Safe to call even if no playback is active.
@@ -122,7 +125,7 @@ class AudioPlayerUtils(private val context: Context?) {
 		}
 		mediaPlayer = null
 	}
-	
+
 	/**
 	 * Checks if audio is currently playing.
 	 *
@@ -131,7 +134,7 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun isPlaying(): Boolean {
 		return mediaPlayer?.isPlaying == true
 	}
-	
+
 	/**
 	 * Sets a callback for when playback completes naturally.
 	 *
@@ -140,7 +143,7 @@ class AudioPlayerUtils(private val context: Context?) {
 	fun setOnCompletionListener(listener: () -> Unit) {
 		onCompletionListener = listener
 	}
-	
+
 	/**
 	 * Sets a callback for playback errors.
 	 *

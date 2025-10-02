@@ -22,7 +22,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener
  * ```
  */
 abstract class SeekBarListener : OnSeekBarChangeListener {
-	
+
 	/**
 	 * Called when the progress of the SeekBar has changed.
 	 * This is the method that needs to be implemented by subclasses.
@@ -32,7 +32,7 @@ abstract class SeekBarListener : OnSeekBarChangeListener {
 	 * @param fromUser True if the progress change was initiated by the user, false if it was programmatically.
 	 */
 	abstract fun onProgressChange(seekBar: SeekBar?, progress: Int, fromUser: Boolean)
-	
+
 	/**
 	 * Called when the progress of the SeekBar has changed.
 	 * This implementation forwards the event to [onProgressChange].
@@ -44,7 +44,7 @@ abstract class SeekBarListener : OnSeekBarChangeListener {
 	override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
 		onProgressChange(seekBar, progress, fromUser)
 	}
-	
+
 	/**
 	 * Called when the user starts touching the SeekBar.
 	 * This implementation is empty, and can be overridden if needed.
@@ -52,7 +52,7 @@ abstract class SeekBarListener : OnSeekBarChangeListener {
 	 * @param seekBar The SeekBar that is being tracked.
 	 */
 	override fun onStartTrackingTouch(seekBar: SeekBar) = Unit
-	
+
 	/**
 	 * Called when the user stops touching the SeekBar.
 	 * This implementation is empty, and can be overridden if needed.

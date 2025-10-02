@@ -24,19 +24,19 @@ import android.os.CountDownTimer
  * @param countDownInterval Interval in milliseconds between `onTick` callbacks.
  */
 class SimpleTimerUtils(private var millisInFuture: Long, private val countDownInterval: Long) {
-	
+
 	/** Remaining time in milliseconds. */
 	var timeRemaining: Long = millisInFuture
-	
+
 	/** Indicates whether the timer is currently running. */
 	var isRunning: Boolean = false
-	
+
 	/** Indicates whether the timer is currently paused. */
 	var isPaused: Boolean = false
-	
+
 	/** Optional listener for timer events. */
 	private var timerListener: TimerListener? = null
-	
+
 	/** Internal CountDownTimer instance managed by this utility. */
 	private val countDownTimer: CountDownTimer by lazy {
 		object : CountDownTimer(timeRemaining, countDownInterval) {
@@ -45,7 +45,7 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 				this@SimpleTimerUtils.onTick(millisUntilFinished)
 				timerListener?.onTick(millisUntilFinished)
 			}
-			
+
 			override fun onFinish() {
 				isRunning = false
 				isPaused = false
@@ -54,7 +54,7 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 			}
 		}
 	}
-	
+
 	/**
 	 * Starts the timer. If the timer was paused, it will resume instead.
 	 */
@@ -68,7 +68,7 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 		isPaused = false
 		countDownTimer.start()
 	}
-	
+
 	/**
 	 * Pauses the currently running timer.
 	 * Timer can be resumed later with [resume].
@@ -80,14 +80,14 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 			isRunning = false
 		}
 	}
-	
+
 	/**
 	 * Resumes the timer if it was previously paused.
 	 */
 	fun resume() {
 		if (isPaused) start()
 	}
-	
+
 	/**
 	 * Cancels the timer and resets its state.
 	 */
@@ -96,7 +96,7 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 		isRunning = false
 		isPaused = false
 	}
-	
+
 	/**
 	 * Updates the total time for the countdown.
 	 *
@@ -110,19 +110,19 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 			start()
 		}
 	}
-	
+
 	/**
 	 * Called on every tick of the countdown. Can be overridden by subclasses.
 	 *
 	 * @param millisUntilFinished Time left until the countdown finishes.
 	 */
 	fun onTick(millisUntilFinished: Long) = Unit
-	
+
 	/**
 	 * Called when the countdown finishes. Can be overridden by subclasses.
 	 */
 	fun onFinish() = Unit
-	
+
 	/**
 	 * Sets the listener to receive timer updates.
 	 *
@@ -131,7 +131,7 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 	fun setTimerListener(timerListener: TimerListener?) {
 		this.timerListener = timerListener
 	}
-	
+
 	/**
 	 * Listener interface to receive callbacks on each tick and when the timer finishes.
 	 */
@@ -142,7 +142,7 @@ class SimpleTimerUtils(private var millisInFuture: Long, private val countDownIn
 		 * @param millisUntilFinished Remaining time in milliseconds.
 		 */
 		fun onTick(millisUntilFinished: Long)
-		
+
 		/**
 		 * Called when the countdown timer finishes.
 		 */

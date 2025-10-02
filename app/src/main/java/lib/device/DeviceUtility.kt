@@ -20,7 +20,7 @@ import java.util.Locale.getDefault
  * display, connectivity, and locale settings.
  */
 object DeviceUtility {
-	
+
 	/**
 	 * Retrieves the raw screen density of the device.
 	 *
@@ -35,7 +35,7 @@ object DeviceUtility {
 			return density
 		}; return 0.0f
 	}
-	
+
 	/**
 	 * Returns the screen density formatted as a human-readable bucket like `hdpi`, `xxhdpi`, etc.
 	 *
@@ -58,7 +58,7 @@ object DeviceUtility {
 			return formattedDensity
 		}; return ""
 	}
-	
+
 	/**
 	 * Returns the device manufacturer and model as a formatted name.
 	 *
@@ -73,7 +73,7 @@ object DeviceUtility {
 		} else capitalizeFirstLetter("$manufacturer $model")
 		return deviceName
 	}
-	
+
 	/**
 	 * Checks whether the device has an active internet connection through
 	 * any known transport methods (Wi-Fi, cellular, Ethernet, or Bluetooth).
@@ -93,11 +93,11 @@ object DeviceUtility {
 		val cellularChecked = nc.hasTransport(TRANSPORT_CELLULAR)
 		val ethernetChecked = nc.hasTransport(TRANSPORT_ETHERNET)
 		val bluetoothChecked = nc.hasTransport(TRANSPORT_BLUETOOTH)
-		
+
 		val isOnline = wifiChecked || cellularChecked || ethernetChecked || bluetoothChecked
 		return isOnline
 	}
-	
+
 	/**
 	 * Attempts to determine the user's country based on locale or SIM info.
 	 *

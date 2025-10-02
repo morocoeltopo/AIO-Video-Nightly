@@ -16,8 +16,8 @@ import kotlin.coroutines.CoroutineContext
 /**
  * A utility object to simplify threading and coroutine operations using Kotlin Coroutines.
  *
- * Provides methods for executing tasks on background threads, main thread, with timeout, or in lifecycle-aware scopes.
- * Also includes coroutine helpers for better structure and error handling.
+ * Provides methods for executing tasks on background threads, main thread, with timeout,
+ * or in lifecycle-aware scopes. Also includes coroutine helpers for better structure and error handling.
  */
 object ThreadsUtility : CoroutineScope {
 
