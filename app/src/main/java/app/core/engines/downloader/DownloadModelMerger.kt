@@ -9,21 +9,53 @@ import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * DownloadModelMerger - Merges and Maintains a Unified Binary of Download Models
+ *
+ * Responsibilities:
+ * 1. Periodically checks individual JSON model files and merges them into a single binary file.
+ * 2. Keeps the merged binary up-to-date by comparing modification timestamps.
+ * 3. Provides fast retrieval of merged models to reduce I/O overhead.
+ * 4. Runs in a background thread to avoid blocking the main thread.
+ *
+ * Features:
+ * - Thread-safe operations using AtomicBoolean and @Synchronized
+ * - Single-threaded executor to serialize merge operations
+ * - Incremental updates based on file timestamps
+ * - Avoids unnecessary writes if the merged file is already up-to-date
+ */
 class DownloadModelMerger {
 	companion object {
+		/** Filename used for storing merged binary of download models */
 		const val MERGRED_DATA_MODEL_BINARY_FILENAME = "merged_data_binary.dat"
 	}
 
 	private val logger = LogHelperUtils.from(javaClass)
+
+	/** Single-thread executor for running merge loop in background */
 	private val executor = Executors.newSingleThreadExecutor()
+
+	/** Ensures that only one merge operation runs at a time */
 	private val isRunning = AtomicBoolean(false)
+
+	/** Interval between merge checks in milliseconds */
 	private val loopInterval = 5000L
 
+	/**
+	 * Attempts to load the merged binary data if it exists and is valid.
+	 *
+	 * @return List of DownloadDataModel or null if no valid merged file is available
+	 */
 	fun loadMergedDataModelIfPossible(): List<DownloadDataModel>? = loadMergedBinaryData()
 
+	/**
+	 * Starts the background loop that periodically merges modified download models.
+	 * Runs indefinitely in a dedicated thread.
+	 */
 	fun startLoop() {
 		executor.execute {
 			while (true) {
+				// Only proceed if no other merge is currently running
 				if (isRunning.compareAndSet(false, true)) {
 					try {
 						mergeModifiedDownloadDataModels()
@@ -43,27 +75,38 @@ class DownloadModelMerger {
 		}
 	}
 
+	/**
+	 * Checks all model JSON files and merges them if any file is newer than the current merged binary.
+	 */
 	private fun mergeModifiedDownloadDataModels() {
 		val internalDir = INSTANCE.filesDir
 		val mergedBinaryFile = File(internalDir, MERGRED_DATA_MODEL_BINARY_FILENAME)
+
+		// Map of JSON files to their last modified timestamp
 		val fileTimestamps = loadFileModifiedTimestamps(internalDir)
 		val mergedTimestamp = mergedBinaryFile.lastModified()
 
-		// check if any file is newer than merged
+		// Determine if any file is newer than the merged file
 		val needsUpdate = fileTimestamps.values.any { it > mergedTimestamp }
-		if (needsUpdate == false) return
+		if (!needsUpdate) return // No updates needed
 
-		// start updating the merging process
+		// Combine active and finished download models and remove duplicates
 		val downloadSystem = AIOApp.downloadSystem
 		val allDownloadModels = (
 				downloadSystem.activeDownloadDataModels +
 						downloadSystem.finishedDownloadDataModels)
 			.distinctBy { it.id }
 			.toMutableList()
-		if (allDownloadModels.isEmpty()) return
+
+		if (allDownloadModels.isEmpty()) return // Nothing to save
 		saveToBinary(mergedBinaryFile, allDownloadModels)
 	}
 
+	/**
+	 * Returns a map of valid JSON model files to their last modified timestamp.
+	 *
+	 * @param directory Directory containing download model JSON files
+	 */
 	private fun loadFileModifiedTimestamps(directory: File?): Map<File, Long> {
 		val suffix = DOWNLOAD_MODEL_FILE_JSON_EXTENSION
 		return directory?.takeIf { it.isDirectory }
@@ -73,6 +116,12 @@ class DownloadModelMerger {
 			?.associateWith { it.lastModified() } ?: emptyMap()
 	}
 
+	/**
+	 * Saves a list of DownloadDataModel to a binary file in a thread-safe manner.
+	 *
+	 * @param mergedBinaryFile The file to write the serialized data to
+	 * @param data List of DownloadDataModel to serialize
+	 */
 	@Synchronized
 	private fun saveToBinary(mergedBinaryFile: File, data: List<DownloadDataModel>) {
 		try {
@@ -84,6 +133,11 @@ class DownloadModelMerger {
 		}
 	}
 
+	/**
+	 * Loads the merged binary file if it exists and is newer than all JSON model files.
+	 *
+	 * @return List of DownloadDataModel or null if no valid merged file is found
+	 */
 	private fun loadMergedBinaryData(): List<DownloadDataModel>? {
 		val internalDir = INSTANCE.filesDir
 		val mergedBinaryFile = File(internalDir, MERGRED_DATA_MODEL_BINARY_FILENAME)
@@ -105,5 +159,4 @@ class DownloadModelMerger {
 			null
 		}
 	}
-
 }
