@@ -52,6 +52,22 @@
 -dontwarn jdk.dynalink.linker.support.Guards
 -dontwarn jdk.dynalink.support.ChainedCallSite
 
+-dontwarn com.thoughtworks.paranamer.AdaptiveParanamer
+-dontwarn com.thoughtworks.paranamer.Paranamer
+-dontwarn java.awt.Graphics2D
+-dontwarn java.awt.Graphics
+-dontwarn java.awt.Image
+-dontwarn java.awt.Point
+-dontwarn java.awt.geom.Point2D$Double
+-dontwarn java.awt.geom.Point2D
+-dontwarn java.awt.geom.Rectangle2D$Double
+-dontwarn java.awt.geom.Rectangle2D
+-dontwarn java.awt.image.BufferedImage
+-dontwarn java.awt.image.ImageObserver
+-dontwarn java.awt.image.RenderedImage
+-dontwarn javax.imageio.ImageIO
+-dontwarn javax.json.spi.JsonProvider
+
 # Suppress warnings for internal Sun reflection classes
 -dontwarn sun.reflect.ReflectionFactory
 
