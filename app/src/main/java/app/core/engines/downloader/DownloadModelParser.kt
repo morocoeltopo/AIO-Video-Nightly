@@ -54,10 +54,14 @@ object DownloadModelParser {
 	 */
 	@Throws(Exception::class)
 	suspend fun getDownloadDataModels(): List<DownloadDataModel> {
+		logger.d("getDownloadDataModels() called. Attempt to load from binary file.")
 		downloadModelMerger.let {
 			it.startLoop()
 			val binaryDataModels = downloadModelMerger.loadMergedDataModelIfPossible()
-			if (binaryDataModels.isNullOrEmpty() == false) return binaryDataModels
+			if (binaryDataModels.isNullOrEmpty() == false) {
+				logger.d("getDownloadDataModels() called. successfully loaded from binary file.")
+				return binaryDataModels
+			}
 		}
 
 		logger.d("getDownloadDataModels() called. Cache size=${modelCache.size}")
