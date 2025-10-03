@@ -31,7 +31,7 @@
 			<androidx.cardview.widget.CardView
 				android:id="@+id/container_img_thumbnail"
 				android:layout_width="@dimen/_90"
-				android:layout_height="@dimen/_70"
+				android:layout_height="@dimen/_65"
 				android:layout_marginStart="@dimen/_5"
 				android:layout_marginTop="@dimen/_5"
 				android:layout_marginEnd="@dimen/_5"
@@ -164,6 +164,7 @@
 				<RelativeLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
+					android:layout_marginTop="@dimen/_2"
 					android:background="@drawable/rounded_surface_color"
 					android:orientation="horizontal">
 
@@ -183,7 +184,6 @@
 						android:singleLine="true"
 						android:text="@string/title__"
 						android:textColor="@color/color_text_hint"
-						android:textFontWeight="300"
 						android:textSize="@dimen/smallest_text_size"
 						tools:ignore="TextContrastCheck" />
 				</RelativeLayout>

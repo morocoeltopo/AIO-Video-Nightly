@@ -149,10 +149,10 @@ class DownloaderRowUI(private val rowLayout: View) {
 		if (downloadModel.status != DOWNLOADING && downloadModel.ytdlpProblemMsg.isNotEmpty()) {
 			logger.d("yt-dlp error for id=${downloadModel.id}: ${downloadModel.ytdlpProblemMsg}")
 			statusInfo.text = downloadModel.ytdlpProblemMsg
-			statusInfo.setTextColor(INSTANCE.getColor(R.color.color_error))
+			statusInfo.setTextColor(statusInfo.context.getColor(R.color.color_error))
 		} else {
 			statusInfo.text = downloadModel.generateDownloadInfoInString()
-			statusInfo.setTextColor(INSTANCE.getColor(R.color.color_text_primary))
+			statusInfo.setTextColor(statusInfo.context.getColor(R.color.color_text_hint))
 		}
 	}
 
@@ -236,7 +236,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
 		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = ResourcesCompat.getDrawable(
-			INSTANCE.resources, defaultFaviconResId, null
+			safeRowLayoutRef.get()?.context?.resources ?: INSTANCE.resources, defaultFaviconResId, null
 		)
 
 		// Skip favicon loading if video thumbnails are not allowed
@@ -407,7 +407,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private fun showDefaultDownloadThumb(downloadModel: DownloadDataModel) {
 		logger.d("Showing default thumb for id=${downloadModel.id}")
 		thumbImageView.setImageDrawable(
-			getDrawable(INSTANCE, downloadModel.getThumbnailDrawableID())
+			getDrawable(safeRowLayoutRef.get()?.context ?: INSTANCE, downloadModel.getThumbnailDrawableID())
 		)
 	}
 

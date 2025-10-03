@@ -51,6 +51,7 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioAdblocker
 import app.core.AIOApp.Companion.aioLanguage
 import app.core.AIOApp.Companion.aioSettings
+import app.core.AIOApp.Companion.downloadSystem
 import app.core.CrashHandler
 import app.core.bases.dialogs.UpdaterDialog
 import app.core.bases.interfaces.BaseActivityInf
@@ -274,6 +275,12 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 			logger.d("Fetching latest ad-blocker filters")
 			aioAdblocker.fetchAdFilters()
 
+			// Check if the reference is not null and is of type MotherActivity
+			logger.d("Registering base-activity at download ui manager")
+			(safeActivityRef as? MotherActivity)?.let { motherActivity ->
+				downloadSystem.downloadsUIManager.safeMotherActivity = motherActivity
+			}
+
 			// Handle self-destruct mode if enabled
 			logger.d("Checking self-destruct activation status")
 			shouldSelfDestructApplication()
@@ -308,6 +315,11 @@ abstract class BaseActivity : LanguageAwareActivity(), BaseActivityInf {
 		if (vibrator.hasVibrator()) {
 			logger.d("Cancelling active vibration")
 			vibrator.cancel()
+		}
+
+		// Check if the reference is not null and is of type MotherActivity
+		(safeBaseActivityRef as? MotherActivity)?.let { motherActivity ->
+			downloadSystem.downloadsUIManager.safeMotherActivity = null
 		}
 	}
 
