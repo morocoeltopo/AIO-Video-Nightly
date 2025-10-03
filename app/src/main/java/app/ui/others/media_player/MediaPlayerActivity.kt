@@ -47,6 +47,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.SeekParameters.CLOSEST_SYNC
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.CaptionStyleCompat.EDGE_TYPE_NONE
@@ -467,6 +468,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					.setTrackSelector(playerDefaultTrackSelector)
 					.build().apply { addListener(safeActivityRef) }
 			exoMediaPlayer.setForegroundMode(false)
+			exoMediaPlayer.setSeekParameters(CLOSEST_SYNC)
 
 			// Configure player view
 			exoMediaPlayerView.player = exoMediaPlayer
@@ -967,13 +969,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Toggles between play and pause states.
 	 */
 	private fun toggleVideoPlayback() {
-		val playbackEnded = exoMediaPlayer.contentPosition >= (exoMediaPlayer.duration - 500)
-		if (playbackEnded) {
-			exoMediaPlayer.seekTo(0); exoMediaPlayer.playWhenReady = true
-			trackPlaybackPosition = 0
-		} else {
-			if (exoMediaPlayer.isPlaying) pausePlayer() else resumePlayer()
-		}
+		// Always pause first
+		if (exoMediaPlayer.isPlaying) exoMediaPlayer.pause()
+		else exoMediaPlayer.play()
 	}
 
 	/**
