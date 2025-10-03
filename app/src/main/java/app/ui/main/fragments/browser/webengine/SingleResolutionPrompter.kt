@@ -3,8 +3,10 @@ package app.ui.main.fragments.browser.webengine
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.net.toUri
 import app.core.AIOApp.Companion.IS_PREMIUM_USER
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
+import app.core.AIOApp.Companion.aioFavicons
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.bases.BaseActivity
@@ -13,21 +15,24 @@ import app.core.engines.video_parser.parsers.SupportedURLs.isFacebookUrl
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
+import app.ui.others.information.IntentInterceptActivity
 import com.aio.R
 import lib.device.IntentUtility.openLinkInSystemBrowser
 import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.getWebpageTitleOrDescription
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.LogHelperUtils
-import lib.process.ThreadsUtility
+import lib.process.ThreadsUtility.executeInBackground
 import lib.process.ThreadsUtility.executeOnMain
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ViewUtility.animateFadInOutAnim
 import lib.ui.ViewUtility.closeAnyAnimation
 import lib.ui.ViewUtility.loadThumbnailFromUrl
 import lib.ui.ViewUtility.setLeftSideDrawable
+import lib.ui.ViewUtility.showView
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
+import java.io.File
 import java.lang.ref.WeakReference
 
 /**
@@ -35,6 +40,7 @@ import java.lang.ref.WeakReference
  * Handles video metadata display, thumbnail loading, and download initiation.
  *
  * @property baseActivity The parent activity reference
+ * @property isDialogCancelable Whether the dialog can be canceled by the user.
  * @property singleResolutionName The resolution name to display (e.g. "720p")
  * @property extractedVideoLink The direct video URL to download
  * @property currentWebUrl The webpage URL where video was found (optional)
@@ -45,9 +51,12 @@ import java.lang.ref.WeakReference
  * @property dontParseFBTitle Skip Facebook title parsing if true
  * @property thumbnailUrlProvided Pre-extracted thumbnail URL (optional)
  * @property isDownloadFromBrowser Whether download originated from browser
+ * @property closeActivityOnSuccessfulDownload indicator whether the attached activity should be closed on
+ * successful download or not.
  */
 class SingleResolutionPrompter(
 	private val baseActivity: BaseActivity,
+	private val isDialogCancelable: Boolean = true,
 	private val singleResolutionName: String,
 	private val extractedVideoLink: String,
 	private val currentWebUrl: String? = null,
@@ -77,6 +86,10 @@ class SingleResolutionPrompter(
 	init {
 		// Initialize dialog view and setup components
 		dialogBuilder.setView(R.layout.dialog_single_m3u8_prompter_1)
+		dialogBuilder.setCancelable(isDialogCancelable)
+		dialogBuilder.dialog.setOnCancelListener { safelyCloseIfInterceptActivity() }
+		dialogBuilder.dialog.setOnDismissListener { safelyCloseIfInterceptActivity() }
+
 		dialogBuilder.view.apply {
 			setupTitleAndThumbnail()
 			setupDownloadButton()
@@ -138,7 +151,7 @@ class SingleResolutionPrompter(
 
 		// Special handling for Facebook URLs
 		if (currentWebUrl?.let { isFacebookUrl(it) } == true) {
-			ThreadsUtility.executeInBackground(codeBlock = {
+			executeInBackground(codeBlock = {
 				// Show loading animation while fetching
 				executeOnMainThread { animateFadInOutAnim(videoTitleView) }
 
@@ -186,7 +199,7 @@ class SingleResolutionPrompter(
 		}
 
 		// Fetch thumbnail asynchronously
-		ThreadsUtility.executeInBackground(codeBlock = {
+		executeInBackground(codeBlock = {
 			val websiteUrl = videoUrlReferer ?: currentWebUrl
 			if (websiteUrl.isNullOrEmpty()) return@executeInBackground
 
@@ -204,6 +217,47 @@ class SingleResolutionPrompter(
 	}
 
 	/**
+	 * Loads and displays the site favicon inside the given layout.
+	 *
+	 * @param layout The parent [View] containing an ImageView with ID [R.id.img_site_favicon].
+	 */
+	private fun showFavicon(layout: View) {
+		layout.findViewById<ImageView>(R.id.img_site_favicon).let { favicon ->
+			val defaultFaviconResId = R.drawable.ic_button_information
+			logger.i("Attempting to update site favicon for URL: $videoUrlReferer")
+
+			executeInBackground(codeBlock = {
+				val referralSite = videoUrlReferer ?: extractedVideoLink
+				logger.i("Fetching favicon for site: $referralSite")
+
+				aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
+					val faviconImgFile = File(faviconFilePath)
+
+					if (!faviconImgFile.exists() || !faviconImgFile.isFile) {
+						logger.e("Favicon file not found or invalid at: $faviconFilePath")
+						return@executeInBackground
+					}
+
+					val faviconImgURI = faviconImgFile.toUri()
+					executeOnMain(codeBlock = {
+						try {
+							logger.i("Applying favicon from local file")
+							showView(favicon, true)
+							favicon.setImageURI(faviconImgURI)
+						} catch (error: Exception) {
+							logger.e("Failed to set favicon: ${error.message}", error)
+							showView(favicon, true)
+							favicon.setImageResource(defaultFaviconResId)
+						}
+					})
+				}
+			}, errorHandler = {
+				logger.e("Unexpected error while loading favicon: ${it.message}", it)
+			})
+		}
+	}
+
+	/**
 	 * Sets up title, resolution and thumbnail views
 	 * @receiver The dialog content view
 	 */
@@ -211,6 +265,7 @@ class SingleResolutionPrompter(
 		showVideoTitleFromURL(layout = this)
 		showVideoResolution(layout = this)
 		showVideoThumb(layout = this)
+		showFavicon(layout = this)
 	}
 
 	/**
@@ -260,11 +315,10 @@ class SingleResolutionPrompter(
 
 	private fun addVideoFormatToDownloadSystem() {
 		addToDownloadSystem()
-		close()
 	}
 
 	private fun addToDownloadSystem() {
-		ThreadsUtility.executeInBackground(codeBlock = {
+		executeInBackground(codeBlock = {
 			safeBaseActivity?.let { safeBaseActivityRef ->
 				try {
 					// Validate required URL
@@ -320,6 +374,10 @@ class SingleResolutionPrompter(
 							// Show user toast
 							val toastMsgResId = R.string.title_download_added_successfully
 							showToast(activityInf = safeBaseActivityRef, msgId = toastMsgResId)
+
+							// Close the dialog
+							close()
+
 							if (closeActivityOnSuccessfulDownload) {
 								baseActivity.closeActivityWithFadeAnimation(true)
 							}
@@ -335,5 +393,22 @@ class SingleResolutionPrompter(
 				}
 			}
 		})
+	}
+
+	/**
+	 * Safely close the base activity only if activity is of IntentInterceptActivity.
+	 */
+	private fun safelyCloseIfInterceptActivity() {
+		logger.d("Safely closing base activity")
+		if (safeBaseActivity == null) return
+		executeOnMainThread {
+			try {
+				// Special handling for IntentInterceptActivity
+				val condition = safeBaseActivity is IntentInterceptActivity
+				if (condition) safeBaseActivity.finish()
+			} catch (error: Exception) {
+				logger.e("Error closing activity: ${error.message}", error)
+			}
+		}
 	}
 }

@@ -141,13 +141,15 @@ class IntentInterceptActivity : BaseActivity() {
 				isCancelable = false,
 				baseActivityInf = safeActivityRef,
 				loadingMessage = getString(R.string.title_analyzing_url_please_wait),
-				dialogCancelListener = { dialog ->
-					logger.d("WaitingDialog: User cancelled analyzing process.")
-					dialog.dismiss()
-					isParsingTitleFromUrlAborted = true
-					closeActivityWithFadeAnimation(shouldAnimate = true)
-				}
 			)
+			// Setup waiting dialog "Okay" button click
+			waitingDialog.dialogBuilder?.setOnClickForPositiveButton {
+				logger.d("WaitingDialog: User cancelled analyzing process.")
+				waitingDialog.close()
+				isParsingTitleFromUrlAborted = true
+				closeActivityWithFadeAnimation(shouldAnimate = true)
+			}
+
 			waitingDialog.show()
 			logger.d("WaitingDialog: Displayed analyzing message.")
 
