@@ -9,6 +9,7 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioDSLJsonInstance
 import app.core.AIOApp.Companion.aioSettings
 import app.core.FSTBuilder.fstConfig
+import app.core.engines.downloader.DownloadModelMerger.Companion.MERGRED_DATA_MODEL_BINARY_FILENAME
 import app.core.engines.settings.AIOSettings
 import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
@@ -521,6 +522,7 @@ class DownloadDataModel : Serializable {
 		logger.d("Starting model deletion for download ID: $id")
 		ThreadsUtility.executeInBackground(codeBlock = {
 			val internalDir = AIOApp.internalDataFolder
+			val mergredBinaryFile = internalDir.findFile(MERGRED_DATA_MODEL_BINARY_FILENAME)
 			val modelJsonFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_JSON_EXTENSION")
 			val modelBinaryFile = internalDir.findFile("$id$DOWNLOAD_MODEL_FILE_BINARY_EXTENSION")
 			val cookieFile = internalDir.findFile("$id$DOWNLOAD_MODEL_COOKIES_EXTENSION")
@@ -544,6 +546,11 @@ class DownloadDataModel : Serializable {
 			logger.d("Deleting cookies file")
 			isWritableFile(cookieFile).let {
 				if (it) cookieFile?.delete()?.let { logger.d("Deleted cookies file successfully") }
+			}
+
+			logger.d("Deleting Merged binary file")
+			isWritableFile(mergredBinaryFile).let {
+				if (it) mergredBinaryFile?.delete()?.let { logger.d("Deleted Merged binary file successfully") }
 			}
 
 			logger.d("Deleting temporary files")

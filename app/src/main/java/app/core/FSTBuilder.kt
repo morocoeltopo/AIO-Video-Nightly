@@ -32,11 +32,12 @@ object FSTBuilder {
 	 * Provides high-performance serialization and deserialization of
 	 * objects to/from binary format.
 	 */
-	@JvmStatic
 	val fstConfig: FSTConfiguration = FSTConfiguration.createDefaultConfiguration().apply {
-		registerClass(
-			AIOSettings::class.java, DownloadDataModel::class.java,
-			VideoFormat::class.java, VideoInfo::class.java
-		)
+		registerClass(AIOSettings::class.java, DownloadDataModel::class.java,
+			VideoFormat::class.java, VideoInfo::class.java)
+		setForceSerializable(true)  // faster
+		isShareReferences = true    // usually faster for small objects
+		isPreferSpeed = true
 	}
+
 }
