@@ -27,53 +27,53 @@ import lib.texts.CommonTextUtils.getText
  * - Waiting tasks (queued downloads)
  */
 interface DownloadSysInf {
-	
+
 	/**
 	 * Flag indicating if the download system is currently initializing.
 	 */
 	var isInitializing: Boolean
-	
+
 	/**
 	 * Application context reference.
 	 */
 	val appContext: AIOApp
 		get() = AIOApp.INSTANCE
-	
+
 	/**
 	 * Notification manager for download progress/complete alerts.
 	 */
 	val downloadNotification: DownloadNotification
-	
+
 	/**
 	 * List of active (in-progress/paused) download models.
 	 */
 	val activeDownloadDataModels: ArrayList<DownloadDataModel>
-	
+
 	/**
 	 * List of successfully completed download models.
 	 */
 	val finishedDownloadDataModels: ArrayList<DownloadDataModel>
-	
+
 	/**
 	 * List of currently executing download tasks.
 	 */
 	val runningDownloadTasks: ArrayList<DownloadTaskInf>
-	
+
 	/**
 	 * List of queued download tasks waiting to execute.
 	 */
 	val waitingDownloadTasks: ArrayList<DownloadTaskInf>
-	
+
 	/**
 	 * Manager for coordinating download state with UI.
 	 */
 	val downloadsUIManager: DownloadUIManager
-	
+
 	/**
 	 * Listeners to be notified when downloads complete.
 	 */
 	var downloadOnFinishListeners: ArrayList<DownloadFinishUIListener>
-	
+
 	/**
 	 * Adds a new download to the system.
 	 * @param downloadModel The download to add
@@ -82,7 +82,7 @@ interface DownloadSysInf {
 	fun addDownload(downloadModel: DownloadDataModel, onAdded: () -> Unit = {}) {
 		onAdded()
 	}
-	
+
 	/**
 	 * Resumes a paused download.
 	 * @param downloadModel The download to resume
@@ -91,7 +91,7 @@ interface DownloadSysInf {
 	fun resumeDownload(downloadModel: DownloadDataModel, onResumed: () -> Unit = {}) {
 		onResumed()
 	}
-	
+
 	/**
 	 * Pauses an active download.
 	 * @param downloadModel The download to pause
@@ -100,7 +100,7 @@ interface DownloadSysInf {
 	fun pauseDownload(downloadModel: DownloadDataModel, onPaused: () -> Unit = {}) {
 		onPaused()
 	}
-	
+
 	/**
 	 * Clears a download (removes from active lists but keeps files).
 	 * @param downloadModel The download to clear
@@ -109,7 +109,7 @@ interface DownloadSysInf {
 	fun clearDownload(downloadModel: DownloadDataModel, onCleared: () -> Unit = {}) {
 		onCleared()
 	}
-	
+
 	/**
 	 * Deletes a download and its associated files.
 	 * @param downloadModel The download to delete
@@ -118,40 +118,40 @@ interface DownloadSysInf {
 	fun deleteDownload(downloadModel: DownloadDataModel, onDone: () -> Unit = {}) {
 		onDone()
 	}
-	
+
 	/**
 	 * Resumes all paused downloads.
 	 */
 	fun resumeAllDownloads() {}
-	
+
 	/**
 	 * Pauses all active downloads.
 	 */
 	fun pauseAllDownloads() {}
-	
+
 	/**
 	 * Clears all downloads (keeps files).
 	 */
 	fun clearAllDownloads() {}
-	
+
 	/**
 	 * Deletes all downloads and their files.
 	 */
 	fun deleteAllDownloads() {}
-	
+
 	/**
 	 * Initializes the download system by loading and syncing existing downloads.
 	 */
 	fun initSystem() {
 		parseDownloadDataModelsAndSync()
 	}
-	
+
 	/**
 	 * Gets the count of currently running download tasks.
 	 * @return Number of active downloads
 	 */
 	fun numberOfRunningTasks(): Int = runningDownloadTasks.size
-	
+
 	/**
 	 * Checks if a download exists in the running tasks list.
 	 * @param downloadModel The download to check
@@ -160,7 +160,7 @@ interface DownloadSysInf {
 	fun existsInRunningTasksList(downloadModel: DownloadDataModel): Boolean {
 		return runningDownloadTasks.any { it.downloadDataModel.id == downloadModel.id }
 	}
-	
+
 	/**
 	 * Checks if a download exists in the waiting tasks list.
 	 * @param downloadModel The download to check
@@ -169,7 +169,7 @@ interface DownloadSysInf {
 	fun existsInWaitingTasksList(downloadModel: DownloadDataModel): Boolean {
 		return waitingDownloadTasks.any { it.downloadDataModel.id == downloadModel.id }
 	}
-	
+
 	/**
 	 * Checks if a download exists in the active downloads list.
 	 * @param downloadModel The download to check
@@ -178,7 +178,7 @@ interface DownloadSysInf {
 	fun existsInActiveDownloadDataModelsList(downloadModel: DownloadDataModel): Boolean {
 		return activeDownloadDataModels.contains(downloadModel)
 	}
-	
+
 	/**
 	 * Finds a download task by its model.
 	 * @param downloadModel The download model to search for
@@ -189,7 +189,6 @@ interface DownloadSysInf {
 			?: waitingDownloadTasks.toList().find { it.downloadDataModel.id == downloadModel.id }
 	}
 
-
 	/**
 	 * Checks if a download can be paused (is either running or waiting).
 	 * @param downloadModel The download to check
@@ -198,7 +197,7 @@ interface DownloadSysInf {
 	fun canDownloadTaskBePaused(downloadModel: DownloadDataModel): Boolean {
 		return existsInRunningTasksList(downloadModel) || existsInWaitingTasksList(downloadModel)
 	}
-	
+
 	/**
 	 * Loads and synchronizes download models from disk.
 	 * Handles automatic cleanup of old downloads based on settings.
@@ -212,17 +211,17 @@ interface DownloadSysInf {
 						if (it.globalSettings.downloadAutoRemoveTaskAfterNDays == 0) {
 							it.deleteModelFromDisk(); return@forEach
 						}
-						
+
 						val autoRemoveDaysSettings = aioSettings.downloadAutoRemoveTaskAfterNDays
 						if (getDaysPassedSince(it.lastModifiedTimeDate) > autoRemoveDaysSettings) {
 							it.deleteModelFromDisk(); return@forEach
 						}
 					}
-					
+
 					it.statusInfo = getText(R.string.title_completed)
 					addAndSortFinishedDownloadDataModels(it)
 				}
-				
+
 				if (isValidActiveDownloadModel(it)) {
 					it.statusInfo = getText(R.string.title_paused)
 					addAndSortActiveDownloadModelList(it)
@@ -234,7 +233,7 @@ interface DownloadSysInf {
 			error("Error found in parsing download model from disk.")
 		})
 	}
-	
+
 	/**
 	 * Adds a download to the active list and sorts the collection.
 	 * @param downloadModel The download to add
@@ -244,14 +243,14 @@ interface DownloadSysInf {
 			activeDownloadDataModels.add(downloadModel)
 		}; sortActiveDownloadDataModels()
 	}
-	
+
 	/**
 	 * Sorts active downloads by start time (newest first).
 	 */
 	fun sortActiveDownloadDataModels() {
 		activeDownloadDataModels.sortByDescending { it.startTimeDate }
 	}
-	
+
 	/**
 	 * Adds a download to the completed list and sorts the collection.
 	 * @param downloadModel The download to add
@@ -261,14 +260,14 @@ interface DownloadSysInf {
 			finishedDownloadDataModels.add(downloadModel)
 		}; sortFinishedDownloadDataModels()
 	}
-	
+
 	/**
 	 * Sorts completed downloads by start time (newest first).
 	 */
 	fun sortFinishedDownloadDataModels() {
 		finishedDownloadDataModels.sortByDescending { it.startTimeDate }
 	}
-	
+
 	/**
 	 * Validates if a download model represents an active (incomplete) download.
 	 * @param downloadModel The model to validate
@@ -279,7 +278,7 @@ interface DownloadSysInf {
 		return isValidActiveTask && !downloadModel.isRemoved && !downloadModel.isDeleted
 				&& !downloadModel.isWentToPrivateFolder
 	}
-	
+
 	/**
 	 * Validates if a download model represents a successfully completed download.
 	 * @param downloadModel The model to validate
@@ -293,7 +292,7 @@ interface DownloadSysInf {
 		if (!isExisted) downloadModel.deleteModelFromDisk()
 		return isValid && isExisted
 	}
-	
+
 	/**
 	 * Logs the current status of a download task.
 	 * @param downloadModel The download to log
