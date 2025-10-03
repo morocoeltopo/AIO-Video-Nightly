@@ -717,10 +717,8 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	private fun setupRecentDownloadsSitesAdapter(layoutView: View) {
 		with(layoutView) {
 			if (downloadSystem.isInitializing) return
-
 			val downloadsModels = getRecentDownloadModels()
 			val recyclerView = findViewById<RecyclerView>(R.id.recent_downloads_recycle_list)
-
 			setupRecentDownloadsRecycler(recyclerView, downloadsModels)
 			setupOpenDownloadsClickListener(layoutView)
 		}
@@ -746,6 +744,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		recyclerView.layoutManager = GridLayoutManager(safeMotherActivityRef, 3)
 		recyclerView.adapter = null
 		recyclerView.adapter = createRecentDownloadsAdapter(downloadsModels)
+		showView(targetView = recyclerView, shouldAnimate = true)
 	}
 
 	/**

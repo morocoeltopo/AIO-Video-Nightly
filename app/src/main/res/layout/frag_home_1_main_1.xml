@@ -326,29 +326,43 @@
 					android:layout_marginEnd="@dimen/_3"
 					android:layout_marginBottom="@dimen/_0"
 					android:clipToPadding="true"
+					android:visibility="gone"
 					app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
 					app:spanCount="3"
 					tools:listitem="@layout/frag_home_1_main_1_recent_item_1" />
 
 				<!-- Open downloads tab link -->
-				<TextView
+				<RelativeLayout
 					android:id="@+id/open_downloads_tab"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_gravity="center_horizontal"
-					android:layout_marginStart="@dimen/_8"
-					android:layout_marginTop="@dimen/_5"
-					android:layout_marginEnd="@dimen/_8"
-					android:layout_marginBottom="@dimen/_5"
-					android:background="@drawable/ic_button_negative_selector"
+					android:layout_marginStart="@dimen/_25"
+					android:layout_marginTop="@dimen/_8"
+					android:layout_marginEnd="@dimen/_25"
+					android:layout_marginBottom="@dimen/_8"
+					android:background="@drawable/ic_button_selector_secondary"
 					android:clickable="true"
-					android:fontFamily="@font/application_font_family"
-					android:gravity="center"
-					android:text="@string/text_open_downloads_for_recent_downloads"
-					android:textColor="@color/color_text_primary"
-					android:textFontWeight="600"
-					android:textSize="@dimen/small_text_size"
-					tools:ignore="TouchTargetSizeCheck" />
+					android:elevation="@dimen/_2"
+					tools:ignore="TouchTargetSizeCheck">
+
+					<!-- How to go back button with arrow icon -->
+					<TextView
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_centerInParent="true"
+						android:layout_margin="@dimen/_7"
+						android:drawableEnd="@drawable/ic_button_arrow_next"
+						android:drawablePadding="@dimen/_5"
+						android:drawableTint="@color/color_on_secondary"
+						android:fontFamily="@font/application_font_family"
+						android:gravity="center"
+						android:text="@string/title_all_downloads"
+						android:textColor="@color/color_on_secondary"
+						android:textFontWeight="600"
+						android:textSize="@dimen/normal_text_size"
+						tools:ignore="UseCompatTextViewDrawableXml" />
+				</RelativeLayout>
+
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 
@@ -400,7 +414,7 @@
 					android:layout_marginBottom="@dimen/_8"
 					android:autoLink="web"
 					android:fontFamily="@font/application_font_family"
-					android:text="@string/text_loading_downloads_data"
+					android:text="@string/title_loading_downloads_data"
 					android:textFontWeight="600"
 					android:textSize="@dimen/message_text_size" />
 			</LinearLayout>

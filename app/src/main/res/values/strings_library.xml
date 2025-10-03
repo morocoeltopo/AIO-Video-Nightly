@@ -347,7 +347,7 @@
 	<string name="title_whatsapp">Whatsapp</string>
 	<string name="title_high_quality">High Quality</string>
 	<string name="title_history">History</string>
-	<string name="text_open_downloads_for_recent_downloads"><b><u>Open Tasks</u></b> for all downloads</string>
+	<string name="title_all_downloads">All Downloads</string>
 	<string name="title_recent_downloads">Recent Downloads</string>
 	<string name="text_fb_how_to_guide_1">Tap the <b>Share 📤</b> button below the video or reel, then <b>Copy link 🔗</b> to copy its address.</string>
 	<string name="text_yt_how_to_guide_1">Tap the <b>Share 📤</b> button below the video, then <b>scroll ↔️</b> to find the <b>More...</b> option.</string>
@@ -440,7 +440,7 @@
 	<string name="title_redwap">Redwap</string>
 	<string name="title_hentaicity">Hentaicity</string>
 	<string name="title_xvideos">XVideos</string>
-	<string name="text_loading_downloads_data">Loading downloads data…</string>
+	<string name="title_loading_downloads_data">Loading Data, Please Wait…</string>
 	<string name="text_open_video_site">Open video site</string>
 	<string name="title_share_the_file">Share The File</string>
 	<string name="title_open_the_file">Open The File</string>
