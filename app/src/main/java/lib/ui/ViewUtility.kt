@@ -65,6 +65,7 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.bases.BaseActivity
+import app.core.engines.settings.AIOSettings.Companion.AIO_SETTING_DARK_MODE_FILE_NAME
 import com.aio.R
 import com.bumptech.glide.Glide
 import lib.files.FileSystemUtility
@@ -1548,7 +1549,7 @@ object ViewUtility {
 	@JvmStatic
 	fun changesSystemTheme(activity: BaseActivity) {
 		WeakReference(activity).get()?.apply {
-			val tempFile = File(INSTANCE.filesDir, "darkmode.on")
+			val tempFile = File(INSTANCE.filesDir, AIO_SETTING_DARK_MODE_FILE_NAME)
 			when (tempFile.exists()) {
 				true -> {
 					setDefaultNightMode(MODE_NIGHT_YES)

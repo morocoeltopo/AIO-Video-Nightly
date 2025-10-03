@@ -441,7 +441,7 @@ class AIOSettings : Serializable {
 	 */
 	fun updateUIMode() {
 		try {
-			val tempFile = File(INSTANCE.filesDir, "darkmode.on")
+			val tempFile = File(INSTANCE.filesDir, AIO_SETTING_DARK_MODE_FILE_NAME)
 
 			if (aioSettings.enableDarkUIMode) {
 				if (!tempFile.exists()) tempFile.createNewFile()
@@ -466,6 +466,8 @@ class AIOSettings : Serializable {
 	}
 
 	companion object {
+
+		const val AIO_SETTING_DARK_MODE_FILE_NAME: String = "darkmode.on"
 
 		/**
 		 * JSON settings filename
