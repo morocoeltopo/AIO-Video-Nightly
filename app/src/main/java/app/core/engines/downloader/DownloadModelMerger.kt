@@ -2,13 +2,10 @@ package app.core.engines.downloader
 
 import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
+import app.core.FSTBuilder.fstConfig
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_FILE_JSON_EXTENSION
 import lib.process.LogHelperUtils
-import org.nustaq.serialization.FSTObjectInput
-import org.nustaq.serialization.FSTObjectOutput
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -128,12 +125,9 @@ class DownloadModelMerger {
 	@Synchronized
 	private fun saveToBinary(mergedBinaryFile: File, data: List<DownloadDataModel>) {
 		try {
-			val outputStream = FileOutputStream(mergedBinaryFile)
-			val fstOut = FSTObjectOutput(outputStream)
-			fstOut.writeObject(data)
-			fstOut.flush()
-			fstOut.close()
-			logger.d("Binary save successful: $mergedBinaryFile, size: ${mergedBinaryFile.length()} bytes")
+			val bytes = fstConfig.asByteArray(data)
+			mergedBinaryFile.outputStream().use { it.write(bytes) }
+			logger.d("Binary save successful: $mergedBinaryFile, size: ${bytes.size} bytes")
 		} catch (error: Exception) {
 			logger.e("Binary save error for file: $mergedBinaryFile", error)
 		}
@@ -157,16 +151,16 @@ class DownloadModelMerger {
 		if (!isMergedNewer) return null
 
 		return try {
-			val startFST = System.currentTimeMillis()
-			val inputStream = FileInputStream(mergedBinaryFile)
-			val fstIn = FSTObjectInput(inputStream)
-			@Suppress("UNCHECKED_CAST")
-			val list = fstIn.readObject() as List<DownloadDataModel>
-			fstIn.close()
+			val startFile = System.currentTimeMillis()
+			val bytes = mergedBinaryFile.readBytes()
+			val endFile = System.currentTimeMillis()
 
+			val startFST = System.currentTimeMillis()
+			@Suppress("UNCHECKED_CAST") val list =
+				fstConfig.asObject(bytes) as List<DownloadDataModel>
 			val endFST = System.currentTimeMillis()
 
-			logger.d("Read file: Deserialize: ${endFST-startFST} ms")
+			logger.d("Read file: ${endFile-startFile} ms, Deserialize: ${endFST-startFST} ms")
 			return list
 		} catch (error: Exception) {
 			logger.e("Failed to load merged binary file", error)
