@@ -390,7 +390,7 @@
 	<string name="text_feature_is_experimental_msg">This feature is currently experimental. <b>We don\'t recommend switching the language.</b></string>
 	<string name="title_proceed">Proceed</string>
 	<string name="title_restart_application">Restart Application</string>
-	<string name="text_cation_msg_of_restarting_application"><b>You are about to restart the application process.</b> Please proceed with caution, and only if you are sure of what you\'re doing.</string>
+	<string name="text_cation_msg_of_restarting_application"><b>You are about to restart the application.</b> Please proceed with caution, and only if you are sure.</string>
 	<string name="b_download_id_b_br"><![CDATA[<b>Download Id:</b> %1$s<br>]]></string>
 	<string name="b_file_name_b_br"><![CDATA[<b>File Name:</b> %1$s<br>]]></string>
 	<string name="b_progress_percentage_b_br"><![CDATA[<b>Progress Percentage:</b> %1$s<br>]]></string>

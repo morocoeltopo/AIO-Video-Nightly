@@ -1376,6 +1376,13 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				true
 			}
 
+			// Login required or rate limit error
+			response.contains("content may be inappropriate", ignoreCase = true) -> {
+				downloadDataModel.ytdlpProblemMsg = getText(R.string.title_paused_login_required)
+				logger.d("YTDLP problem detected: rate limit or login required.")
+				true
+			}
+
 			// Content unavailable
 			response.contains("Requested content is not available", ignoreCase = true) -> {
 				downloadDataModel.ytdlpProblemMsg =

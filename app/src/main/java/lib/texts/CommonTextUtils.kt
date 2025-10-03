@@ -173,16 +173,22 @@ object CommonTextUtils {
 	 * ensuring that no multi-byte or encoded characters (like emojis) are broken.
 	 *
 	 * @param input The string to trim, can be null.
-	 * @param maxLength Maximum number of characters to keep.
+	 * @param maxLength Maximum number of Unicode characters (code points) to keep.
 	 * @return A string safely trimmed to [maxLength] characters, or null if input is null.
 	 */
 	@JvmStatic
 	fun safeCutString(input: String?, maxLength: Int = 60): String? {
 		if (input == null) return null
-		if (input.length <= maxLength) return input
 
-		// Use codePoint-aware substring to avoid splitting multi-byte characters
-		val endIndex = input.offsetByCodePoints(0, maxLength)
+		// Count actual code points (visual characters)
+		val codePointCount = input.codePointCount(0, input.length)
+		if (codePointCount <= maxLength) return input
+
+		// Clamp the length to avoid IndexOutOfBoundsException
+		val safeLength = minOf(maxLength, codePointCount)
+
+		// Compute safe end index without splitting surrogate pairs
+		val endIndex = input.offsetByCodePoints(0, safeLength)
 		var result = input.substring(0, endIndex)
 
 		// Trim trailing whitespace or invalid characters
@@ -190,7 +196,7 @@ object CommonTextUtils {
 					!result.last().isValidCharacter())
 		) result = result.dropLast(1)
 
-		logger.d("safeCutString: maxLength=$maxLength result='$result'")
+		logger.d("safeCutString: maxLength=$maxLength, codePointCount=$codePointCount, result='$result'")
 		return result
 	}
 

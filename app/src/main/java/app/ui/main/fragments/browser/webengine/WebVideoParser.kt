@@ -121,18 +121,22 @@ object WebVideoParser {
 		videoGrabberButton.setAnimation(R.raw.animation_videos_found)
 
 		videoGrabberButton.setOnClickListener {
-			// Retain only M3U8 URLs if present
-			if (listOfVideoUrlInfos.any { SupportedURLs.isM3U8Url(it.fileUrl) }) {
-				listOfVideoUrlInfos.removeAll { !SupportedURLs.isM3U8Url(it.fileUrl) }
+			// Work on a separate copy to avoid concurrent modification
+			val filteredList = ArrayList(listOfVideoUrlInfos)
+
+			// Keep only M3U8 URLs if present
+			if (filteredList.any { SupportedURLs.isM3U8Url(it.fileUrl) }) {
+				filteredList.removeAll { !SupportedURLs.isM3U8Url(it.fileUrl) }
 			}
 
 			// Filter out ad URLs
 			val adHosts = aioAdblocker.getAdBlockHosts().toSet()
-			listOfVideoUrlInfos.removeIf { videoUrlInfo ->
+			filteredList.removeIf { videoUrlInfo ->
 				adHosts.any { adHost -> videoUrlInfo.fileUrl.contains(adHost, ignoreCase = true) }
 			}
 
-			ExtractedLinksDialog(webviewEngine, listOfVideoUrlInfos).show()
+			// Show filtered links
+			ExtractedLinksDialog(webviewEngine, filteredList).show()
 		}
 	}
 
