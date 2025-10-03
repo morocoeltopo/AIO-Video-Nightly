@@ -13,6 +13,7 @@ import app.core.engines.browser.history.AIOHistory
 import app.core.engines.caches.AIOAdBlocker
 import app.core.engines.caches.AIOFavicons
 import app.core.engines.caches.AIORawFiles
+import app.core.engines.downloader.DownloadModelMerger
 import app.core.engines.downloader.DownloadSystem
 import app.core.engines.settings.AIOSettings
 import app.core.engines.video_parser.parsers.YoutubeVidParser
@@ -84,6 +85,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 		// Download engines & manager
 		val downloadSystem: DownloadSystem by lazy { DownloadSystem() }
+		val downloadModelMerger: DownloadModelMerger by lazy { DownloadModelMerger() }
 		val youtubeVidParser: YoutubeVidParser by lazy { YoutubeVidParser() }
 
 		// Global timer
