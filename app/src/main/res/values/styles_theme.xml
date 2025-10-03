@@ -117,32 +117,46 @@
 
 	<!-- Transparent activity style for dialogs and overlays -->
 	<style name="style.transparent_activity" parent="Theme.AppCompat.DayNight.NoActionBar">
+		<!-- Status and navigation bar appearance -->
 		<item name="android:statusBarColor">@color/color_surface</item>
 		<item name="android:navigationBarColor">@color/color_surface</item>
 		<item name="android:windowLightStatusBar">true</item>
 		<item name="android:windowLightNavigationBar">true</item>
 		<item name="android:windowActivityTransitions">false</item>
+
+		<!-- Window configurations -->
 		<item name="android:windowBackground">@color/transparent</item>
 		<item name="android:windowIsTranslucent">true</item>
-		<item name="android:windowCloseOnTouchOutside">true</item>
-		<item name="android:windowNoTitle">true</item>
-		<item name="android:windowActionBar">false</item>
-		<item name="android:windowActionBarOverlay">false</item>
-		<item name="android:backgroundDimEnabled">false</item>
 		<item name="android:windowIsFloating">false</item>
+		<item name="android:backgroundDimEnabled">false</item>
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:windowActionBarOverlay">false</item>
+		<item name="android:windowActionBar">false</item>
+		<item name="android:windowCloseOnTouchOutside">true</item>
+
+		<!-- Handle cutouts and system bars -->
 		<item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
 		<item name="android:windowTranslucentStatus">false</item>
 		<item name="android:windowTranslucentNavigation">true</item>
 		<item name="android:fitsSystemWindows">true</item>
+
+		<!-- Color references -->
 		<item name="colorPrimary">@color/color_primary</item>
 		<item name="colorPrimaryDark">@color/color_primary_variant</item>
 		<item name="colorError">@color/color_error</item>
 		<item name="colorAccent">@color/color_secondary</item>
+
+		<!-- Layout direction -->
+		<item name="android:layoutDirection">ltr</item>
+
+		<!-- Text colors -->
 		<item name="android:textColorPrimary">@color/color_text_primary</item>
 		<item name="android:textColorSecondary">@color/color_text_secondary</item>
 		<item name="android:textColorHint">@color/color_text_hint</item>
 		<item name="android:textColor">@color/color_text_primary</item>
 		<item name="android:textColorLink">@color/color_secondary</item>
+
+		<!-- Fonts and styles -->
 		<item name="android:fontFamily">@font/application_font_family</item>
 		<item name="android:textViewStyle">@style/style_padding_textview_style</item>
 		<item name="android:checkboxStyle">@style/style_padding_textview_style</item>

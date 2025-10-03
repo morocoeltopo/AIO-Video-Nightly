@@ -145,7 +145,7 @@
 					android:fontFamily="@font/application_font_family"
 					android:gravity="center"
 					android:maxLines="1"
-					android:text="@string/title_tasks"
+					android:text="@string/title_downloads"
 					android:textColor="@color/color_text_primary"
 					android:textFontWeight="600"
 					android:textSize="@dimen/message_text_size" />

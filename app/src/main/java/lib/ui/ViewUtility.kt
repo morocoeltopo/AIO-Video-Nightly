@@ -64,7 +64,6 @@ import androidx.core.graphics.scale
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import app.core.AIOApp.Companion.INSTANCE
-import app.core.AIOApp.Companion.aioSettings
 import app.core.bases.BaseActivity
 import com.aio.R
 import com.bumptech.glide.Glide
@@ -1549,7 +1548,8 @@ object ViewUtility {
 	@JvmStatic
 	fun changesSystemTheme(activity: BaseActivity) {
 		WeakReference(activity).get()?.apply {
-			when (aioSettings.enableDarkUIMode) {
+			val tempFile = File(INSTANCE.filesDir, "darkmode.on")
+			when (tempFile.exists()) {
 				true -> {
 					setDefaultNightMode(MODE_NIGHT_YES)
 					setDarkSystemBarTheme()

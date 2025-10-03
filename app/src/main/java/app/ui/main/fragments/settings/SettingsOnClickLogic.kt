@@ -135,6 +135,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		try {
 			aioSettings.enableDarkUIMode = !aioSettings.enableDarkUIMode
 			aioSettings.updateInStorage()
+			aioSettings.updateUIMode()
 			updateSettingStateUI()
 			safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
 				ViewUtility.changesSystemTheme(this)

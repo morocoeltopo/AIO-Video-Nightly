@@ -538,5 +538,6 @@
 	<string name="title_light_mode_ui">Light Mode UI</string>
 	<string name="text_changing_theme_require_restart">Changing the theme requires restarting the application.</string>
 	<string name="title_b_latest_version_b"><![CDATA["\n<b>Latest Version:</b> %1$s\n"]]></string>
+	<string name="title_downloads">Downloads</string>
 
 </resources>

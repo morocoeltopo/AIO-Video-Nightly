@@ -431,6 +431,27 @@ class AIOSettings : Serializable {
 	}
 
 	/**
+	 * Updates the UI mode marker by creating or deleting the `darkmode.on` file.
+	 *
+	 * - Creates the file if dark mode is enabled.
+	 * - Deletes the file if dark mode is disabled.
+	 *
+	 * This lightweight file-based flag allows other parts of the app to
+	 * quickly detect the current UI mode without reading settings.
+	 */
+	fun updateUIMode() {
+		try {
+			val tempFile = File(INSTANCE.filesDir, "darkmode.on")
+
+			if (aioSettings.enableDarkUIMode) {
+				if (!tempFile.exists()) tempFile.createNewFile()
+			} else tempFile.delete()
+		} catch (error: Exception) {
+			logger.e("Error saving or deleting darkmode.on file:", error)
+		}
+	}
+
+	/**
 	 * Converts a JSON string to an AIOSettings object.
 	 * @param jsonString The JSON string to convert
 	 * @return The deserialized AIOSettings object
