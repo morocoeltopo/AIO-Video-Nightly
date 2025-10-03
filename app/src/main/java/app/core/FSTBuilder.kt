@@ -1,5 +1,9 @@
 package app.core
 
+import app.core.engines.downloader.DownloadDataModel
+import app.core.engines.settings.AIOSettings
+import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
+import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import org.nustaq.serialization.FSTConfiguration
 
 /**
@@ -29,5 +33,10 @@ object FSTBuilder {
 	 * objects to/from binary format.
 	 */
 	@JvmStatic
-	val fstConfig: FSTConfiguration = FSTConfiguration.createDefaultConfiguration()
+	val fstConfig: FSTConfiguration = FSTConfiguration.createDefaultConfiguration().apply {
+		registerClass(
+			AIOSettings::class.java, DownloadDataModel::class.java,
+			VideoFormat::class.java, VideoInfo::class.java
+		)
+	}
 }

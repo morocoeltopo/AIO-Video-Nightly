@@ -358,20 +358,20 @@ class DownloadDataModel : Serializable {
 		 */
 		fun convertJSONStringToClass(downloadDataModelJSONFile: File): DownloadDataModel? {
 			logger.d("Starting JSON to class conversion for file: ${downloadDataModelJSONFile.absolutePath}")
-			val internalDir = AIOApp.internalDataFolder
+			val internalDir = INSTANCE.filesDir
 			val downloadDataModelBinaryFileName = "${downloadDataModelJSONFile.nameWithoutExtension}.dat"
-			val downloadDataModelBinaryFile = internalDir.findFile(downloadDataModelBinaryFileName)
+			val downloadDataModelBinaryFile = File(internalDir, downloadDataModelBinaryFileName)
 
 			try {
 				var downloadDataModel: DownloadDataModel? = null
 				var isBinaryFileValid = false
 
-				if (downloadDataModelBinaryFile != null && downloadDataModelBinaryFile.exists()) {
+				if (downloadDataModelBinaryFile.exists()) {
 					logger.d("Found binary download model file: ${downloadDataModelBinaryFile.name}")
-					val absolutePath = downloadDataModelBinaryFile.getAbsolutePath(INSTANCE)
+					val absolutePath = downloadDataModelBinaryFile.absolutePath
 
 					logger.d("Attempting to load binary from: $absolutePath")
-					val objectInMemory = loadFromBinary(File(absolutePath))
+					val objectInMemory = loadFromBinary(downloadDataModelBinaryFile)
 
 					if (objectInMemory != null) {
 						logger.d("Binary load successful for file: ${downloadDataModelBinaryFile.name}")
@@ -403,7 +403,7 @@ class DownloadDataModel : Serializable {
 			} catch (error: Exception) {
 				logger.e("Error in conversion: ${error.message}", error)
 				try {
-					downloadDataModelBinaryFile?.delete()
+					downloadDataModelBinaryFile.delete()
 					logger.d("Deleted potentially corrupted binary file")
 				} catch (error: Exception) {
 					logger.e("Failed to delete binary file", error)

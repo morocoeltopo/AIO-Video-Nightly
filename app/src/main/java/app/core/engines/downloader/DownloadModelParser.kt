@@ -101,7 +101,7 @@ object DownloadModelParser {
         val files = listModelFiles(INSTANCE.filesDir)
         logger.d("Found ${files.size} model files to process.")
 
-        files.chunked(10).forEach { chunk ->
+        files.chunked(500).forEach { chunk ->
             logger.d("Processing chunk of ${chunk.size} files.")
             val deferredResults = chunk.map { file ->
                 scope.async {
