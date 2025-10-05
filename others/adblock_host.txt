@@ -14,3 +14,4 @@ flixcdn.com
 evtubescms.phncdn.com
 cdn.nsimg.net
 bmedia-gcore.justservingfiles.net
+notifyvideo.info
