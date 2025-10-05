@@ -1,16 +1,20 @@
 package app.core.engines.downloader
 
 import app.core.AIOApp.Companion.INSTANCE
-import app.core.AIOApp.Companion.downloadModelMerger
+import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_FILE_JSON_EXTENSION
 import app.core.engines.downloader.DownloadDataModel.Companion.convertJSONStringToClass
+import com.aio.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import lib.process.AsyncJobUtils
 import lib.process.LogHelperUtils
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -54,15 +58,15 @@ object DownloadModelParser {
 	 */
 	@Throws(Exception::class)
 	suspend fun getDownloadDataModels(): List<DownloadDataModel> {
-		logger.d("getDownloadDataModels() called. Attempt to load from binary file.")
-		downloadModelMerger.let {
-			it.startLoop()
-			val binaryDataModels = downloadModelMerger.loadMergedDataModelIfPossible()
-			if (binaryDataModels.isNullOrEmpty() == false) {
-				logger.d("getDownloadDataModels() called. successfully loaded from binary file.")
-				return binaryDataModels
-			}
-		}
+//		logger.d("getDownloadDataModels() called. Attempt to load from binary file.")
+//		downloadModelMerger.let {
+//			it.startLoop()
+//			val binaryDataModels = downloadModelMerger.loadMergedDataModelIfPossible()
+//			if (binaryDataModels.isNullOrEmpty() == false) {
+//				logger.d("getDownloadDataModels() called. successfully loaded from binary file.")
+//				return binaryDataModels
+//			}
+//		}
 
 		logger.d("getDownloadDataModels() called. Cache size=${modelCache.size}")
 		return withContext(Dispatchers.IO) {
@@ -112,10 +116,30 @@ object DownloadModelParser {
 		val files = listModelFiles(INSTANCE.filesDir)
 		logger.d("Found ${files.size} model files to process.")
 
-		files.chunked(500).forEach { chunk ->
-			logger.d("Processing chunk of ${chunk.size} files.")
-			val deferredResults = chunk.map { file ->
-				scope.async {
+		val progressResId = R.string.title_loading_of_downloads
+		val startingResId = R.string.title_attempt_to_load_download_models
+		val maxConcurrency = 50 // limit parallelism
+		val semaphore = Semaphore(maxConcurrency)
+
+		var processedCount = 0
+
+		AsyncJobUtils.executeOnMainThread {
+			downloadSystem.downloadsUIManager.loadingDownloadModelTextview?.let {
+				it.text = it.context.getString(startingResId, files.size)
+			}
+		}
+
+		val deferredResults = files.map { file ->
+			scope.async {
+				semaphore.withPermit {
+					// Update UI progress
+					AsyncJobUtils.executeOnMainThread {
+						downloadSystem.downloadsUIManager.loadingDownloadModelTextview?.let { tv ->
+							processedCount++
+							tv.text = tv.context.getString(progressResId, processedCount, files.size)
+						}
+					}
+
 					if (shouldAttemptLoad(file.nameWithoutExtension)) {
 						processModelFileWithRecovery(file)
 					} else {
@@ -124,8 +148,9 @@ object DownloadModelParser {
 					}
 				}
 			}
-			deferredResults.awaitAll()
 		}
+
+		deferredResults.awaitAll()
 	}
 
 	/**

@@ -68,6 +68,7 @@ import lib.process.IntentHelperUtils.openWhatsappApp
 import lib.process.IntentHelperUtils.openXApp
 import lib.process.IntentHelperUtils.openYouTubeApp
 import lib.process.IntentHelperUtils.openYouTubeMusicApp
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.ui.ActivityAnimator.animActivityFade
@@ -102,6 +103,8 @@ import java.nio.charset.StandardCharsets.UTF_8
  * @see AIOTimer.AIOTimerListener
  */
 class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
+
+	private val logger = LogHelperUtils.from(javaClass)
 
 	// Weak references to prevent memory leaks
 	private val safeMotherActivityRef by lazy {
@@ -141,6 +144,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	 * Registers with timer and updates references.
 	 */
 	override fun onResumeFragment() {
+		registerUIElementsToDownloadUIManager()
 		registerSelfReferenceInMotherActivity()
 		safeHomeFragmentRef?.let { AIOApp.aioTimer.register(it) }
 	}
@@ -158,6 +162,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	 * Cleans up references and adapters.
 	 */
 	override fun onDestroyView() {
+		unregisterUIElementsToDownloadUIManager()
 		unregisterSelfReferenceInMotherActivity()
 		clearFragmentAdapterFromMemory()
 		super.onDestroyView()
@@ -304,6 +309,30 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		}
 	}
 
+	private fun registerUIElementsToDownloadUIManager() {
+		try {
+			safeFragmentLayoutRef?.let { layout ->
+				val loadingProgressTextview = layout.findViewById<TextView>(R.id.txt_progress_info)
+				val downloadsUIManager = downloadSystem.downloadsUIManager
+				downloadsUIManager.loadingDownloadModelTextview = loadingProgressTextview
+			}
+		} catch (error: Exception) {
+			logger.e("Error found while registering ui elements to download ui manager:", error)
+		}
+	}
+
+	private fun unregisterUIElementsToDownloadUIManager() {
+		try {
+			safeFragmentLayoutRef?.let { layout ->
+				val loadingProgressTextview = layout.findViewById<TextView>(R.id.txt_progress_info)
+				val downloadsUIManager = downloadSystem.downloadsUIManager
+				downloadsUIManager.loadingDownloadModelTextview = loadingProgressTextview
+			}
+		} catch (error: Exception) {
+			logger.e("Error found while registering ui elements to download ui manager:", error)
+		}
+	}
+
 	/**
 	 * Registers this fragment with the parent activity.
 	 */
@@ -434,8 +463,10 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			} catch (error: Exception) {
 				error.printStackTrace()
 				activity.doSomeVibration(50)
-				showToast(activityInf= safeMotherActivityRef,
-					msgId = R.string.title_something_went_wrong)
+				showToast(
+					activityInf = safeMotherActivityRef,
+					msgId = R.string.title_something_went_wrong
+				)
 			}
 		}
 	}

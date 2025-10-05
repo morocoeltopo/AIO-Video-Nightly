@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout.LayoutParams
 import android.widget.LinearLayout.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
 import app.core.AIOApp
 import app.ui.main.MotherActivity
@@ -86,6 +87,16 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 	 * the active list.
 	 */
 	var finishedTasksFragment: FinishedTasksFragment? = null
+
+	/**
+	 * TextView displayed on the Home Screen (or startup screen)
+	 * to indicate the progress of loading download models during
+	 * a cold start of the application.
+	 *
+	 * Shows feedback such as "Loading X of Y downloads…" instead
+	 * of a generic infinite loader to improve user experience.
+	 */
+	var loadingDownloadModelTextview: TextView? = null
 
 	/**
 	 * Redraws all active download items in the UI.

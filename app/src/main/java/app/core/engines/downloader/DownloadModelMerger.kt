@@ -160,7 +160,7 @@ class DownloadModelMerger {
 				fstConfig.asObject(bytes) as List<DownloadDataModel>
 			val endFST = System.currentTimeMillis()
 
-			logger.d("Read file: ${endFile-startFile} ms, Deserialize: ${endFST-startFST} ms")
+			logger.d("Read file: ${endFile - startFile} ms, Deserialize: ${endFST - startFST} ms")
 			return list
 		} catch (error: Exception) {
 			logger.e("Failed to load merged binary file", error)
