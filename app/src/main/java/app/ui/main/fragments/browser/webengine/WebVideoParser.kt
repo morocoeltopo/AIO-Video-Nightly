@@ -137,6 +137,10 @@ object WebVideoParser {
 
 			// Show filtered links
 			ExtractedLinksDialog(webviewEngine, filteredList).show()
+
+			// Update the original list
+			listOfVideoUrlInfos.clear()
+			listOfVideoUrlInfos.addAll(filteredList)
 		}
 	}
 
