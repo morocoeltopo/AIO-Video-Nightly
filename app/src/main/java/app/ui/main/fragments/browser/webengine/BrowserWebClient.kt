@@ -11,7 +11,6 @@ import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.downloader.DownloadURLHelper.getFileInfoFromSever
 import app.core.engines.video_parser.parsers.SupportedURLs.isM3U8Url
 import app.ui.main.fragments.browser.webengine.WebVideoParser.resetVideoGrabbingButton
-import com.bumptech.glide.Glide
 import lib.files.FileExtensions.ALL_DOWNLOADABLE_FORMATS
 import lib.files.FileExtensions.ONLINE_VIDEO_FORMATS
 import lib.files.FileSystemUtility
@@ -44,9 +43,7 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 	 */
 	override fun onPageStarted(webView: WebView?, url: String?, favicon: Bitmap?) {
 		super.onPageStarted(webView, url, favicon)
-		println("On Page Started URL = $url")
 		analyzeDownloadableLink(url)
-		updateBrowserFavicon(webView)
 		resetVideoGrabbingButton(webviewEngine)
 	}
 
@@ -57,8 +54,6 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 	 */
 	override fun onPageFinished(webView: WebView?, url: String?) {
 		super.onPageFinished(webView, url)
-		updateBrowserFavicon(webView)
-		println("On Page Finished URL = $url")
 		analyzeDownloadableLink(url)
 	}
 
@@ -178,23 +173,6 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 			url.endsWith(".$ext", ignoreCase = true) ||
 					url.contains(".$ext?", ignoreCase = true) ||
 					url.contains(".$ext&", ignoreCase = true)
-		}
-	}
-
-	/**
-	 * Updates the browser's favicon display
-	 * @param webView The WebView containing the favicon
-	 */
-	private fun updateBrowserFavicon(webView: WebView?) {
-		try {
-			webviewEngine.browserFragment.browserFragmentTop.animateDefaultFaviconLoading(true)
-			webView?.favicon?.let { fav ->
-				webviewEngine.browserFragment.browserFragmentTop.webViewFavicon.let { imageView ->
-					Glide.with(safeMotherActivityRef).load(fav).into(imageView)
-				}
-			}
-		} catch (error: Exception) {
-			error.printStackTrace()
 		}
 	}
 
