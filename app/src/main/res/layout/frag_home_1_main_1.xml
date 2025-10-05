@@ -376,7 +376,7 @@
 			android:layout_marginEnd="@dimen/_10"
 			android:layout_marginBottom="@dimen/_10"
 			android:orientation="vertical"
-			android:visibility="gone"
+			android:visibility="visible"
 			app:cardBackgroundColor="@color/color_cardview_bg"
 			app:cardCornerRadius="@dimen/_10">
 
@@ -388,11 +388,11 @@
 				<!-- Loading animation -->
 				<com.airbnb.lottie.LottieAnimationView
 					android:id="@+id/img_progress_circle"
-					android:layout_width="@dimen/_150"
+					android:layout_width="@dimen/_120"
 					android:layout_height="wrap_content"
 					android:layout_gravity="center_vertical|center_horizontal"
-					android:layout_marginTop="@dimen/_0"
-					android:layout_marginBottom="-30dp"
+					android:layout_marginTop="-20dp"
+					android:layout_marginBottom="-50dp"
 					android:adjustViewBounds="true"
 					android:hardwareAccelerated="true"
 					android:importantForAccessibility="no"
@@ -411,7 +411,7 @@
 					android:layout_marginStart="@dimen/_10"
 					android:layout_marginTop="@dimen/_8"
 					android:layout_marginEnd="@dimen/_10"
-					android:layout_marginBottom="@dimen/_8"
+					android:layout_marginBottom="@dimen/_10"
 					android:autoLink="web"
 					android:fontFamily="@font/application_font_family"
 					android:text="@string/title_loading_downloads_data"

@@ -89,7 +89,7 @@ class WaitingDialog(
 				AIOApp.aioRawFiles.getCircleLoadingComposition()?.let {
 					setComposition(it)
 					playAnimation()
-				} ?: run { setAnimation(R.raw.animation_circle_loading) }
+				} ?: run { setAnimation(R.raw.animation_waiting_loading) }
 
 				showView(targetView = this, shouldAnimate = true, animTimeout = 400)
 			}

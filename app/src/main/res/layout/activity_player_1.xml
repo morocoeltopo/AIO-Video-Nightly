@@ -33,7 +33,6 @@
 		android:background="@color/color_pure_black"
 		android:importantForAccessibility="no"
 		android:scaleType="centerCrop"
-		android:src="@drawable/image_no_thumb_available"
 		android:visibility="gone" />
 
 	<!-- Lottie animation for audio visualizing -->

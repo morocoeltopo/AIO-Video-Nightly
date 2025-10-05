@@ -56,7 +56,7 @@ class AIORawFiles {
 
 		ThreadsUtility.executeInBackground(codeBlock = {
 
-			fromRawRes(AIOApp.INSTANCE, R.raw.animation_circle_loading)
+			fromRawRes(AIOApp.INSTANCE, R.raw.animation_waiting_loading)
 				.addListener { composition ->
 					loadingComposition = composition
 					logger.d("Loaded circle loading animation.")

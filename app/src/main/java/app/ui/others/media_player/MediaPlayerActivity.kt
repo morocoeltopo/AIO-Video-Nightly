@@ -122,6 +122,8 @@ import kotlin.math.abs
 @UnstableApi
 class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
+	private val logger = LogHelperUtils.from(javaClass)
+
 	// Weak reference to self to prevent memory leaks
 	private val safeSelfReference = WeakReference(this).get()
 
@@ -407,7 +409,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			// Initialize album art & visualizer holder for audio files
 			audioAlbumArtHolder = findViewById(id.img_audio_album_art)
 			audioVisualizer = findViewById(id.anim_audio_visualizing)
-			fromRawRes(INSTANCE, R.raw.animation_audio_visualizing)
+			fromRawRes(INSTANCE, R.raw.animation_audio_visualizing_v1)
 				.addListener { audioVisualizer.setComposition(it) }
 
 			// Set up action bar buttons
