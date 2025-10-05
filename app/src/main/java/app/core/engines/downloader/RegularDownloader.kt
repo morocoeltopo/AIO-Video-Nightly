@@ -2,6 +2,7 @@ package app.core.engines.downloader
 
 import android.os.CountDownTimer
 import app.core.AIOApp.Companion.INSTANCE
+import app.core.AIOTimer.AIOTimerListener
 import app.core.engines.downloader.DownloadStatus.CLOSE
 import app.core.engines.downloader.DownloadStatus.COMPLETE
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
@@ -36,56 +37,23 @@ import java.io.IOException
 import java.io.RandomAccessFile
 import java.net.URL
 
-/**
- * A class that handles regular file downloads with support for multi-threading, resume functionality,
- * and progress tracking. Implements [DownloadTaskInf] and [DownloadPartListener] interfaces.
- *
- * @property downloadDataModel The data model containing download configuration and progress information.
- */
 class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
-	DownloadTaskInf, DownloadPartListener {
+	DownloadTaskInf, DownloadPartListener , AIOTimerListener{
 
-	// Logger utility for debugging and tracking state changes
 	private val logger = LogHelperUtils.from(javaClass)
-
-	// Global settings derived from the download data model, used to control download behavior
-	private val downloadDataModelConfig = downloadDataModel.globalSettings
-
-	// File object representing the final destination of the download
+	private val downloadSettingsConfig = downloadDataModel.globalSettings
 	private var destinationFile: File = downloadDataModel.getDestinationFile()
-
-	// List of parts that represent segments of the file being downloaded
 	private var downloadParts: ArrayList<RegularDownloadPart> = ArrayList()
-
-	// Timer to periodically trigger download progress updates
 	private var downloadTimer: CountDownTimer? = null
-
-	// Utility to monitor and track current network speed during download
 	private var netSpeedTracker: NetSpeedTracker? = null
-
-	// Listener to report status updates such as progress, completion, cancellation, etc.
 	override var statusListener: DownloadTaskListener? = null
 
-	/**
-	 * Initializes the download task by preparing the data model,
-	 * ensuring the destination file is set, and setting up a timer
-	 * to monitor progress during the download.
-	 */
 	override fun initiate() {
-		CoroutineScope(Dispatchers.IO).launch {
-			initDownloadDataModel()
-			initDestinationFile()
-			initDownloadTaskTimer()
-		}
+		initDownloadDataModel()
+		initDestinationFile()
+		initDownloadTaskTimer()
 	}
 
-	/**
-	 * Starts the download process by:
-	 * - Configuring the download model and its parts
-	 * - Creating the destination file (as an empty file)
-	 * - Spawning all download threads
-	 * - Updating status and starting the download timer upon success
-	 */
 	override fun startDownload() {
 		CoroutineScope(Dispatchers.IO).launch {
 			configureDownloadModel()
@@ -102,14 +70,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Cancels the ongoing download operation.
-	 * - Stops all part downloads
-	 * - Updates the download status to paused or the specified reason
-	 * - Ensures exception safety in cancellation flow
-	 *
-	 * @param cancelReason Optional text describing why the download was canceled
-	 */
 	override fun cancelDownload(cancelReason: String) {
 		try {
 			downloadParts.forEach { part -> part.stopDownload() }
@@ -120,12 +80,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Callback invoked when a download part has been canceled.
-	 * Handles retrying or stopping the download depending on the error type.
-	 *
-	 * @param downloadPart The part of the download that triggered this cancellation
-	 */
 	@Synchronized
 	override fun onPartCanceled(downloadPart: RegularDownloadPart) {
 		CoroutineScope(Dispatchers.IO).launch {
@@ -151,12 +105,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Callback invoked when a single download part completes.
-	 * Checks if all parts are completed to finalize the entire download.
-	 *
-	 * @param downloadPart The completed part of the download
-	 */
 	@Synchronized
 	override fun onPartCompleted(downloadPart: RegularDownloadPart) {
 		CoroutineScope(Dispatchers.IO).launch {
@@ -169,7 +117,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 			if (!isAllPartCompleted) return@launch
 
 			// Play completion sound if enabled
-			if (downloadDataModelConfig.downloadPlayNotificationSound) {
+			if (downloadSettingsConfig.downloadPlayNotificationSound) {
 				AudioPlayerUtils(INSTANCE).play(raw.sound_download_finished)
 			}
 
@@ -179,11 +127,11 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Initializes the download data model with default values before starting a new download.
-	 * Resets the status, flags, retry count, and displays a waiting message.
-	 * Also persists the updated state to storage.
-	 */
+	override fun onAIOTimerTick(loopCount: Double) {
+
+	}
+
+
 	private fun initDownloadDataModel() {
 		downloadDataModel.status = CLOSE
 		downloadDataModel.isRunning = false
@@ -193,18 +141,10 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		downloadDataModel.updateInStorage()
 	}
 
-	/**
-	 * Re-fetches and assigns the destination file reference from the data model.
-	 * Ensures that the correct file is used for download storage.
-	 */
 	private fun initDestinationFile() {
 		destinationFile = downloadDataModel.getDestinationFile()
 	}
 
-	/**
-	 * Initializes a timer that ticks every 500 milliseconds to update download progress.
-	 * If the download is still in progress when the timer finishes, it restarts itself.
-	 */
 	private fun initDownloadTaskTimer() {
 		CoroutineScope(Dispatchers.Main).launch {
 			downloadTimer = object : CountDownTimer((1000 * 60), 500) {
@@ -222,11 +162,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Configures the download model before beginning download.
-	 * Skips configuration if previous download data is found.
-	 * Otherwise, sets up auto-resume, auto-remove, URL filtering, file info and part range.
-	 */
 	private fun configureDownloadModel() {
 		updateDownloadStatus(getText(string.title_validating_download))
 		if (doesDownloadModelHasPreviousData()) return
@@ -238,12 +173,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		configureDownloadPartRange()
 	}
 
-	/**
-	 * Checks if the download model contains previously downloaded data.
-	 * If data is found but the destination file is missing, marks the model as failed.
-	 *
-	 * @return true if previous download data exists, false otherwise.
-	 */
+
 	private fun doesDownloadModelHasPreviousData(): Boolean {
 		val isPreviousDataFound = downloadDataModel.downloadedByte > 0
 
@@ -257,45 +187,29 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}; return isPreviousDataFound
 	}
 
-	/**
-	 * Configures auto-resume settings for the download model.
-	 * Disables max error limit if auto-resume is not enabled.
-	 */
 	private fun configureDownloadAutoResumeSettings() {
 		updateDownloadStatus(getText(string.title_configuring_auto_resume))
-		if (!downloadDataModelConfig.downloadAutoResume) {
-			downloadDataModelConfig.downloadAutoResumeMaxErrors = 0
+		if (!downloadSettingsConfig.downloadAutoResume) {
+			downloadSettingsConfig.downloadAutoResumeMaxErrors = 0
 		}
 	}
 
-	/**
-	 * Configures auto-remove settings for the download model.
-	 * Disables removal timing if auto-remove is not enabled.
-	 */
 	private fun configureDownloadAutoRemoveSettings() {
 		updateDownloadStatus(statusInfo = getText(string.title_configuring_auto_remove))
-		if (!downloadDataModelConfig.downloadAutoRemoveTasks) {
-			downloadDataModelConfig.downloadAutoRemoveTaskAfterNDays = 0
+		if (!downloadSettingsConfig.downloadAutoRemoveTasks) {
+			downloadSettingsConfig.downloadAutoRemoveTaskAfterNDays = 0
 		}
 	}
 
-	/**
-	 * Attempts to clean and resolve redirected download links if link redirection is enabled.
-	 * This ensures the actual file URL is used for downloading.
-	 */
 	private fun configureDownloadAutoFilterURL() {
-		if (downloadDataModelConfig.downloadAutoLinkRedirection) {
+		if (downloadSettingsConfig.downloadAutoLinkRedirection) {
 			updateDownloadStatus(statusInfo = getText(string.title_filtering_url))
 			val originalURL = getOriginalURL(downloadDataModel.fileURL)
 			if (originalURL != null) downloadDataModel.fileURL = originalURL
 		}
 	}
 
-	/**
-	 * Fetches and configures detailed information about the file from the server.
-	 * This includes file size, name, support for resume and multipart downloads.
-	 * Sets flags for unknown file sizes and adjusts thread count as needed.
-	 */
+
 	private fun configureDownloadFileInfo() {
 		if (downloadDataModel.fileSize <= 1) {
 			updateDownloadStatus(statusInfo = getText(string.title_recalculating_file_size))
@@ -317,27 +231,22 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 				downloadDataModel.fileSizeInFormat = humanReadableSizeOf(downloadDataModel.fileSize)
 				if (downloadDataModel.isMultiThreadSupported) {
 					val downloadThreads = getOptimalNumberOfDownloadParts(downloadDataModel.fileSize)
-					downloadDataModelConfig.downloadDefaultThreadConnections = downloadThreads
+					downloadSettingsConfig.downloadDefaultThreadConnections = downloadThreads
 				}
 
 				// Handle edge case: file size is still unknown after server check
 				if (downloadDataModel.fileSize <= 1) {
 					downloadDataModel.isUnknownFileSize = true
 					downloadDataModel.isMultiThreadSupported = false
-					downloadDataModelConfig.downloadDefaultThreadConnections = 1
+					downloadSettingsConfig.downloadDefaultThreadConnections = 1
 					downloadDataModel.fileSizeInFormat = getText(string.title_unknown)
 				}
 			}
 		}
 	}
 
-	/**
-	 * Initializes part-wise download ranges based on the file size and number of threads.
-	 * Sets up starting points, ending points, chunk sizes, and byte tracking arrays.
-	 * If the file size is unknown, it sets the chunk size to the file size and skips range calculation.
-	 */
 	private fun configureDownloadPartRange() {
-		val numberOfThreads = downloadDataModelConfig.downloadDefaultThreadConnections
+		val numberOfThreads = downloadSettingsConfig.downloadDefaultThreadConnections
 		downloadDataModel.partStartingPoint = LongArray(numberOfThreads)
 		downloadDataModel.partEndingPoint = LongArray(numberOfThreads)
 		downloadDataModel.partChunkSizes = LongArray(numberOfThreads)
@@ -356,14 +265,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Calculates the aligned byte ranges for multithreaded downloading.
-	 *
-	 * @param fileSize The total size of the file in bytes.
-	 * @param numberOfThreads The number of threads to split the file into.
-	 * @param alignmentBoundary Optional alignment size, defaulting to 4096 bytes (disk block size).
-	 * @return A list of pairs containing start and end byte positions for each thread.
-	 */
 	private fun calculateAlignedPartRanges(
 		fileSize: Long,
 		numberOfThreads: Int,
@@ -385,30 +286,16 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		return ranges
 	}
 
-	/**
-	 * Aligns a given byte position to the next multiple of the specified boundary.
-	 *
-	 * @param position The position to align.
-	 * @param boundary The alignment boundary (e.g., 4096 for 4KB alignment).
-	 * @return The aligned position.
-	 */
+
 	private fun alignToBoundary(position: Long, boundary: Long): Long {
 		val alignedPosition = ((position + boundary - 1) / boundary) * boundary
 		return alignedPosition
 	}
 
-	/**
-	 * Generates and initializes download parts for multithreaded downloading.
-	 */
 	private fun configureDownloadParts() {
 		downloadParts = generateDownloadParts()
 	}
 
-	/**
-	 * Creates an empty file with the specified size for writing downloaded content.
-	 * This is required for multi-threaded downloads using RandomAccessFile.
-	 * Handles exceptions and updates download state if file access fails.
-	 */
 	private fun createEmptyDestinationFile() {
 		if (downloadDataModel.isDeleted) return
 		try {
@@ -425,25 +312,14 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Checks if the current download configuration supports multi-threaded downloads.
-	 *
-	 * @return True if multiple threads can be used; false otherwise.
-	 */
 	private fun isMultiThreadDownloadSupported(): Boolean {
-		val maxThreadsAllowed = downloadDataModelConfig.downloadDefaultThreadConnections
+		val maxThreadsAllowed = downloadSettingsConfig.downloadDefaultThreadConnections
 		val isNotUnknownFileSize = !downloadDataModel.isUnknownFileSize
 		val isSupported =
 			downloadDataModel.fileSize > 0 && maxThreadsAllowed > 1 && isNotUnknownFileSize
 		return isSupported
 	}
 
-	/**
-	 * Checks if a critical error occurred in a download part.
-	 *
-	 * @param downloadPart The download part to inspect.
-	 * @return True if a critical error (e.g., file not found) was found; false otherwise.
-	 */
 	private fun isCriticalErrorFoundInDownloadPart(downloadPart: RegularDownloadPart): Boolean {
 		val errorFound = downloadPart.partDownloadErrorException != null
 		if (errorFound) {
@@ -456,24 +332,13 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		return false
 	}
 
-	/**
-	 * Determines if retrying a failed download is allowed based on retry count and running state.
-	 *
-	 * @return True if retrying is permitted; false otherwise.
-	 */
 	private fun isRetryingAllowed(): Boolean {
-		val maxErrorAllowed = downloadDataModelConfig.downloadAutoResumeMaxErrors
+		val maxErrorAllowed = downloadSettingsConfig.downloadAutoResumeMaxErrors
 		val retryAllowed = downloadDataModel.isRunning &&
 				downloadDataModel.totalConnectionRetries < maxErrorAllowed
 		return retryAllowed
 	}
 
-	/**
-	 * Attempts to restart a failed or interrupted download part.
-	 * Validates network availability and user-defined constraints (e.g., Wi-Fi only).
-	 *
-	 * @param downloadPart The part that should be restarted.
-	 */
 	private fun restartDownload(downloadPart: RegularDownloadPart) {
 		if (isRetryingAllowed()) {
 			if (!isNetworkAvailable()) {
@@ -482,7 +347,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 				return
 			}
 
-			if (downloadDataModelConfig.downloadWifiOnly && !isWifiEnabled()) {
+			if (downloadSettingsConfig.downloadWifiOnly && !isWifiEnabled()) {
 				downloadDataModel.isWaitingForNetwork = true
 				updateDownloadStatus(getText(string.title_waiting_for_wifi))
 				return
@@ -504,12 +369,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Starts all download threads for each part of the file.
-	 * Skips threads that are already marked as downloading.
-	 *
-	 * @return True if threads were started successfully; false if file access failed.
-	 */
 	private fun startAllDownloadThreads(): Boolean {
 		if (downloadDataModel.isFailedToAccessFile) {
 			downloadDataModel.msgToShowUserViaDialog =
@@ -525,14 +384,10 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Generates all the download parts based on the current configuration and initializes them.
-	 * Each part represents a segment of the file to be downloaded.
-	 */
 	private fun generateDownloadParts(): ArrayList<RegularDownloadPart> {
 		updateDownloadStatus(getText(string.title_generating_parts))
 
-		val numberOfThreads = downloadDataModelConfig.downloadDefaultThreadConnections
+		val numberOfThreads = downloadSettingsConfig.downloadDefaultThreadConnections
 		val regularDownloadParts = ArrayList<RegularDownloadPart>(numberOfThreads)
 
 		// Create and configure each download part
@@ -551,9 +406,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		return regularDownloadParts
 	}
 
-	/**
-	 * Triggers download progress update on a background coroutine.
-	 */
+
 	private fun updateDownloadProgress() {
 		CoroutineScope(Dispatchers.IO).launch {
 			calculateProgressAndModifyDownloadModel()
@@ -563,9 +416,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Updates the current download status, status info, and notifies listeners on the main thread.
-	 */
 	override fun updateDownloadStatus(statusInfo: String?, status: Int) {
 		CoroutineScope(Dispatchers.IO).launch {
 			if (!statusInfo.isNullOrEmpty()) {
@@ -587,9 +437,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Recalculates all download-related metrics and updates the model accordingly.
-	 */
 	private fun calculateProgressAndModifyDownloadModel() {
 		calculateDownloadRetries()
 		calculateTotalDownloadedTime()
@@ -604,9 +451,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		downloadDataModel.updateInStorage()
 	}
 
-	/**
-	 * Ensures no download part is stuck even when it claims to be completed.
-	 */
 	private fun validatingDownloadCompletion() {
 		if (downloadDataModel.isUnknownFileSize) return
 		if (downloadDataModel.fileSize < 1) return
@@ -620,9 +464,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Calculates the total bytes downloaded across all parts and updates the progress percentage.
-	 */
 	private fun calculateDownloadedBytes() {
 		downloadDataModel.downloadedByte = 0
 
@@ -649,9 +490,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Calculates the overall download percentage and formats it for display.
-	 */
 	private fun calculateDownloadPercentage() {
 		downloadDataModel.progressPercentage = if (downloadDataModel.isUnknownFileSize) {
 			0
@@ -666,18 +504,13 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		downloadDataModel.progressPercentageInFormat = getFormattedPercentage(downloadDataModel)
 	}
 
-	/**
-	 * Updates the last modified timestamp of the download session.
-	 */
 	private fun updateLastModificationDate() {
 		downloadDataModel.lastModifiedTimeDate = System.currentTimeMillis()
 		downloadDataModel.lastModifiedTimeDateInFormat =
 			millisToDateTimeString(downloadDataModel.lastModifiedTimeDate)
 	}
 
-	/**
-	 * Calculates the average download speed based on total bytes and elapsed time.
-	 */
+
 	private fun calculateAverageDownloadSpeed() {
 		val downloadedByte = downloadDataModel.downloadedByte
 		val downloadedTime = downloadDataModel.timeSpentInMilliSec
@@ -688,9 +521,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		)
 	}
 
-	/**
-	 * Calculates the real-time download speed using a network speed tracker.
-	 */
 	private fun calculateRealtimeDownloadSpeed() {
 		if (netSpeedTracker == null) {
 			netSpeedTracker = NetSpeedTracker(
@@ -713,9 +543,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Tracks the maximum download speed reached so far.
-	 */
 	private fun calculateMaxDownloadSpeed() {
 		if (downloadDataModel.realtimeSpeed > downloadDataModel.maxSpeed) {
 			downloadDataModel.maxSpeed = downloadDataModel.realtimeSpeed
@@ -724,18 +551,14 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Updates the download model's total tracked retries connections
-	 */
+
 	private fun calculateDownloadRetries() {
 		logger.d("Updating total connection retries")
 		downloadDataModel.totalTrackedConnectionRetries =
 			downloadDataModel.totalConnectionRetries + downloadDataModel.totalUnresetConnectionRetries
 	}
 
-	/**
-	 * Increments the total time spent downloading, ignoring idle/waiting time.
-	 */
+
 	private fun calculateTotalDownloadedTime() {
 		if (!downloadDataModel.isWaitingForNetwork) {
 			downloadDataModel.timeSpentInMilliSec += 500
@@ -746,9 +569,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 			calculateTime(timeSpentInMillis, getText(string.text_spent))
 	}
 
-	/**
-	 * Estimates the remaining download time based on current speed and remaining bytes.
-	 */
 	private fun calculateRemainingDownloadTime() {
 		if (!downloadDataModel.isUnknownFileSize || !downloadDataModel.isWaitingForNetwork) {
 			val remainingByte = downloadDataModel.fileSize - downloadDataModel.downloadedByte
@@ -764,9 +584,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	/**
-	 * Checks network state and resumes download if conditions are met.
-	 */
 	private fun checkNetworkConnectionAndRetryDownload() {
 		// Check connectivity status for each download part
 		downloadParts.forEach { downloadPart -> downloadPart.verifyNetworkConnection() }
@@ -774,7 +591,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		// If download is waiting for network, attempt resuming when possible
 		if (downloadDataModel.isWaitingForNetwork) {
 			if (isNetworkAvailable() && isInternetConnected()) {
-				if (downloadDataModelConfig.downloadWifiOnly && !isWifiEnabled()) return
+				if (downloadSettingsConfig.downloadWifiOnly && !isWifiEnabled()) return
 
 				downloadDataModel.isWaitingForNetwork = false
 				updateDownloadStatus(getText(string.title_started_downloading))
