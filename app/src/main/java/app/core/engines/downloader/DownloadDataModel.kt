@@ -886,8 +886,8 @@ class DownloadDataModel : Serializable {
 	 */
 	private fun normalDownloadStatusInfo(): String {
 		logger.d("Generating normal download status info for download ID: $id")
+		val textDownload = getText(string.title_downloaded)
 		if (videoFormat != null && videoInfo != null) {
-			val textDownload = getText(string.title_downloaded)
 			val infoString = "$statusInfo  |  $textDownload ($progressPercentage%)" +
 					"  |  --/s  |  --:-- "
 			logger.d("Generated video download status: $infoString")
@@ -903,11 +903,11 @@ class DownloadDataModel : Serializable {
 
 			val downloadingStatus = getText(string.title_started_downloading).lowercase()
 			val result = if (statusInfo.lowercase().startsWith(downloadingStatus)) {
-				"$progressPercentageInFormat% Of $totalFileSize | " +
-						"$downloadSpeedInfo | $remainingTimeInfo"
+				"$progressPercentageInFormat% Of $totalFileSize  |  " +
+						"$downloadSpeedInfo  |  $remainingTimeInfo"
 			} else {
-				"$statusInfo | $totalFileSize | " +
-						"$downloadSpeedInfo | $remainingTimeInfo"
+				"$statusInfo  |  $textDownload ($progressPercentage%)  |  " +
+						"$downloadSpeedInfo |  $remainingTimeInfo"
 			}
 			logger.d("Generated normal download status: $result")
 			return result

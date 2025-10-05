@@ -209,7 +209,7 @@
 						android:layout_marginTop="@dimen/_2"
 						android:layout_marginEnd="@dimen/_5"
 						android:layout_marginBottom="@dimen/_2"
-						android:ellipsize="end"
+						android:ellipsize="none"
 						android:fontFamily="@font/application_font_family"
 						android:gravity="center_vertical"
 						android:singleLine="true"
