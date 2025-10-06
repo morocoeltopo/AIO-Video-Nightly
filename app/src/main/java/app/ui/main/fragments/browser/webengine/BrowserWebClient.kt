@@ -144,7 +144,7 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 			}?.let {
 				ThreadsUtility.executeInBackground(codeBlock = {
 					if (isValidURL(url)) {
-						getFileInfoFromSever(url = URL(url)).let { urlFileInfo ->
+						getFileInfoFromSever(fileUrl = URL(url)).let { urlFileInfo ->
 							if (urlFileInfo.fileSize > 0) {
 								val filename = decodeURLFileName(urlFileInfo.fileName)
 								ThreadsUtility.executeOnMain {

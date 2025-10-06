@@ -39,7 +39,7 @@ interface DownloadTaskInf {
 	 * - Set up the download environment
 	 * - Not throw exceptions for initialization errors
 	 */
-	fun initiate()
+	suspend fun initiate()
 	
 	/**
 	 * Begins the actual download operation.
@@ -51,7 +51,7 @@ interface DownloadTaskInf {
 	 * - Notify status changes
 	 * - Handle errors gracefully
 	 */
-	fun startDownload()
+	suspend fun startDownload()
 	
 	/**
 	 * Stops an active download operation.
@@ -62,7 +62,7 @@ interface DownloadTaskInf {
 	 * - Update the download status appropriately
 	 * - Notify listeners of cancellation
 	 */
-	fun cancelDownload(cancelReason: String = "")
+	suspend fun cancelDownload(cancelReason: String = "")
 	
 	/**
 	 * Updates the status of the download task.
@@ -74,7 +74,7 @@ interface DownloadTaskInf {
 	 * - Notify listeners of changes
 	 * - Handle status transitions appropriately
 	 */
-	fun updateDownloadStatus(
+	suspend fun updateDownloadStatus(
 		statusInfo: String? = null,
 		status: Int = downloadDataModel.status
 	)
