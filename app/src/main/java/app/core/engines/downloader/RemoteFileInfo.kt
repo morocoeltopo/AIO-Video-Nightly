@@ -2,6 +2,7 @@ package app.core.engines.downloader
 
 import com.dslplatform.json.CompiledJson
 import com.dslplatform.json.JsonAttribute
+import java.io.Serializable
 
 /**
  * Represents metadata about a remote file used in the download system.
@@ -28,7 +29,7 @@ import com.dslplatform.json.JsonAttribute
  * only the metadata required for managing downloads, progress tracking, and integrity checks.
  */
 @CompiledJson
-class RemoteFileInfo() {
+class RemoteFileInfo() : Serializable {
 
 	/** True if the server forbids access to the file. */
 	@JsonAttribute(name = "isFileForbidden")

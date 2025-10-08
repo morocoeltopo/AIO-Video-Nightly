@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import lib.process.LogHelperUtils
 import java.lang.ref.WeakReference
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * [AIOTimer] is a recurring countdown timer that notifies registered listeners on each tick.
@@ -41,7 +42,7 @@ open class AIOTimer(
 	 * Weak references prevent memory leaks by allowing listeners to be garbage collected
 	 * if no strong references exist.
 	 */
-	private val timerListeners = ArrayList<WeakReference<AIOTimerListener>>()
+	private val timerListeners = CopyOnWriteArrayList<WeakReference<AIOTimerListener>>()
 
 	/** Tracks the number of timer ticks that have occurred since the timer started. */
 	private var loopCount = 0.0
