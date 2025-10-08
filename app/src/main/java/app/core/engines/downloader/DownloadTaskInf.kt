@@ -29,7 +29,7 @@ interface DownloadTaskInf {
 	 * - Progress updates
 	 * - Significant events during the download
 	 */
-	var statusListener: DownloadTaskListener?
+	var downloadStatusListener: DownloadTaskListener?
 	
 	/**
 	 * Prepares the download task for execution.
@@ -39,7 +39,7 @@ interface DownloadTaskInf {
 	 * - Set up the download environment
 	 * - Not throw exceptions for initialization errors
 	 */
-	suspend fun initiate()
+	suspend fun initiateDownload()
 	
 	/**
 	 * Begins the actual download operation.
@@ -52,18 +52,28 @@ interface DownloadTaskInf {
 	 * - Handle errors gracefully
 	 */
 	suspend fun startDownload()
-	
+
 	/**
-	 * Stops an active download operation.
-	 * @param cancelReason Optional description of why the download was cancelled
-	 * Implementations should:
-	 * - Clean up network resources
-	 * - Finalize file writing if needed
-	 * - Update the download status appropriately
-	 * - Notify listeners of cancellation
+	 * Cancels an ongoing download operation.
+	 *
+	 * This function should be called when a download needs to be stopped due to
+	 * either user intervention or an internal error. It ensures proper resource
+	 * cleanup and consistent state management.
+	 *
+	 * @param cancelReason A human-readable message describing why the download was canceled.
+	 *                     Useful for logging, debugging, and showing messages to the user.
+	 * @param isCanceledByUser Indicates whether the cancellation was initiated by the user.
+	 *                         This helps distinguish between user actions and system-triggered
+	 *                         interruptions (e.g., network failures or file errors).
+	 *
+	 * Expected responsibilities of implementations:
+	 * - Stop all active network transfers and background tasks.
+	 * - Finalize or discard any partially written files to prevent corruption.
+	 * - Update the download’s internal state and persistent storage to reflect cancellation.
+	 * - Notify UI components, listeners, or observers about the cancellation event.
 	 */
-	suspend fun cancelDownload(cancelReason: String = "")
-	
+	suspend fun cancelDownload(cancelReason: String = "", isCanceledByUser: Boolean = false)
+
 	/**
 	 * Updates the status of the download task.
 	 * @param statusInfo Optional detailed status message

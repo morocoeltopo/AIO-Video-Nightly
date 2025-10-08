@@ -75,7 +75,7 @@ parse = "4.3.0"
 storage = "2.2.0"
 
 # YouTubeDL-Android (ytdlp core + ffmpeg)
-ytdlp = "0.17.4"
+ytdlp = "0.18.0"
 
 # DSL-JSON (high-performance JSON parser)
 dsljson = "2.0.2"

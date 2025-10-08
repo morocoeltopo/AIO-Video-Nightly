@@ -112,9 +112,8 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 	}
 
 	private fun isSingleThreaded(): Boolean {
-		return regularDownloader.downloadDataModel.isUnknownFileSize
-				|| regularDownloader.downloadDataModel
-			.globalSettings.downloadDefaultThreadConnections == 1
+		return downloadDataModel.isUnknownFileSize
+				|| downloadGlobalSettings.downloadDefaultThreadConnections == 1
 	}
 
 	private fun updateDownloadPartStatus(status: Int) {

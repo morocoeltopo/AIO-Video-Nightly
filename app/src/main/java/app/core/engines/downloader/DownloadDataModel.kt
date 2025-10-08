@@ -249,8 +249,8 @@ class DownloadDataModel : Serializable {
 	var isMultiThreadSupported: Boolean = false
 
 	/** Total number of connection retry attempts made */
-	@JsonAttribute(name = "totalConnectionRetries")
-	var totalConnectionRetries: Int = 0
+	@JsonAttribute(name = "resumeSessionRetryCount")
+	var resumeSessionRetryCount: Int = 0
 
 	/** Total number of connection retries that weren't reset */
 	@JsonAttribute(name = "totalUnresetConnectionRetries")
@@ -323,6 +323,9 @@ class DownloadDataModel : Serializable {
 	/** Video format and codec information */
 	@JsonAttribute(name = "videoFormat")
 	var videoFormat: VideoFormat? = null
+
+	@JsonAttribute(name = "remoteFileInfo")
+	var remoteFileInfo: RemoteFileInfo? = null
 
 	/** Command string used to execute the download process */
 	@JsonAttribute(name = "executionCommand")

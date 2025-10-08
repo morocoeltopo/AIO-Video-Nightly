@@ -90,7 +90,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 * Volatile ensures the latest reference is visible across threads.
 	 */
 	@Volatile
-	override var statusListener: DownloadTaskListener? = null
+	override var downloadStatusListener: DownloadTaskListener? = null
 
 	/**
 	 * Indicates whether a WebView is currently loading (e.g., for cookie extraction).
@@ -110,7 +110,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 * Starts the initialization process for the download task.
 	 * This method sets up the model, initializes retry mechanisms, and updates initial status.
 	 */
-	override fun initiate() {
+	override suspend fun initiateDownload() {
 		logger.d("Initiating download task...")
 		executeInBackground(codeBlock = {
 			logger.d("Initializing download data model...")
@@ -127,7 +127,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 * Prepares the environment, configures settings, and decides on the download method
 	 * depending on the type of URL.
 	 */
-	override fun startDownload() {
+	override suspend fun startDownload() {
 		logger.d("Starting download process...")
 		updateDownloadStatus(getText(R.string.title_preparing_download), DOWNLOADING)
 		configureDownloadModel()
@@ -147,7 +147,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 *
 	 * @param cancelReason The reason for cancellation. Defaults to 'Paused' if empty.
 	 */
-	override fun cancelDownload(cancelReason: String) {
+	override suspend fun cancelDownload(cancelReason: String, isCanceledByUser: Boolean) {
 		try {
 			logger.d("Cancelling download...")
 			closeYTDLProgress()
@@ -169,7 +169,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		downloadDataModel.status = CLOSE
 		downloadDataModel.isRunning = false
 		downloadDataModel.isWaitingForNetwork = false
-		downloadDataModel.totalConnectionRetries = 0
+		downloadDataModel.resumeSessionRetryCount = 0
 		downloadDataModel.statusInfo = getText(R.string.title_waiting_to_join)
 		initBasicDownloadModelInfo()
 		logger.d("Saving initial state to storage...")
@@ -663,7 +663,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 * @param status The current status code (e.g., DOWNLOADING, COMPLETE).
 	 */
 	@Synchronized
-	override fun updateDownloadStatus(statusInfo: String?, status: Int) {
+	override suspend fun updateDownloadStatus(statusInfo: String?, status: Int) {
 		logger.d("Updating download status...")
 
 		// Update status information if a new message is provided
@@ -688,7 +688,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		// Notify UI/listener on the main thread
 		executeOnMainThread {
 			logger.d("Notifying status listener on main thread.")
-			statusListener?.onStatusUpdate(classRef)
+			downloadStatusListener?.onStatusUpdate(classRef)
 		}
 	}
 
@@ -898,7 +898,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	private fun updateTotalConnectionRetries() {
 		logger.d("Updating total connection retries")
 		downloadDataModel.totalTrackedConnectionRetries =
-			downloadDataModel.totalConnectionRetries + downloadDataModel.totalUnresetConnectionRetries
+			downloadDataModel.resumeSessionRetryCount + downloadDataModel.totalUnresetConnectionRetries
 	}
 
 	/**
@@ -940,8 +940,9 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 			} catch (error: IOException) {
 				logger.d("IOException while creating file: ${error.message}")
 				error.printStackTrace()
-				downloadDataModel.totalConnectionRetries++
-				logger.d("Incremented total connection retries: ${downloadDataModel.totalConnectionRetries}")
+				downloadDataModel.resumeSessionRetryCount++
+				downloadDataModel.totalTrackedConnectionRetries++
+				logger.d("Incremented total connection retries: ${downloadDataModel.resumeSessionRetryCount}")
 
 				downloadDataModel.isFailedToAccessFile = true
 				logger.d("Marked download as failed to access file.")
@@ -1267,7 +1268,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 				if (downloadDataModel.isFileUrlExpired) {
 					logger.d("Pausing download due to expired URL.")
-					cancelDownload(getText(R.string.title_link_expired)) // Expired link
+					cancelDownload(getText(R.string.title_link_expired_paused)) // Expired link
 					return@executeInBackground
 				}
 
@@ -1474,8 +1475,8 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		}
 
 		// Increment retry counter for diagnostics
-		downloadDataModel.totalConnectionRetries++
-		logger.d("Retry attempt #${downloadDataModel.totalConnectionRetries}.")
+		downloadDataModel.resumeSessionRetryCount++
+		logger.d("Retry attempt #${downloadDataModel.resumeSessionRetryCount}.")
 	}
 
 	/**
@@ -1486,10 +1487,10 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	private fun isRetryingAllowed(): Boolean {
 		val maxErrorAllowed = downloadDataModelConfig.downloadAutoResumeMaxErrors
 		val retryAllowed = downloadDataModel.isRunning &&
-				downloadDataModel.totalConnectionRetries < maxErrorAllowed
+				downloadDataModel.resumeSessionRetryCount < maxErrorAllowed
 		logger.d(
 			"Checking if retry is allowed: $retryAllowed " +
-					"(retries: ${downloadDataModel.totalConnectionRetries}/$maxErrorAllowed)"
+					"(retries: ${downloadDataModel.resumeSessionRetryCount}/$maxErrorAllowed)"
 		)
 		return retryAllowed
 	}

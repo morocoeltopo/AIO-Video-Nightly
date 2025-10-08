@@ -1,10 +1,7 @@
 package app.core.engines.downloader
 
-import android.os.CountDownTimer
-import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioTimer
-import app.core.AIOTimer
 import app.core.AIOTimer.AIOTimerListener
 import app.core.engines.downloader.DownloadStatus.CLOSE
 import app.core.engines.downloader.DownloadStatus.COMPLETE
@@ -14,9 +11,6 @@ import app.core.engines.downloader.RegularDownloadPart.DownloadPartListener
 import app.core.engines.settings.AIOSettings
 import com.aio.R.raw
 import com.aio.R.string
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import lib.device.DateTimeUtils.calculateTime
 import lib.device.DateTimeUtils.millisToDateTimeString
 import lib.files.FileSizeFormatter.humanReadableSizeOf
@@ -32,7 +26,6 @@ import lib.networks.NetworkUtility.isWifiEnabled
 import lib.networks.URLUtility.getOriginalURL
 import lib.networks.URLUtility.isValidURL
 import lib.networks.URLUtilityKT.isInternetConnected
-import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.AudioPlayerUtils
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
@@ -58,8 +51,10 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		downloadDataModel.isRunning = false
 		downloadDataModel.isWaitingForNetwork = false
 		downloadDataModel.resumeSessionRetryCount = 0
-		downloadDataModel.statusInfo = getText(string.title_waiting_to_join)
 		destinationOutputFile = downloadDataModel.getDestinationFile()
+
+		val statusInfoString = getText(string.title_waiting_to_join)
+		downloadDataModel.statusInfo = statusInfoString
 		downloadDataModel.updateInStorage()
 	}
 
@@ -68,6 +63,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		configureDownloadParts()
 		createEmptyOutputDestinationFile()
 		val isSuccessfullyExecuted = startAllDownloadThreads()
+
 		if (isSuccessfullyExecuted) {
 			val statusInfoString = getText(string.title_started_downloading)
 			updateDownloadStatus(statusInfo = statusInfoString, status = DOWNLOADING)
@@ -80,7 +76,10 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 
 	override suspend fun cancelDownload(cancelReason: String, isCanceledByUser: Boolean) {
 		try {
-			allDownloadParts.forEach { part -> part.stopDownloadSilently(isCanceledByUser) }
+			allDownloadParts.forEach { part ->
+				part.stopDownloadSilently(isCanceledByUser = isCanceledByUser)
+			}
+
 			val statusMessage = cancelReason.ifEmpty { getText(string.title_paused) }
 			updateDownloadStatus(statusInfo = statusMessage, status = CLOSE)
 		} catch (error: Exception) {
@@ -88,96 +87,93 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	override suspend fun onPartCanceled(downloadPart: RegularDownloadPart) {
-		// Step 1: Skip further processing if the part was canceled by the user
-		if (downloadPart.isPartCanceledByUser) return
+	@Synchronized
+	override fun onPartCanceled(downloadPart: RegularDownloadPart) {
+		ThreadsUtility.executeInBackground(codeBlock = {
+			if (downloadPart.isPartCanceledByUser) return@executeInBackground
+			if (isCriticalErrorFoundInDownloadPart(downloadPart)) {
+				if (downloadDataModel.isFileUrlExpired) {
+					val cancelReason = getText(string.title_link_expired_paused)
+					cancelDownload(cancelReason = cancelReason)
+					return@executeInBackground
+				}
 
-		// Step 2: Check for critical errors that require full cancellation
-		if (isCriticalErrorFoundInDownloadPart(downloadPart)) {
-
-			// Handle expired URL
-			if (downloadDataModel.isFileUrlExpired) {
-				val cancelReason = getText(string.title_link_expired_paused)
-				cancelDownload(cancelReason = cancelReason)
-				return
+				if (downloadDataModel.isDestinationFileNotExisted) {
+					val cancelReason = getText(string.title_file_deleted_paused)
+					cancelDownload(cancelReason = cancelReason)
+					return@executeInBackground
+				}
+			} else {
+				tryRestartingDownloadPart(regularDownloadPart = downloadPart)
 			}
 
-			// Handle missing or deleted destination file
-			if (downloadDataModel.isDestinationFileNotExisted) {
-				val cancelReason = getText(string.title_file_deleted_paused)
-				cancelDownload(cancelReason = cancelReason)
-				return
+			downloadDataModel.updateInStorage()
+			if (!downloadDataModel.isRemoved && downloadDataModel.isDeleted) {
+				if (destinationOutputFile.exists()) {
+					destinationOutputFile.delete()
+				}
 			}
-		} else {
-			// Step 3: Attempt to restart the canceled part if not a critical failure
-			tryRestartingDownloadPart(downloadPart = downloadPart)
-		}
-
-		// Step 4: Persist the updated state of the download
-		downloadDataModel.updateInStorage()
-
-		// Step 5: Cleanup if the task was marked as deleted
-		if (!downloadDataModel.isRemoved && downloadDataModel.isDeleted) {
-			if (destinationOutputFile.exists()) {
-				destinationOutputFile.delete()
-			}
-		}
+		})
 	}
 
-	override suspend fun onPartCompleted(downloadPart: RegularDownloadPart) {
-		// Assume all parts are completed unless proven otherwise
-		var allPartsCompleted = true
+	@Synchronized
+	override fun onPartCompleted(downloadPart: RegularDownloadPart) {
+		ThreadsUtility.executeInBackground(codeBlock = {
+			var allPartsCompleted = true
 
-		for ((index, part) in allDownloadParts.withIndex()) {
-			// Skip checks if we already know it's not complete
-			if (!allPartsCompleted) break
+			for ((index, part) in allDownloadParts.withIndex()) {
+				if (!allPartsCompleted) break
 
-			// If file size is known, verify downloaded bytes against expected size
-			if (!downloadDataModel.isUnknownFileSize && part.partChunkSize > 0) {
-				val expectedSize = downloadDataModel.partChunkSizes[index]
-				val actualSize = part.partDownloadedByte
+				if (!downloadDataModel.isUnknownFileSize && part.partChunkSize > 0) {
+					val expectedSize = downloadDataModel.partChunkSizes[index]
+					val actualSize = part.partDownloadedByte
 
-				if (actualSize < expectedSize) {
-					// Use < instead of != to avoid false positives due to
-					// servers providing slightly different reported sizes
+					if (actualSize < expectedSize) {
+						allPartsCompleted = false
+						break
+					}
+				}
+
+				if (part.partDownloadStatus != COMPLETE) {
 					allPartsCompleted = false
 					break
 				}
 			}
 
-			// Ensure the part's status is marked as COMPLETE
-			if (part.partDownloadStatus != COMPLETE) {
-				allPartsCompleted = false
-				break
+			if (!allPartsCompleted) return@executeInBackground
+			if (downloadSettings.downloadPlayNotificationSound) {
+				AudioPlayerUtils(INSTANCE).play(raw.sound_download_finished)
 			}
-		}
 
-		// Return early if any part is incomplete
-		if (!allPartsCompleted) return
-
-		// Play completion sound if enabled
-		if (downloadSettings.downloadPlayNotificationSound) {
-			AudioPlayerUtils(INSTANCE).play(raw.sound_download_finished)
-		}
-
-		// Mark download as fully complete
-		downloadDataModel.isRunning = false
-		downloadDataModel.isComplete = true
-		val statusInfoString = getText(string.title_completed)
-		updateDownloadStatus(statusInfo = statusInfoString, status = COMPLETE)
+			downloadDataModel.isRunning = false
+			downloadDataModel.isComplete = true
+			val statusInfoString = getText(string.title_completed)
+			updateDownloadStatus(statusInfo = statusInfoString, status = COMPLETE)
+		})
 	}
 
 	override fun onAIOTimerTick(loopCount: Double) {
-		if (downloadDataModel.isRunning) {
-			updateDownloadProgress()
+		handleDownloadProgress()
+	}
+
+	override suspend fun updateDownloadStatus(statusInfo: String?, status: Int) {
+		if (!statusInfo.isNullOrEmpty()) downloadDataModel.statusInfo = statusInfo
+		downloadDataModel.status = status
+		downloadDataModel.isRunning = (status == DOWNLOADING)
+		downloadDataModel.isComplete = (status == COMPLETE)
+		downloadDataModel.updateInStorage()
+
+		downloadStatusListener?.onStatusUpdate(this@RegularDownloader)
+		if (!downloadDataModel.isRunning && downloadDataModel.status != DOWNLOADING) {
+			aioTimer.unregister(this@RegularDownloader)
 		}
 	}
 
 	private suspend fun configureDownloadModel() {
 		val statusInfoString = getText(string.title_validating_download_task)
 		updateDownloadStatus(statusInfo = statusInfoString)
-		if (doesDownloadModelHasPreviousData()) return
 
+		if (doesDownloadModelHasPreviousData()) return
 		configureDownloadAutoResumeSettings()
 		configureDownloadAutoRemoveSettings()
 		configureDownloadAutoFilterURL()
@@ -258,7 +254,6 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 			downloadSettings.downloadDefaultThreadConnections = downloadThreads
 		}
 
-		// Handle edge case: file size is still unknown after server check
 		if (downloadDataModel.fileSize <= 1) {
 			downloadDataModel.isUnknownFileSize = true
 			downloadDataModel.isMultiThreadSupported = false
@@ -267,7 +262,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	private suspend fun configureDownloadPartRange() {
+	private fun configureDownloadPartRange() {
 		val numberOfThreads = downloadSettings.downloadDefaultThreadConnections
 		downloadDataModel.partStartingPoint = LongArray(numberOfThreads)
 		downloadDataModel.partEndingPoint = LongArray(numberOfThreads)
@@ -287,7 +282,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	private suspend fun calculateAlignedPartRanges(
+	private fun calculateAlignedPartRanges(
 		fileSize: Long,
 		numberOfThreads: Int,
 		alignmentBoundary: Long = 4096L
@@ -305,7 +300,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		return ranges
 	}
 
-	private suspend fun alignToBoundary(position: Long, boundary: Long): Long {
+	private fun alignToBoundary(position: Long, boundary: Long): Long {
 		val alignedPosition = ((position + boundary - 1) / boundary) * boundary
 		return alignedPosition
 	}
@@ -321,19 +316,17 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		val numberOfThreads = downloadSettings.downloadDefaultThreadConnections
 		val regularDownloadParts = ArrayList<RegularDownloadPart>(numberOfThreads)
 
-		// Create and configure each download part
 		for (index in 0 until numberOfThreads) {
-			val downloadPart = RegularDownloadPart(regularDownloader = this)
+			val downloadPart = RegularDownloadPart(regularDownloader = this@RegularDownloader)
 			downloadPart.initiate(
-				partIndex = index,
-				startingPoint = downloadDataModel.partStartingPoint[index],
-				endingPoint = downloadDataModel.partEndingPoint[index],
-				chunkSize = downloadDataModel.partChunkSizes[index],
+				downloadPartIndex = index,
+				downloadStartingPoint = downloadDataModel.partStartingPoint[index],
+				downloadEndingPoint = downloadDataModel.partEndingPoint[index],
+				downloadChunkSize = downloadDataModel.partChunkSizes[index],
 				downloadedByte = downloadDataModel.partsDownloadedByte[index]
 			)
 			regularDownloadParts.add(downloadPart)
 		}
-
 		return regularDownloadParts
 	}
 
@@ -349,13 +342,15 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		} catch (error: IOException) {
 			logger.e("Error while creating an empty output destination file:", error)
 			downloadDataModel.resumeSessionRetryCount++
+			downloadDataModel.totalTrackedConnectionRetries++
 			downloadDataModel.isFailedToAccessFile = true
 			val cancelReasonString = getText(string.title_download_io_failed)
 			cancelDownload(cancelReason = cancelReasonString)
 		}
 	}
 
-	private suspend fun canUseMultiThreadedDownload(): Boolean {
+	@Synchronized
+	private fun canUseMultiThreadedDownload(): Boolean {
 		val maxDownloadThreads = downloadSettings.downloadDefaultThreadConnections
 		val isNotUnknownFileSize = !downloadDataModel.isUnknownFileSize
 		val isMultiThreadingSupported =
@@ -363,7 +358,8 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		return isMultiThreadingSupported
 	}
 
-	private suspend fun startAllDownloadThreads(): Boolean {
+	@Synchronized
+	private fun startAllDownloadThreads(): Boolean {
 		if (downloadDataModel.isFailedToAccessFile) {
 			val errorMsgString = getText(string.text_failed_to_write_file_to_storage)
 			downloadDataModel.msgToShowUserViaDialog = errorMsgString
@@ -378,9 +374,10 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	private suspend fun isCriticalErrorFoundInDownloadPart(downloadPart: RegularDownloadPart): Boolean {
-		if (downloadPart.partDownloadErrorException != null) {
-			if (downloadPart.partDownloadErrorException is FileNotFoundException) {
+	@Synchronized
+	private fun isCriticalErrorFoundInDownloadPart(regularDownloadPart: RegularDownloadPart): Boolean {
+		if (regularDownloadPart.partDownloadErrorException != null) {
+			if (regularDownloadPart.partDownloadErrorException is FileNotFoundException) {
 				downloadDataModel.isFileUrlExpired = true
 				if (!destinationOutputFile.exists()) {
 					downloadDataModel.isDestinationFileNotExisted = true
@@ -391,40 +388,58 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		return false
 	}
 
-	private suspend fun isRetryingDownloadAllowed(): Boolean {
+	@Synchronized
+	private fun isRetryingDownloadAllowed(): Boolean {
 		val maxErrorAllowed = downloadSettings.downloadAutoResumeMaxErrors
-		val retryCount = downloadDataModel.resumeSessionRetryCount
-		val retryAllowed = downloadDataModel.isRunning && retryCount < maxErrorAllowed
+		val sessionRetryCount = downloadDataModel.resumeSessionRetryCount
+		val retryAllowed = downloadDataModel.isRunning && sessionRetryCount < maxErrorAllowed
 		return retryAllowed
 	}
 
-	private suspend fun tryRestartingDownloadPart(downloadPart: RegularDownloadPart) {
+	private suspend fun tryRestartingDownloadPart(regularDownloadPart: RegularDownloadPart) {
 		if (isRetryingDownloadAllowed()) {
 			if (!isNetworkAvailable()) {
 				downloadDataModel.isWaitingForNetwork = true
-				updateDownloadStatus(getText(string.title_waiting_for_network))
+				val statusInfoString = getText(string.title_waiting_for_network)
+				updateDownloadStatus(statusInfoString)
 				return
 			}
 
 			if (downloadSettings.downloadWifiOnly && !isWifiEnabled()) {
 				downloadDataModel.isWaitingForNetwork = true
-				updateDownloadStatus(getText(string.title_waiting_for_wifi))
+				val statusInfoString = getText(string.title_waiting_for_wifi)
+				updateDownloadStatus(statusInfoString)
 				return
 			}
 
-			if (!downloadPart.isInternetConnected()) {
+			if (!regularDownloadPart.isInternetConnected()) {
 				downloadDataModel.isWaitingForNetwork = true
-				updateDownloadStatus(getText(string.title_waiting_for_internet))
+				val statusInfoString = getText(string.title_waiting_for_internet)
+				updateDownloadStatus(statusInfoString)
 				return
 			}
 
 			if (downloadDataModel.isWaitingForNetwork) {
 				downloadDataModel.isWaitingForNetwork = false
-				updateDownloadStatus(getText(string.title_started_downloading))
-				downloadPart.startDownload()
+				val statusInfoString = getText(string.title_started_downloading)
+				updateDownloadStatus(statusInfoString)
+				val partDownloadStatus = regularDownloadPart.partDownloadStatus
+				if (partDownloadStatus != DOWNLOADING && partDownloadStatus != COMPLETE) {
+					regularDownloadPart.startDownload()
+				}
 			}
 
 			downloadDataModel.resumeSessionRetryCount++
+			downloadDataModel.totalTrackedConnectionRetries++
+		}
+	}
+
+	@Synchronized
+	private fun handleDownloadProgress() {
+		if (downloadDataModel.isRunning && downloadDataModel.status == DOWNLOADING) {
+			updateDownloadProgress()
+		} else {
+			aioTimer.unregister(this@RegularDownloader)
 		}
 	}
 
@@ -437,23 +452,8 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		})
 	}
 
-	override suspend fun updateDownloadStatus(statusInfo: String?, status: Int) {
-		if (!statusInfo.isNullOrEmpty()) downloadDataModel.statusInfo = statusInfo
-
-		downloadDataModel.status = status
-		downloadDataModel.isRunning = (status == DOWNLOADING)
-		downloadDataModel.isComplete = (status == COMPLETE)
-		downloadDataModel.updateInStorage()
-
-		executeOnMainThread { downloadStatusListener?.onStatusUpdate(this@RegularDownloader) }
-
-		if (!downloadDataModel.isRunning || downloadDataModel.isComplete) {
-			aioTimer.register(this@RegularDownloader)
-		}
-	}
-
+	@Synchronized
 	private fun calculateProgressAndModifyDownloadModel() {
-		calculateDownloadRetries()
 		calculateTotalDownloadedTime()
 		calculateDownloadedBytes()
 		calculateDownloadPercentage()
@@ -466,6 +466,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		downloadDataModel.updateInStorage()
 	}
 
+	@Synchronized
 	private fun validatingDownloadCompletion() {
 		if (downloadDataModel.isUnknownFileSize) return
 		if (downloadDataModel.fileSize < 1) return
@@ -473,12 +474,13 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		allDownloadParts.forEach {
 			if (it.partDownloadedByte >= it.partChunkSize) {
 				if (it.partDownloadStatus != COMPLETE) {
-					it.stopDownloadSilently().apply { startDownload() }
+					it.stopDownloadSilently()
 				}
 			}
 		}
 	}
 
+	@Synchronized
 	private fun calculateDownloadedBytes() {
 		downloadDataModel.downloadedByte = 0
 
@@ -487,44 +489,40 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 			downloadDataModel.partsDownloadedByte[downloadPart.partIndex] =
 				downloadPart.partDownloadedByte
 			downloadDataModel.partProgressPercentage[downloadPart.partIndex] =
-				if (downloadDataModel.isUnknownFileSize) {
-					0
-				} else {
+				if (downloadDataModel.isUnknownFileSize) 0 else {
 					((downloadPart.partDownloadedByte * 100) / downloadPart.partChunkSize).toInt()
 				}
 		}
 
-		// Format total downloaded bytes
 		downloadDataModel.downloadedByteInFormat =
 			getHumanReadableFormat(downloadDataModel.downloadedByte)
 
-		// Update unknown file size dynamically
 		if (!canUseMultiThreadedDownload() && downloadDataModel.isUnknownFileSize) {
 			downloadDataModel.fileSize = downloadDataModel.getDestinationFile().length()
 			downloadDataModel.fileSizeInFormat = humanReadableSizeOf(downloadDataModel.fileSize)
 		}
 	}
 
+	@Synchronized
 	private fun calculateDownloadPercentage() {
-		downloadDataModel.progressPercentage = if (downloadDataModel.isUnknownFileSize) {
-			0
-		} else {
-			if (downloadDataModel.fileSize != 0L) {
-				(downloadDataModel.downloadedByte * 100) / downloadDataModel.fileSize
-			} else {
-				0
+		downloadDataModel.progressPercentage =
+			if (downloadDataModel.isUnknownFileSize) 0 else {
+				if (downloadDataModel.fileSize != 0L) {
+					(downloadDataModel.downloadedByte * 100) / downloadDataModel.fileSize
+				} else 0
 			}
-		}
 
 		downloadDataModel.progressPercentageInFormat = getFormattedPercentage(downloadDataModel)
 	}
 
+	@Synchronized
 	private fun updateLastModificationDate() {
 		downloadDataModel.lastModifiedTimeDate = System.currentTimeMillis()
 		downloadDataModel.lastModifiedTimeDateInFormat =
 			millisToDateTimeString(downloadDataModel.lastModifiedTimeDate)
 	}
 
+	@Synchronized
 	private fun calculateAverageDownloadSpeed() {
 		val downloadedByte = downloadDataModel.downloadedByte
 		val downloadedTime = downloadDataModel.timeSpentInMilliSec
@@ -535,20 +533,20 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		)
 	}
 
+	@Synchronized
 	private fun calculateRealtimeDownloadSpeed() {
+		val bytesDownloaded = downloadDataModel.downloadedByte
 		if (netSpeedTracker == null) {
-			netSpeedTracker = NetSpeedTracker(
-				initialBytesDownloaded = downloadDataModel.downloadedByte
-			)
+			netSpeedTracker = NetSpeedTracker(initialBytesDownloaded = bytesDownloaded)
 		}
 
 		netSpeedTracker?.let {
-			it.update(downloadDataModel.downloadedByte)
+			it.update(bytesDownloaded)
 			val currentSpeed = it.getCurrentSpeed()
 
-			downloadDataModel.realtimeSpeed = (if (currentSpeed < 0) 0 else currentSpeed)
-			downloadDataModel.realtimeSpeedInFormat = (if (currentSpeed < 0)
-				formatDownloadSpeedInSimpleForm(0.0) else it.getFormattedSpeed())
+			downloadDataModel.realtimeSpeed = if (currentSpeed < 0) 0 else currentSpeed
+			downloadDataModel.realtimeSpeedInFormat = if (currentSpeed < 0)
+				formatDownloadSpeedInSimpleForm(0.0) else it.getFormattedSpeed()
 
 			if (!downloadDataModel.isRunning) {
 				downloadDataModel.realtimeSpeed = 0
@@ -557,6 +555,7 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
+	@Synchronized
 	private fun calculateMaxDownloadSpeed() {
 		if (downloadDataModel.realtimeSpeed > downloadDataModel.maxSpeed) {
 			downloadDataModel.maxSpeed = downloadDataModel.realtimeSpeed
@@ -565,14 +564,10 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	private fun calculateDownloadRetries() {
-		logger.d("Updating total connection retries")
-		downloadDataModel.totalTrackedConnectionRetries += downloadDataModel.resumeSessionRetryCount
-	}
-
+	@Synchronized
 	private fun calculateTotalDownloadedTime() {
 		if (!downloadDataModel.isWaitingForNetwork) {
-			downloadDataModel.timeSpentInMilliSec += 500
+			downloadDataModel.timeSpentInMilliSec += 200
 		}
 
 		val timeSpentInMillis = downloadDataModel.timeSpentInMilliSec.toFloat()
@@ -580,12 +575,12 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 			calculateTime(timeSpentInMillis, getText(string.text_spent))
 	}
 
+	@Synchronized
 	private fun calculateRemainingDownloadTime() {
 		if (!downloadDataModel.isUnknownFileSize || !downloadDataModel.isWaitingForNetwork) {
 			val remainingByte = downloadDataModel.fileSize - downloadDataModel.downloadedByte
 			val averageSpeed = downloadDataModel.averageSpeed
 			val remainingTime = getRemainingDownloadTime(remainingByte, averageSpeed)
-
 			downloadDataModel.remainingTimeInSec = remainingTime
 			downloadDataModel.remainingTimeInFormat =
 				calculateTime(remainingTime.toFloat(), getText(string.text_left))
@@ -595,15 +590,11 @@ class RegularDownloader(override val downloadDataModel: DownloadDataModel) :
 		}
 	}
 
-	private fun checkNetworkConnectionAndRetryDownload() {
-		// Check connectivity status for each download part
+	private suspend fun checkNetworkConnectionAndRetryDownload() {
 		allDownloadParts.forEach { downloadPart -> downloadPart.verifyNetworkConnection() }
-
-		// If download is waiting for network, attempt resuming when possible
 		if (downloadDataModel.isWaitingForNetwork) {
 			if (isNetworkAvailable() && isInternetConnected()) {
 				if (downloadSettings.downloadWifiOnly && !isWifiEnabled()) return
-
 				downloadDataModel.isWaitingForNetwork = false
 				updateDownloadStatus(getText(string.title_started_downloading))
 				startAllDownloadThreads()

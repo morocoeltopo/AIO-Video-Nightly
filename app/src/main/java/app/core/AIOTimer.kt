@@ -27,7 +27,7 @@ import java.lang.ref.WeakReference
 open class AIOTimer(
 	millisInFuture: Long,
 	countDownInterval: Long,
-	maxConcurrentListeners: Int = 4
+	maxConcurrentListeners: Int = 10
 ) : CountDownTimer(millisInFuture, countDownInterval) {
 
 	/**

@@ -9,13 +9,16 @@
 
 	<!-- Internet access for network requests (API, downloads, Parse server, etc.) -->
 	<uses-permission android:name="android.permission.INTERNET" />
+
 	<!-- Network state check (Wi-Fi/Mobile Data detection) -->
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
 	<!-- Wi-Fi state info (used in telemetry/logging) -->
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
 	<!-- Push notifications support (Android 13+) -->
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
 	<!-- Vibration control (for notifications and alerts) -->
 	<uses-permission android:name="android.permission.VIBRATE" />
 
@@ -38,9 +41,8 @@
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
-	<!-- APK installation and overlay (special system permissions) -->
+	<!-- APK installation (if your app supports installing APKs from inside the app) -->
 	<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
 	<!-- =======================
 	     Application Config
@@ -52,6 +54,7 @@
 		android:hardwareAccelerated="true"
 		android:icon="@mipmap/ic_launcher_v2"
 		android:label="@string/title_app_name"
+		android:largeHeap="true"
 		android:requestLegacyExternalStorage="true"
 		android:roundIcon="@mipmap/ic_launcher_v2"
 		android:supportsRtl="false"

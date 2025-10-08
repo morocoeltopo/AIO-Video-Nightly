@@ -43,11 +43,8 @@
 	<string name="text_subtitle_file_not_supported">The selected file is unsupported, please pick a valid subtitle file for the video.</string>
 	<string name="text_error_media_cant_be_played"><b>Unable to play due to an error.</b> Please check if the file format is supported by your device.</string>
 	<string name="text_streaming_link_invalid"><b>Video unavailable:</b> The provided link does\'t work. Please try another.</string>
-	<string name="text_failed_to_write_file_to_storage">The download failed to save the file to
-		storage. This usually occurs when the operating system denies access to the selected file
-		location, or the destination file is deleted manually.\n\nWe recommend restarting the download
-		and selecting a folder that the app can access, such as the Download folder.
-	</string>
+	<string name="text_failed_to_write_file_to_storage">Download failed to save the file. This may happen if access is denied or the file was deleted.\n\nTry restarting the download and choose a folder the app can access, like the Downloads folder.</string>
+
 	<string name="text_missing_webpage_link_info">The downloaded file is missing <b> its associated webpage link</b>.</string>
 	<string name="text_not_support_youtube_download"><b>We don\'t support downloading videos from YouTube and other Google services</b> in compliance with YouTube\'s terms of service.</string>
 	<string name="text_allow_permission_in_setting">You need to allow necessary permissions in the settings manually.</string>
@@ -85,6 +82,7 @@
 	<string name="title_share_feedback">Share Feedback</string>
 	<string name="title_active_downloads">Active Downloads</string>
 	<string name="title_unknown">Unknown</string>
+	<string name="title_unknown_filename">Unknown Filename</string>
 	<string name="title_cancel">Cancel</string>
 	<string name="title_yes">Yes</string>
 	<string name="title_delete_the_file">Delete the File</string>
@@ -160,8 +158,8 @@
 	<string name="title_audio_codec_b_br"><![CDATA[<b>Audio Codec:</b> %1$s]]></string>
 	<string name="title_media_file_info">Media File Information</string>
 	<string name="title_file_directory_b"><![CDATA[<b>File Directory:</b>%1$s<br>]]></string>
-	<string name="title_validating_download">Validating Download…</string>
-	<string name="title_old_data_found">Old Data Found…</string>
+	<string name="title_validating_download_task">Validating Download Task…</string>
+	<string name="title_previous_download_data_found">Previous Download Data Found…</string>
 	<string name="title_failed_deleted_paused">File Deleted: Paused</string>
 	<string name="title_download_complete_click_to_open">Download\'s Completed, Click Here To Open</string>
 	<string name="title_media_file_has_deleted">Media File\'s Deleted</string>
@@ -171,13 +169,13 @@
 	<string name="title_info">Info</string>
 	<string name="title__">--</string>
 	<string name="title_waiting_to_join">Waiting To Join The Download…</string>
-	<string name="title_generating_parts">Generating Download Parts…</string>
-	<string name="title_creating_empty_file">Creating Empty File…</string>
+	<string name="title_generating_download_parts">Generating Download Parts…</string>
+	<string name="title_creating_empty_destination_file">Creating Empty Destination File…</string>
 	<string name="title_started_downloading">Started Downloading…</string>
 	<string name="title_download_io_failed">Download Failed : File IO…</string>
 	<string name="title_paused">Paused</string>
-	<string name="title_waiting_for_network">Waiting For Network…</string>
-	<string name="title_waiting_for_wifi">Waiting For WiFi…</string>
+	<string name="title_waiting_for_network">Waiting For The Network…</string>
+	<string name="title_waiting_for_wifi">Waiting For The WiFi…</string>
 	<string name="title_waiting_for_internet">Waiting For Internet…</string>
 	<string name="title_filtering_url">Filtering URL…</string>
 	<string name="title_configuring_auto_resume">Configuring Auto Resume…</string>
@@ -190,7 +188,7 @@
 	<string name="title_share_file_link">Share File Link</string>
 	<string name="title_type_new_file_name_hint">Type A New File Name Here…</string>
 	<string name="title_download_failed">Download Failed</string>
-	<string name="title_link_expired">Link Expired: Paused</string>
+	<string name="title_link_expired_paused">Link Expired: Paused</string>
 	<string name="title_file_deleted_paused">File Deleted: Paused</string>
 	<string name="title_successful">Successful</string>
 	<string name="title_no_app_found_to_open_this_file">No App Found To Open This File</string>
@@ -541,5 +539,10 @@
 	<string name="title_downloads">Downloads</string>
 	<string name="title_attempt_to_load_download_models">Attempting To Load %1$d Downloads…</string>
 	<string name="title_loading_of_downloads">Loading %1$d Of %2$d Downloads…</string>
+	<string name="title_connecting">Connecting…</string>
+	<string name="title_connected_b_">Connected (%1$d)</string>
+	<string name="title_failed_b_">Failed: %1$d</string>
+	<string name="title_found_in_headers_b_">Found %1$s In Headers</string>
+	<string name="title_no_checksum_header_found">No Checksum Header Found</string>
 
 </resources>

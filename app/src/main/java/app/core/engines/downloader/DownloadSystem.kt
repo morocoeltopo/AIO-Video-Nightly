@@ -78,6 +78,11 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 * @param loopCount The number of times this callback has been triggered.
 	 */
 	override fun onAIOTimerTick(loopCount: Double) {
+		downloadMonitor(loopCount)
+	}
+
+	@Synchronized
+	private fun downloadMonitor(loopCount: Double) {
 		logger.d("Timer tick received. Loop count: $loopCount")
 		CoroutineScope(Dispatchers.IO).launch {
 			logger.d("Starting pending tasks from waiting list.")
@@ -326,49 +331,47 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 *
 	 * @param downloadTaskInf The task reporting the status change
 	 */
-	override fun onStatusUpdate(downloadTaskInf: DownloadTaskInf) {
+	override suspend fun onStatusUpdate(downloadTaskInf: DownloadTaskInf) {
 		logger.d("Status update received for: ${downloadTaskInf.downloadDataModel.fileName}")
-		CoroutineScope(Dispatchers.IO).launch {
-			try {
-				val downloadDataModel = downloadTaskInf.downloadDataModel
+		try {
+			val downloadDataModel = downloadTaskInf.downloadDataModel
 
-				// Add to running tasks if currently downloading
-				if (downloadDataModel.isRunning && downloadDataModel.status == DOWNLOADING) {
-					addToRunningDownloadTasksList(downloadTaskInf)
-					logger.d("Added to running tasks: ${downloadDataModel.fileName}")
-				}
-
-				// Remove from running tasks if closed
-				if (!downloadDataModel.isRunning && downloadDataModel.status == CLOSE) {
-					removeFromRunningDownloadTasksList(downloadTaskInf)
-					logger.d("Removed from running tasks: ${downloadDataModel.fileName}")
-				}
-
-				// Handle completed download
-				if (downloadDataModel.isComplete && downloadDataModel.status == COMPLETE) {
-					logger.d("Download completed: ${downloadDataModel.fileName}")
-					aioBackend.saveDownloadLog(downloadDataModel)
-
-					removeFromActiveDownloadDataModelsList(downloadDataModel)
-					withContext(Dispatchers.Main) {
-						downloadsUIManager.updateActiveUI(downloadDataModel)
-						logger.d("Updated UI for completed download: ${downloadDataModel.fileName}")
-					}
-
-					updateFinishedDownloadDataModelsList(downloadDataModel)
-					withContext(Dispatchers.Main) {
-						downloadOnFinishListeners.forEach { finishUIListener ->
-							finishUIListener.onFinishUIDownload(downloadDataModel)
-						}
-						logger.d("Notified listeners of completion: ${downloadDataModel.fileName}")
-					}
-				}
-
-				updateUIAndNotification(downloadDataModel)
-				logger.d("UI and notification updated for: ${downloadDataModel.fileName}")
-			} catch (error: Exception) {
-				logger.e("Error in status update for: ${downloadTaskInf.downloadDataModel.fileName}", error)
+			// Add to running tasks if currently downloading
+			if (downloadDataModel.isRunning && downloadDataModel.status == DOWNLOADING) {
+				addToRunningDownloadTasksList(downloadTaskInf)
+				logger.d("Added to running tasks: ${downloadDataModel.fileName}")
 			}
+
+			// Remove from running tasks if closed
+			if (!downloadDataModel.isRunning && downloadDataModel.status == CLOSE) {
+				removeFromRunningDownloadTasksList(downloadTaskInf)
+				logger.d("Removed from running tasks: ${downloadDataModel.fileName}")
+			}
+
+			// Handle completed download
+			if (downloadDataModel.isComplete && downloadDataModel.status == COMPLETE) {
+				logger.d("Download completed: ${downloadDataModel.fileName}")
+				aioBackend.saveDownloadLog(downloadDataModel)
+
+				removeFromActiveDownloadDataModelsList(downloadDataModel)
+				withContext(Dispatchers.Main) {
+					downloadsUIManager.updateActiveUI(downloadDataModel)
+					logger.d("Updated UI for completed download: ${downloadDataModel.fileName}")
+				}
+
+				updateFinishedDownloadDataModelsList(downloadDataModel)
+				withContext(Dispatchers.Main) {
+					downloadOnFinishListeners.forEach { finishUIListener ->
+						finishUIListener.onFinishUIDownload(downloadDataModel)
+					}
+					logger.d("Notified listeners of completion: ${downloadDataModel.fileName}")
+				}
+			}
+
+			updateUIAndNotification(downloadDataModel)
+			logger.d("UI and notification updated for: ${downloadDataModel.fileName}")
+		} catch (error: Exception) {
+			logger.e("Error in status update for: ${downloadTaskInf.downloadDataModel.fileName}", error)
 		}
 	}
 
@@ -412,8 +415,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 * Starts pending downloads from the waiting list according to parallel download limits.
 	 * Ensures that the number of running tasks does not exceed the allowed maximum.
 	 */
-	@Synchronized
-	private fun startPendingTasksFromWaitingList() {
+	private suspend fun startPendingTasksFromWaitingList() {
 		logger.d("Starting pending tasks from waiting list.")
 		verifyLeftoverRunningTasks()
 
@@ -482,17 +484,17 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 * @param downloadDataModel The data model of the download
 	 * @return The created download task
 	 */
-	private fun generateDownloadTask(downloadDataModel: DownloadDataModel): DownloadTaskInf {
+	private suspend fun generateDownloadTask(downloadDataModel: DownloadDataModel): DownloadTaskInf {
 		logger.d("Generating download task for: ${downloadDataModel.fileName}")
 		return if (downloadDataModel.videoInfo != null && downloadDataModel.videoFormat != null) {
 			val videoDownloader = VideoDownloader(downloadDataModel)
-			videoDownloader.statusListener = this
-			videoDownloader.initiate()
+			videoDownloader.downloadStatusListener = this
+			videoDownloader.initiateDownload()
 			videoDownloader
 		} else {
 			val regularDownloader = RegularDownloader(downloadDataModel)
-			regularDownloader.statusListener = this
-			regularDownloader.initiate()
+			regularDownloader.downloadStatusListener = this@DownloadSystem
+			regularDownloader.initiateDownload()
 			regularDownloader
 		}
 	}

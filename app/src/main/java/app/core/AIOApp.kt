@@ -17,7 +17,6 @@ import app.core.engines.downloader.DownloadModelMerger
 import app.core.engines.downloader.DownloadSystem
 import app.core.engines.settings.AIOSettings
 import app.core.engines.video_parser.parsers.YoutubeVidParser
-import com.aio.BuildConfig
 import com.anggrayudi.storage.file.DocumentFileCompat.fromPublicFolder
 import com.anggrayudi.storage.file.PublicDirectory.DOWNLOADS
 import com.dslplatform.json.DslJson
@@ -57,7 +56,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		lateinit var INSTANCE: AIOApp
 
 		// App mode flags
-		const val IS_DEBUG_MODE_ON = BuildConfig.IS_DEBUG_MODE_ON
+		const val IS_DEBUG_MODE_ON = true
 		const val IS_ULTIMATE_VERSION_UNLOCKED = true
 		const val IS_PREMIUM_USER = true
 

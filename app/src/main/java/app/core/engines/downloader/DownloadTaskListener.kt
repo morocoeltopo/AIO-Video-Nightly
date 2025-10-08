@@ -33,5 +33,5 @@ interface DownloadTaskListener {
 	 * - Trigger any follow-up actions
 	 * - Avoid long-running operations
 	 */
-	fun onStatusUpdate(downloadTaskInf: DownloadTaskInf)
+	suspend fun onStatusUpdate(downloadTaskInf: DownloadTaskInf)
 }
