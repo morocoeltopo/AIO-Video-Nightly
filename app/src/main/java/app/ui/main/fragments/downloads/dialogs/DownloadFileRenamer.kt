@@ -10,6 +10,8 @@ import com.aio.R
 import com.aio.R.id
 import com.aio.R.layout
 import com.aio.R.string
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import lib.files.FileSystemUtility.getFileExtension
 import lib.files.FileSystemUtility.getFileNameWithoutExtension
 import lib.files.FileSystemUtility.isFileNameValid
@@ -18,6 +20,7 @@ import lib.files.FileSystemUtility.sanitizeFileNameNormal
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
 import lib.process.CommonTimeUtils
+import lib.process.ThreadsUtility
 import lib.texts.CommonTextUtils.getText
 import lib.texts.CommonTextUtils.removeEmptyLines
 import lib.texts.CommonTextUtils.safeCutString
@@ -175,35 +178,38 @@ class DownloadFileRenamer(
 	/**
 	 * Renames the actual download file and updates the model.
 	 *
-	 * @param model The download model being renamed.
+	 * @param downloadDataModel The download model being renamed.
 	 * @param sanitizedName The final, sanitized file name.
 	 * @param onDone Callback after the renaming operation is completed.
 	 */
 	private fun renameDownloadTask(
-		model: DownloadDataModel,
+		downloadDataModel: DownloadDataModel,
 		sanitizedName: String,
 		onDone: () -> Unit
 	) {
-		val isRunningTask = model.isRunning
-		downloadSystem.pauseDownload(model)
+		ThreadsUtility.executeInBackground(codeBlock = {
+			val isRunningTask = downloadDataModel.isRunning
+			downloadSystem.pauseDownload(downloadDataModel)
 
-		executeInBackground {
 			// Rename physical file
-			model.getDestinationDocumentFile().renameTo(sanitizedName)
-			model.fileName = sanitizedName
+			downloadDataModel.getDestinationDocumentFile().renameTo(sanitizedName)
+			downloadDataModel.fileName = sanitizedName
 
 			// Update associated video info if applicable
-			if (model.videoInfo != null && model.videoFormat != null) {
-				model.videoInfo!!.videoTitle = model.fileName
+			if (downloadDataModel.videoInfo != null && downloadDataModel.videoFormat != null) {
+				downloadDataModel.videoInfo!!.videoTitle = downloadDataModel.fileName
 			}
 
 			// Persist changes
-			model.updateInStorage()
-			downloadSystem.downloadsUIManager.updateActiveUI(model)
+			downloadDataModel.updateInStorage()
+			downloadSystem.downloadsUIManager.updateActiveUI(downloadDataModel)
 
 			// Resume if it was running before
-			if (isRunningTask) downloadSystem.resumeDownload(model)
+			if (isRunningTask) downloadSystem.resumeDownload(
+				downloadModel = downloadDataModel,
+				coroutineScope = CoroutineScope(Dispatchers.IO)
+			)
 			onDone()
-		}
+		})
 	}
 }
