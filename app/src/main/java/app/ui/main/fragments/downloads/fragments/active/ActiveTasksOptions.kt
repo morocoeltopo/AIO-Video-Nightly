@@ -30,6 +30,8 @@ import com.aio.R.layout
 import com.aio.R.string
 import com.yausername.youtubedl_android.YoutubeDL.getInstance
 import com.yausername.youtubedl_android.YoutubeDLRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import lib.device.ShareUtility.shareUrl
 import lib.files.FileSystemUtility.isArchiveByName
@@ -675,7 +677,14 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					} else {
 						// Normal resume
 						logger.d("Resuming download normally for ID: ${model.id}")
-						downloadSystem.resumeDownload(downloadModel = model)
+						downloadSystem.resumeDownload(
+							downloadModel = model,
+							coroutineScope = CoroutineScope(Dispatchers.IO),
+							onResumed = {
+								showToast(safeMotherActivityRef,
+									msgId = string.title_resumed_task_successfully)
+							}
+						)
 						logger.d("Download ID: ${model.id} resumed successfully")
 					}
 				}
@@ -1150,7 +1159,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					logger.d("Rename download button clicked")
 					toggleDownloadThumbnail()
 				},
-				R.id.btn_copy_site_link  to {
+				R.id.btn_copy_site_link to {
 
 				},
 				R.id.btn_copy_download_url to {

@@ -212,6 +212,8 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		executeInBackground(codeBlock = {
 			logger.d("Pausing all downloads and canceling timer")
 			downloadSystem.pauseAllDownloads()
+			downloadSystem.cleanUp()
+
 			aioTimer.cancel()
 			logger.d("Termination tasks completed")
 		})

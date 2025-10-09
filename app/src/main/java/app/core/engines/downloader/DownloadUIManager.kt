@@ -14,6 +14,7 @@ import app.ui.main.MotherActivity
 import app.ui.main.fragments.downloads.fragments.active.ActiveTasksFragment
 import app.ui.main.fragments.downloads.fragments.finished.FinishedTasksFragment
 import com.aio.R
+import lib.process.AsyncJobUtils
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 
@@ -138,21 +139,19 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 	@Synchronized
 	fun addNewActiveUI(downloadModel: DownloadDataModel, position: Int = -1) {
 		logger.d("Adding new active UI for: ${downloadModel.fileName}, position=$position")
-		ThreadsUtility.executeInBackground(codeBlock = {
-			ThreadsUtility.executeOnMain(codeBlock = {
-				val rowUI = generateActiveUI(downloadModel)
-				logger.d("Generated new row UI for: ${downloadModel.fileName}")
-				configureActiveUI(rowUI, downloadModel)
-				val activeDownloadsListContainer = activeTasksFragment?.activeTasksListContainer
-				if (position != -1) {
-					logger.d("Inserting row at position: $position")
-					activeDownloadsListContainer?.addView(rowUI, position)
-				} else {
-					logger.d("Appending row at end")
-					activeDownloadsListContainer?.addView(rowUI)
-				}
-			})
-		})
+		AsyncJobUtils.executeOnMainThread {
+			val rowUI = generateActiveUI(downloadModel)
+			logger.d("Generated new row UI for: ${downloadModel.fileName}")
+			configureActiveUI(rowUI, downloadModel)
+			val activeDownloadsListContainer = activeTasksFragment?.activeTasksListContainer
+			if (position != -1) {
+				logger.d("Inserting row at position: $position")
+				activeDownloadsListContainer?.addView(rowUI, position)
+			} else {
+				logger.d("Appending row at end")
+				activeDownloadsListContainer?.addView(rowUI)
+			}
+		}
 	}
 
 	/**
@@ -170,25 +169,22 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 		logger.d("Updating active UI for: ${downloadModel.fileName}")
 
 		// Execute non-UI operations in a background thread
-		ThreadsUtility.executeInBackground(codeBlock = {
-			// Switch to main thread to safely update UI
-			ThreadsUtility.executeOnMain(codeBlock = {
-				// Get the container holding all active download rows
-				val activeDownloadsListContainer = activeTasksFragment?.activeTasksListContainer
+		AsyncJobUtils.executeOnMainThread {
+			// Get the container holding all active download rows
+			val activeDownloadsListContainer = activeTasksFragment?.activeTasksListContainer
 
-				// Try to find the existing row corresponding to this download
-				val resultedRow = activeDownloadsListContainer?.findViewById<View>(downloadModel.id)
+			// Try to find the existing row corresponding to this download
+			val resultedRow = activeDownloadsListContainer?.findViewById<View>(downloadModel.id)
 
-				if (resultedRow != null) {
-					// Row exists: configure it with updated download data
-					logger.d("Found existing row, configuring UI for: ${downloadModel.fileName}")
-					configureActiveUI(resultedRow, downloadModel)
-				} else {
-					// Row does not exist: log info
-					logger.d("No existing row found for: ${downloadModel.fileName}")
-				}
-			})
-		})
+			if (resultedRow != null) {
+				// Row exists: configure it with updated download data
+				logger.d("Found existing row, configuring UI for: ${downloadModel.fileName}")
+				configureActiveUI(resultedRow, downloadModel)
+			} else {
+				// Row does not exist: log info
+				logger.d("No existing row found for: ${downloadModel.fileName}")
+			}
+		}
 	}
 
 	/**
@@ -327,20 +323,17 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 		logger.d("Configuring UI for: ${downloadModel.fileName}")
 
 		// Execute on background thread to avoid blocking UI
-		ThreadsUtility.executeInBackground(codeBlock = {
-			// Switch to main thread to perform actual view updates
-			ThreadsUtility.executeOnMain {
-				if (rowUI.tag == null) {
-					logger.d("Creating new DownloaderRowUI for: ${downloadModel.fileName}")
-					rowUI.tag = DownloaderRowUI(rowUI) // Initialize row UI manager
-				}
-
-				// Update the row UI with the latest download data
-				(rowUI.tag as DownloaderRowUI).apply {
-					logger.d("Updating DownloaderRowUI for: ${downloadModel.fileName}")
-					updateView(downloadModel)
-				}
+		AsyncJobUtils.executeOnMainThread {
+			if (rowUI.tag == null) {
+				logger.d("Creating new DownloaderRowUI for: ${downloadModel.fileName}")
+				rowUI.tag = DownloaderRowUI(rowUI) // Initialize row UI manager
 			}
-		})
+
+			// Update the row UI with the latest download data
+			(rowUI.tag as DownloaderRowUI).apply {
+				logger.d("Updating DownloaderRowUI for: ${downloadModel.fileName}")
+				updateView(downloadModel)
+			}
+		}
 	}
 }

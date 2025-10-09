@@ -29,6 +29,9 @@ import com.aio.R
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.yausername.youtubedl_android.YoutubeDL.getInstance
 import com.yausername.youtubedl_android.YoutubeDLRequest
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import lib.device.AppVersionUtility.versionName
 import lib.device.DateTimeUtils.calculateTime
 import lib.device.DateTimeUtils.millisToDateTimeString
@@ -58,7 +61,11 @@ import java.io.IOException
 import java.io.RandomAccessFile
 import java.lang.System.currentTimeMillis
 
-class VideoDownloader(override val downloadDataModel: DownloadDataModel) : DownloadTaskInf, AIOTimerListener {
+class VideoDownloader(
+	override val downloadDataModel: DownloadDataModel,
+	override var coroutineScope: CoroutineScope,
+	override var downloadStatusListener: DownloadTaskListener?
+) : DownloadTaskInf, AIOTimerListener {
 
 	/** Logger for debugging and tracking state changes. */
 	private val logger = LogHelperUtils.from(javaClass)
@@ -68,12 +75,6 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 	/** Destination file where the downloaded content will be saved. */
 	private var destinationOutputFile = downloadDataModel.getDestinationFile()
-
-	/**
-	 * Listener for reporting download status updates such as progress or errors.
-	 */
-	@Volatile
-	override var downloadStatusListener: DownloadTaskListener? = null
 
 	/**
 	 * Indicates whether a WebView is currently loading (e.g., for cookie extraction).
@@ -90,58 +91,102 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	private var lastUpdateTime = 0L
 
 	/**
-	 * Starts the initialization process for the download task.
-	 * This method sets up the model, initializes retry mechanisms, and updates initial status.
+	 * Initiates the download by preparing the data model and setting up initial status.
+	 *
+	 * This method performs:
+	 * 1. Initialization of the download data model fields.
+	 * 2. Setting the initial download status.
+	 * 3. Storing the model state persistently.
+	 *
+	 * @return True if initialization was successful; false otherwise.
 	 */
-	override suspend fun initiateDownload() {
-		logger.d("Initializing download data model...")
-		initDownloadDataModel()
-		logger.d("Updating initial download status...")
-		updateDownloadStatus()
-	}
+	override suspend fun initiateDownload(): Boolean {
+		try {
+			logger.d("Initializing download data model...")
+			initDownloadDataModel()
 
-	/**
-	 * Begins the actual download process.
-	 * Prepares the environment, configures settings, and decides on the download method
-	 * depending on the type of URL.
-	 */
-	override suspend fun startDownload() {
-		logger.d("Starting download process...")
-		val statusInfoString = getText(R.string.title_preparing_download)
-		updateDownloadStatus(statusInfo = statusInfoString, status = DOWNLOADING)
-		configureDownloadModel()
-		createEmptyDestinationFile()
-		if (isSocialMediaUrl(downloadDataModel.fileURL)) {
-			logger.d("Detected social media URL; starting social media download...")
-			startSocialMediaDownload()
-		} else {
-			logger.d("Regular URL detected; starting standard download...")
-			startRegularDownload()
+			logger.d("Updating initial download status...")
+			val statusInfoString = getText(R.string.title_waiting_to_join)
+			updateDownloadStatus(statusInfo = statusInfoString)
+			logger.d("Download data model initialized and stored successfully")
+
+			return true
+		} catch (error: Exception) {
+			logger.e("Error while initiating download", error)
+			return false
 		}
 	}
 
 	/**
-	 * Cancels the download operation.
-	 * Handles closing of resources and updates the download status.
+	 * Starts the actual download process.
 	 *
-	 * @param cancelReason The reason for cancellation. Defaults to 'Paused' if empty.
+	 * This method:
+	 * 1. Updates the download status to 'DOWNLOADING'.
+	 * 2. Configures download settings and ensures destination file exists.
+	 * 3. Determines the download method based on URL type (social media or regular).
+	 *
+	 * @return True if the download started successfully; false otherwise.
+	 */
+	override suspend fun startDownload(): Boolean {
+		try {
+			logger.d("Starting download process...")
+			val statusInfoString = getText(R.string.title_preparing_download)
+			updateDownloadStatus(statusInfo = statusInfoString, status = DOWNLOADING)
+
+			configureDownloadModel()
+			createEmptyDestinationFile()
+
+			if (isSocialMediaUrl(downloadDataModel.fileURL)) {
+				logger.d("Detected social media URL; starting social media download...")
+				startSocialMediaDownload()
+			} else {
+				logger.d("Regular URL detected; starting standard download...")
+				startRegularDownload()
+			}
+			return true
+		} catch (error: Exception) {
+			logger.e("Unexpected error occurred while starting the download", error)
+			val statusInfoString = getText(R.string.title_download_failed)
+			updateDownloadStatus(statusInfo = statusInfoString, status = CLOSE)
+			return false
+		}
+	}
+
+	/**
+	 * Cancels the current download operation.
+	 *
+	 * This method:
+	 * 1. Closes ongoing download resources.
+	 * 2. Updates the download status with the provided reason.
+	 * 3. Cancels the coroutine if the download was user-canceled.
+	 *
+	 * @param cancelReason The reason for cancellation; defaults to 'Paused' if empty.
+	 * @param isCanceledByUser Flag indicating if the cancellation was triggered by the user.
 	 */
 	override suspend fun cancelDownload(cancelReason: String, isCanceledByUser: Boolean) {
 		try {
 			logger.d("Cancelling download...")
 			closeYTDLProgress()
+
 			val statusMessage = cancelReason.ifEmpty { getText(R.string.title_paused) }
 			logger.d("Updating status after cancellation: $statusMessage")
-			updateDownloadStatus(statusMessage, CLOSE)
+
+			updateDownloadStatus(statusInfo = statusMessage, status = CLOSE)
+			if (isCanceledByUser) coroutineScope.cancel()
 		} catch (error: Exception) {
-			logger.d("Error during cancellation: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error during cancellation: ${error.message}", error)
 		}
 	}
 
 	/**
-	 * Initializes the download model's state before starting a download.
-	 * Resets flags, counters, and status information to ensure a clean start.
+	 * Initializes the download data model to a clean state before download starts.
+	 *
+	 * Resets:
+	 * - Status flags (running, waiting, resume retries)
+	 * - Status info message
+	 * - Basic model info
+	 *
+	 * Saves the initial state to persistent storage.
 	 */
 	private fun initDownloadDataModel() {
 		logger.d("Initializing download data model fields...")
@@ -149,44 +194,77 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		downloadDataModel.isRunning = false
 		downloadDataModel.isWaitingForNetwork = false
 		downloadDataModel.resumeSessionRetryCount = 0
+
 		downloadDataModel.statusInfo = getText(R.string.title_waiting_to_join)
 		initBasicDownloadModelInfo()
+
 		logger.d("Saving initial state to storage...")
 		downloadDataModel.updateInStorage()
 	}
 
+	/**
+	 * Called periodically by the [AIOTimer] to update download progress.
+	 *
+	 * Responsibilities:
+	 * - Delegate to [handleDownloadProgress] to manage progress updates
+	 * - Ensure proper handling of inactive or completed downloads
+	 *
+	 * @param loopCount The current loop count from the AIOTimer
+	 */
 	override fun onAIOTimerTick(loopCount: Double) {
-		onTimeDownloadUpdate()
+		logger.d("AIOTimer tick: loopCount=$loopCount")
+
+		// Only update progress on every 2nd tick
+		if (loopCount.toInt() % 3 == 0) {
+			handleDownloadProgress()
+			logger.d("Progress updated on loopCount=$loopCount")
+		}
 	}
 
+	/**
+	 * Monitors and handles the progress of a running download.
+	 *
+	 * This method is synchronized to prevent concurrent modifications.
+	 * It checks if the download is active and not complete, handles stalled downloads,
+	 * updates progress, or attempts restart if the download is waiting for network.
+	 */
 	@Synchronized
-	private fun onTimeDownloadUpdate() {
-		executeInBackground(codeBlock = {
+	private fun handleDownloadProgress() {
+		coroutineScope.launch {
 			logger.d("Timer tick: Checking download state...")
+
+			// If download is running, not complete, and network is available
 			if (downloadDataModel.isRunning &&
 				!downloadDataModel.isComplete &&
 				!downloadDataModel.isWaitingForNetwork
 			) {
 				logger.d("Download is running and not complete.")
+
+				// Skip tick if this is the first check
 				if (lastUpdateTime == 0L) {
 					logger.d("Last update time is zero, skipping tick.")
-					return@executeInBackground
+					return@launch
 				}
 
+				// Check if 10 seconds have passed since last update
 				if (currentTimeMillis() - lastUpdateTime >= (1000 * 10)) {
+					// If download appears stalled, force restart
 					if (downloadDataModel.tempYtdlpStatusInfo.contains("left", true)) {
 						logger.d("Download stalled for over 10 seconds, forcing restart...")
 						forcedRestartDownload()
 					} else {
+						// Otherwise, update status and progress normally
 						downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_processing_fragments)
 						updateDownloadProgress()
 					}
 				}
+
 			} else if (downloadDataModel.isWaitingForNetwork) {
+				// If waiting for network, try to restart download
 				logger.d("Waiting for network, attempting to restart download...")
 				restartDownload()
 			}
-		})
+		}
 	}
 
 	/**
@@ -600,11 +678,11 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 */
 	@Synchronized
 	private fun updateDownloadProgress() {
-		executeInBackground(codeBlock = {
+		coroutineScope.launch {
 			calculateProgressAndModifyDownloadModel()
 			checkNetworkConnectionAndRetryDownload()
 			updateDownloadStatus()
-		})
+		}
 	}
 
 	/**
@@ -728,7 +806,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 */
 	private fun closeYTDLProgress() {
 		getInstance().destroyProcessById(downloadDataModel.id.toString())
-		println("YTDL progress closed for download task ID: ${downloadDataModel.id}")
+		logger.e("YTDL progress closed for download task ID: ${downloadDataModel.id}")
 	}
 
 	/**
@@ -923,7 +1001,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	private suspend fun startSocialMediaDownload() {
 		logger.d("Starting social media download.")
 		updateDownloadStatus(getText(R.string.title_started_downloading), DOWNLOADING)
-		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_getting_cookie)
+		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_getting_cookie_from_server)
 
 		if (!downloadDataModel.isDownloadFromBrowser) {
 			logger.d("Download is not from browser. Proceeding with regular download.")
@@ -963,7 +1041,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 
 		// Update status before initializing WebView
 		updateDownloadStatus(getText(R.string.title_started_downloading), DOWNLOADING)
-		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_getting_cookie)
+		downloadDataModel.tempYtdlpStatusInfo = getText(R.string.title_getting_cookie_from_server)
 
 		Handler(Looper.getMainLooper()).post {
 			logger.d("Initializing WebView for URL: ${downloadDataModel.fileURL}")
@@ -975,7 +1053,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 					override fun onPageFinished(view: WebView?, url: String?) {
 						logger.d("WebView page finished loading. URL: $url")
 						if (isWebViewLoading) {
-							handlePageLoaded(url)
+							handleWebPageLoaded(url)
 							destroy()
 						}
 					}
@@ -986,7 +1064,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 						description: String?, failingUrl: String?
 					) {
 						logger.d("WebView encountered an error: $errorCode, $description")
-						executeInBackground(codeBlock = { retryOrFail(retryCount) })
+						coroutineScope.launch { retryOrFail(retryCount) }
 					}
 				}
 
@@ -996,7 +1074,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 						super.onReceivedTitle(view, title)
 						logger.d("WebView received title: $title")
 						if (isWebViewLoading) {
-							handlePageLoaded(url)
+							handleWebPageLoaded(url)
 							destroy()
 						}
 					}
@@ -1013,7 +1091,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				if (isWebViewLoading) {
 					logger.d("WebView loading timeout. Destroying and retrying.")
 					webView.destroy()
-					executeInBackground(codeBlock = { retryOrFail(retryCount) })
+					coroutineScope.launch { retryOrFail(retryCount) }
 				}
 			}, 10_000)
 		}
@@ -1031,7 +1109,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 *
 	 * @param url The URL that was loaded in the WebView.
 	 */
-	private fun handlePageLoaded(url: String?) {
+	private fun handleWebPageLoaded(url: String?) {
 		logger.d("WebView page loaded for URL: $url")
 		isWebViewLoading = false
 
@@ -1051,7 +1129,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 		}
 
 		logger.d("Starting download process after extracting cookies.")
-		executeInBackground(codeBlock = { executeDownloadProcess() })
+		coroutineScope.launch { executeDownloadProcess() }
 	}
 
 	/**
@@ -1166,8 +1244,7 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 				logger.d("Elapsed time: ${response.elapsedTime} ms")
 			}
 		} catch (error: Exception) {
-			logger.d("Exception during download process: ${error.message}")
-			error.printStackTrace()
+			logger.e("Exception during download process: ${error.message}", error)
 
 			if (isRetryingAllowed()) {
 				logger.d("Retrying download due to error.")
@@ -1198,63 +1275,61 @@ class VideoDownloader(override val downloadDataModel: DownloadDataModel) : Downl
 	 *
 	 * @param response The error message or output from yt-dlp, if available.
 	 */
-	private fun onYtdlpDownloadFailed(response: String? = null) {
+	private suspend fun onYtdlpDownloadFailed(response: String? = null) {
 		logger.d("yt-dlp download failed. Response: $response")
-		executeInBackground(codeBlock = {
-			if (response != null && isCriticalErrorFound(response)) {
-				// Critical error handling
-				logger.d("Critical error detected in response.")
-				if (downloadDataModel.isYtdlpHavingProblem) {
-					val pausedMsg = downloadDataModel.ytdlpProblemMsg.ifEmpty {
-						getText(R.string.title_paused)
-					}
-					logger.d("Pausing download due to persistent yt-dlp problems.")
-					cancelDownload(pausedMsg) // Pause due to persistent YTDLP issues
-					return@executeInBackground
+		if (response != null && isCriticalErrorFound(response)) {
+			// Critical error handling
+			logger.d("Critical error detected in response.")
+			if (downloadDataModel.isYtdlpHavingProblem) {
+				val pausedMsg = downloadDataModel.ytdlpProblemMsg.ifEmpty {
+					getText(R.string.title_paused)
 				}
+				logger.d("Pausing download due to persistent yt-dlp problems.")
+				cancelDownload(pausedMsg) // Pause due to persistent YTDLP issues
+				return
+			}
 
-				if (downloadDataModel.isFileUrlExpired) {
-					logger.d("Pausing download due to expired URL.")
-					cancelDownload(getText(R.string.title_link_expired_paused)) // Expired link
-					return@executeInBackground
-				}
+			if (downloadDataModel.isFileUrlExpired) {
+				logger.d("Pausing download due to expired URL.")
+				cancelDownload(getText(R.string.title_link_expired_paused)) // Expired link
+				return
+			}
 
-				if (downloadDataModel.isDestinationFileNotExisted) {
-					logger.d("Pausing download because destination file is missing.")
-					cancelDownload(getText(R.string.title_file_deleted_paused)) // Target file deleted
-					return@executeInBackground
-				}
-			} else if (!response.isNullOrEmpty()) {
-				// Generic failure with error response
-				if (downloadDataModel.totalUnresetConnectionRetries < 10) {
-					logger.d(
-						"Retrying download, connection retries:" +
-								" ${downloadDataModel.totalUnresetConnectionRetries}"
-					)
-					forcedRestartDownload()
-				} else {
-					logger.d("Max retries reached, cancelling download.")
-					updateDownloadStatus(getText(R.string.title_download_failed))
-					cancelDownload(getText(R.string.title_download_failed))
-				}
+			if (downloadDataModel.isDestinationFileNotExisted) {
+				logger.d("Pausing download because destination file is missing.")
+				cancelDownload(getText(R.string.title_file_deleted_paused)) // Target file deleted
+				return
+			}
+		} else if (!response.isNullOrEmpty()) {
+			// Generic failure with error response
+			if (downloadDataModel.totalUnresetConnectionRetries < 10) {
+				logger.d(
+					"Retrying download, connection retries:" +
+							" ${downloadDataModel.totalUnresetConnectionRetries}"
+				)
+				forcedRestartDownload()
 			} else {
-				// No response → retry logic
-				logger.d("No response, retrying download process.")
-				restartDownload()
+				logger.d("Max retries reached, cancelling download.")
+				updateDownloadStatus(getText(R.string.title_download_failed))
+				cancelDownload(getText(R.string.title_download_failed))
 			}
+		} else {
+			// No response → retry logic
+			logger.d("No response, retrying download process.")
+			restartDownload()
+		}
 
-			// Always persist the latest state
-			logger.d("Updating download model storage.")
-			downloadDataModel.updateInStorage()
+		// Always persist the latest state
+		logger.d("Updating download model storage.")
+		downloadDataModel.updateInStorage()
 
-			// Clean up destination file if marked deleted
-			if (!downloadDataModel.isRemoved && downloadDataModel.isDeleted) {
-				if (destinationOutputFile.exists()) {
-					logger.d("Cleaning up deleted destination file.")
-					destinationOutputFile.delete()
-				}
+		// Clean up destination file if marked deleted
+		if (!downloadDataModel.isRemoved && downloadDataModel.isDeleted) {
+			if (destinationOutputFile.exists()) {
+				logger.d("Cleaning up deleted destination file.")
+				destinationOutputFile.delete()
 			}
-		})
+		}
 	}
 
 	/**

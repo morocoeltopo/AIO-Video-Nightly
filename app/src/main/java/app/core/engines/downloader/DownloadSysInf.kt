@@ -159,10 +159,10 @@ interface DownloadSysInf {
 	/**
 	 * Deletes a download and its associated files.
 	 * @param downloadModel The download to delete
-	 * @param onDone Callback invoked after successful deletion
+	 * @param onDeleted Callback invoked after successful deletion
 	 */
-	fun deleteDownload(downloadModel: DownloadDataModel, onDone: () -> Unit = {}) {
-		onDone()
+	fun deleteDownload(downloadModel: DownloadDataModel, onDeleted: () -> Unit = {}) {
+		onDeleted()
 	}
 
 	/**

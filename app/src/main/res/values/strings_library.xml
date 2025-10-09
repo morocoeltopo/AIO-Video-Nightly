@@ -324,7 +324,7 @@
 	<string name="title_paused_login_required">Paused: Login Required</string>
 	<string name="title_paused_content_not_available">Paused: Content Not Available</string>
 	<string name="title_paused_ytdlp_format_not_found">Paused: Format Not Found</string>
-	<string name="title_getting_cookie">Getting Cookie From Server…</string>
+	<string name="title_getting_cookie_from_server">Getting Cookie From Server…</string>
 	<string name="title_login_now">Login Now</string>
 	<string name="title_login_required">Login Required</string>
 	<string name="text_login_to_download_private_videos"><b>Please login to the website</b> before you can download restricted contents.</string>

@@ -1,88 +1,108 @@
 package app.core.engines.downloader
 
+import kotlinx.coroutines.CoroutineScope
+
 /**
- * Interface defining the core operations for a download task.
+ * Defines the core contract for all download task implementations.
  *
- * Implementations of this interface represent individual download operations
- * that can be managed by the download system. The interface provides:
- * - Lifecycle control (initiation, start, cancellation)
- * - Status reporting capabilities
- * - Access to underlying download model data
+ * Implementations represent an individual, self-contained download operation
+ * managed by the broader download system. This interface provides:
+ * - Lifecycle management (initialization, execution, cancellation)
+ * - Status reporting and progress updates
+ * - Access to the associated download model and configuration
  *
- * All implementations should maintain thread safety and proper state management.
+ * Implementations must ensure thread safety, structured coroutine usage, and
+ * consistent state transitions under all network and system conditions.
  */
 interface DownloadTaskInf {
-	
+
 	/**
-	 * The data model containing all information about this download.
-	 * This provides access to:
-	 * - Download progress and status
-	 * - File metadata
-	 * - Configuration settings
+	 * The data model representing this download task.
+	 *
+	 * Contains all essential metadata and runtime information such as:
+	 * - Current status and progress
+	 * - File name, size, and checksum
+	 * - Network configuration and download options
 	 */
 	val downloadDataModel: DownloadDataModel
-	
+
 	/**
-	 * Listener for receiving status updates about the download progress.
-	 * The implementing class should notify this listener about:
-	 * - Status changes (started, paused, completed, failed)
+	 * Listener for receiving download state and progress updates.
+	 *
+	 * The implementing class must invoke this listener to communicate:
+	 * - Status changes (e.g., started, paused, completed, failed)
 	 * - Progress updates
-	 * - Significant events during the download
+	 * - Error events or exceptional conditions
 	 */
 	var downloadStatusListener: DownloadTaskListener?
-	
+
+	/**
+	 * The coroutine scope associated with this download task.
+	 *
+	 * Used to launch and manage coroutines tied to the lifecycle of
+	 * the download operation. Ensures that all background work is
+	 * properly canceled when the task is stopped.
+	 */
+	var coroutineScope: CoroutineScope
+
 	/**
 	 * Prepares the download task for execution.
-	 * This should:
-	 * - Validate required parameters
-	 * - Initialize any necessary resources
-	 * - Set up the download environment
-	 * - Not throw exceptions for initialization errors
+	 *
+	 * Responsibilities:
+	 * - Validate essential parameters (e.g., file URL, destination path)
+	 * - Initialize required resources and internal state
+	 * - Set up a clean environment for download execution
+	 * - Handle initialization errors internally without throwing exceptions
+	 *
+	 * @return `true` if initialization succeeded, otherwise `false`
 	 */
-	suspend fun initiateDownload()
-	
+	suspend fun initiateDownload(): Boolean
+
 	/**
 	 * Begins the actual download operation.
-	 * Implementations should:
-	 * - Start the download process
-	 * - Handle network operations
-	 * - Update progress periodically
-	 * - Manage file writing
-	 * - Notify status changes
-	 * - Handle errors gracefully
+	 *
+	 * Responsibilities:
+	 * - Start and manage network transfers (including multi-threaded downloads)
+	 * - Periodically update progress and notify listeners
+	 * - Handle writing data safely to disk
+	 * - Gracefully manage retries, pauses, cancellations, and errors
+	 *
+	 * @return `true` if the download started successfully, otherwise `false`
 	 */
-	suspend fun startDownload()
+	suspend fun startDownload(): Boolean
 
 	/**
 	 * Cancels an ongoing download operation.
 	 *
-	 * This function should be called when a download needs to be stopped due to
-	 * either user intervention or an internal error. It ensures proper resource
-	 * cleanup and consistent state management.
+	 * This method should be invoked when a download must be stopped due to
+	 * user interaction or internal failure. It ensures cleanup of active
+	 * resources and maintains consistent download state.
 	 *
-	 * @param cancelReason A human-readable message describing why the download was canceled.
-	 *                     Useful for logging, debugging, and showing messages to the user.
-	 * @param isCanceledByUser Indicates whether the cancellation was initiated by the user.
-	 *                         This helps distinguish between user actions and system-triggered
-	 *                         interruptions (e.g., network failures or file errors).
+	 * Responsibilities:
+	 * - Stop all active network transfers and background coroutines
+	 * - Finalize or discard partially written files to prevent corruption
+	 * - Update the internal state and persistent storage to reflect cancellation
+	 * - Notify UI components and listeners of the event
 	 *
-	 * Expected responsibilities of implementations:
-	 * - Stop all active network transfers and background tasks.
-	 * - Finalize or discard any partially written files to prevent corruption.
-	 * - Update the download’s internal state and persistent storage to reflect cancellation.
-	 * - Notify UI components, listeners, or observers about the cancellation event.
+	 * @param cancelReason A human-readable message explaining the reason for cancellation.
+	 *                     Useful for logs, debugging, or displaying to the user.
+	 * @param isCanceledByUser `true` if the user initiated the cancellation;
+	 *                         `false` if triggered automatically (e.g., due to errors).
 	 */
 	suspend fun cancelDownload(cancelReason: String = "", isCanceledByUser: Boolean = false)
 
 	/**
-	 * Updates the status of the download task.
-	 * @param statusInfo Optional detailed status message
-	 * @param status The new status code (from DownloadStatus)
-	 * Implementations should:
-	 * - Update internal state
-	 * - Validate status codes
-	 * - Notify listeners of changes
-	 * - Handle status transitions appropriately
+	 * Updates the current status of the download task.
+	 *
+	 * Responsibilities:
+	 * - Reflect the latest download state in the model
+	 * - Validate and apply status transitions safely
+	 * - Notify observers or UI components of the change
+	 * - Handle invalid or redundant transitions gracefully
+	 *
+	 * @param statusInfo Optional human-readable message describing the current state
+	 *                   (e.g., “Connecting to server”, “Resuming download”).
+	 * @param status The new status code representing the current state, typically from `DownloadStatus`.
 	 */
 	suspend fun updateDownloadStatus(
 		statusInfo: String? = null,
