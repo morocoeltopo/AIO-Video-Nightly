@@ -2,27 +2,29 @@ package app.core.engines.downloader
 
 import app.core.engines.downloader.DownloadStatus.CLOSE
 import app.core.engines.downloader.DownloadStatus.COMPLETE
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import lib.networks.NetworkUtility.isNetworkAvailable
 import lib.networks.NetworkUtility.isWifiEnabled
 import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.extractHostUrl
 import lib.process.LogHelperUtils
-import lib.process.ThreadsUtility.executeInBackground
 import java.io.InputStream
 import java.io.RandomAccessFile
 import java.net.URI
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
-open class RegularDownloadPart(private val regularDownloader: RegularDownloader) {
+open class RegularDownloadPart(
+	private val regularDownloader: RegularDownloader,
+	private val coroutineScope: CoroutineScope
+) {
 
 	private val logger = LogHelperUtils.from(javaClass)
 	private var partStartPoint: Long = 0
 	private var partEndingPoint: Long = 0
-	private var isPartDownloadCanceled: Boolean = false
+	private var isServerConnectionTerminated: Boolean = false
 
 	open var isPartCanceledByUser: Boolean = false
 	open var partIndex: Int = 0
@@ -50,7 +52,7 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 	}
 
 	fun startDownload() {
-		executeInBackground(codeBlock = {
+		coroutineScope.launch {
 			try {
 				prepareForDownloading().let { isReadyToDownload ->
 					if (isReadyToDownload) tryDownloading()
@@ -59,12 +61,12 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 				logger.e("Error while trying to start download in download part:", error)
 				cancelDownload()
 			}
-		})
+		}
 	}
 
 	fun stopDownloadSilently(isCanceledByUser: Boolean = false) {
 		isPartCanceledByUser = isCanceledByUser
-		isPartDownloadCanceled = true
+		isServerConnectionTerminated = true
 	}
 
 	fun verifyNetworkConnection(): Boolean {
@@ -79,18 +81,18 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 	fun isInternetConnected(): Boolean = URLUtilityKT.isInternetConnected()
 
 	private fun cancelDownload() {
-		isPartDownloadCanceled = true
+		isServerConnectionTerminated = true
 		updateDownloadPartStatus(status = CLOSE)
 	}
 
 	private fun prepareForDownloading(): Boolean {
-		isPartDownloadCanceled = false
+		isServerConnectionTerminated = false
 		isPartCanceledByUser = false
 		val isNetworkReady = verifyNetworkConnection()
 		return isNetworkReady
 	}
 
-	private suspend fun tryDownloading() {
+	private fun tryDownloading() {
 		if (isPartCompleted()) {
 			updateDownloadPartStatus(status = COMPLETE)
 			return
@@ -107,7 +109,7 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 	}
 
 	private fun isPartReadyToDownload(): Boolean {
-		val isReady = !isPartDownloadCanceled && partDownloadStatus != COMPLETE
+		val isReady = !isServerConnectionTerminated && partDownloadStatus != COMPLETE
 		return isReady
 	}
 
@@ -124,14 +126,14 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 		}
 	}
 
-	private suspend fun downloadFromServer() {
+	private fun downloadFromServer() {
 		lateinit var urlConnection: HttpsURLConnection
 		lateinit var inputStream: InputStream
 		lateinit var fileURL: URL
 
 		try {
 			val downloadDataModel = regularDownloader.downloadDataModel
-			withContext(Dispatchers.IO) {
+			coroutineScope.launch {
 				val destinationFile = downloadDataModel.getDestinationFile()
 				if (isSingleThreaded() && !destinationFile.exists()) {
 					RandomAccessFile(destinationFile, "rw").setLength(0)
@@ -155,7 +157,7 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 				val startTime = System.currentTimeMillis()
 
 				while (
-					!isPartDownloadCanceled && destinationFile.exists() &&
+					!isServerConnectionTerminated && destinationFile.exists() &&
 					inputStream.read(buffer).also { fetchedBytes = it } != -1
 				) {
 					limitDownloadSpeed(startTime, fetchedBytes)
@@ -177,10 +179,10 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 				if (!destinationFile.exists()) {
 					partDownloadErrorException = Exception("Destination file is not found")
 					cancelDownload()
-					return@withContext
+					return@launch
 				}
 
-				if (!isPartDownloadCanceled) {
+				if (!isServerConnectionTerminated) {
 					updateDownloadPartStatus(COMPLETE)
 				}
 			}
@@ -267,19 +269,17 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 		}
 	}
 
-	private suspend fun verifyRangeSupport(): Boolean {
-		return withContext(Dispatchers.IO) {
-			try {
-				val urlConnection = URL(downloadDataModel.fileURL).openConnection() as HttpsURLConnection
-				urlConnection.requestMethod = "HEAD"
-				urlConnection.connect()
-				val acceptsRanges = urlConnection.getHeaderField("Accept-Ranges") == "bytes"
-				urlConnection.disconnect()
-				acceptsRanges
-			} catch (error: Exception) {
-				logger.e("Error in verifying range support of remote file:", error)
-				false
-			}
+	private fun verifyRangeSupport(): Boolean {
+		return try {
+			val urlConnection = URL(downloadDataModel.fileURL).openConnection() as HttpsURLConnection
+			urlConnection.requestMethod = "HEAD"
+			urlConnection.connect()
+			val acceptsRanges = urlConnection.getHeaderField("Accept-Ranges") == "bytes"
+			urlConnection.disconnect()
+			acceptsRanges
+		} catch (error: Exception) {
+			logger.e("Error in verifying range support of remote file:", error)
+			false
 		}
 	}
 
