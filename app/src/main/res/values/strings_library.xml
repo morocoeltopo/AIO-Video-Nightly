@@ -184,6 +184,7 @@
 	<string name="title_download_has_been_paused">Download Has Been Paused</string>
 	<string name="title_copy_file_link">Copy File Link</string>
 	<string name="title_resume_task">Resume Task</string>
+	<string name="title_resumed_task_successfully">Download\'s Resumed Successfully</string>
 	<string name="title_pause_task">Pause Task</string>
 	<string name="title_share_file_link">Share File Link</string>
 	<string name="title_type_new_file_name_hint">Type A New File Name Here…</string>
