@@ -283,7 +283,7 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 				// Open connection
 				val fileByteRange: String = calculateRange()
 
-				inputStream = openRemoteInputStream(fileByteRange)?: throw Exception("Input stream Error")
+				inputStream = openRemoteInputStream(fileByteRange) ?: throw Exception("Input stream Error")
 				logger.d("Connected to URL ${downloadDataModel.fileURL} with range $fileByteRange")
 
 				// Download loop
@@ -449,26 +449,44 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 		urlConnection.setConnectTimeout(settings.downloadMaxHttpReadingTimeout)
 	}
 
+	/**
+	 * Opens a remote InputStream for the file URL using OkHttp, with support for:
+	 * - Byte-range requests (for partial/resumable downloads)
+	 * - Browser headers including User-Agent, Referer, and cookies
+	 * - Redirect logging
+	 *
+	 * This method is intended for downloading file segments or full files while preserving
+	 * authentication cookies from WebView or browser sessions.
+	 *
+	 * @param connectionByteRange The byte range to request from the server, e.g., "bytes=0-1024".
+	 * @return An InputStream for reading the remote file content, or `null` if the request fails.
+	 */
 	private fun openRemoteInputStream(connectionByteRange: String): InputStream? {
-		// Configure OkHttp client with cookie handling, redirects, and an interceptor to log redirects
+		logger.d("Preparing OkHttp client for remote input stream")
+
+		// Configure OkHttp client with redirects and logging
 		val httpClient: OkHttpClient = okHttpClient.newBuilder()
 			.followRedirects(followRedirects = true)
 			.followSslRedirects(followProtocolRedirects = true)
-			.addInterceptor { interceptorChain ->
-				val httpRequest = interceptorChain.request()
-				val httpResponse = interceptorChain.proceed(httpRequest)
+			.addInterceptor { chain ->
+				val httpRequest = chain.request()
+				val httpResponse = chain.proceed(httpRequest)
 
-				// Log redirect location if the response is a redirect
+				// Log redirect URL if response is a redirect
 				if (httpResponse.isRedirect) {
 					val location = httpResponse.header("Location")
 					logger.d("Redirected to: $location")
 				}
 				httpResponse
-			}
-			.build()
+			}.build()
 
-		// Build request based on whether the download is from the browser
-		val browserDownloadRequest = createHttpRequestBuilder(
+		logger.d(
+			"Building HTTP request for file: ${downloadDataModel.fileURL} " +
+					"(byte range: $connectionByteRange)"
+		)
+
+		// Build request with browser headers and optional cookies
+		val request = createHttpRequestBuilder(
 			fileUrl = downloadDataModel.fileURL,
 			userAgent = downloadDataModel.globalSettings.downloadHttpUserAgent,
 			siteReferer = downloadDataModel.siteReferrer,
@@ -476,18 +494,17 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 			siteCookie = downloadDataModel.siteCookieString
 		).build()
 
-		// Choose the appropriate request
-		val request = browserDownloadRequest
-
-		// Execute request
+		logger.d("Executing HTTP request...")
 		val response = httpClient.newCall(request).execute()
+
+		// Handle failed responses
 		if (!response.isSuccessful) {
-			logger.e("Failed to open stream, HTTP ${response.code}")
+			logger.e("Failed to open stream, HTTP ${response.code} (${response.message})")
 			response.close()
 			return null
 		}
 
-		logger.d("Opened remote input stream successfully")
+		logger.d("Opened remote input stream successfully for file: ${downloadDataModel.fileURL}")
 		return response.body.byteStream()
 	}
 
