@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Dialog layout for displaying "no videos found" message -->
+<?xml version="1.0" encoding="utf-8"?><!-- Dialog layout for displaying "no videos found" message -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -45,8 +44,8 @@
 					android:maxLines="1"
 					android:text="@string/title_no_videos_found"
 					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/normal_text_size"
-					android:textFontWeight="600" />
+					android:textFontWeight="600"
+					android:textSize="@dimen/normal_text_size" />
 			</LinearLayout>
 
 			<!-- "No videos found" illustration image -->
@@ -65,9 +64,9 @@
 				android:id="@+id/txt_info"
 				style="@style/style_dialog.message"
 				android:layout_gravity="center_vertical|center_horizontal"
-				android:layout_marginStart="@dimen/_10"
+				android:layout_marginStart="@dimen/_20"
 				android:layout_marginTop="@dimen/_10"
-				android:layout_marginEnd="@dimen/_10"
+				android:layout_marginEnd="@dimen/_20"
 				android:layout_marginBottom="@dimen/_0"
 				android:autoLink="web"
 				android:fontFamily="@font/application_font_family"
@@ -102,8 +101,8 @@
 					android:gravity="center"
 					android:text="@string/title_how_to_download"
 					android:textColor="@color/color_on_secondary"
-					android:textSize="@dimen/normal_text_size"
-					android:textFontWeight="600" />
+					android:textFontWeight="600"
+					android:textSize="@dimen/normal_text_size" />
 			</RelativeLayout>
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>

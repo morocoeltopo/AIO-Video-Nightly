@@ -27,12 +27,12 @@
 		android:fontWeight="600" />
 
 	<font
-		android:font="@font/font_family_thinitalic"
+		android:font="@font/font_family_thin_italic"
 		android:fontStyle="italic"
 		android:fontWeight="200" />
 
 	<font
-		android:font="@font/font_family_lightitalic"
+		android:font="@font/font_family_light_italic"
 		android:fontStyle="italic"
 		android:fontWeight="300" />
 
@@ -42,12 +42,12 @@
 		android:fontWeight="400" />
 
 	<font
-		android:font="@font/font_family_mediumitalic"
+		android:font="@font/font_family_medium_italic"
 		android:fontStyle="italic"
 		android:fontWeight="500" />
 
 	<font
-		android:font="@font/font_family_semibolditalic"
+		android:font="@font/font_family_semibold_italic"
 		android:fontStyle="italic"
 		android:fontWeight="600" />
 
