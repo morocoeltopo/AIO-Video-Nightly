@@ -140,6 +140,73 @@ class DownloaderRowUI(private val rowLayout: View) {
 	}
 
 	/**
+	 * Ensures that the given text fits within the width of a [TextView].
+	 *
+	 * This function only trims the text if it ends with a specific substring.
+	 * It repeatedly removes 4 characters from the end of the text until the
+	 * rendered width fits inside the [TextView]'s available space.
+	 *
+	 * Usage scenario:
+	 * Useful when dynamic UI elements (like file names or URLs) must fit
+	 * within fixed-width layouts, and trimming should only occur for
+	 * texts with a specific suffix.
+	 *
+	 * @param textView The [TextView] where the text will be displayed.
+	 * @param text The original text content to fit inside the [TextView].
+	 * @param endMatch The substring to check at the end of the text.
+	 *                  Trimming occurs only if this substring is present.
+	 */
+	/**
+	 * Adjusts the text of a [TextView] to fit within its width.
+	 *
+	 * Trims 4 characters at a time if necessary. If the text ends with
+	 * the specified `endMatch` substring and trimming occurs, the
+	 * `endMatch` will be removed entirely.
+	 *
+	 * @param textView The [TextView] to update.
+	 * @param text The original text content.
+	 * @param endMatch The substring to check at the end. It will be removed if trimming occurs.
+	 */
+	private fun fitTextToTextView(textView: TextView, text: String, endMatch: String) {
+		var newText = text
+		val paint = textView.paint
+		val availableWidth = textView.width - textView.paddingStart - textView.paddingEnd
+
+		logger.d("Starting text fitting for TextView with text: \"$text\" (endMatch: \"$endMatch\")")
+
+		// Wait until layout is ready (width available)
+		if (availableWidth <= 0) {
+			logger.d("TextView width not ready yet. Reposting layout check.")
+			textView.post { fitTextToTextView(textView, text, endMatch) }
+			return
+		}
+
+		// Proceed only if the text ends with the specified substring
+		if (newText.endsWith(endMatch, ignoreCase = true)) {
+			logger.d("Text ends with \"$endMatch\"; trimming will be applied if necessary.")
+
+			// Trim 4 characters at a time until the text fits
+			while (paint.measureText(newText) > availableWidth && newText.length > 4) {
+				logger.d("Measured width (${paint.measureText(newText)}) " +
+						"exceeds available width ($availableWidth). Trimming...")
+
+				if (newText.endsWith(endMatch, ignoreCase = true)) {
+					logger.d("Removing endMatch \"$endMatch\" after trimming.")
+					newText = newText.dropLast(endMatch.length)
+				}
+			}
+
+			logger.d("Final trimmed text: \"$newText\"")
+		} else {
+			logger.d("Text does not end with \"$endMatch\"; no trimming performed.")
+		}
+
+		// Apply final text to the TextView
+		textView.text = newText
+		logger.d("Text set to TextView successfully.")
+	}
+
+	/**
 	 * Updates the progress bar and status text with current download information.
 	 * Shows error messages in red if there are yt-dlp problems.
 	 *
@@ -151,7 +218,8 @@ class DownloaderRowUI(private val rowLayout: View) {
 			statusInfo.text = downloadModel.ytdlpProblemMsg
 			statusInfo.setTextColor(statusInfo.context.getColor(R.color.color_error))
 		} else {
-			statusInfo.text = downloadModel.generateDownloadInfoInString()
+			val infoInString = downloadModel.generateDownloadInfoInString()
+			fitTextToTextView(textView = statusInfo, text = infoInString, endMatch = "|  --:-- ")
 			statusInfo.setTextColor(statusInfo.context.getColor(R.color.color_text_hint))
 		}
 	}

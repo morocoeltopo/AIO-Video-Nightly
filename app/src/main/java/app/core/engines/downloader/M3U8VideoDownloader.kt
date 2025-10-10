@@ -61,81 +61,109 @@ import java.io.IOException
 import java.io.RandomAccessFile
 import java.lang.System.currentTimeMillis
 
-class VideoDownloader(
+/**
+ * Handles the process of video downloading, including initialization, state tracking,
+ * and status updates. Implements both [DownloadTaskInf] and [AIOTimerListener] interfaces
+ * for integration with the app’s task management and timing systems.
+ *
+ * The downloader coordinates model setup, progress monitoring, and event notifications
+ * to maintain smooth and observable download operations.
+ */
+class M3U8VideoDownloader(
 	override val downloadDataModel: DownloadDataModel,
 	override var coroutineScope: CoroutineScope,
 	override var downloadStatusListener: DownloadTaskListener?
 ) : DownloadTaskInf, AIOTimerListener {
 
-	/** Logger for debugging and tracking state changes. */
+	/** Logger instance for capturing debug and error logs. */
 	private val logger = LogHelperUtils.from(javaClass)
 
-	/** Global configuration loaded from the download model. */
+	/** Global download configuration derived from the provided model. */
 	private val downloadGlobalSettings = downloadDataModel.globalSettings
 
-	/** Destination file where the downloaded content will be saved. */
+	/** File object pointing to the download’s final destination path. */
 	private var destinationOutputFile = downloadDataModel.getDestinationFile()
 
 	/**
-	 * Indicates whether a WebView is currently loading (e.g., for cookie extraction).
-	 * Volatile keeps flag updates visible between threads.
+	 * Flag indicating whether a WebView is actively loading content,
+	 * often used for authentication or cookie retrieval.
+	 *
+	 * Volatile ensures that updates to this flag are immediately
+	 * visible across multiple threads.
 	 */
 	@Volatile
 	private var isWebViewLoading = false
 
 	/**
-	 * Timestamp of the last progress update, used to detect stalled downloads.
-	 * Volatile ensures fresh values are read by monitoring threads.
+	 * Tracks the timestamp of the most recent progress update.
+	 * This helps in detecting potential download stalls.
+	 *
+	 * Volatile ensures visibility of updates between threads.
 	 */
 	@Volatile
 	private var lastUpdateTime = 0L
 
 	/**
-	 * Initiates the download by preparing the data model and setting up initial status.
+	 * Prepares the download task by initializing and persisting
+	 * the [DownloadDataModel] state.
 	 *
-	 * This method performs:
-	 * 1. Initialization of the download data model fields.
-	 * 2. Setting the initial download status.
-	 * 3. Storing the model state persistently.
+	 * The process involves:
+	 * - Setting up initial model attributes.
+	 * - Updating the task’s initial download status to “waiting.”
+	 * - Persisting state changes to ensure consistency.
 	 *
-	 * @return True if initialization was successful; false otherwise.
+	 * @return `true` if the download was initialized successfully;
+	 *         `false` if any exception occurred during setup.
 	 */
 	override suspend fun initiateDownload(): Boolean {
 		try {
+			// Begin initialization
 			logger.d("Initializing download data model...")
 			initDownloadDataModel()
 
+			// Update task status to "waiting to join"
 			logger.d("Updating initial download status...")
 			val statusInfoString = getText(R.string.title_waiting_to_join)
 			updateDownloadStatus(statusInfo = statusInfoString)
-			logger.d("Download data model initialized and stored successfully")
 
+			// Persist state and confirm success
+			logger.d("Download data model initialized and stored successfully")
 			return true
+
 		} catch (error: Exception) {
+			// Log and handle initialization failure
 			logger.e("Error while initiating download", error)
 			return false
 		}
 	}
 
 	/**
-	 * Starts the actual download process.
+	 * Handles the main execution flow of the video download process.
 	 *
-	 * This method:
-	 * 1. Updates the download status to 'DOWNLOADING'.
-	 * 2. Configures download settings and ensures destination file exists.
-	 * 3. Determines the download method based on URL type (social media or regular).
+	 * The method transitions the task into an active downloading state,
+	 * prepares the download environment, and selects the correct
+	 * download procedure depending on the file source type.
 	 *
-	 * @return True if the download started successfully; false otherwise.
+	 * The general workflow is:
+	 * - Update the task status to "DOWNLOADING"
+	 * - Prepare download settings and file destination
+	 * - Dispatch to the appropriate download handler (social media or standard)
+	 *
+	 * @return `true` if the download started without errors;
+	 *         `false` if any failure occurred during preparation or execution.
 	 */
 	override suspend fun startDownload(): Boolean {
 		try {
+			// Log and set download to "preparing" state
 			logger.d("Starting download process...")
 			val statusInfoString = getText(R.string.title_preparing_download)
 			updateDownloadStatus(statusInfo = statusInfoString, status = DOWNLOADING)
 
+			// Configure model parameters and ensure file destination is ready
 			configureDownloadModel()
 			createEmptyDestinationFile()
 
+			// Detect if the source URL belongs to a social media platform
 			if (isSocialMediaUrl(downloadDataModel.fileURL)) {
 				logger.d("Detected social media URL; starting social media download...")
 				startSocialMediaDownload()
@@ -143,8 +171,12 @@ class VideoDownloader(
 				logger.d("Regular URL detected; starting standard download...")
 				startRegularDownload()
 			}
+
+			// Successfully initiated download
 			return true
+
 		} catch (error: Exception) {
+			// Log and handle download initialization errors
 			logger.e("Unexpected error occurred while starting the download", error)
 			val statusInfoString = getText(R.string.title_download_failed)
 			updateDownloadStatus(statusInfo = statusInfoString, status = CLOSE)
@@ -153,69 +185,97 @@ class VideoDownloader(
 	}
 
 	/**
-	 * Cancels the current download operation.
+	 * Aborts an active or pending download process.
 	 *
-	 * This method:
-	 * 1. Closes ongoing download resources.
-	 * 2. Updates the download status with the provided reason.
-	 * 3. Cancels the coroutine if the download was user-canceled.
+	 * This function ensures that any ongoing tasks, connections,
+	 * or progress indicators are safely stopped. It also updates
+	 * the model status and cancels coroutine activity when required.
 	 *
-	 * @param cancelReason The reason for cancellation; defaults to 'Paused' if empty.
-	 * @param isCanceledByUser Flag indicating if the cancellation was triggered by the user.
+	 * Operational steps:
+	 * - Terminate any active download sessions.
+	 * - Update status with a clear reason (defaults to “Paused”).
+	 * - Cancel coroutine execution if user initiated the cancellation.
+	 *
+	 * @param cancelReason Message describing why the download was canceled.
+	 *                     Defaults to a "Paused" message if left blank.
+	 * @param isCanceledByUser Indicates whether the cancellation was initiated by the user.
 	 */
 	override suspend fun cancelDownload(cancelReason: String, isCanceledByUser: Boolean) {
 		try {
+			// Begin download cancellation sequence
 			logger.d("Cancelling download...")
-			closeYTDLProgress()
+			closeYTDLProgress() // Stop any active YouTube-DL or background task
 
+			// Define message for UI update
 			val statusMessage = cancelReason.ifEmpty { getText(R.string.title_paused) }
 			logger.d("Updating status after cancellation: $statusMessage")
 
+			// Reflect cancellation in the download state
 			updateDownloadStatus(statusInfo = statusMessage, status = CLOSE)
+
 		} catch (error: Exception) {
+			// Log and safely handle any errors during cancellation
 			logger.e("Error during cancellation: ${error.message}", error)
 		} finally {
+			// Ensure coroutine cleanup
 			coroutineScope.cancel()
 		}
 	}
 
 	/**
-	 * Initializes the download data model to a clean state before download starts.
+	 * Prepares the [DownloadDataModel] for a new download session by
+	 * resetting all transient and state-related fields.
 	 *
-	 * Resets:
-	 * - Status flags (running, waiting, resume retries)
-	 * - Status info message
-	 * - Basic model info
+	 * The initialization ensures that any residual data from a
+	 * previous session (such as status flags or retry counters)
+	 * is cleared before the new download begins.
 	 *
-	 * Saves the initial state to persistent storage.
+	 * The workflow includes:
+	 * - Resetting operational flags (running, waiting, retry count)
+	 * - Setting an initial user-visible status message
+	 * - Initializing fundamental model information
+	 * - Persisting the clean model state to local storage
 	 */
 	private fun initDownloadDataModel() {
 		logger.d("Initializing download data model fields...")
+
+		// Reset primary operational status flags
 		downloadDataModel.status = CLOSE
 		downloadDataModel.isRunning = false
 		downloadDataModel.isWaitingForNetwork = false
 		downloadDataModel.resumeSessionRetryCount = 0
 
+		// Set initial status message for the UI
 		downloadDataModel.statusInfo = getText(R.string.title_waiting_to_join)
+
+		// Initialize basic download details (metadata, identifiers, etc.)
 		initBasicDownloadModelInfo()
 
+		// Persist the cleaned model state for reliability
 		logger.d("Saving initial state to storage...")
 		downloadDataModel.updateInStorage()
 	}
 
 	/**
-	 * Called periodically by the [AIOTimer] to update download progress.
+	 * Periodically triggered by the [AIOTimer] to manage and update
+	 * ongoing download progress in real time.
 	 *
-	 * Responsibilities:
-	 * - Delegate to [handleDownloadProgress] to manage progress updates
-	 * - Ensure proper handling of inactive or completed downloads
+	 * This timer-driven update mechanism keeps the user interface
+	 * and model synchronized with actual download activity. It
+	 * selectively invokes [handleDownloadProgress] at specific intervals
+	 * to avoid unnecessary processing overhead.
 	 *
-	 * @param loopCount The current loop count from the AIOTimer
+	 * Execution pattern:
+	 * - Triggered once per timer tick
+	 * - Progress updates are applied every third tick
+	 * - Skips updates when downloads are idle or completed
+	 *
+	 * @param loopCount Numeric counter representing the timer iteration count.
 	 */
 	override fun onAIOTimerTick(loopCount: Double) {
 		logger.d("AIOTimer tick: loopCount=$loopCount")
 
-		// Only update progress on every 2nd tick
+		// Perform progress update only on every third tick
 		if (loopCount.toInt() % 3 == 0) {
 			handleDownloadProgress()
 			logger.d("Progress updated on loopCount=$loopCount")
@@ -269,38 +329,64 @@ class VideoDownloader(
 	}
 
 	/**
-	 * Forces a restart of the download if connection retries are below the limit.
-	 * - Increments retry counter.
-	 * - Cancels the current timer to avoid redundant attempts.
-	 * - Triggers a forced resume operation.
+	 * Attempts to restart the current download session if the retry limit
+	 * has not yet been exceeded. This mechanism helps recover from transient
+	 * network interruptions or stalled connections.
 	 *
-	 * @param retryingDownloadTimer Optional timer that can be cancelled during restart.
+	 * The process:
+	 * - Checks whether retry attempts are within the allowed threshold.
+	 * - Increments the retry counter for tracking connection stability.
+	 * - Initiates a forced resume of the download via the system handler.
+	 *
+	 * This safeguard ensures that downloads can self-recover up to a defined
+	 * retry limit before being marked as failed or paused.
 	 */
 	private suspend fun forcedRestartDownload() {
 		logger.d("Attempting forced restart of the download...")
-		if (downloadDataModel.totalUnresetConnectionRetries < 10) {
-			downloadDataModel.totalUnresetConnectionRetries++
-			logger.d("Increasing retry count to ${downloadDataModel.totalUnresetConnectionRetries}")
+
+		// Allow retry only if below the maximum threshold
+		if (downloadDataModel.resumeSessionRetryCount <
+			downloadGlobalSettings.downloadAutoResumeMaxErrors) {
+			downloadDataModel.resumeSessionRetryCount++
+			logger.d("Increasing retry count to ${downloadDataModel.resumeSessionRetryCount}")
+
+			// Trigger download system to resume forcibly
 			downloadSystem.forceResumeDownload(downloadDataModel)
 			logger.d("Triggered force resume download.")
 		} else {
+			// Avoid infinite retry loops after threshold reached
 			logger.d("Maximum retry attempts reached, skipping forced restart.")
 		}
 	}
 
 	/**
-	 * Applies all necessary configurations to the download model:
-	 * - YTDLP settings for format selection and execution
-	 * - Auto-resume behavior on failure
-	 * - Auto-remove settings after download completion
-	 * - Part range allocation for segmented downloads
+	 * Configures essential parameters and system behaviors
+	 * for the current [DownloadDataModel] before the download begins.
+	 *
+	 * This setup ensures that the download process adheres to
+	 * the application’s user preferences and operational rules.
+	 *
+	 * Configuration includes:
+	 * - Setting up YTDLP (YouTube-DL Python) options for format and execution
+	 * - Enabling automatic resume upon failures
+	 * - Defining cleanup behavior after successful completion
+	 * - Assigning part range configuration for segmented downloads
 	 */
 	private fun configureDownloadModel() {
 		logger.d("Configuring download model...")
+
+		// Apply YTDLP or extraction settings
 		configureDownloadModelForYTDLP()
+
+		// Enable automatic resume handling for temporary network drops
 		configureDownloadAutoResumeSettings()
+
+		// Configure auto-remove policy after completion
 		configureDownloadAutoRemoveSettings()
+
+		// Set up download part range for multi-part transfers
 		configureDownloadPartRange()
+
 		logger.d("Download model configuration complete.")
 	}
 
@@ -708,7 +794,7 @@ class VideoDownloader(
 		}
 
 		// Update model flags and status
-		val classRef = this@VideoDownloader
+		val classRef = this@M3U8VideoDownloader
 		logger.d("Setting status to $status")
 		downloadDataModel.status = status
 		downloadDataModel.isRunning = (status == DOWNLOADING)
@@ -723,8 +809,8 @@ class VideoDownloader(
 		logger.d("Notifying status listener on main thread.")
 		downloadStatusListener?.onStatusUpdate(classRef)
 
-		if (downloadDataModel.isRunning) aioTimer.register(this@VideoDownloader)
-		else aioTimer.unregister(this@VideoDownloader)
+		if (downloadDataModel.isRunning) aioTimer.register(this@M3U8VideoDownloader)
+		else aioTimer.unregister(this@M3U8VideoDownloader)
 
 		if (!downloadDataModel.isRunning && downloadDataModel.status != DOWNLOADING) {
 			if (downloadDataModel.status == COMPLETE) {
@@ -757,9 +843,6 @@ class VideoDownloader(
 
 		logger.d("Updating last modification timestamp.")
 		updateLastModificationDate()
-
-		logger.d("Updating total connection reties")
-		updateTotalConnectionRetries()
 
 		logger.d("Saving updated download model state to storage.")
 		downloadDataModel.updateInStorage()
@@ -932,15 +1015,6 @@ class VideoDownloader(
 			logger.d("Error while calculating download percentage: ${error.message}")
 			error.printStackTrace()
 		}
-	}
-
-	/**
-	 * Updates the download model's total tracked retries connections
-	 */
-	private fun updateTotalConnectionRetries() {
-		logger.d("Updating total connection retries")
-		downloadDataModel.totalTrackedConnectionRetries =
-			downloadDataModel.resumeSessionRetryCount + downloadDataModel.totalUnresetConnectionRetries
 	}
 
 	/**
@@ -1309,10 +1383,11 @@ class VideoDownloader(
 			}
 		} else if (!response.isNullOrEmpty()) {
 			// Generic failure with error response
-			if (downloadDataModel.totalUnresetConnectionRetries < 10) {
+			if (downloadDataModel.resumeSessionRetryCount <
+				downloadGlobalSettings.downloadAutoResumeMaxErrors) {
 				logger.d(
 					"Retrying download, connection retries:" +
-							" ${downloadDataModel.totalUnresetConnectionRetries}"
+							" ${downloadDataModel.resumeSessionRetryCount}"
 				)
 				forcedRestartDownload()
 			} else {
@@ -1504,6 +1579,7 @@ class VideoDownloader(
 
 		// Increment retry counter for diagnostics
 		downloadDataModel.resumeSessionRetryCount++
+		downloadDataModel.totalTrackedConnectionRetries++
 		logger.d("Retry attempt #${downloadDataModel.resumeSessionRetryCount}.")
 	}
 

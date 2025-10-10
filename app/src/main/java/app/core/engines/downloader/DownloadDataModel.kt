@@ -252,10 +252,6 @@ class DownloadDataModel : Serializable {
 	@JsonAttribute(name = "resumeSessionRetryCount")
 	var resumeSessionRetryCount: Int = 0
 
-	/** Total number of connection retries that weren't reset */
-	@JsonAttribute(name = "totalUnresetConnectionRetries")
-	var totalUnresetConnectionRetries: Int = 0
-
 	/** Total number of connection retries that were tracked */
 	@JsonAttribute(name = "totalTrackedConnectionRetries")
 	var totalTrackedConnectionRetries: Int = 0

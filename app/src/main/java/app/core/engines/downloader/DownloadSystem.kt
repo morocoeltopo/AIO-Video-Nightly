@@ -722,13 +722,13 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 
 		return if (downloadDataModel.videoInfo != null && downloadDataModel.videoFormat != null) {
 			// Create and initialize a video downloader
-			val videoDownloader = VideoDownloader(
+			val m3U8VideoDownloader = M3U8VideoDownloader(
 				downloadDataModel = downloadDataModel,
 				coroutineScope = coroutineScope,
 				downloadStatusListener = this@DownloadSystem
 			)
-			videoDownloader.initiateDownload()
-			videoDownloader
+			m3U8VideoDownloader.initiateDownload()
+			m3U8VideoDownloader
 		} else {
 			// Create and initialize a regular file downloader
 			val regularDownloader = RegularDownloader(
