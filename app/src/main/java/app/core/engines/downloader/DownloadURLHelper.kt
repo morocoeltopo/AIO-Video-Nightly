@@ -69,6 +69,7 @@ object DownloadURLHelper {
 	private const val HOST = "Host"                           // Specifies the host being requested (required by HTTP/1.1)
 	private const val REFERER = "Referer"                     // Indicates the page making the request (used for hotlink protection)
 	private const val RANGE = "Range"                         // Requests a specific byte range for partial downloads
+	private const val COOKIE = "Cookie"                       // Sends stored cookies to the server to maintain session
 
 	/**
 	 * Retrieves metadata about a remote file without downloading the entire file.
@@ -213,6 +214,7 @@ object DownloadURLHelper {
 		fileUrl: String,
 		userAgent: String? = null,
 		siteReferer: String? = null,
+		siteCookie: String? = null,
 		byteRange: String? = null
 	): Request.Builder {
 		// Parse the provided file URL
@@ -234,6 +236,11 @@ object DownloadURLHelper {
 		// Include Referer if provided (often needed to bypass hotlink protection)
 		if (!siteReferer.isNullOrEmpty()) {
 			requestBuilder.addHeader(REFERER, extractHostUrl(siteReferer))
+		}
+
+		// Include site cookie if provided from the browser webview
+		if (!siteCookie.isNullOrEmpty()) {
+			requestBuilder.addHeader(COOKIE, siteCookie)
 		}
 
 		// If resuming a download, include the Range header to request partial data

@@ -2,15 +2,18 @@ package app.core.engines.downloader
 
 import app.core.engines.downloader.DownloadStatus.CLOSE
 import app.core.engines.downloader.DownloadStatus.COMPLETE
+import app.core.engines.downloader.DownloadURLHelper.createHttpRequestBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import lib.networks.HttpClientProvider.okHttpClient
 import lib.networks.NetworkUtility.isNetworkAvailable
 import lib.networks.NetworkUtility.isWifiEnabled
 import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.extractHostUrl
 import lib.process.LogHelperUtils
+import okhttp3.OkHttpClient
 import java.io.InputStream
 import java.io.RandomAccessFile
 import java.net.URI
@@ -258,9 +261,7 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 	 * - Update the part's status to COMPLETE when finished
 	 */
 	private fun downloadFromServer() {
-		lateinit var urlConnection: HttpsURLConnection
 		lateinit var inputStream: InputStream
-		lateinit var fileURL: URL
 
 		CoroutineScope(Dispatchers.IO).launch {
 			try {
@@ -280,12 +281,9 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 				logger.d("Seeked to position $fileOutputPosition for part $partIndex")
 
 				// Open connection
-				fileURL = URL(downloadDataModel.fileURL)
-				urlConnection = fileURL.openConnection() as HttpsURLConnection
 				val fileByteRange: String = calculateRange()
-				configureConnection(urlConnection, fileByteRange)
-				urlConnection.connect()
-				inputStream = urlConnection.inputStream
+
+				inputStream = openRemoteInputStream(fileByteRange)?: throw Exception("Input stream Error")
 				logger.d("Connected to URL ${downloadDataModel.fileURL} with range $fileByteRange")
 
 				// Download loop
@@ -314,7 +312,6 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 				}
 
 				inputStream.close()
-				urlConnection.disconnect()
 				randomAccessFile.close()
 				logger.d("Part $partIndex download finished or stopped")
 
@@ -416,6 +413,7 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 	 * - Apply browser-specific headers if downloading from a browser source.
 	 * - Configure timeouts and caching behavior.
 	 */
+	@Deprecated(message = "Some sites may reject headers; use OkHttp with cookies for reliable downloads.")
 	private fun configureConnection(urlConnection: HttpsURLConnection, range: String) {
 		val settings = regularDownloader.downloadDataModel.globalSettings
 		logger.d("Configuring connection for part $partIndex with range: $range")
@@ -449,6 +447,48 @@ open class RegularDownloadPart(private val regularDownloader: RegularDownloader)
 
 		urlConnection.setReadTimeout(settings.downloadMaxHttpReadingTimeout)
 		urlConnection.setConnectTimeout(settings.downloadMaxHttpReadingTimeout)
+	}
+
+	private fun openRemoteInputStream(connectionByteRange: String): InputStream? {
+		// Configure OkHttp client with cookie handling, redirects, and an interceptor to log redirects
+		val httpClient: OkHttpClient = okHttpClient.newBuilder()
+			.followRedirects(followRedirects = true)
+			.followSslRedirects(followProtocolRedirects = true)
+			.addInterceptor { interceptorChain ->
+				val httpRequest = interceptorChain.request()
+				val httpResponse = interceptorChain.proceed(httpRequest)
+
+				// Log redirect location if the response is a redirect
+				if (httpResponse.isRedirect) {
+					val location = httpResponse.header("Location")
+					logger.d("Redirected to: $location")
+				}
+				httpResponse
+			}
+			.build()
+
+		// Build request based on whether the download is from the browser
+		val browserDownloadRequest = createHttpRequestBuilder(
+			fileUrl = downloadDataModel.fileURL,
+			userAgent = downloadDataModel.globalSettings.downloadHttpUserAgent,
+			siteReferer = downloadDataModel.siteReferrer,
+			byteRange = connectionByteRange,
+			siteCookie = downloadDataModel.siteCookieString
+		).build()
+
+		// Choose the appropriate request
+		val request = browserDownloadRequest
+
+		// Execute request
+		val response = httpClient.newCall(request).execute()
+		if (!response.isSuccessful) {
+			logger.e("Failed to open stream, HTTP ${response.code}")
+			response.close()
+			return null
+		}
+
+		logger.d("Opened remote input stream successfully")
+		return response.body.byteStream()
 	}
 
 	/**
