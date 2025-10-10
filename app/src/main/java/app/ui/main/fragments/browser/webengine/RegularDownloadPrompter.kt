@@ -3,9 +3,11 @@ package app.ui.main.fragments.browser.webengine
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile.fromFile
 import app.core.AIOApp.Companion.IS_PREMIUM_USER
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
+import app.core.AIOApp.Companion.aioFavicons
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel
@@ -22,7 +24,8 @@ import lib.files.FileSystemUtility.sanitizeFileNameNormal
 import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.getWebpageTitleOrDescription
 import lib.process.AsyncJobUtils.executeOnMainThread
-import lib.process.ThreadsUtility
+import lib.process.LogHelperUtils
+import lib.process.ThreadsUtility.executeInBackground
 import lib.process.ThreadsUtility.executeOnMain
 import lib.texts.CommonTextUtils.getText
 import lib.texts.CommonTextUtils.removeDuplicateSlashes
@@ -32,6 +35,7 @@ import lib.ui.ViewUtility.animateFadInOutAnim
 import lib.ui.ViewUtility.closeAnyAnimation
 import lib.ui.ViewUtility.loadThumbnailFromUrl
 import lib.ui.ViewUtility.setLeftSideDrawable
+import lib.ui.ViewUtility.showView
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
 import java.io.File
@@ -49,6 +53,7 @@ class RegularDownloadPrompter(
 	private val dontParseFBTitle: Boolean = false,
 	private val thumbnailUrlProvided: String? = null
 ) {
+	private val logger = LogHelperUtils.from(javaClass)
 	private val safeMotherActivity = WeakReference(motherActivity).get()
 	private val dialogBuilder: DialogBuilder = DialogBuilder(safeMotherActivity)
 	private val downloadModel = DownloadDataModel()
@@ -90,7 +95,7 @@ class RegularDownloadPrompter(
 
 		if (dontParseFBTitle) return
 		if (currentWebUrl?.let { isFacebookUrl(it) } == true) {
-			ThreadsUtility.executeInBackground(codeBlock = {
+			executeInBackground(codeBlock = {
 				executeOnMainThread { animateFadInOutAnim(videoTitleView) }
 				getWebpageTitleOrDescription(currentWebUrl) { resultedTitle ->
 					if (!resultedTitle.isNullOrEmpty()) {
@@ -115,6 +120,47 @@ class RegularDownloadPrompter(
 		}
 	}
 
+	/**
+	 * Loads and displays the site favicon inside the given layout.
+	 *
+	 * @param layout The parent [View] containing an ImageView with ID [R.id.img_site_favicon].
+	 */
+	private fun showFavicon(layout: View) {
+		layout.findViewById<ImageView>(R.id.img_site_favicon).let { favicon ->
+			val defaultFaviconResId = R.drawable.ic_button_information
+			logger.i("Attempting to update site favicon for URL: $videoUrlReferer")
+
+			executeInBackground(codeBlock = {
+				val referralSite = currentWebUrl ?: videoUrlReferer ?: extractedVideoLink
+				logger.i("Fetching favicon for site: $referralSite")
+
+				aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
+					val faviconImgFile = File(faviconFilePath)
+
+					if (!faviconImgFile.exists() || !faviconImgFile.isFile) {
+						logger.e("Favicon file not found or invalid at: $faviconFilePath")
+						return@executeInBackground
+					}
+
+					val faviconImgURI = faviconImgFile.toUri()
+					executeOnMain(codeBlock = {
+						try {
+							logger.i("Applying favicon from local file")
+							showView(favicon, true)
+							favicon.setImageURI(faviconImgURI)
+						} catch (error: Exception) {
+							logger.e("Failed to set favicon: ${error.message}", error)
+							showView(favicon, true)
+							favicon.setImageResource(defaultFaviconResId)
+						}
+					})
+				}
+			}, errorHandler = {
+				logger.e("Unexpected error while loading favicon: ${it.message}", it)
+			})
+		}
+	}
+
 	private fun showVideoThumb(layout: View) {
 		if (!thumbnailUrlProvided.isNullOrEmpty()) {
 			videoThumbnailUrl = thumbnailUrlProvided
@@ -123,7 +169,7 @@ class RegularDownloadPrompter(
 			return
 		}
 
-		ThreadsUtility.executeInBackground(codeBlock = {
+		executeInBackground(codeBlock = {
 			val websiteUrl = videoUrlReferer ?: currentWebUrl
 			if (websiteUrl.isNullOrEmpty()) return@executeInBackground
 			val thumbImageUrl = startParsingVideoThumbUrl(websiteUrl)
@@ -140,6 +186,7 @@ class RegularDownloadPrompter(
 		showVideoTitleFromURL(layout = this)
 		showVideoResolution(layout = this)
 		showVideoThumb(layout = this)
+		showFavicon(layout = this)
 	}
 
 	private fun View.setupCardInfoButton() {
@@ -180,7 +227,7 @@ class RegularDownloadPrompter(
 	}
 
 	private fun addToDownloadSystem() {
-		ThreadsUtility.executeInBackground(codeBlock = {
+		executeInBackground(codeBlock = {
 			safeMotherActivity?.let { safeBaseActivityRef ->
 				try {
 					if (!isFileUrlValid()) return@executeInBackground

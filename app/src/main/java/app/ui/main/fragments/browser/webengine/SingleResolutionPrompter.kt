@@ -227,7 +227,7 @@ class SingleResolutionPrompter(
 			logger.i("Attempting to update site favicon for URL: $videoUrlReferer")
 
 			executeInBackground(codeBlock = {
-				val referralSite = videoUrlReferer ?: extractedVideoLink
+				val referralSite = currentWebUrl ?: videoUrlReferer ?: extractedVideoLink
 				logger.i("Fetching favicon for site: $referralSite")
 
 				aioFavicons.getFavicon(referralSite)?.let { faviconFilePath ->
