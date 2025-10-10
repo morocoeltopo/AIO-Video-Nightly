@@ -3,6 +3,7 @@ package app.core.engines.downloader
 import app.core.engines.downloader.DownloadStatus.CLOSE
 import app.core.engines.downloader.DownloadStatus.COMPLETE
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import lib.networks.NetworkUtility.isNetworkAvailable
@@ -16,10 +17,7 @@ import java.net.URI
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
-open class RegularDownloadPart(
-	private val regularDownloader: RegularDownloader,
-	private val coroutineScope: CoroutineScope
-) {
+open class RegularDownloadPart(private val regularDownloader: RegularDownloader) {
 
 	/** Logger for debug and error messages */
 	private val logger = LogHelperUtils.from(javaClass)
@@ -99,7 +97,7 @@ open class RegularDownloadPart(
 	 * - Cancels the part safely if an exception occurs.
 	 */
 	fun startDownload() {
-		coroutineScope.launch {
+		CoroutineScope(Dispatchers.IO).launch {
 			try {
 				prepareForDownloading().let { isReadyToDownload ->
 					if (isReadyToDownload) {
@@ -264,9 +262,9 @@ open class RegularDownloadPart(
 		lateinit var inputStream: InputStream
 		lateinit var fileURL: URL
 
-		try {
-			val downloadDataModel = regularDownloader.downloadDataModel
-			coroutineScope.launch {
+		CoroutineScope(Dispatchers.IO).launch {
+			try {
+				val downloadDataModel = regularDownloader.downloadDataModel
 				val destinationFile = downloadDataModel.getDestinationFile()
 				logger.d("Starting download for part $partIndex of file ${destinationFile.name}")
 
@@ -333,11 +331,11 @@ open class RegularDownloadPart(
 					updateDownloadPartStatus(COMPLETE)
 					logger.d("Part $partIndex marked as COMPLETE")
 				}
+			} catch (error: Exception) {
+				logger.e("Error while downloading file in download part $partIndex:", error)
+				partDownloadErrorException = error
+				cancelDownload()
 			}
-		} catch (error: Exception) {
-			logger.e("Error while downloading file in download part $partIndex:", error)
-			partDownloadErrorException = error
-			cancelDownload()
 		}
 	}
 
@@ -463,6 +461,7 @@ open class RegularDownloadPart(
 			isSingleThreaded() -> "bytes=$partDownloadedByte-"
 			downloadDataModel.isMultiThreadSupported ->
 				"bytes=${partStartPoint + partDownloadedByte}-${partEndingPoint}"
+
 			else -> "bytes=${partStartPoint + partDownloadedByte}-"
 		}
 		logger.d("Calculated range for part $partIndex: $range")

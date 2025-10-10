@@ -172,9 +172,10 @@ class VideoDownloader(
 			logger.d("Updating status after cancellation: $statusMessage")
 
 			updateDownloadStatus(statusInfo = statusMessage, status = CLOSE)
-			if (isCanceledByUser) coroutineScope.cancel()
 		} catch (error: Exception) {
 			logger.e("Error during cancellation: ${error.message}", error)
+		} finally {
+			coroutineScope.cancel()
 		}
 	}
 
@@ -724,6 +725,12 @@ class VideoDownloader(
 
 		if (downloadDataModel.isRunning) aioTimer.register(this@VideoDownloader)
 		else aioTimer.unregister(this@VideoDownloader)
+
+		if (!downloadDataModel.isRunning && downloadDataModel.status != DOWNLOADING) {
+			if (downloadDataModel.status == COMPLETE) {
+				coroutineScope.cancel()
+			}
+		}
 	}
 
 	/**

@@ -183,6 +183,8 @@ class RegularDownloader(
 			logger.d("Download canceled successfully. Status updated to CLOSE with message: '$statusMessage'")
 		} catch (error: Exception) {
 			logger.e("Error while canceling download process", error)
+		} finally {
+			coroutineScope.cancel()
 		}
 	}
 
@@ -346,7 +348,9 @@ class RegularDownloader(
 		if (!downloadDataModel.isRunning && downloadDataModel.status != DOWNLOADING) {
 			logger.d("Download inactive — unregistering from AIO timer")
 			aioTimer.unregister(this@RegularDownloader)
-			coroutineScope.cancel()
+			if (downloadDataModel.status == COMPLETE) {
+				coroutineScope.cancel()
+			}
 		}
 	}
 
@@ -675,10 +679,7 @@ class RegularDownloader(
 		val regularDownloadParts = mutableListOf<RegularDownloadPart>()
 
 		for (index in 0 until numberOfThreads) {
-			val downloadPart = RegularDownloadPart(
-				regularDownloader = this@RegularDownloader,
-				coroutineScope = coroutineScope
-			)
+			val downloadPart = RegularDownloadPart(regularDownloader = this@RegularDownloader)
 			downloadPart.initiate(
 				downloadPartIndex = index,
 				downloadStartingPoint = downloadDataModel.partStartingPoint[index],
@@ -1200,7 +1201,8 @@ class RegularDownloader(
 			if (isNetworkAvailable() && isInternetConnected()) {
 				if (downloadSettings.downloadWifiOnly && !isWifiEnabled()) return
 				downloadDataModel.isWaitingForNetwork = false
-				updateDownloadStatus(getText(string.title_started_downloading))
+				val statusInfoString = getText(string.title_started_downloading)
+				updateDownloadStatus(statusInfoString)
 				startAllDownloadThreads()
 				logger.d("Network restored, retrying all download threads")
 			}
