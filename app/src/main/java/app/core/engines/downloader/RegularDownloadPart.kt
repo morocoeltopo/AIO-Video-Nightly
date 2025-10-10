@@ -20,6 +20,16 @@ import java.net.URI
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
+/**
+ * Represents a single part of a file being downloaded.
+ *
+ * Manages byte range, progress, network connection, and status for its segment.
+ * Supports resumable and multi-threaded downloads, handles errors,
+ * and reports updates to the parent downloader. Uses OkHttp for connections
+ * with optional headers and cookies for reliability.
+ *
+ * @param regularDownloader The parent RegularDownloader managing this part.
+ */
 open class RegularDownloadPart(private val regularDownloader: RegularDownloader) {
 
 	/** Logger for debug and error messages */
