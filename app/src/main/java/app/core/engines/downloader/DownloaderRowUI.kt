@@ -66,6 +66,8 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private val fileNameTextView: TextView by lazy { rowLayout.findViewById(R.id.txt_file_name) }
 	private val statusInfo: TextView by lazy { rowLayout.findViewById(R.id.txt_download_status) }
 	private val favicon: ImageView by lazy { rowLayout.findViewById(R.id.img_site_favicon) }
+	private val duration: TextView by lazy { rowLayout.findViewById(R.id.txt_media_duration) }
+	private val durationContainer: View by lazy { rowLayout.findViewById(R.id.container_media_duration) }
 	private val fileTypeIndicator: ImageView by lazy { rowLayout.findViewById(R.id.img_file_type_indicator) }
 	private val mediaPlayIndicator: ImageView by lazy { rowLayout.findViewById(R.id.img_media_play_indicator) }
 
@@ -84,6 +86,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			updateFileThumbnail(downloadModel)
 			updateFaviconInfo(downloadModel)
 			updateMediaPlayIndicator(downloadModel)
+			updatePlaybackTime(downloadModel)
 			updateFileTypeIndicator(downloadModel)
 			updateAlertMessage(downloadModel)
 		} ?: logger.d("Row layout reference lost, skipping update.")
@@ -278,6 +281,36 @@ class DownloaderRowUI(private val rowLayout: View) {
 				else -> R.drawable.ic_button_file // Default for unknown file types
 			}
 		)
+	}
+
+	/**
+	 * Extracts and displays playback time from the file info text if available.
+	 * Shows/hides the duration container based on whether playback time exists.
+	 *
+	 * @param downloadDataModel the associated download data model
+	 */
+	private fun updatePlaybackTime(downloadDataModel: DownloadDataModel) {
+		ThreadsUtility.executeInBackground(codeBlock = {
+			val fileName = downloadDataModel.fileName
+			if (isVideoByName(fileName) || isAudioByName(fileName)) {
+				val cleanedData = downloadDataModel.mediaFilePlaybackDuration
+					.replace("(", "")
+					.replace(")", "")
+				if (cleanedData.isNotEmpty()) {
+					ThreadsUtility.executeOnMain {
+						showView(targetView = durationContainer, shouldAnimate = true)
+						duration.text = cleanedData
+					}
+				} else {
+					// optional: handle case when still empty after retries
+					ThreadsUtility.executeOnMain {
+						showView(targetView = durationContainer, shouldAnimate = false)
+					}
+				}
+			} else {
+				ThreadsUtility.executeOnMain { durationContainer.visibility = GONE }
+			}
+		})
 	}
 
 	/**
