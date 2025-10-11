@@ -20,12 +20,16 @@ import lib.texts.CommonTextUtils.getText
 import java.lang.ref.WeakReference
 
 /**
- * Adapter to display a list of [VideoFormat]s in a dialog for selecting resolution and format.
+ * Adapter responsible for displaying a list of available [VideoFormat] items
+ * within a resolution and format picker dialog.
  *
- * @param baseActivity Reference to the activity context.
- * @param videoInfo Contains the video metadata and original URL.
- * @param videoFormats List of available video formats to choose from.
- * @param onVideoFormatClick Callback invoked when a format is selected.
+ * Each list item represents a specific video format (resolution, file size, etc.).
+ * Selecting an item highlights it and triggers a callback to handle the selection.
+ *
+ * @param baseActivity Weak reference to the [BaseActivity] context.
+ * @param videoInfo Metadata containing details about the video and its source URL.
+ * @param videoFormats List of all available [VideoFormat] options.
+ * @param onVideoFormatClick Callback executed when a user selects a format.
  */
 open class VideoFormatAdapter(
 	private val baseActivity: BaseActivity?,
