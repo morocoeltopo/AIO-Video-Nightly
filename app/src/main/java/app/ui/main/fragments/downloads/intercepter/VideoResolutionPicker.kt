@@ -397,8 +397,7 @@ class VideoResolutionPicker(
 					val sizeInFormat = cleanFileSize(videoFormat.formatFileSize)
 					downloadModel.fileSize = parseSize(sizeInFormat)
 					if (downloadModel.fileSize > 0) {
-						downloadModel.fileSizeInFormat =
-							getHumanReadableFormat(downloadModel.fileSize)
+						downloadModel.fileSizeInFormat = getHumanReadableFormat(downloadModel.fileSize)
 					}
 
 					// Check available storage space
