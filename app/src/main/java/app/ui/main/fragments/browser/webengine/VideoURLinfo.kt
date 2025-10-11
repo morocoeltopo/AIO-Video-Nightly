@@ -1,5 +1,9 @@
 package app.ui.main.fragments.browser.webengine
 
+import com.dslplatform.json.CompiledJson
+import com.dslplatform.json.JsonAttribute
+import java.io.Serializable
+
 /**
  * Represents information about a video URL detected within a web page.
  *
@@ -14,10 +18,23 @@ package app.ui.main.fragments.browser.webengine
  * @property fileResolution A string representing the resolution of this particular video file (e.g., "720p", "1080p").
  * @property infoCached An optional string to cache additional metadata or state related to the video (e.g., pre-parsed info).
  */
+@CompiledJson
 data class VideoUrlInfo(
+	@param: JsonAttribute(name = "fileUrl")
 	var fileUrl: String,
+
+	@param: JsonAttribute(name = "isM3U8")
 	var isM3U8: Boolean,
+
+	@param: JsonAttribute(name = "totalResolutions")
 	var totalResolutions: Int,
+
+	@param: JsonAttribute(name = "fileResolution")
 	var fileResolution: String,
+
+	@param: JsonAttribute(name = "fileDuration")
+	var fileDuration: Long,
+
+	@param: JsonAttribute(name = "infoCached")
 	var infoCached: String = ""
-)
+) : Serializable
