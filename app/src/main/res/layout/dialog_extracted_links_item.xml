@@ -88,7 +88,7 @@
 			android:singleLine="true"
 			android:text="@string/title__"
 			android:textColor="@color/color_text_primary"
-			android:textSize="@dimen/message_text_size"
+			android:textSize="@dimen/small_text_size"
 			android:textFontWeight="600" />
 	</RelativeLayout>
 </RelativeLayout>
