@@ -17,6 +17,7 @@ import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
 import app.ui.others.information.IntentInterceptActivity
 import com.aio.R
+import lib.device.DateTimeUtils.formatVideoDuration
 import lib.device.IntentUtility.openLinkInSystemBrowser
 import lib.networks.URLUtilityKT
 import lib.networks.URLUtilityKT.getWebpageTitleOrDescription
@@ -67,7 +68,8 @@ class SingleResolutionPrompter(
 	private val dontParseFBTitle: Boolean = false,
 	private val thumbnailUrlProvided: String? = null,
 	private val isDownloadFromBrowser: Boolean = false,
-	private val closeActivityOnSuccessfulDownload: Boolean = false
+	private val closeActivityOnSuccessfulDownload: Boolean = false,
+	private val videoFileDuration: Long = 0L
 ) {
 	private val logger = LogHelperUtils.from(javaClass)
 
@@ -258,6 +260,29 @@ class SingleResolutionPrompter(
 	}
 
 	/**
+	 * Displays the video duration on the provided layout if available.
+	 *
+	 * This function checks whether a valid video duration is present.
+	 * If so, it makes the duration container visible (with animation)
+	 * and updates the text field with the formatted time.
+	 *
+	 * @param layout The parent view containing the duration container and text view.
+	 */
+	private fun showDuration(layout: View) {
+		// Skip if duration is not available
+		if (videoFileDuration == 0L) return
+
+		// Show the media duration container with animation
+		showView(layout.findViewById(R.id.container_media_duration), shouldAnimate = true)
+
+		// Update the duration text
+		layout.findViewById<TextView>(R.id.txt_media_duration).let {
+			it.text = formatVideoDuration(videoFileDuration)
+			logger.d("Displayed video duration: ${it.text}")
+		}
+	}
+
+	/**
 	 * Sets up title, resolution and thumbnail views
 	 * @receiver The dialog content view
 	 */
@@ -266,6 +291,7 @@ class SingleResolutionPrompter(
 		showVideoResolution(layout = this)
 		showVideoThumb(layout = this)
 		showFavicon(layout = this)
+		showDuration(layout = this)
 	}
 
 	/**
@@ -350,13 +376,16 @@ class SingleResolutionPrompter(
 						videoUrlReferer = videoUrlReferer,
 						videoThumbnailByReferer = videoThumbnailByReferer,
 						videoCookie = videoCookie,
-						videoFormats = videoFormats
+						videoFormats = videoFormats,
+						videoDuration = videoFileDuration
 					)
 
 					// Configure download model
 					downloadModel.videoInfo = videoInfo
 					downloadModel.videoFormat = videoFormats[0]
 					downloadModel.isDownloadFromBrowser = isDownloadFromBrowser
+					if (videoFileDuration > 0L) downloadModel.mediaFilePlaybackDuration =
+						formatVideoDuration(videoFileDuration)
 
 					if (videoUrlReferer != null) downloadModel.siteReferrer = videoUrlReferer
 
