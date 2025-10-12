@@ -60,29 +60,25 @@ class M3U8InfoExtractor {
 			val parser = HlsPlaylistParser()
 
 			try {
-				// Step 2: Initialize data source and request
-				val dataSource = dataSourceFactory.createDataSource()
-				val spec = DataSpec(m3u8Url.toUri())
-				dataSource.open(spec)
-				logger.d("Opened data stream for: $m3u8Url")
-
-				DataSourceInputStream(dataSource, spec).use { stream ->
-					logger.d("Parsing playlist for info...")
-					val res = extractResolution(parser, spec, stream, m3u8Url)
-					val dur = extractDuration(parser, spec, stream, m3u8Url)
-					logger.d("Done: $res, ${dur}ms")
-
-					try {
-						executeOnMain { callback.onResolutionsAndDuration(res, dur) }
-					} catch (cbErr: Exception) {
-						logger.d("Callback error: ${cbErr.localizedMessage}")
-						logger.e("Callback failed for: $m3u8Url", cbErr)
-						executeOnMain { callback.onError("Dispatch failed: ${cbErr.message}") }
-					}
+				// --- Extract Resolutions ---
+				val dataSource1 = dataSourceFactory.createDataSource()
+				val spec1 = DataSpec(m3u8Url.toUri())
+				dataSource1.open(spec1)
+				val resolutions = DataSourceInputStream(dataSource1, spec1).use { stream ->
+					extractResolution(parser, spec1, stream, m3u8Url)
 				}
-				logger.d("Parsing done for: $m3u8Url")
+
+				// --- Extract Duration (new stream) ---
+				val dataSource2 = dataSourceFactory.createDataSource()
+				val spec2 = DataSpec(m3u8Url.toUri())
+				dataSource2.open(spec2)
+				val duration = DataSourceInputStream(dataSource2, spec2).use { stream ->
+					extractDuration(parser, spec2, stream, m3u8Url)
+				}
+
+				logger.d("Done: resolutions=$resolutions, duration=${duration}ms")
+				executeOnMain { callback.onResolutionsAndDuration(resolutions, duration) }
 			} catch (err: Exception) {
-				logger.d("Error: ${err.localizedMessage}")
 				logger.e("Extraction failed for: $m3u8Url", err)
 				executeOnMain { callback.onError("Extraction failed: ${err.message}") }
 			}
@@ -123,6 +119,7 @@ class M3U8InfoExtractor {
 						when {
 							variant.format.width > 0 && variant.format.height > 0 ->
 								"${variant.format.width}×${variant.format.height}"
+
 							variant.format.height > 0 -> "${variant.format.height}p"
 							else -> null
 						}
@@ -177,47 +174,59 @@ class M3U8InfoExtractor {
 		m3u8UrlFileLink: String
 	): Long {
 		logger.d("Starting M3U8 duration extraction for: $m3u8UrlFileLink")
+
 		return try {
 			when (val playlist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)) {
+
+				// Master playlist: contains variants; pick first and fetch its duration
 				is HlsMultivariantPlaylist -> {
-					val variantUrl = playlist.variants.firstOrNull()?.url?.toString()
-					if (variantUrl != null) getDurationFromM3U8(variantUrl) else 0L
+					val variant = playlist.variants.firstOrNull()
+					if (variant != null) {
+						logger.d("Master playlist detected — fetching duration from variant: ${variant.url}")
+						try {
+							// Open a new stream for the variant
+							val factory = DefaultHttpDataSource.Factory()
+							val userAgent = getText(R.string.title_mobile_user_agent)
+							val dataSource = factory.setUserAgent(userAgent).createDataSource()
+							val variantSpec = DataSpec(variant.url)
+							dataSource.open(variantSpec)
+
+							DataSourceInputStream(dataSource, variantSpec).use { variantStream ->
+								val variantPlaylist = hlsPlaylistParser.parse(variantSpec.uri, variantStream)
+								if (variantPlaylist is HlsMediaPlaylist) {
+									val durationMs = variantPlaylist.durationUs / 1000
+									logger.d("Extracted variant duration: ${durationMs}ms")
+									durationMs
+								} else {
+									logger.d("Variant is not a media playlist.")
+									0L
+								}
+							}
+						} catch (variantError: Exception) {
+							logger.e("Failed to fetch duration from variant: ${variant.url}", variantError)
+							0L
+						}
+					} else {
+						logger.d("No variant found in master playlist.")
+						0L
+					}
 				}
-				is HlsMediaPlaylist -> (playlist.durationUs / 1000)
-				else -> 0L
+
+				// Media playlist: directly compute duration
+				is HlsMediaPlaylist -> {
+					val durationMs = playlist.durationUs / 1000
+					logger.d("Extracted media playlist duration: ${durationMs}ms")
+					durationMs
+				}
+
+				else -> {
+					logger.d("Unknown playlist type for: $m3u8UrlFileLink")
+					0L
+				}
 			}
 		} catch (error: Exception) {
-			logger.d("Error parsing M3U8 playlist for: $m3u8UrlFileLink -> ${error.localizedMessage}")
-			logger.e("Failed to fetch duration from M3U8: $m3u8UrlFileLink", error)
-			0L
-		}
-	}
-
-	/**
-	 * Fetches and parses an HLS (.m3u8) playlist to determine total video duration.
-	 *
-	 * @param m3u8Url The URL of the HLS playlist
-	 * @return Total duration in milliseconds (or 0L if unavailable)
-	 */
-	@OptIn(UnstableApi::class)
-	private fun getDurationFromM3U8(m3u8Url: String): Long {
-		logger.d("Fetching duration from HLS playlist: $m3u8Url")
-
-		val factory = DefaultHttpDataSource.Factory()
-		val userAgent = getText(R.string.title_mobile_user_agent)
-		val dataSourceFactory = factory.setUserAgent(userAgent)
-		val playlistParser = HlsPlaylistParser()
-
-		return try {
-			val dataSource = dataSourceFactory.createDataSource()
-			val dataSpec = DataSpec(m3u8Url.toUri())
-			dataSource.open(dataSpec)
-
-			DataSourceInputStream(dataSource, dataSpec).use { stream ->
-				extractDuration(playlistParser, dataSpec, stream, m3u8Url)
-			}
-		} catch (error: Exception) {
-			logger.e("Failed to fetch duration from M3U8: $m3u8Url", error)
+			logger.d("Error parsing M3U8 for: $m3u8UrlFileLink -> ${error.localizedMessage}")
+			logger.e("Failed to extract duration from M3U8: $m3u8UrlFileLink", error)
 			0L
 		}
 	}
@@ -337,9 +346,9 @@ class M3U8InfoExtractor {
 		 * Invoked when both video resolutions and duration have been successfully extracted.
 		 *
 		 * @param resolutions A list of available video resolutions (e.g., ["1920×1080", "1280×720"]).
-		 * @param durationMS The total duration of the media in milliseconds.
+		 * @param durationMs The total duration of the media in milliseconds.
 		 */
-		fun onResolutionsAndDuration(resolutions: List<String>, durationMS: Long)
+		fun onResolutionsAndDuration(resolutions: List<String>, durationMs: Long)
 
 		/**
 		 * Invoked when an error occurs during metadata extraction.
