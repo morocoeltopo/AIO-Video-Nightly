@@ -840,6 +840,44 @@ class DownloadDataModel : Serializable {
 	}
 
 	/**
+	 * Refreshes and updates the current download folder path based on user settings.
+	 *
+	 * This function checks the preferred download location from [aioSettings] and
+	 * sets [fileDirectory] accordingly. It supports private folder downloads,
+	 * default system gallery, and falls back to internal storage if necessary.
+	 *
+	 * Logs the resolved folder path for debugging purposes.
+	 */
+	fun refreshUpdatedDownloadFolder() {
+		logger.d("Refreshing download folder based on user settings")
+
+		when (globalSettings.defaultDownloadLocation) {
+			PRIVATE_FOLDER -> {
+				// Attempt to use external private data folder
+				val externalDataFolderPath = INSTANCE.getExternalDataFolder()?.getAbsolutePath(INSTANCE)
+				if (!externalDataFolderPath.isNullOrEmpty()) {
+					fileDirectory = externalDataFolderPath
+					logger.d("Set file directory to external private folder: $externalDataFolderPath")
+				} else {
+					// Fallback to internal app storage
+					val internalDataFolderPath = INSTANCE.dataDir.absolutePath
+					fileDirectory = internalDataFolderPath
+					logger.d("External folder unavailable, set file directory to internal storage: $internalDataFolderPath")
+				}
+			}
+
+			SYSTEM_GALLERY -> {
+				// Use default system gallery folder
+				val galleryPath = getText(string.text_default_aio_download_folder_path)
+				fileDirectory = galleryPath
+				logger.d("Set file directory to system gallery: $galleryPath")
+			}
+
+			else -> logger.d("Unknown download location, keeping previous fileDirectory: $fileDirectory")
+		}
+	}
+
+	/**
 	 * Deletes all temporary files associated with this download.
 	 * @param internalDir The directory containing temporary files
 	 */
