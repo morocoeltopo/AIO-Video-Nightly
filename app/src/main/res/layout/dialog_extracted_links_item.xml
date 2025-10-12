@@ -19,7 +19,7 @@
 		android:background="@drawable/ic_webtab_selector_background"
 		android:clickable="true"
 		android:elevation="@dimen/_1"
-		tools:ignore="UselessParent">
+		tools:ignore="UselessParent,TouchTargetSizeCheck">
 
 		<!-- Video type indicator icon -->
 		<ImageView
@@ -62,7 +62,7 @@
 			<!-- Open link indicator icon -->
 			<ImageView
 				android:id="@+id/img_link_open_indicator"
-				android:layout_width="@dimen/_24"
+				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_alignParentEnd="true"
 				android:layout_centerVertical="true"
@@ -70,7 +70,7 @@
 				android:layout_marginEnd="@dimen/_10"
 				android:adjustViewBounds="true"
 				android:importantForAccessibility="no"
-				android:src="@drawable/ic_button_open_v2"
+				android:src="@drawable/ic_button_open_small"
 				android:tint="@color/color_secondary"
 				tools:ignore="ImageContrastCheck" />
 		</RelativeLayout>
@@ -82,13 +82,13 @@
 			android:layout_height="wrap_content"
 			android:layout_below="@id/video_info_container"
 			android:layout_marginTop="@dimen/_0"
-			android:layout_marginBottom="@dimen/_5"
+			android:layout_marginBottom="@dimen/_8"
 			android:layout_toEndOf="@+id/img_video_type_indicator"
 			android:fontFamily="@font/application_font_family"
 			android:singleLine="true"
 			android:text="@string/title__"
 			android:textColor="@color/color_text_primary"
-			android:textSize="@dimen/small_text_size"
-			android:textFontWeight="600" />
+			android:textFontWeight="600"
+			android:textSize="@dimen/small_text_size" />
 	</RelativeLayout>
 </RelativeLayout>

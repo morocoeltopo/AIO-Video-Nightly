@@ -110,6 +110,36 @@
 						android:visibility="gone"
 						tools:ignore="ImageContrastCheck" />
 
+					<!-- Media duration indicator container (hidden by default) -->
+					<LinearLayout
+						android:id="@+id/container_media_duration"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_gravity="end"
+						android:layout_marginStart="@dimen/_5"
+						android:layout_marginTop="@dimen/_5"
+						android:layout_marginEnd="@dimen/_5"
+						android:layout_marginBottom="@dimen/_5"
+						android:background="@drawable/rounded_primary_color"
+						android:orientation="vertical"
+						android:visibility="gone">
+
+						<!-- Media duration text -->
+						<TextView
+							android:id="@+id/txt_media_duration"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginStart="@dimen/_5"
+							android:layout_marginTop="@dimen/_1"
+							android:layout_marginEnd="@dimen/_5"
+							android:layout_marginBottom="@dimen/_1"
+							android:fontFamily="@font/application_font_family"
+							android:text="@string/title_time_representation"
+							android:textColor="@color/color_on_primary"
+							android:textSize="@dimen/smaller_text_size"
+							android:textStyle="normal"
+							tools:ignore="TextContrastCheck" />
+					</LinearLayout>
 				</androidx.cardview.widget.CardView>
 
 				<!-- Container for file metadata (title and URL) -->

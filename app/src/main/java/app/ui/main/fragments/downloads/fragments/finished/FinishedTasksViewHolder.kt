@@ -132,7 +132,7 @@ class FinishedTasksViewHolder(val layout: View) {
 				logger.d("Using cached details for download ID: ${downloadDataModel.id}")
 				ThreadsUtility.executeOnMain {
 					fileInfo.text = cacheDetails
-					updatePaybackTime(downloadDataModel)
+					updatePlaybackTime(downloadDataModel)
 				}
 				return@executeInBackground
 			}
@@ -167,7 +167,7 @@ class FinishedTasksViewHolder(val layout: View) {
 					// Cache the formatted details for future use
 					detailsCache[downloadDataModel.id.toString()] = detail
 					fileInfo.text = detail
-					updatePaybackTime(downloadDataModel)
+					updatePlaybackTime(downloadDataModel)
 				}
 			}
 		})
@@ -179,7 +179,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	 *
 	 * @param downloadDataModel the associated download data model
 	 */
-	private fun updatePaybackTime(downloadDataModel: DownloadDataModel) {
+	private fun updatePlaybackTime(downloadDataModel: DownloadDataModel) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			val fileName = downloadDataModel.fileName
 			if (isVideoByName(fileName) || isAudioByName(fileName)) {

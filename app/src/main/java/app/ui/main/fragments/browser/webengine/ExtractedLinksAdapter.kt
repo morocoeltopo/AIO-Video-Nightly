@@ -210,14 +210,11 @@ class ExtractedLinksAdapter(
 					}
 
 					// Extract resolutions and duration from M3U8 stream
-					m3U8InfoExtractor.extractResolutionsAndDuration(
+					m3U8InfoExtractor.getDurationAndResolutionFrom(
 						m3u8Url = videoUrlInfo.fileUrl,
 						callback = object : InfoCallback {
-							override fun onDuration(duration: Long) = Unit
-
-							override fun onResolutions(resolutions: List<String>) {
+							override fun onResolutionsAndDuration(resolutions: List<String>, durationMs: Long) {
 								ThreadsUtility.executeInBackground(codeBlock = {
-									val durationMs = m3U8InfoExtractor.getDurationFromM3U8(m3u8Url = videoUrlInfo.fileUrl)
 									ThreadsUtility.executeOnMain {
 										closeAnyAnimation(linkItemInfo)
 
@@ -247,7 +244,8 @@ class ExtractedLinksAdapter(
 
 							override fun onError(errorMessage: String) {
 								logger.e("Failed to fetch HLS video info: $errorMessage")
-								layoutView.visibility = GONE
+								linkItemInfo.text = getText(R.string.title_failed_extract_video_info)
+								closeAnyAnimation(linkItemInfo)
 							}
 						})
 				})
@@ -362,7 +360,7 @@ class ExtractedLinksAdapter(
 					safeMotherActivity?.doSomeVibration(50)
 					showToast(
 						activityInf = safeMotherActivity,
-						msgId = R.string.title_wait_for_video_info
+						msgId = R.string.title_video_info_unavailable
 					)
 					return@setOnClickListener
 				}

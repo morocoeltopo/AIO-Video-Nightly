@@ -137,18 +137,21 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 
 					if (webViewLists.isNotEmpty()) {
 						val webViewId = webViewLists[0].id
-						webviewEngine.listOfWebVideosLibrary
-							.find { webVideosLibrary -> webVideosLibrary.webViewId == webViewId }
-							?.addVideoUrlInfo(
-								VideoUrlInfo(
-									fileUrl = url,
-									fileResolution = "",
-									isM3U8 = isM3U8Url(url),
-									totalResolutions = 0,     // Default until resolved
-									fileDuration = 0L         // Default until resolved
+						val listOfWebVideosLibrary = webviewEngine.listOfWebVideosLibrary
+						synchronized(listOfWebVideosLibrary){
+							listOfWebVideosLibrary
+								.find { webVideosLibrary -> webVideosLibrary.webViewId == webViewId }
+								?.addVideoUrlInfo(
+									VideoUrlInfo(
+										fileUrl = url,
+										fileResolution = "",
+										isM3U8 = isM3U8Url(url),
+										totalResolutions = 0,     // Default until resolved
+										fileDuration = 0L         // Default until resolved
+									)
 								)
-							)
-						logger.d("Added video URL info for detected format: $it")
+							logger.d("Added video URL info for detected format: $it")
+						}
 					}
 				}
 			}

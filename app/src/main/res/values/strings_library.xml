@@ -267,11 +267,11 @@
 	<string name="title_blocked_unwanted_popup_links">Blocked Unwanted Popup Links</string>
 	<string name="title_closed_tab">Closed Tab</string>
 	<string name="title_click_to_get_info">Click To Get Info…</string>
-	<string name="title_video_available_resolutions">Type : M3U8 | Available Resolutions: %1$s</string>
-	<string name="title_video_type_m3u8_resolution">Type : M3U8 | Resolution: %1$s</string>
-	<string name="title_video_type_mp4_resolution">Type : Mp4 | Resolution: %1$s</string>
-	<string name="title_video_type_mp4_resolution_duration">Type : Mp4 | Resolution: %1$s  ‣  %2$s </string>
-	<string name="title_video_type_mp4">Type: MP4 | %1$s</string>
+	<string name="title_video_available_resolutions">Type : M3U8 / Available Resolutions: %1$s</string>
+	<string name="title_video_type_m3u8_resolution">Type : M3U8 / Resolution: %1$s</string>
+	<string name="title_video_type_mp4_resolution">Type : Mp4 / Resolution: %1$s</string>
+	<string name="title_video_type_mp4_resolution_duration">Type : Mp4 / Resolution: %1$s  ‣  %2$s </string>
+	<string name="title_video_type_mp4">Type: MP4  /  %1$s</string>
 	<string name="title_fetching_file_info">Fetching File Info…</string>
 	<string name="title_youtube_download_not_supported">Youtube Download Not Supported</string>
 	<string name="title_add_to_bookmark">Add To Bookmark</string>
@@ -334,7 +334,7 @@
 	<string name="text_share_page_link">Share page link</string>
 	<string name="title_please_install_web_browser">Please Install A Web Browser</string>
 	<string name="title_server_issue">%1$s: Server Issue</string>
-	<string name="title_wait_for_video_info">Wait For Video Info…</string>
+	<string name="title_video_info_unavailable">Video Info Unavailable…</string>
 	<string name="title_download_available">Download Available</string>
 	<string name="text_unsupported_file_link">Unsupported file link.</string>
 	<string name="title_show_video_grabber">Show Video Grabber</string>

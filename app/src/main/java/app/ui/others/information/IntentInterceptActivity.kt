@@ -230,7 +230,7 @@ class IntentInterceptActivity : BaseActivity() {
 		val interceptor = SharedVideoURLIntercept(
 			baseActivity = safeActivityRef,
 			closeActivityOnSuccessfulDownload = true,
-			onOpenBrowser = {
+			onOpeningBuiltInBrowser = {
 				logger.d("interceptNonSocialMediaUrl: Opening browser as fallback.")
 				forwardIntentToMotherActivity()
 			}
@@ -239,7 +239,7 @@ class IntentInterceptActivity : BaseActivity() {
 		// Process the given URL
 		logger.d("interceptNonSocialMediaUrl: Passing URL to interceptor.")
 		interceptor.interceptIntentURI(
-			intentUrl = intentUrl, shouldOpenBrowserAsFallback = true
+			targetUrl = intentUrl, shouldOpenBrowserAsFallback = true
 		)
 		logger.d("interceptNonSocialMediaUrl: Interception process initiated.")
 	}
