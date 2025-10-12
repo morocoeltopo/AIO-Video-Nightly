@@ -85,6 +85,7 @@ object VideoFormatsUtils {
 	 * @property videoUrl Original video URL
 	 * @property videoFormats List of available formats
 	 * @property videoCookie Cookie string for authenticated requests
+	 * @property videoDuration Media playback duration of the video
 	 * @property videoCookieTempPath Temporary file path for cookie storage
 	 */
 	@CompiledJson
@@ -112,6 +113,9 @@ object VideoFormatsUtils {
 
 		@param:JsonAttribute(name = "videoCookie")
 		var videoCookie: String? = "",
+
+		@param:JsonAttribute(name = "videoDuration")
+		var videoDuration: Long = 0L,
 
 		@param:JsonAttribute(name = "videoCookieTempPath")
 		var videoCookieTempPath: String = ""
