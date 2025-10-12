@@ -29,46 +29,85 @@ class M3U8InfoExtractor {
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
-	 * Fetches and parses the M3U8 playlist to determine available resolutions.
+	 * Fetches and parses an HLS (.m3u8) playlist to extract available video resolutions
+	 * and stream duration using ExoPlayer’s [HlsPlaylistParser].
 	 *
-	 * @param m3u8Url The URL of the HLS playlist
-	 * @return List of resolution strings (e.g., ["1920×1080", "1280×720"])
+	 * This function runs asynchronously using [ThreadsUtility.executeInBackground] to avoid
+	 * blocking the UI thread. The extracted data (resolutions and duration) are delivered
+	 * back via the provided [InfoCallback].
+	 *
+	 * **Workflow:**
+	 * 1. Initializes a custom HTTP data source with a mobile user agent.
+	 * 2. Opens the playlist URL and parses it using [HlsPlaylistParser].
+	 * 3. Extracts both resolution variants and total duration.
+	 * 4. Returns results to the main thread through callback functions.
+	 *
+	 * @param m3u8Url The remote HLS playlist URL (e.g., “https://example.com/video.m3u8”).
+	 * @param callback The callback interface for delivering results or errors.
+	 *
+	 * @throws IOException If network or stream reading fails.
+	 * @throws ParserException If the M3U8 file is malformed or incompatible.
 	 */
 	@OptIn(UnstableApi::class)
 	fun getDurationAndResolutionFrom(m3u8Url: String, callback: InfoCallback) {
+		logger.d("Starting M3U8 metadata extraction for: $m3u8Url")
+
 		ThreadsUtility.executeInBackground(codeBlock = {
-			// Configure HTTP data source with user agent
+			// Step 1: Configure HTTP data source with user-agent
 			val factory = DefaultHttpDataSource.Factory()
 			val userAgent = getText(R.string.title_mobile_user_agent)
 			val dataSourceFactory = factory.setUserAgent(userAgent)
 			val playlistParser = HlsPlaylistParser()
 
 			try {
+				// Step 2: Initialize data source and request
 				val dataSource = dataSourceFactory.createDataSource()
 				val dataSpec = DataSpec(m3u8Url.toUri())
 				dataSource.open(dataSpec)
+				logger.d("Successfully opened data stream for: $m3u8Url")
 
+				// Step 3: Use InputStream to parse playlist and extract metadata
 				DataSourceInputStream(dataSource, dataSpec).use { stream ->
+					logger.d("Parsing playlist for resolution and duration info...")
 					val resolutions = extractResolution(playlistParser, dataSpec, stream, m3u8Url)
 					val durationMs = extractDuration(playlistParser, dataSpec, stream, m3u8Url)
-					try {
-						executeOnMain {
-							callback.onResolutions(resolutions)
-							callback.onDuration(durationMs)
-						}
-					} catch (error: Exception) {
-						logger.e("Resolution extraction failed for URL: $m3u8Url", error)
-						executeOnMain { callback.onError("Resolution/Duration extraction failed: ${error.message}") }
-					}
+					logger.d("Extraction complete for $m3u8Url — Resolutions: $resolutions, Duration: ${durationMs}ms")
 
+					try {
+						executeOnMain { callback.onResolutionsAndDuration(resolutions = resolutions, durationMS = durationMs) }
+					} catch (callbackError: Exception) {
+						logger.d("Callback error during main thread dispatch: ${callbackError.localizedMessage}")
+						logger.e("Resolution extraction failed for URL: $m3u8Url", callbackError)
+						executeOnMain { callback.onError("Callback dispatch failed: ${callbackError.message}") }
+					}
 				}
+				logger.d("Completed parsing workflow for: $m3u8Url")
 			} catch (error: Exception) {
-				error.printStackTrace()
-				callback.onError("Error found while extracting duration and resolution from m3u8 link:")
+				logger.d("Error while processing M3U8 URL: ${error.localizedMessage}")
+				logger.e("Error during duration and resolution extraction for: $m3u8Url", error)
+				executeOnMain {
+					callback.onError("Error extracting duration/resolution: ${error.message}")
+				}
 			}
 		})
 	}
 
+	/**
+	 * Extracts available video resolutions from an HLS `.m3u8` playlist.
+	 *
+	 * Supports both master and media playlists using ExoPlayer’s [HlsPlaylistParser].
+	 * - **Master playlists**: Extracts resolutions from each variant entry (e.g., `1920×1080`, `720p`).
+	 * - **Media playlists**: Attempts to infer resolution from the URL or defaults to a fallback string.
+	 *
+	 * @param hlsPlaylistParser The parser used to interpret HLS playlists.
+	 * @param dataSpec The [DataSpec] representing the media request metadata.
+	 * @param sourceInputStream The [DataSourceInputStream] to read the playlist contents.
+	 * @param m3u8FileLink The URL of the target HLS playlist file.
+	 * @return A list of available video resolutions, or an empty list if none are found.
+	 *
+	 * @throws IOException If unable to read the playlist data.
+	 * @throws ParserException If the playlist content is invalid.
+	 */
 	@OptIn(UnstableApi::class)
 	private fun extractResolution(
 		hlsPlaylistParser: HlsPlaylistParser,
@@ -76,32 +115,77 @@ class M3U8InfoExtractor {
 		sourceInputStream: DataSourceInputStream,
 		m3u8FileLink: String
 	): List<String> {
-		return when (val playlist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)) {
-			// Case 1: Master playlist with multiple variants
-			is HlsMultivariantPlaylist -> {
-				playlist.variants.mapNotNull { variant ->
-					when {
-						variant.format.width > 0 && variant.format.height > 0 ->
-							"${variant.format.width}×${variant.format.height}"
+		logger.d("Starting M3U8 resolution extraction for: $m3u8FileLink")
 
-						variant.format.height > 0 ->
-							"${variant.format.height}p"
+		return try {
+			when (val playlist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)) {
 
-						else -> null
-					}
-				}.distinct()
+				// Case 1: Master playlist — contains multiple variant streams with different resolutions
+				is HlsMultivariantPlaylist -> {
+					logger.d("Master playlist detected with ${playlist.variants.size} variants.")
+					val resolutions = playlist.variants.mapNotNull { variant ->
+						when {
+							variant.format.width > 0 && variant.format.height > 0 -> {
+								val res = "${variant.format.width}×${variant.format.height}"
+								logger.d("Detected resolution: $res")
+								res
+							}
+
+							variant.format.height > 0 -> {
+								val res = "${variant.format.height}p"
+								logger.d("Detected height-based resolution: $res")
+								res
+							}
+
+							else -> {
+								logger.d("Skipped variant with unknown resolution: ${variant.url}")
+								null
+							}
+						}
+					}.distinct()
+
+					logger.d("Extracted distinct resolutions: $resolutions")
+					resolutions
+				}
+
+				// Case 2: Media playlist — single resolution or inferred resolution
+				is HlsMediaPlaylist -> {
+					logger.d("Media playlist detected. Attempting resolution extraction from URL.")
+					val inferredResolution = extractResolutionFromUrl(m3u8FileLink)
+					val resultList = inferredResolution?.let { listOf(it) }
+						?: listOf(getText(R.string.title_player_default))
+					logger.d("Extracted media playlist resolution(s): $resultList")
+					resultList
+				}
+
+				else -> {
+					logger.d("Unknown playlist type encountered for: $m3u8FileLink")
+					emptyList()
+				}
 			}
-
-			// Case 2: Media playlist (single stream)
-			is HlsMediaPlaylist -> {
-				extractResolutionFromUrl(m3u8FileLink)?.let { listOf(it) }
-					?: listOf(getText(R.string.title_player_default))
-			}
-
-			else -> emptyList()
+		} catch (error: Exception) {
+			logger.d("Error while parsing resolutions from: $m3u8FileLink -> ${error.localizedMessage}")
+			logger.e("Failed to extract resolutions from M3U8: $m3u8FileLink", error)
+			emptyList()
 		}
 	}
 
+	/**
+	 * Extracts total duration (in milliseconds) from an HLS `.m3u8` playlist.
+	 *
+	 * Supports both master and media playlists using ExoPlayer’s [HlsPlaylistParser].
+	 * - For **master playlists**, it retrieves the first available variant and fetches its duration recursively.
+	 * - For **media playlists**, it computes total playback time directly from segment metadata.
+	 *
+	 * @param hlsPlaylistParser The parser instance for interpreting HLS playlist content.
+	 * @param dataSpec The [DataSpec] describing the data request.
+	 * @param sourceInputStream The [DataSourceInputStream] providing playlist input.
+	 * @param m3u8UrlFileLink The source URL of the HLS playlist.
+	 * @return The total duration in milliseconds, or `0L` if extraction fails.
+	 *
+	 * @throws IOException If playlist content cannot be read.
+	 * @throws ParserException If the playlist format is invalid or corrupted.
+	 */
 	@OptIn(UnstableApi::class)
 	private fun extractDuration(
 		hlsPlaylistParser: HlsPlaylistParser,
@@ -109,24 +193,36 @@ class M3U8InfoExtractor {
 		sourceInputStream: DataSourceInputStream,
 		m3u8UrlFileLink: String
 	): Long {
-		return when (val playlist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)) {
-			is HlsMultivariantPlaylist -> {
-				logger.d("Master playlist detected — fetching first variant for duration")
-				playlist.variants.firstOrNull()?.url?.let { variantUrl ->
-					getDurationFromM3U8(variantUrl.toString())
-				} ?: 0L
-			}
+		logger.d("Starting M3U8 duration extraction for: $m3u8UrlFileLink")
+		return try {
+			when (val playlist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)) {
+				is HlsMultivariantPlaylist -> {
+					logger.d("Detected master playlist — resolving first available variant.")
+					val variantUrl = playlist.variants.firstOrNull()?.url?.toString()
+					if (variantUrl != null) {
+						logger.d("Fetching variant duration from: $variantUrl")
+						getDurationFromM3U8(variantUrl)
+					} else {
+						logger.d("No variant URLs found in master playlist for: $m3u8UrlFileLink")
+						0L
+					}
+				}
 
-			is HlsMediaPlaylist -> {
-				val durationMs = (playlist.durationUs / 1000)
-				logger.d("Media playlist duration: ${durationMs}ms")
-				durationMs
-			}
+				is HlsMediaPlaylist -> {
+					val durationMs = (playlist.durationUs / 1000)
+					logger.d("Parsed media playlist duration: ${durationMs}ms from $m3u8UrlFileLink")
+					durationMs
+				}
 
-			else -> {
-				logger.e("Unknown playlist type for: $m3u8UrlFileLink")
-				0L
+				else -> {
+					logger.d("Encountered unknown playlist type for: $m3u8UrlFileLink")
+					0L
+				}
 			}
+		} catch (error: Exception) {
+			logger.d("Error parsing M3U8 playlist for: $m3u8UrlFileLink -> ${error.localizedMessage}")
+			logger.e("Failed to fetch duration from M3U8: $m3u8UrlFileLink", error)
+			0L
 		}
 	}
 
@@ -137,7 +233,7 @@ class M3U8InfoExtractor {
 	 * @return Total duration in milliseconds (or 0L if unavailable)
 	 */
 	@OptIn(UnstableApi::class)
-	fun getDurationFromM3U8(m3u8Url: String): Long {
+	private fun getDurationFromM3U8(m3u8Url: String): Long {
 		logger.d("Fetching duration from HLS playlist: $m3u8Url")
 
 		val factory = DefaultHttpDataSource.Factory()
@@ -259,32 +355,29 @@ class M3U8InfoExtractor {
 	}
 
 	/**
-	 * Callback interface for delivering media information extraction results.
+	 * Callback interface for delivering extracted media metadata asynchronously.
 	 *
-	 * This interface provides methods to asynchronously return parsed metadata
-	 * such as video duration, available resolutions, or error details when extraction fails.
-	 * Typically used with HLS (.m3u8) or MP4 video metadata parsers.
+	 * This interface is primarily used to return parsed video information such as
+	 * available resolutions and total duration obtained from network or local sources,
+	 * typically during HLS (.m3u8) or MP4 metadata extraction.
+	 *
+	 * It enables background parsers to communicate results or failures
+	 * back to the UI thread or business logic layer without blocking.
 	 */
 	interface InfoCallback {
 
 		/**
-		 * Called when the video duration is successfully extracted.
+		 * Invoked when both video resolutions and duration have been successfully extracted.
 		 *
-		 * @param duration Duration of the video in milliseconds.
+		 * @param resolutions A list of available video resolutions (e.g., ["1920×1080", "1280×720"]).
+		 * @param durationMS The total duration of the media in milliseconds.
 		 */
-		fun onDuration(duration: Long)
+		fun onResolutionsAndDuration(resolutions: List<String>, durationMS: Long)
 
 		/**
-		 * Called when available video resolutions are successfully detected.
+		 * Invoked when an error occurs during metadata extraction.
 		 *
-		 * @param resolutions List of available resolutions, such as ["1920×1080", "1280×720"].
-		 */
-		fun onResolutions(resolutions: List<String>)
-
-		/**
-		 * Called when metadata extraction fails.
-		 *
-		 * @param errorMessage Description of the failure cause or related debug information.
+		 * @param errorMessage A descriptive message explaining the reason for the failure.
 		 */
 		fun onError(errorMessage: String)
 	}
