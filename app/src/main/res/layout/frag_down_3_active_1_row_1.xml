@@ -98,6 +98,25 @@
 					android:visibility="visible"
 					tools:ignore="ImageContrastCheck" />
 
+				<!-- Private folder activation indicator -->
+				<ImageView
+					android:id="@+id/img_private_folder_indicator"
+					android:layout_width="@dimen/_20"
+					android:layout_height="wrap_content"
+					android:layout_gravity="end|bottom"
+					android:layout_marginStart="@dimen/_5"
+					android:layout_marginTop="@dimen/_5"
+					android:layout_marginEnd="@dimen/_5"
+					android:layout_marginBottom="@dimen/_5"
+					android:adjustViewBounds="true"
+					android:background="@drawable/rounded_transparent_black"
+					android:elevation="@dimen/_2"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_folder"
+					android:tint="@color/color_on_primary"
+					android:visibility="visible"
+					tools:ignore="ImageContrastCheck" />
+
 				<!-- Selection checkbox image indicator -->
 				<ImageView
 					android:id="@+id/img_checkbox_selection"

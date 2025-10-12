@@ -13,6 +13,7 @@ import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOApp.Companion.internalDataFolder
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import com.aio.R
 import com.anggrayudi.storage.file.getAbsolutePath
 import lib.files.FileSystemUtility.isArchiveByName
@@ -70,6 +71,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 	private val durationContainer: View by lazy { rowLayout.findViewById(R.id.container_media_duration) }
 	private val fileTypeIndicator: ImageView by lazy { rowLayout.findViewById(R.id.img_file_type_indicator) }
 	private val mediaPlayIndicator: ImageView by lazy { rowLayout.findViewById(R.id.img_media_play_indicator) }
+	private val privateFolderImageView: ImageView by lazy { rowLayout.findViewById(R.id.img_private_folder_indicator) }
 
 	/**
 	 * Main update method that refreshes all UI elements for a download item.
@@ -88,6 +90,7 @@ class DownloaderRowUI(private val rowLayout: View) {
 			updateMediaPlayIndicator(downloadModel)
 			updatePlaybackTime(downloadModel)
 			updateFileTypeIndicator(downloadModel)
+			updatePrivateFolderIndicator(downloadModel)
 			updateAlertMessage(downloadModel)
 		} ?: logger.d("Row layout reference lost, skipping update.")
 	}
@@ -190,8 +193,10 @@ class DownloaderRowUI(private val rowLayout: View) {
 
 			// Trim 4 characters at a time until the text fits
 			while (paint.measureText(newText) > availableWidth && newText.length > 4) {
-				logger.d("Measured width (${paint.measureText(newText)}) " +
-						"exceeds available width ($availableWidth). Trimming...")
+				logger.d(
+					"Measured width (${paint.measureText(newText)}) " +
+							"exceeds available width ($availableWidth). Trimming..."
+				)
 
 				if (newText.endsWith(endMatch, ignoreCase = true)) {
 					logger.d("Removing endMatch \"$endMatch\" after trimming.")
@@ -509,6 +514,31 @@ class DownloaderRowUI(private val rowLayout: View) {
 		logger.d("Showing default thumb for id=${downloadModel.id}")
 		thumbImageView.setImageDrawable(
 			getDrawable(safeRowLayoutRef.get()?.context ?: INSTANCE, downloadModel.getThumbnailDrawableID())
+		)
+	}
+
+	/**
+	 * Refreshes the private folder indicator in the dialog UI.
+	 *
+	 * Updates the icon and checkbox to reflect whether downloads are
+	 * currently set to a private (locked) folder or a public directory.
+	 * Ensures the UI accurately represents the user's active download
+	 * location preference.
+	 *
+	 * @param downloadModel The [DownloadDataModel] containing
+	 * the dialog's private folder indicator and settings.
+	 */
+	private fun updatePrivateFolderIndicator(downloadModel: DownloadDataModel) {
+		logger.d("Updating private folder indicator UI state")
+		val downloadLocation = downloadModel.globalSettings.defaultDownloadLocation
+		logger.d("Current download location: $downloadLocation")
+
+		// Update indicator icon based on folder type
+		privateFolderImageView.setImageResource(
+			when (downloadLocation) {
+				PRIVATE_FOLDER -> R.drawable.ic_button_lock  // Private folder
+				else -> R.drawable.ic_button_folder         // Normal folder
+			}
 		)
 	}
 

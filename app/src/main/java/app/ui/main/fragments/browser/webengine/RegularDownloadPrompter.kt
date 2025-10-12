@@ -1,6 +1,7 @@
 package app.ui.main.fragments.browser.webengine
 
 import android.view.View
+import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.net.toUri
@@ -11,6 +12,8 @@ import app.core.AIOApp.Companion.aioFavicons
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
+import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
 import app.core.engines.video_parser.parsers.SupportedURLs.isFacebookUrl
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
 import app.ui.main.MotherActivity
@@ -67,6 +70,7 @@ class RegularDownloadPrompter(
 			setupTitleAndThumbnail()
 			setupDownloadButton()
 			setupCardInfoButton()
+			setUpPrivateDownloadToggle()
 		}
 	}
 
@@ -164,6 +168,75 @@ class RegularDownloadPrompter(
 	}
 
 	/**
+	 * Updates the private folder indicator icon and checkbox state in the dialog UI.
+	 *
+	 * This function visually communicates to the user whether downloads are currently
+	 * configured to be saved in a private (locked) folder or a standard (public) directory.
+	 * It ensures that both the checkbox and the icon remain in sync with the user's
+	 * active download location preference.
+	 *
+	 * @param layout The root dialog [View] containing the private folder indicator and checkbox.
+	 */
+	private fun updatePrivateFolderIndicator(layout: View) {
+		logger.d("Updating private folder indicator UI state")
+		val privateFolderCheckbox = layout.findViewById<CheckBox>(R.id.checkbox_download_at_private)
+		val privateFolderImageView = layout.findViewById<ImageView>(R.id.img_private_folder_indicator)
+
+		// Get ImageView for private folder indicator
+		val downloadLocation = downloadModel.globalSettings.defaultDownloadLocation
+		logger.d("Current download location: $downloadLocation")
+
+		// Update indicator icon based on folder type
+		privateFolderImageView.setImageResource(
+			when (downloadLocation) {
+				PRIVATE_FOLDER -> R.drawable.ic_button_lock  // Indicates private folder
+				else -> R.drawable.ic_button_folder          // Indicates normal folder
+			}
+		)
+
+		// Sync checkbox state with folder type
+		privateFolderCheckbox.isChecked = (downloadLocation == PRIVATE_FOLDER)
+
+		logger.d(
+			"Private folder indicator updated — " +
+					"icon=${if (downloadLocation == PRIVATE_FOLDER) "lock" else "folder"}, " +
+					"checked=${privateFolderCheckbox.isChecked}"
+		)
+	}
+
+	/**
+	 * Toggles the download location between the private folder and system gallery
+	 * based on the state of the private folder checkbox.
+	 *
+	 * This method updates both:
+	 * - The global download location in [downloadModel.globalSettings]
+	 * - The UI indicator reflecting the current folder selection
+	 *
+	 * @param layout The root view containing the private folder checkbox and indicator
+	 */
+	private fun togglePrivateFolderDownload(layout: View) {
+		logger.d("Toggling private folder download option")
+		val privateFolderCheckbox = layout.findViewById<CheckBox>(R.id.checkbox_download_at_private)
+
+		// Update the download location based on checkbox state
+		downloadModel.globalSettings.defaultDownloadLocation =
+			if (privateFolderCheckbox.isChecked) {
+				logger.i("Private folder selected for download")
+				PRIVATE_FOLDER
+			} else {
+				logger.i("System gallery selected for download")
+				SYSTEM_GALLERY
+			}
+
+		// Refresh the update download folder for the download model
+		downloadModel.refreshUpdatedDownloadFolder()
+
+		// Update the UI indicator accordingly
+		updatePrivateFolderIndicator(layout)
+		logger.d("Private folder indicator updated successfully")
+	}
+
+	/**
 	 * Displays the video duration on the provided layout if available.
 	 *
 	 * This function checks whether a valid video duration is present.
@@ -213,6 +286,7 @@ class RegularDownloadPrompter(
 		showVideoThumb(layout = this)
 		showFavicon(layout = this)
 		showDuration(layout = this)
+		updatePrivateFolderIndicator(layout = this)
 	}
 
 	private fun View.setupCardInfoButton() {
@@ -235,6 +309,17 @@ class RegularDownloadPrompter(
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets up the toggle button for enabling/disabling downloads to a private folder.
+	 * Clicking the button switches the download mode and may update the UI accordingly.
+	 *
+	 * @receiver The dialog's content [View] that contains the private download toggle button.
+	 */
+	private fun View.setUpPrivateDownloadToggle() {
+		val buttonPrivateFolderToggle = findViewById<View>(R.id.checkbox_download_at_private)
+		buttonPrivateFolderToggle.setOnClickListener { togglePrivateFolderDownload(layout = this) }
 	}
 
 	private fun openVideoUrlInBrowser() {

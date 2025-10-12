@@ -14,6 +14,7 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioFavicons
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import com.aio.R
 import lib.device.DateTimeUtils.formatLastModifiedDate
 import lib.files.FileSizeFormatter.humanReadableSizeOf
@@ -66,6 +67,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	private val durationContainer: View by lazy { layout.findViewById(R.id.container_media_duration) }
 	private val mediaIndicator: View by lazy { layout.findViewById(R.id.img_media_play_indicator) }
 	private val fileTypeIndicator: ImageView by lazy { layout.findViewById(R.id.img_file_type_indicator) }
+	private val privateFolderImageView: ImageView by lazy { layout.findViewById(R.id.img_private_folder_indicator) }
 
 	/**
 	 * Binds the download data and sets up click listeners.
@@ -95,6 +97,7 @@ class FinishedTasksViewHolder(val layout: View) {
 		updateFaviconInfo(downloadDataModel)
 		updateThumbnailInfo(downloadDataModel)
 		updateFileTypeIndicator(downloadDataModel)
+		updatePrivateFolderIndicator(downloadDataModel)
 	}
 
 	/**
@@ -367,6 +370,31 @@ class FinishedTasksViewHolder(val layout: View) {
 				isArchiveByName(downloadDataModel.fileName) -> R.drawable.ic_button_archives  // Archives
 				isProgramByName(downloadDataModel.fileName) -> R.drawable.ic_button_programs  // Executables/programs
 				else -> R.drawable.ic_button_file // Default for unknown file types
+			}
+		)
+	}
+
+	/**
+	 * Refreshes the private folder indicator in the dialog UI.
+	 *
+	 * Updates the icon and checkbox to reflect whether downloads are
+	 * currently set to a private (locked) folder or a public directory.
+	 * Ensures the UI accurately represents the user's active download
+	 * location preference.
+	 *
+	 * @param downloadModel The [DownloadDataModel] containing
+	 * the dialog's private folder indicator and settings.
+	 */
+	private fun updatePrivateFolderIndicator(downloadModel: DownloadDataModel) {
+		logger.d("Updating private folder indicator UI state")
+		val downloadLocation = downloadModel.globalSettings.defaultDownloadLocation
+		logger.d("Current download location: $downloadLocation")
+
+		// Update indicator icon based on folder type
+		privateFolderImageView.setImageResource(
+			when (downloadLocation) {
+				PRIVATE_FOLDER -> R.drawable.ic_button_lock  // Private folder
+				else -> R.drawable.ic_button_folder         // Normal folder
 			}
 		)
 	}

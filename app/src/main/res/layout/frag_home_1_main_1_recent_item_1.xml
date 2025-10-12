@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Recent download item layout with thumbnail and media indicators -->
+<?xml version="1.0" encoding="utf-8"?><!-- Recent download item layout with thumbnail and media indicators -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -13,10 +12,10 @@
 
 	<!-- Thumbnail container with rounded corners and shadow -->
 	<androidx.cardview.widget.CardView
-		android:layout_gravity="center"
 		android:id="@+id/container_img_thumbnail"
 		android:layout_width="@dimen/_100"
 		android:layout_height="@dimen/_75"
+		android:layout_gravity="center"
 		android:layout_margin="@dimen/_5"
 		android:outlineAmbientShadowColor="@color/color_secondary"
 		app:cardBackgroundColor="@color/color_background"
@@ -42,11 +41,11 @@
 			android:layout_gravity="center"
 			android:adjustViewBounds="true"
 			android:alpha="0.8"
-			android:visibility="gone"
 			android:elevation="@dimen/_5"
 			android:importantForAccessibility="no"
 			android:src="@drawable/image_media_play"
 			android:tint="@color/color_on_primary"
+			android:visibility="gone"
 			tools:ignore="ImageContrastCheck" />
 
 		<!-- Site favicon indicator (hidden by default) -->
@@ -62,6 +61,43 @@
 			android:importantForAccessibility="no"
 			android:src="@drawable/ic_button_information"
 			android:visibility="gone"
+			tools:ignore="ImageContrastCheck" />
+
+		<!-- File type indicator -->
+		<ImageView
+			android:id="@+id/img_file_type_indicator"
+			android:layout_width="@dimen/_20"
+			android:layout_height="wrap_content"
+			android:layout_gravity="start|bottom"
+			android:layout_marginStart="@dimen/_5"
+			android:layout_marginTop="@dimen/_5"
+			android:layout_marginBottom="@dimen/_5"
+			android:adjustViewBounds="true"
+			android:background="@drawable/rounded_transparent_black"
+			android:elevation="@dimen/_2"
+			android:importantForAccessibility="no"
+			android:src="@drawable/ic_button_video"
+			android:tint="@color/color_on_primary"
+			android:visibility="visible"
+			tools:ignore="ImageContrastCheck" />
+
+		<!-- Private folder activation indicator -->
+		<ImageView
+			android:id="@+id/img_private_folder_indicator"
+			android:layout_width="@dimen/_20"
+			android:layout_height="wrap_content"
+			android:layout_gravity="end|bottom"
+			android:layout_marginStart="@dimen/_5"
+			android:layout_marginTop="@dimen/_5"
+			android:layout_marginEnd="@dimen/_5"
+			android:layout_marginBottom="@dimen/_5"
+			android:adjustViewBounds="true"
+			android:background="@drawable/rounded_transparent_black"
+			android:elevation="@dimen/_2"
+			android:importantForAccessibility="no"
+			android:src="@drawable/ic_button_folder"
+			android:tint="@color/color_on_primary"
+			android:visibility="visible"
 			tools:ignore="ImageContrastCheck" />
 
 		<!-- Media duration indicator container (hidden by default) -->

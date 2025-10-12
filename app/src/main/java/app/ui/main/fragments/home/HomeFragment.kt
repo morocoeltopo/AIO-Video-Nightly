@@ -32,6 +32,7 @@ import app.core.bases.BaseFragment
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.video_parser.dialogs.VideoLinkPasteEditor
 import app.ui.main.MotherActivity
 import app.ui.main.fragments.browser.activities.BookmarksActivity
@@ -50,7 +51,11 @@ import kotlinx.coroutines.launch
 import lib.device.ShareUtility
 import lib.device.ShareUtility.openApkFile
 import lib.files.FileSystemUtility.endsWithExtension
+import lib.files.FileSystemUtility.isArchiveByName
 import lib.files.FileSystemUtility.isAudioByName
+import lib.files.FileSystemUtility.isDocumentByName
+import lib.files.FileSystemUtility.isImageByName
+import lib.files.FileSystemUtility.isProgramByName
 import lib.files.FileSystemUtility.isVideo
 import lib.files.FileSystemUtility.isVideoByName
 import lib.networks.URLUtility
@@ -801,6 +806,8 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 				holder.setImageThumbnail(downloadsModels[position])
 				holder.setMediaDurationPreview(downloadsModels[position])
 				holder.setSiteImageFavicon(downloadsModels[position])
+				holder.setFileTypeIndication(downloadsModels[position])
+				holder.setPrivateFolderIndicator(downloadsModels[position])
 				holder.setOnClickEvent(downloadsModels[position], safeMotherActivityRef)
 			}
 
@@ -826,20 +833,26 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	class RecentDownloadsViewHolder(private val holderLayoutView: View) :
 		RecyclerView.ViewHolder(holderLayoutView) {
 
-		/** The media thumbnail image view. */
+		/** The media thumbnail ImageView showing video or file preview. */
 		val thumbnail: ImageView = holderLayoutView.findViewById(R.id.img_file_thumbnail)
 
-		/** The site favicon image view. */
+		/** The site favicon ImageView representing the source website. */
 		val favicon: ImageView = holderLayoutView.findViewById(R.id.img_site_favicon)
 
-		/** The media file playback indicator */
+		/** The media playback indicator ImageView (e.g., play icon overlay). */
 		val mediaIndicator: ImageView = holderLayoutView.findViewById(R.id.img_media_play_indicator)
 
-		/** The media duration text view. */
+		/** The TextView displaying the media duration in minutes/seconds. */
 		val duration: TextView = holderLayoutView.findViewById(R.id.txt_media_duration)
 
-		/** The media duration container view. */
+		/** Container view for the media duration, used for layout and visibility control. */
 		val durationContainer: View = holderLayoutView.findViewById(R.id.container_media_duration)
+
+		/** ImageView indicating the file type (e.g., video, audio, document). */
+		val fileTypeIndicator: ImageView = holderLayoutView.findViewById(R.id.img_file_type_indicator)
+
+		/** ImageView showing private folder status (locked/unlocked) for the download. */
+		val privateFolderImageView: ImageView = holderLayoutView.findViewById(R.id.img_private_folder_indicator)
 
 		/**
 		 * Sets the click event for the download item.
@@ -870,6 +883,50 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		 */
 		fun setSiteImageFavicon(downloadDataModel: DownloadDataModel) {
 			updateFaviconInfo(downloadDataModel)
+		}
+
+		/**
+		 * Updates the file type indicator icon in the UI based on the file type
+		 * detected from the download model's file name.
+		 *
+		 * @param downloadDataModel The model containing information about the downloaded file
+		 */
+		fun setFileTypeIndication(downloadDataModel: DownloadDataModel) {
+			// Determine the correct icon by checking file type via file name
+			fileTypeIndicator.setImageResource(
+				when {
+					isImageByName(downloadDataModel.fileName) -> R.drawable.ic_button_images   // Image files
+					isAudioByName(downloadDataModel.fileName) -> R.drawable.ic_button_audio    // Audio files
+					isVideoByName(downloadDataModel.fileName) -> R.drawable.ic_button_video    // Video files
+					isDocumentByName(downloadDataModel.fileName) -> R.drawable.ic_button_document // Documents
+					isArchiveByName(downloadDataModel.fileName) -> R.drawable.ic_button_archives  // Archives
+					isProgramByName(downloadDataModel.fileName) -> R.drawable.ic_button_programs  // Executables/programs
+					else -> R.drawable.ic_button_file // Default for unknown file types
+				}
+			)
+		}
+
+		/**
+		 * Refreshes the private folder indicator in the dialog UI.
+		 *
+		 * Updates the icon and checkbox to reflect whether downloads are
+		 * currently set to a private (locked) folder or a public directory.
+		 * Ensures the UI accurately represents the user's active download
+		 * location preference.
+		 *
+		 * @param downloadModel The [DownloadDataModel] containing
+		 * the dialog's private folder indicator and settings.
+		 */
+		fun setPrivateFolderIndicator(downloadModel: DownloadDataModel) {
+			val downloadLocation = downloadModel.globalSettings.defaultDownloadLocation
+
+			// Update indicator icon based on folder type
+			privateFolderImageView.setImageResource(
+				when (downloadLocation) {
+					PRIVATE_FOLDER -> R.drawable.ic_button_lock  // Private folder
+					else -> R.drawable.ic_button_folder         // Normal folder
+				}
+			)
 		}
 
 		/**
@@ -960,10 +1017,11 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 		 * @param downloadDataModel The download data model containing the site referrer.
 		 */
 		private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
-			val defaultFaviconResId = R.drawable.ic_button_information
+			val defaultFaviconResId = R.drawable.ic_image_default_favicon
 			val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 			if (isVideoThumbnailNotAllowed(downloadDataModel)) {
 				favicon.setImageDrawable(defaultFaviconDrawable)
+				showView(favicon, true)
 				return
 			}
 
