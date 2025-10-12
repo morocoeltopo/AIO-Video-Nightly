@@ -10,7 +10,6 @@ import android.webkit.WebViewClient
 import app.core.AIOApp
 import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioTimer
-import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOApp.Companion.internalDataFolder
 import app.core.AIOTimer.AIOTimerListener
 import app.core.engines.downloader.DownloadStatus.CLOSE
@@ -351,7 +350,8 @@ class M3U8VideoDownloader(
 			logger.d("Increasing retry count to ${downloadDataModel.resumeSessionRetryCount}")
 
 			// Trigger download system to resume forcibly
-			downloadSystem.forceResumeDownload(downloadDataModel)
+			closeYTDLProgress()
+			startDownload()
 			logger.d("Triggered force resume download.")
 		} else {
 			// Avoid infinite retry loops after threshold reached
