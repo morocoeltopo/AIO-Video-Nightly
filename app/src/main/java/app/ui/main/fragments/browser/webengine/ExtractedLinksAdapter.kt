@@ -13,9 +13,12 @@ import app.ui.main.MotherActivity
 import app.ui.main.fragments.browser.webengine.M3U8InfoExtractor.InfoCallback
 import app.ui.main.fragments.downloads.intercepter.SharedVideoURLIntercept
 import com.aio.R
+import lib.device.DateTimeUtils.formatVideoDuration
+import lib.networks.DownloaderUtils.getVideoDurationFromUrl
 import lib.networks.DownloaderUtils.getVideoResolutionFromUrl
 import lib.process.AsyncJobUtils.executeInBackground
 import lib.process.AsyncJobUtils.executeOnMainThread
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import lib.texts.ClipboardUtils.copyTextToClipboard
 import lib.texts.CommonTextUtils.getText
@@ -38,20 +41,45 @@ class ExtractedLinksAdapter(
 	private val listOfVideoUrlInfos: ArrayList<VideoUrlInfo>
 ) : BaseAdapter() {
 
-	/** Reference to the safe [MotherActivity] from the WebViewEngine. */
-	private val safeMotherActivityRef = WeakReference(webviewEngine.safeMotherActivityRef).get()
-
-	override fun getCount(): Int = listOfVideoUrlInfos.size
-
-	override fun getItem(position: Int): VideoUrlInfo = listOfVideoUrlInfos[position]
-
-	override fun getItemId(position: Int): Long = position.toLong()
+	/** Logger instance for debug messages and error tracking */
+	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
-	 * Binds view for each video item in the list.
-	 * @param position Index of the item.
-	 * @param convertView Reusable view if available.
-	 * @param parent Parent view group.
+	 * Weak reference to the parent [MotherActivity] from the [WebViewEngine].
+	 * Helps prevent memory leaks by avoiding direct strong references to the activity.
+	 */
+	private val safeMotherActivityRef = WeakReference(webviewEngine.safeMotherActivityRef).get()
+
+	/**
+	 * Returns the total number of video URLs available.
+	 */
+	override fun getCount(): Int = listOfVideoUrlInfos.size
+
+	/**
+	 * Returns the [VideoUrlInfo] object at the specified position.
+	 *
+	 * @param position Index of the video URL in the list
+	 * @return VideoUrlInfo at the given position
+	 */
+	override fun getItem(position: Int): VideoUrlInfo = listOfVideoUrlInfos[position]
+
+	/**
+	 * Returns the stable ID for the item at the given position.
+	 *
+	 * @param position Index of the video URL in the list
+	 * @return ID corresponding to the item (here simply the position as Long)
+	 */
+	override fun getItemId(position: Int): Long = position.toLong()
+
+
+	/**
+	 * Provides a view for each video item in the list.
+	 * Handles view recycling and binds video data using a ViewHolder.
+	 *
+	 * @param position Index of the video item in the list
+	 * @param convertView Reusable view to recycle if available
+	 * @param parent Parent [ViewGroup] that will contain this item
+	 * @return Configured [View] for the video item
 	 */
 	override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
 		val extractedVideoLink = listOfVideoUrlInfos[position]
@@ -60,9 +88,11 @@ class ExtractedLinksAdapter(
 		if (itemLayout == null) {
 			val layoutResId = R.layout.dialog_extracted_links_item
 			itemLayout = inflate(safeMotherActivityRef, layoutResId, null)
+			logger.d("Inflated new view for position $position")
 		}
 
 		if (itemLayout!!.tag == null) {
+			// Initialize ViewHolder and bind data
 			ViewHolder(
 				extractedLinksDialog = extractedLinksDialog,
 				webviewEngine = webviewEngine,
@@ -72,8 +102,10 @@ class ExtractedLinksAdapter(
 			).apply {
 				updateView(extractedVideoLink)
 				itemLayout.tag = this
+				logger.d("Created ViewHolder and bound data for position $position")
 			}
 		} else {
+			logger.d("Reusing existing ViewHolder for position $position")
 			itemLayout.tag as ViewHolder
 		}
 
@@ -90,6 +122,7 @@ class ExtractedLinksAdapter(
 		private val layoutView: View,
 		private val safeMotherActivity: MotherActivity?
 	) {
+		private val logger = LogHelperUtils.from(javaClass)
 		private val m3U8InfoExtractor = M3U8InfoExtractor()
 		private var itemClickableContainer: View = layoutView.findViewById(R.id.main_container)
 		private var linkItemUrl: TextView = layoutView.findViewById(R.id.txt_video_url)
@@ -135,26 +168,37 @@ class ExtractedLinksAdapter(
 						return@executeInBackground
 					}
 
-					m3U8InfoExtractor.extractResolutions(
+					m3U8InfoExtractor.extractResolutionsAndDuration(
 						m3u8Url = videoUrlInfo.fileUrl,
 						callback = object : InfoCallback {
-							override fun onResolutions(resolutions: List<String>) {
-								closeAnyAnimation(linkItemInfo)
-								if (resolutions.size > 1) {
-									val stringResId = R.string.title_video_available_resolutions
-									val infoText = motherActivity.getString(stringResId, "${resolutions.size}")
-									linkItemInfo.text = infoText
-								} else {
-									val stringResId = R.string.title_video_type_m3u8_resolution
-									val infoText = motherActivity.getString(stringResId, resolutions[0])
-									linkItemInfo.text = infoText
-								}
+							override fun onDuration(duration: Long) = Unit
 
-								textLinkItemInfo = linkItemInfo.text.toString()
-								videoUrlInfo.infoCached = textLinkItemInfo
-								videoUrlInfo.fileResolution = resolutions[0]
-								videoUrlInfo.totalResolutions = resolutions.size
-								videoUrlInfo.isM3U8 = true
+							override fun onResolutions(resolutions: List<String>) {
+								ThreadsUtility.executeInBackground(codeBlock = {
+									val durationMs = m3U8InfoExtractor.getDurationFromM3U8(m3u8Url = videoUrlInfo.fileUrl)
+									ThreadsUtility.executeOnMain {
+										closeAnyAnimation(linkItemInfo)
+
+										if (resolutions.size > 1) {
+											val stringResId = R.string.title_video_available_resolutions
+											val duration = if (durationMs > 0) " | ${formatVideoDuration(durationMs)}" else ""
+											val infoText = motherActivity.getString(stringResId, "${resolutions.size}$duration")
+											linkItemInfo.text = infoText
+										} else {
+											val stringResId = R.string.title_video_type_m3u8_resolution
+											val duration = if (durationMs > 0) " | ${formatVideoDuration(durationMs)}" else ""
+											val infoText = motherActivity.getString(stringResId, "${resolutions[0]}$duration")
+											linkItemInfo.text = infoText
+										}
+
+										textLinkItemInfo = linkItemInfo.text.toString()
+										videoUrlInfo.infoCached = textLinkItemInfo
+										videoUrlInfo.fileResolution = resolutions[0]
+										videoUrlInfo.fileDuration = durationMs
+										videoUrlInfo.totalResolutions = resolutions.size
+										videoUrlInfo.isM3U8 = true
+									}
+								})
 							}
 
 							override fun onError(errorMessage: String) {
@@ -166,63 +210,89 @@ class ExtractedLinksAdapter(
 		}
 
 		/**
-		 * Displays metadata for regular (non-HLS) video URLs.
-		 * Uses async resolution detection and caches result.
+		 * Displays metadata for a regular (non-HLS) video URL.
+		 *
+		 * - Fetches video duration and resolution asynchronously.
+		 * - Updates the UI with resolution and duration once available.
+		 * - Caches the result in [VideoUrlInfo.infoCached] for future reference.
+		 * - Provides fallback if resolution cannot be determined.
+		 *
+		 * @param videoUrlInfo Information about the video URL including cached info.
 		 */
 		private fun showNormalVideoLinkInfo(videoUrlInfo: VideoUrlInfo) {
 			safeMotherActivity?.let { safeMotherActivity ->
 				executeInBackground {
+					// Show temporary "fetching" info on main thread
 					executeOnMainThread {
 						linkItemInfo.text = getText(R.string.title_fetching_file_info)
 						animateFadInOutAnim(linkItemInfo)
 					}
 
+					// If info already cached, use it
 					if (videoUrlInfo.infoCached.isNotEmpty()) {
 						executeOnMainThread {
 							linkItemInfo.text = videoUrlInfo.infoCached
 							closeAnyAnimation(linkItemInfo)
-						}; return@executeInBackground
+						}
+						return@executeInBackground
 					}
 
 					try {
-						getVideoResolutionFromUrl(videoUrlInfo.fileUrl)?.let { resolution ->
+						val durationMs = getVideoDurationFromUrl(videoUrlInfo.fileUrl)
+						val resolution = getVideoResolutionFromUrl(videoUrlInfo.fileUrl)
+
+						resolution?.let { (_, height) ->
 							executeOnMainThread {
 								closeAnyAnimation(linkItemInfo)
 								videoUrlInfo.totalResolutions = 1
-								videoUrlInfo.fileResolution = "${resolution.second}p"
-								val stringResId = R.string.title_video_type_mp4_resolution
+								videoUrlInfo.fileResolution = "${height}p"
+								videoUrlInfo.fileDuration = durationMs
+								videoUrlInfo.isM3U8 = false
+
+								val infoText = if (durationMs > 0L) {
+									safeMotherActivity.getString(
+										R.string.title_video_type_mp4_resolution_duration,
+										videoUrlInfo.fileResolution,
+										formatVideoDuration(durationMs)
+									)
+								} else {
+									safeMotherActivity.getString(
+										R.string.title_video_type_mp4_resolution,
+										videoUrlInfo.fileResolution
+									)
+								}
+
+								linkItemInfo.text = infoText
+								videoUrlInfo.infoCached = infoText
+							}
+						} ?: run {
+							// Fallback if resolution unavailable
+							executeOnMainThread {
+								closeAnyAnimation(linkItemInfo)
+								videoUrlInfo.totalResolutions = 1
+								videoUrlInfo.fileResolution = getText(R.string.title_unknown)
+								videoUrlInfo.isM3U8 = false
 								val infoText = safeMotherActivity.getString(
-									stringResId,
+									R.string.title_video_type_mp4_resolution,
 									videoUrlInfo.fileResolution
 								)
 								linkItemInfo.text = infoText
 								videoUrlInfo.infoCached = infoText
-								videoUrlInfo.isM3U8 = false
 							}
-						} ?: run {
-							closeAnyAnimation(linkItemInfo)
-							videoUrlInfo.totalResolutions = 1
-							videoUrlInfo.fileResolution = getText(R.string.title_unknown)
-							val stringResId = R.string.title_video_type_mp4_resolution
-							val infoText = safeMotherActivity.getString(
-								stringResId,
-								videoUrlInfo.fileResolution
-							)
-							linkItemInfo.text = infoText
-							videoUrlInfo.infoCached = infoText
-							videoUrlInfo.isM3U8 = false
 						}
 
 						textLinkItemInfo = linkItemInfo.text.toString()
+						logger.d("Normal video info updated: ${textLinkItemInfo}")
 
 					} catch (error: Exception) {
-						error.printStackTrace()
+						logger.e("Error while parsing resolution from video link:", error)
 						executeOnMainThread {
 							closeAnyAnimation(linkItemInfo)
-							safeMotherActivity.getString(
+							val fallbackText = safeMotherActivity.getString(
 								R.string.title_video_type_mp4,
 								safeMotherActivity.getText(R.string.title_click_to_get_info)
-							).let { linkItemInfo.text = it }
+							)
+							linkItemInfo.text = fallbackText
 							textLinkItemInfo = linkItemInfo.text.toString()
 							layoutView.visibility = GONE
 						}
@@ -231,13 +301,20 @@ class ExtractedLinksAdapter(
 			}
 		}
 
+
 		/**
-		 * Handles click event to prompt download or show further options
-		 * depending on whether it's M3U8 or regular video.
+		 * Sets up a click listener for a video item to handle download actions.
+		 *
+		 * - If the video info is not yet cached, notifies the user to wait.
+		 * - For M3U8 (multi-resolution) videos, opens appropriate resolution selection dialogs.
+		 * - For regular videos, prompts for download using a single-resolution dialog.
+		 *
+		 * @param videoUrlInfo The video URL information including resolutions, duration, and cookies.
 		 */
 		private fun setupOnClickItemListener(videoUrlInfo: VideoUrlInfo) {
 			itemClickableContainer.setOnClickListener {
 				if (videoUrlInfo.infoCached.isEmpty()) {
+					logger.d("Video info not cached yet, prompting user to wait")
 					safeMotherActivity?.doSomeVibration(50)
 					showToast(
 						activityInf = safeMotherActivity,
@@ -247,11 +324,14 @@ class ExtractedLinksAdapter(
 				}
 
 				val videoTitle = webviewEngine.currentWebView?.title
+				val currentWebUrl = webviewEngine.currentWebView?.url
+				val videoCookie = webviewEngine.getCurrentWebViewCookies()
+
 				if (isM3U8Url(videoUrlInfo.fileUrl)) {
-					val currentWebUrl = webviewEngine.currentWebView?.url
-					val videoCookie = webviewEngine.getCurrentWebViewCookies()
+					logger.d("Detected M3U8 video URL: ${videoUrlInfo.fileUrl}")
 
 					if (videoUrlInfo.totalResolutions > 1) {
+						// Multi-resolution: show shared intercept dialog
 						executeOnMainThread {
 							SharedVideoURLIntercept(
 								baseActivity = safeMotherActivity,
@@ -260,13 +340,16 @@ class ExtractedLinksAdapter(
 									videoUrlReferer = currentWebUrl,
 									videoThumbnailUrl = currentWebpageVideoThumb.ifEmpty { null },
 									videoThumbnailByReferer = true,
-									videoCookie = videoCookie
+									videoCookie = videoCookie,
+									videoDuration = videoUrlInfo.fileDuration
 								)
 							).interceptIntentURI(videoUrlInfo.fileUrl, false)
 							extractedLinksDialog.close()
 						}
 					} else {
+						// Single-resolution M3U8: show single resolution prompt
 						safeMotherActivity?.let { safeMotherActivity ->
+							logger.d("Showing single-resolution M3U8 download prompt")
 							extractedLinksDialog.close()
 							SingleResolutionPrompter(
 								baseActivity = safeMotherActivity,
@@ -279,14 +362,14 @@ class ExtractedLinksAdapter(
 								videoUrlReferer = currentWebUrl,
 								isSocialMediaUrl = false,
 								isDownloadFromBrowser = true,
+								videoFileDuration = videoUrlInfo.fileDuration
 							).show()
 						}
 					}
 				} else {
+					// Regular video URL
 					try {
-						val currentWebUrl = webviewEngine.currentWebView?.url
-						val videoCookie = webviewEngine.getCurrentWebViewCookies()
-
+						logger.d("Detected regular video URL: ${videoUrlInfo.fileUrl}")
 						safeMotherActivity?.let { safeMotherActivity ->
 							extractedLinksDialog.close()
 							RegularDownloadPrompter(
@@ -298,28 +381,33 @@ class ExtractedLinksAdapter(
 								videoCookie = videoCookie,
 								videoTitle = videoTitle,
 								videoUrlReferer = currentWebUrl,
-								isFromSocialMedia = false
+								isFromSocialMedia = false,
+								videoFileDuration = videoUrlInfo.fileDuration
 							).show()
 						}
 					} catch (error: Exception) {
 						extractedLinksDialog.close()
-						error.printStackTrace()
+						logger.e("Error showing regular download prompt", error)
 					}
 				}
 			}
 		}
 
 		/**
-		 * Placeholder: Set up long-click functionality to copy URL or other future actions.
+		 * Sets up a long-click listener for the video item to copy its URL to clipboard.
+		 * Can be extended in the future for additional actions on long-press.
+		 *
+		 * @param extractedVideoLink The URL of the video to copy
 		 */
 		private fun setupLongClickItemListener(extractedVideoLink: String) {
 			itemClickableContainer.setOnLongClickListener {
+				logger.d("Long-click detected, copying URL: $extractedVideoLink")
 				copyTextToClipboard(safeMotherActivity, extractedVideoLink)
 				showToast(
 					activityInf = safeMotherActivity,
 					msgId = R.string.title_copied_url_to_clipboard
 				)
-				return@setOnLongClickListener true
+				true
 			}
 		}
 	}
