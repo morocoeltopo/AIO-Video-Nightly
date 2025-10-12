@@ -16,3 +16,4 @@ cdn.nsimg.net
 bmedia-gcore.justservingfiles.net
 notifyvideo.info
 pbucket.com
+growcdnssedge.com
