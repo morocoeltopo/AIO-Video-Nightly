@@ -71,7 +71,6 @@ class ExtractedLinksAdapter(
 	 */
 	override fun getItemId(position: Int): Long = position.toLong()
 
-
 	/**
 	 * Provides a view for each video item in the list.
 	 * Handles view recycling and binds video data using a ViewHolder.
@@ -113,7 +112,13 @@ class ExtractedLinksAdapter(
 	}
 
 	/**
-	 * ViewHolder class for caching views and logic per extracted video item.
+	 * ViewHolder for caching views and handling logic for each extracted video item in the list.
+	 *
+	 * Responsibilities:
+	 * - Binds video URL and metadata to the layout.
+	 * - Handles async resolution extraction for normal and HLS/M3U8 videos.
+	 * - Sets up click and long-click listeners for user interactions.
+	 * - Caches video info to avoid repeated network requests.
 	 */
 	class ViewHolder(
 		private val extractedLinksDialog: ExtractedLinksDialog,
@@ -124,50 +129,87 @@ class ExtractedLinksAdapter(
 	) {
 		private val logger = LogHelperUtils.from(javaClass)
 		private val m3U8InfoExtractor = M3U8InfoExtractor()
+
+		// Main clickable container for the video item
 		private var itemClickableContainer: View = layoutView.findViewById(R.id.main_container)
+
+		// TextView displaying the video URL
 		private var linkItemUrl: TextView = layoutView.findViewById(R.id.txt_video_url)
+
+		// TextView displaying the video info (resolution, duration)
 		private var linkItemInfo: TextView = layoutView.findViewById(R.id.txt_video_info)
+
+		// Cached info string to prevent repeated extraction
 		private var textLinkItemInfo: String = ""
+
+		// Current video thumbnail from the webpage (if available)
 		private var currentWebpageVideoThumb = ""
 
 		/**
-		 * Updates the UI with video URL and metadata.
-		 * Triggers resolution extraction and sets click listeners.
+		 * Updates the item layout with video URL, metadata, and click listeners.
+		 *
+		 * - Sets the video URL in the TextView.
+		 * - Fetches OG image from current webpage if thumbnail not cached.
+		 * - Displays metadata for normal or HLS/M3U8 videos asynchronously.
+		 * - Sets up click listener to prompt download or show options.
+		 * - Sets up long-click listener to copy URL to clipboard.
+		 *
+		 * @param videoUrlInfo The [VideoUrlInfo] containing metadata for this video item.
 		 */
 		fun updateView(videoUrlInfo: VideoUrlInfo) {
+			logger.d("Updating view for video URL: ${videoUrlInfo.fileUrl}")
 			linkItemUrl.text = videoUrlInfo.fileUrl
+
 			if (currentWebpageVideoThumb.isEmpty()) {
 				webviewEngine.currentWebView?.getCurrentOgImage {
 					currentWebpageVideoThumb = it ?: ""
+					logger.d("Fetched webpage thumbnail: $currentWebpageVideoThumb")
 				}
 			}
 
+			// If cached info exists, reuse it
 			if (textLinkItemInfo.isNotEmpty()) {
-				linkItemInfo.text = textLinkItemInfo; return
-			} else {
-				if (isM3U8Url(videoUrlInfo.fileUrl)) showHSLVideoLinkInfo(videoUrlInfo)
-				else showNormalVideoLinkInfo(videoUrlInfo)
+				linkItemInfo.text = textLinkItemInfo
+				return
 			}
 
+			// Display metadata based on video type
+			if (isM3U8Url(videoUrlInfo.fileUrl)) {
+				showHSLVideoLinkInfo(videoUrlInfo)
+			} else {
+				showNormalVideoLinkInfo(videoUrlInfo)
+			}
+
+			// Setup user interactions
 			setupLongClickItemListener(videoUrlInfo.fileUrl)
 			setupOnClickItemListener(videoUrlInfo)
 		}
 
 		/**
-		 * Displays metadata for HLS/M3U8 streams.
-		 * Handles async resolution extraction and caching.
+		 * Displays metadata for HLS/M3U8 video streams.
+		 *
+		 * - Extracts available resolutions and duration asynchronously using [m3U8InfoExtractor].
+		 * - Updates the UI with resolution count and duration once available.
+		 * - Caches the extracted info in [VideoUrlInfo.infoCached] to avoid repeated network requests.
+		 * - Handles single or multiple resolutions differently for display purposes.
+		 * - Marks the video as HLS/M3U8 via [VideoUrlInfo.isM3U8].
+		 *
+		 * @param videoUrlInfo Information about the M3U8 video including cached data.
 		 */
 		private fun showHSLVideoLinkInfo(videoUrlInfo: VideoUrlInfo) {
 			safeMotherActivity?.let { motherActivity ->
 				ThreadsUtility.executeInBackground(codeBlock = {
+					// Animate the link info TextView while fetching
 					ThreadsUtility.executeOnMain { animateFadInOutAnim(linkItemInfo) }
 
+					// Use cached info if available
 					if (videoUrlInfo.infoCached.isNotEmpty()) {
 						linkItemInfo.text = videoUrlInfo.infoCached
 						ThreadsUtility.executeOnMain { closeAnyAnimation(linkItemInfo) }
 						return@executeInBackground
 					}
 
+					// Extract resolutions and duration from M3U8 stream
 					m3U8InfoExtractor.extractResolutionsAndDuration(
 						m3u8Url = videoUrlInfo.fileUrl,
 						callback = object : InfoCallback {
@@ -179,29 +221,32 @@ class ExtractedLinksAdapter(
 									ThreadsUtility.executeOnMain {
 										closeAnyAnimation(linkItemInfo)
 
-										if (resolutions.size > 1) {
+										// Format info text based on number of resolutions
+										val infoText = if (resolutions.size > 1) {
 											val stringResId = R.string.title_video_available_resolutions
-											val duration = if (durationMs > 0) " | ${formatVideoDuration(durationMs)}" else ""
-											val infoText = motherActivity.getString(stringResId, "${resolutions.size}$duration")
-											linkItemInfo.text = infoText
+											val durationText = if (durationMs > 0) "  ‣ ${formatVideoDuration(durationMs)}" else ""
+											motherActivity.getString(stringResId, "${resolutions.size}$durationText")
 										} else {
 											val stringResId = R.string.title_video_type_m3u8_resolution
-											val duration = if (durationMs > 0) " | ${formatVideoDuration(durationMs)}" else ""
-											val infoText = motherActivity.getString(stringResId, "${resolutions[0]}$duration")
-											linkItemInfo.text = infoText
+											val durationText = if (durationMs > 0) "  ‣ ${formatVideoDuration(durationMs)}" else ""
+											motherActivity.getString(stringResId, "${resolutions[0]}$durationText")
 										}
 
-										textLinkItemInfo = linkItemInfo.text.toString()
-										videoUrlInfo.infoCached = textLinkItemInfo
+										linkItemInfo.text = infoText
+										textLinkItemInfo = infoText
+										videoUrlInfo.infoCached = infoText
 										videoUrlInfo.fileResolution = resolutions[0]
 										videoUrlInfo.fileDuration = durationMs
 										videoUrlInfo.totalResolutions = resolutions.size
 										videoUrlInfo.isM3U8 = true
+
+										logger.d("HLS video info updated: $infoText")
 									}
 								})
 							}
 
 							override fun onError(errorMessage: String) {
+								logger.e("Failed to fetch HLS video info: $errorMessage")
 								layoutView.visibility = GONE
 							}
 						})
@@ -282,7 +327,7 @@ class ExtractedLinksAdapter(
 						}
 
 						textLinkItemInfo = linkItemInfo.text.toString()
-						logger.d("Normal video info updated: ${textLinkItemInfo}")
+						logger.d("Normal video info updated: $textLinkItemInfo")
 
 					} catch (error: Exception) {
 						logger.e("Error while parsing resolution from video link:", error)
@@ -300,7 +345,6 @@ class ExtractedLinksAdapter(
 				}
 			}
 		}
-
 
 		/**
 		 * Sets up a click listener for a video item to handle download actions.
