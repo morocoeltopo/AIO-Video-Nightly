@@ -15,6 +15,7 @@ import app.core.engines.video_parser.parsers.SupportedURLs.isFacebookUrl
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
 import app.ui.main.MotherActivity
 import com.aio.R
+import lib.device.DateTimeUtils.formatVideoDuration
 import lib.device.DateTimeUtils.millisToDateTimeString
 import lib.device.IntentUtility.openLinkInSystemBrowser
 import lib.device.StorageUtility.getFreeExternalStorageSpace
@@ -51,7 +52,8 @@ class RegularDownloadPrompter(
 	private val videoUrlReferer: String? = null,
 	private val isFromSocialMedia: Boolean = false,
 	private val dontParseFBTitle: Boolean = false,
-	private val thumbnailUrlProvided: String? = null
+	private val thumbnailUrlProvided: String? = null,
+	private val videoFileDuration: Long = 0L
 ) {
 	private val logger = LogHelperUtils.from(javaClass)
 	private val safeMotherActivity = WeakReference(motherActivity).get()
@@ -161,6 +163,29 @@ class RegularDownloadPrompter(
 		}
 	}
 
+	/**
+	 * Displays the video duration on the provided layout if available.
+	 *
+	 * This function checks whether a valid video duration is present.
+	 * If so, it makes the duration container visible (with animation)
+	 * and updates the text field with the formatted time.
+	 *
+	 * @param layout The parent view containing the duration container and text view.
+	 */
+	private fun showDuration(layout: View) {
+		// Skip if duration is not available
+		if (videoFileDuration == 0L) return
+
+		// Show the media duration container with animation
+		showView(layout.findViewById(R.id.container_media_duration), shouldAnimate = true)
+
+		// Update the duration text
+		layout.findViewById<TextView>(R.id.txt_media_duration).let {
+			it.text = formatVideoDuration(videoFileDuration)
+			logger.d("Displayed video duration: ${it.text}")
+		}
+	}
+
 	private fun showVideoThumb(layout: View) {
 		if (!thumbnailUrlProvided.isNullOrEmpty()) {
 			videoThumbnailUrl = thumbnailUrlProvided
@@ -187,6 +212,7 @@ class RegularDownloadPrompter(
 		showVideoResolution(layout = this)
 		showVideoThumb(layout = this)
 		showFavicon(layout = this)
+		showDuration(layout = this)
 	}
 
 	private fun View.setupCardInfoButton() {
@@ -297,6 +323,8 @@ class RegularDownloadPrompter(
 		downloadModel.thumbnailUrl = videoThumbnailUrl
 		downloadModel.siteCookieString = videoCookie ?: ""
 		downloadModel.siteReferrer = currentWebUrl ?: ""
+		if (videoFileDuration > 0L) downloadModel.mediaFilePlaybackDuration =
+			formatVideoDuration(videoFileDuration)
 	}
 
 	private fun validateDownloadDir() {
