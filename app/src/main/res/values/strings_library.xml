@@ -270,7 +270,7 @@
 	<string name="title_video_available_resolutions">Type : M3U8 | Available Resolutions: %1$s</string>
 	<string name="title_video_type_m3u8_resolution">Type : M3U8 | Resolution: %1$s</string>
 	<string name="title_video_type_mp4_resolution">Type : Mp4 | Resolution: %1$s</string>
-	<string name="title_video_type_mp4_resolution_duration">Type : Mp4 | Resolution: %1$s | %2$s </string>
+	<string name="title_video_type_mp4_resolution_duration">Type : Mp4 | Resolution: %1$s  ‣  %2$s </string>
 	<string name="title_video_type_mp4">Type: MP4 | %1$s</string>
 	<string name="title_fetching_file_info">Fetching File Info…</string>
 	<string name="title_youtube_download_not_supported">Youtube Download Not Supported</string>
@@ -547,5 +547,6 @@
 	<string name="title_found_in_headers_b_">Found %1$s In Headers</string>
 	<string name="title_no_checksum_header_found">No Checksum Header Found</string>
 	<string name="title_download_at_private_folder">Download The File To <b>Private Folder</b></string>
+	<string name="title_failed_extract_video_info">Failed Extract Video Info</string>
 
 </resources>
