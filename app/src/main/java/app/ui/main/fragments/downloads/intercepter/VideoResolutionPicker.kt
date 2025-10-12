@@ -1,6 +1,7 @@
 package app.ui.main.fragments.downloads.intercepter
 
 import android.view.View
+import android.widget.CheckBox
 import android.widget.GridView
 import android.widget.ImageView
 import android.widget.TextView
@@ -12,6 +13,8 @@ import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.bases.BaseActivity
 import app.core.engines.downloader.DownloadDataModel
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
+import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.parseSize
@@ -91,13 +94,19 @@ class VideoResolutionPicker(
 	/** TextView showing the video's duration */
 	private lateinit var videoDuration: TextView
 
-	/** TextView showing the video's title */
+	/** TextView displaying the video's title */
 	private lateinit var videoTitleView: TextView
 
-	/** GridView displaying available video formats */
+	/** ImageView indicating whether the download is set to the private folder */
+	private lateinit var privateFolderImageView: ImageView
+
+	/** GridView displaying the list of available video formats for selection */
 	private lateinit var formatsGridView: GridView
 
-	/** Adapter managing video format selection in the GridView */
+	/** CheckBox allowing the user to toggle the "Download to Private Folder" option */
+	private lateinit var privateFolderCheckbox: CheckBox
+
+	/** Adapter responsible for managing video format items and selection in the GridView */
 	private lateinit var videoFormatAdapter: VideoFormatAdapter
 
 	init {
@@ -188,6 +197,7 @@ class VideoResolutionPicker(
 		showSiteFavicon(layout)
 		setupFormatsGridAdapter(layout)
 		showDuration(layout)
+		updatePrivateFolderIndicator(layout)
 	}
 
 	/**
@@ -329,6 +339,84 @@ class VideoResolutionPicker(
 	}
 
 	/**
+	 * Updates the file type indicator icon in the dialog UI based on the detected media type
+	 * (audio or video) from the currently selected video format.
+	 *
+	 * This method identifies the type of file by analyzing the format information and updates
+	 * the indicator icon accordingly to visually represent whether the selected format
+	 * is an audio-only or video-inclusive file.
+	 *
+	 * Behavior:
+	 * - Displays an audio icon if the selected format contains only audio.
+	 * - Displays a video icon for all other formats (default case).
+	 * - Ensures the indicator is visible once updated.
+	 *
+	 * This helps users quickly distinguish between audio-only and full video formats before downloading.
+	 *
+	 * @param layout The root dialog [View] that contains the file type indicator ImageView.
+	 */
+	private fun updateFileTypeIndicator(layout: View) {
+		val selectedFormatIndex = videoFormatAdapter.selectedPosition
+		val videoFormat = videoInfo.videoFormats[selectedFormatIndex]
+		val fileTypeIndicator = layout.findViewById<ImageView>(R.id.img_file_type_indicator)
+
+		val formatResolution = videoFormat.formatResolution
+		logger.d("Updating file type indicator for video resolution: $formatResolution")
+
+		// Determine and set the correct icon based on file type
+		fileTypeIndicator.setImageResource(
+			when {
+				formatResolution.contains("audio", ignoreCase = true) -> R.drawable.ic_button_audio // Audio format
+				else -> R.drawable.ic_button_video // Default for video format
+			}
+		)
+
+		fileTypeIndicator.visibility = View.VISIBLE
+	}
+
+	/**
+	 * Updates the private folder indicator icon and checkbox state in the dialog UI.
+	 *
+	 * This function visually communicates to the user whether downloads are currently
+	 * configured to be saved in a private (locked) folder or a standard (public) directory.
+	 * It ensures that both the checkbox and the icon remain in sync with the user's
+	 * active download location preference.
+	 *
+	 * @param layout The root dialog [View] containing the private folder indicator and checkbox.
+	 */
+	private fun updatePrivateFolderIndicator(layout: View) {
+		logger.d("Updating private folder indicator UI state")
+
+		// Ensure checkbox reference is initialized
+		if (!::privateFolderCheckbox.isInitialized) {
+			privateFolderCheckbox = layout.findViewById(R.id.checkbox_download_at_private)
+			logger.d("Private folder checkbox reference initialized")
+		}
+
+		// Get ImageView for private folder indicator
+		privateFolderImageView = layout.findViewById(R.id.img_private_folder_indicator)
+		val downloadLocation = downloadModel.globalSettings.defaultDownloadLocation
+		logger.d("Current download location: $downloadLocation")
+
+		// Update indicator icon based on folder type
+		privateFolderImageView.setImageResource(
+			when (downloadLocation) {
+				PRIVATE_FOLDER -> R.drawable.ic_button_lock  // Indicates private folder
+				else -> R.drawable.ic_button_folder          // Indicates normal folder
+			}
+		)
+
+		// Sync checkbox state with folder type
+		privateFolderCheckbox.isChecked = (downloadLocation == PRIVATE_FOLDER)
+
+		logger.d(
+			"Private folder indicator updated — " +
+					"icon=${if (downloadLocation == PRIVATE_FOLDER) "lock" else "folder"}, " +
+					"checked=${privateFolderCheckbox.isChecked}"
+		)
+	}
+
+	/**
 	 * Initializes the GridView adapter to display available video formats.
 	 *
 	 * Populates the GridView with [VideoFormatAdapter] and sets a click listener
@@ -343,6 +431,7 @@ class VideoResolutionPicker(
 				VideoFormatAdapter(safeBaseActivityRef, videoInfo, videoInfo.videoFormats) {
 					val videoTitleView = layout.findViewById<TextView>(R.id.txt_video_title)
 					updateTitleByFormatId(videoTitleView)
+					updateFileTypeIndicator(layout)
 				}
 			formatsGridView.adapter = videoFormatAdapter
 		}
@@ -418,36 +507,94 @@ class VideoResolutionPicker(
 	}
 
 	/**
-	 * Sets up click listeners for all buttons within the video resolution picker dialog.
+	 * Configures click listeners for all interactive elements in the video resolution picker dialog.
 	 *
-	 * Checks if the user has reached the download threshold and updates the positive
-	 * button to "Watch Ad to Download" for non-premium users. Also assigns actions
-	 * for opening video in browser and downloading the selected video format.
+	 * This method:
+	 * - Checks if the user has exceeded the download threshold and updates
+	 *   the download button text for non-premium users.
+	 * - Assigns listeners for:
+	 *   - Opening the video URL in a browser.
+	 *   - Downloading the selected video format.
+	 *   - Toggling private folder download option.
 	 *
-	 * @param dialogLayout The root view of the dialog containing buttons
+	 * @param dialogLayout The root view of the dialog containing all buttons and checkboxes.
 	 */
 	private fun setupButtonsOnClickListeners(dialogLayout: View) = with(dialogLayout) {
-		// Check download restrictions
+		logger.d("Setting up click listeners for video resolution picker dialog buttons")
+
+		// Check and update UI if the user has reached the download threshold limit
 		val numberOfDownloadsUserDid = aioSettings.numberOfDownloadsUserDid
 		val maxDownloadThreshold = aioSettings.numberOfMaxDownloadThreshold
 		if (numberOfDownloadsUserDid >= maxDownloadThreshold) {
 			if (!IS_PREMIUM_USER && !IS_ULTIMATE_VERSION_UNLOCKED) {
-				// Show "watch ad to download" for non-premium users over threshold
+				logger.i("User reached download threshold — updating button to 'Watch Ad to Download'")
 				val btnDownload = dialogLayout.findViewById<TextView>(R.id.btn_dialog_positive)
-				btnDownload.let {
-					it.setLeftSideDrawable(R.drawable.ic_button_video)
-					it.setText(R.string.title_watch_ad_to_download)
+				btnDownload.apply {
+					setLeftSideDrawable(R.drawable.ic_button_video)
+					setText(R.string.title_watch_ad_to_download)
 				}
 			}
 		}
 
-		// Set click listeners for buttons
-		listOf(
-			R.id.btn_file_info_card to { openVideoUrlInBrowser() },
-			R.id.btn_dialog_positive_container to { downloadSelectedVideoFormat() }
-		).forEach { (id, action) ->
+		// Map buttons and their associated actions
+		val buttonActions = listOf(
+			R.id.btn_file_info_card to {
+				logger.d("File info card clicked — opening video URL in browser")
+				openVideoUrlInBrowser()
+			},
+			R.id.btn_dialog_positive_container to {
+				logger.d("Download button clicked — attempting to download selected format")
+				downloadSelectedVideoFormat()
+			},
+			R.id.checkbox_download_at_private to {
+				logger.d("Private folder checkbox toggled — updating download location")
+				togglePrivateFolderDownload(dialogLayout)
+			}
+		)
+
+		// Assign click listeners to each view
+		buttonActions.forEach { (id, action) ->
 			findViewById<View>(id).setOnClickListener { action() }
 		}
+
+		logger.d("Button click listeners setup completed successfully")
+	}
+
+	/**
+	 * Toggles the download location between the private folder and system gallery
+	 * based on the state of the private folder checkbox.
+	 *
+	 * This method updates both:
+	 * - The global download location in [downloadModel.globalSettings]
+	 * - The UI indicator reflecting the current folder selection
+	 *
+	 * @param layout The root view containing the private folder checkbox and indicator
+	 */
+	private fun togglePrivateFolderDownload(layout: View) {
+		logger.d("Toggling private folder download option")
+
+		// Initialize the checkbox reference if not already done
+		if (!::privateFolderCheckbox.isInitialized) {
+			privateFolderCheckbox = layout.findViewById(R.id.checkbox_download_at_private)
+			logger.d("Initialized private folder checkbox reference")
+		}
+
+		// Update the download location based on checkbox state
+		downloadModel.globalSettings.defaultDownloadLocation =
+			if (privateFolderCheckbox.isChecked) {
+				logger.i("Private folder selected for download")
+				PRIVATE_FOLDER
+			} else {
+				logger.i("System gallery selected for download")
+				SYSTEM_GALLERY
+			}
+
+		// Refresh the update download folder for the download model
+		downloadModel.refreshUpdatedDownloadFolder()
+
+		// Update the UI indicator accordingly
+		updatePrivateFolderIndicator(layout)
+		logger.d("Private folder indicator updated successfully")
 	}
 
 	/**
@@ -557,7 +704,8 @@ class VideoResolutionPicker(
 							aioSettings.totalNumberOfSuccessfulDownloads++
 							aioSettings.updateInStorage()
 
-							showToast(activityInf = safeBaseActivityRef, msgId = R.string.title_download_added_successfully)
+							val msgId = R.string.title_download_added_successfully
+							showToast(activityInf = safeBaseActivityRef, msgId = msgId)
 							if (closeActivityOnSuccessfulDownload) {
 								baseActivity?.closeActivityWithFadeAnimation(true)
 							}

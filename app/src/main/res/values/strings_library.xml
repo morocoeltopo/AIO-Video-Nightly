@@ -225,7 +225,7 @@
 	<string name="title_load_more_browser_history">Load More Browser History</string>
 	<string name="title_copied_url_to_clipboard">Copied URL To The Clipboard</string>
 	<string name="title_not_available">Not Available</string>
-	<string name="title_pick_video_resolution_for_file_name">Pick A Video Resolution To Generate A File Name</string>
+	<string name="title_pick_video_resolution_for_file_name">Pick Video Resolution To Generate File Name</string>
 	<string name="title_webpage_url_invalid">Webpage URL\'s Invalid</string>
 	<string name="title_waiting_for_server_to_respond">Waiting For The Server To Respond</string>
 	<string name="title_reached_limit_for_going_back">Reached The Limit For Going Back</string>
@@ -262,7 +262,7 @@
 	<string name="title_copy_bookmark">Copy To Clipboard</string>
 	<string name="title_copy_history">Copy To Clipboard</string>
 	<string name="title_delete_history">Delete History</string>
-	<string name="title_no_video_found">No Videos Are Found, Try Again Later</string>
+	<string name="title_no_video_found_try_later">No Videos Found, Try Again Later</string>
 	<string name="title_grabbed_videos">Extracted Video Links</string>
 	<string name="title_blocked_unwanted_popup_links">Blocked Unwanted Popup Links</string>
 	<string name="title_closed_tab">Closed Tab</string>
@@ -270,6 +270,7 @@
 	<string name="title_video_available_resolutions">Type : M3U8 | Available Resolutions: %1$s</string>
 	<string name="title_video_type_m3u8_resolution">Type : M3U8 | Resolution: %1$s</string>
 	<string name="title_video_type_mp4_resolution">Type : Mp4 | Resolution: %1$s</string>
+	<string name="title_video_type_mp4_resolution_duration">Type : Mp4 | Resolution: %1$s | %2$s </string>
 	<string name="title_video_type_mp4">Type: MP4 | %1$s</string>
 	<string name="title_fetching_file_info">Fetching File Info…</string>
 	<string name="title_youtube_download_not_supported">Youtube Download Not Supported</string>
@@ -545,5 +546,6 @@
 	<string name="title_failed_b_">Failed: %1$d</string>
 	<string name="title_found_in_headers_b_">Found %1$s In Headers</string>
 	<string name="title_no_checksum_header_found">No Checksum Header Found</string>
+	<string name="title_download_at_private_folder">Download The File To <b>Private Folder</b></string>
 
 </resources>
