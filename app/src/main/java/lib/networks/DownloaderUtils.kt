@@ -14,6 +14,7 @@ import lib.device.DateTimeUtils.formatVideoDuration
 import lib.files.FileSystemUtility.isAudio
 import lib.files.FileSystemUtility.isVideo
 import lib.files.FileSystemUtility.isWritableFile
+import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.removeDuplicateSlashes
 import java.io.File
 import java.text.DecimalFormat
@@ -27,7 +28,10 @@ import kotlin.math.pow
  */
 object DownloaderUtils {
 
-	// Decimal formatter for consistent number formatting
+	/** Logger instance for debug messages and error tracking */
+	private val logger = LogHelperUtils.from(javaClass)
+
+	/** Decimal formatter for consistent number formatting */
 	private val decimalFormat = DecimalFormat("##.##")
 
 	/**
@@ -361,23 +365,68 @@ object DownloaderUtils {
 	}
 
 	/**
-	 * Extracts video resolution (width and height) from a video URL.
-	 * @param videoUrl URL of the video
-	 * @return Pair of width and height in pixels, or null if unavailable
+	 * Extracts the resolution (width x height) of a video from its URL using MediaMetadataRetriever.
+	 *
+	 * This function attempts to fetch video metadata directly from the provided URL.
+	 * If successful, it returns a [Pair] containing width and height in pixels.
+	 * Returns null if the metadata cannot be retrieved or an error occurs.
+	 *
+	 * @param videoUrl The URL or file path of the video
+	 * @return Pair(width, height) in pixels, or null if resolution cannot be determined
 	 */
 	@JvmStatic
 	fun getVideoResolutionFromUrl(videoUrl: String): Pair<Int, Int>? {
 		val retriever = MediaMetadataRetriever()
-		try {
+		return try {
 			retriever.setDataSource(videoUrl, HashMap<String, String>())
 			val width = retriever.extractMetadata(METADATA_KEY_VIDEO_WIDTH)?.toInt()
 			val height = retriever.extractMetadata(METADATA_KEY_VIDEO_HEIGHT)?.toInt()
-			return if (width != null && height != null) Pair(width, height) else null
+			if (width != null && height != null) {
+				logger.d("Video resolution for $videoUrl: ${width}x$height")
+				Pair(width, height)
+			} else {
+				logger.d("Unable to extract video resolution for $videoUrl")
+				null
+			}
 		} catch (error: Exception) {
-			error.printStackTrace()
-			return null
+			logger.e("Error extracting video resolution: ${error.message}", error)
+			null
 		} finally {
 			retriever.release()
+		}
+	}
+
+	/**
+	 * Retrieves the duration of a remote video file in milliseconds.
+	 *
+	 * Uses MediaMetadataRetriever to extract metadata from a video URL.
+	 * Logs detailed information for debugging and handles all exceptions safely.
+	 *
+	 * @param videoUrl The direct HTTP/HTTPS URL of the video file.
+	 * @return Duration in milliseconds, or 0 if retrieval fails.
+	 */
+	@JvmStatic
+	fun getVideoDurationFromUrl(videoUrl: String): Long {
+		logger.d("Attempting to extract video duration from URL: $videoUrl")
+
+		return try {
+			val retriever = MediaMetadataRetriever()
+
+			// Set the video source (remote URL)
+			retriever.setDataSource(videoUrl, HashMap())
+			logger.d("MediaMetadataRetriever initialized successfully")
+
+			// Extract duration metadata
+			val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+			val durationMs = durationStr?.toLongOrNull() ?: 0L
+			logger.d("Video duration extracted: ${durationMs}ms")
+
+			// Release retriever resources
+			retriever.release()
+			durationMs
+		} catch (error: Exception) {
+			logger.e("Error extracting video duration from remote URL: $videoUrl", error)
+			0L
 		}
 	}
 }
