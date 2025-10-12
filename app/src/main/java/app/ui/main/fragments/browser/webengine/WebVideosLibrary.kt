@@ -88,7 +88,8 @@ class WebVideosLibrary {
 							val infoText = if (durationMs > 0L) {
 								INSTANCE.getString(
 									/* resId = */ durationStringResId,
-									/* ...formatArgs = */ videoUrlInfo.fileResolution, formatVideoDuration(durationMs)
+									/* ...formatArgs = */ videoUrlInfo.fileResolution,
+									formatVideoDuration(durationMs)
 								)
 							} else {
 								INSTANCE.getString(
