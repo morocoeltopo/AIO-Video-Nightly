@@ -17,6 +17,7 @@ import lib.files.FileSystemUtility
 import lib.files.FileSystemUtility.decodeURLFileName
 import lib.networks.URLUtility.isValidURL
 import lib.networks.URLUtilityKT.normalizeEncodedUrl
+import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
 import java.io.ByteArrayInputStream
 import java.net.URL
@@ -32,50 +33,82 @@ import java.net.URL
  */
 class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 
-	// Weak reference to parent activity to prevent leaks
+	/** Logger instance for debug messages and error tracking */
+	private val logger = LogHelperUtils.from(javaClass)
+
+	/** Weak reference to parent activity to prevent memory leaks */
 	val safeMotherActivityRef = webviewEngine.safeMotherActivityRef
 
 	/**
-	 * Called when page starts loading
+	 * Called when a new page starts loading in the WebView.
+	 * Initiates analysis for downloadable links and resets UI components accordingly.
+	 *
 	 * @param webView The WebView that initiated the callback
 	 * @param url The URL being loaded
 	 * @param favicon The favicon for this page if available
 	 */
 	override fun onPageStarted(webView: WebView?, url: String?, favicon: Bitmap?) {
 		super.onPageStarted(webView, url, favicon)
+		logger.d("Page started loading: $url")
 		analyzeDownloadableLink(url)
 		resetVideoGrabbingButton(webviewEngine)
 	}
 
 	/**
-	 * Called when page finishes loading
+	 * Called when a page finishes loading in the WebView.
+	 * Ensures any downloadable links on the page are analyzed.
+	 *
 	 * @param webView The WebView that initiated the callback
 	 * @param url The URL of the page
 	 */
 	override fun onPageFinished(webView: WebView?, url: String?) {
 		super.onPageFinished(webView, url)
+		logger.d("Page finished loading: $url")
 		analyzeDownloadableLink(url)
 	}
 
 	/**
-	 * Intercepts URL loading requests
-	 * @return true if the host app wants to handle the URL, false to let WebView handle it
+	 * Intercepts URL loading requests from the WebView.
+	 * Decides whether to handle the URL in the app or let WebView handle it.
+	 *
+	 * @param view The WebView initiating the request
+	 * @param request The resource request containing the URL
+	 * @return true if the host app handles the URL, false to let WebView proceed
 	 */
 	override fun shouldOverrideUrlLoading(
 		view: WebView?,
 		request: WebResourceRequest?
 	): Boolean {
 		val url = request?.url?.toString() ?: return true
-		if (isInvalidScheme(url)) return true
-		if (isSpecialCaseUrl(url)) return handleSpecialUrl(url)
-		println("On shouldOverrideUrlLoading URL = $url")
+		logger.d("Intercepted URL loading: $url")
+
+		// Skip invalid schemes
+		if (isInvalidScheme(url)) {
+			logger.d("Ignoring invalid scheme for URL: $url")
+			return true
+		}
+
+		// Handle special URLs like custom schemes or downloads
+		if (isSpecialCaseUrl(url)) {
+			logger.d("Handling special URL: $url")
+			return handleSpecialUrl(url)
+		}
+
+		// Analyze other URLs for downloadable content
 		analyzeDownloadableLink(url)
 		return false
 	}
 
 	/**
-	 * Intercepts resource requests to detect video URLs
-	 * @return WebResourceResponse to return, or null to let WebView handle normally
+	 * Intercepts resource requests from the WebView to detect downloadable video URLs.
+	 *
+	 * This method inspects each network request and:
+	 * - Analyzes the URL if it is downloadable
+	 * - Detects video file formats (like mp4, webm) and updates the WebView's video library
+	 *
+	 * @param view The WebView making the request
+	 * @param request The resource request containing the URL and metadata
+	 * @return A WebResourceResponse if the host app wants to handle it, or null to let WebView process normally
 	 */
 	override fun shouldInterceptRequest(
 		view: WebView?,
@@ -83,14 +116,15 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 	): WebResourceResponse? {
 		val url = request?.url.toString()
 		if (url.isNotEmpty()) {
+			logger.d("Intercepting resource request: $url")
 
-			// Only process if request is for main frame (not CSS/JS/images/etc.)
+			// Only process main frame requests to avoid analyzing CSS, JS, or image files
 			if (request?.isForMainFrame == true && isDownloadableUrl(url)) {
-				println("On shouldInterceptRequest URL = $url")
+				logger.d("Detected downloadable URL: $url")
 				analyzeDownloadableLink(url)
 			}
 
-			// Video format detection (optional)
+			// Detect known video file formats
 			ONLINE_VIDEO_FORMATS.find { fileFormat ->
 				url.endsWith(".$fileFormat", true) ||
 						url.contains(".$fileFormat?", true) ||
@@ -98,18 +132,23 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 			}?.let {
 				webviewEngine.currentWebView?.let { currentWebView ->
 					val webViewLists = webviewEngine
-						.getListOfWebViewOnTheSystem().filter { it.id == currentWebView.id }
+						.getListOfWebViewOnTheSystem()
+						.filter { webView -> webView.id == currentWebView.id }
+
 					if (webViewLists.isNotEmpty()) {
 						val webViewId = webViewLists[0].id
 						webviewEngine.listOfWebVideosLibrary
-							.find { it.webViewId == webViewId }?.addVideoUrlInfo(
+							.find { webVideosLibrary -> webVideosLibrary.webViewId == webViewId }
+							?.addVideoUrlInfo(
 								VideoUrlInfo(
 									fileUrl = url,
 									fileResolution = "",
 									isM3U8 = isM3U8Url(url),
-									totalResolutions = 0
+									totalResolutions = 0,     // Default until resolved
+									fileDuration = 0L         // Default until resolved
 								)
 							)
+						logger.d("Added video URL info for detected format: $it")
 					}
 				}
 			}
@@ -119,21 +158,26 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 	}
 
 	/**
-	 * Analyzes URL for downloadable content and shows prompt if found
-	 * @param url The URL to analyze
+	 * Analyzes a given URL to determine if it points to downloadable content.
+	 * If the URL is recognized as a downloadable file, triggers the download flow.
+	 *
+	 * @param url The URL to analyze, may be null
 	 */
 	private fun analyzeDownloadableLink(url: String?) {
 		url?.let {
-			normalizeEncodedUrl(url).let { link ->
-				if (isDownloadableUrl(link) == false) return
-				triggerDownloadManually(normalizeEncodedUrl(link))
-			}
+			val normalizedLink = normalizeEncodedUrl(url)
+			if (!isDownloadableUrl(normalizedLink)) return
+			logger.d("Downloadable link detected: $normalizedLink")
+			triggerDownloadManually(normalizedLink)
 		}
 	}
 
 	/**
-	 * Checks URL for downloadable content and shows download dialog
-	 * @param url The URL to check
+	 * Performs the actual download preparation for a given URL.
+	 * Checks for supported file formats, fetches server file info, and
+	 * shows a download prompt dialog to the user.
+	 *
+	 * @param url The downloadable file URL
 	 */
 	private fun triggerDownloadManually(url: String) {
 		try {
@@ -141,33 +185,40 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 				url.endsWith(".$fileFormat", true) ||
 						url.contains(".$fileFormat?", true) ||
 						url.contains(".$fileFormat&", true)
-			}?.let {
+			}?.let { detectedFormat ->
+				logger.d("Detected downloadable file format: $detectedFormat")
 				ThreadsUtility.executeInBackground(codeBlock = {
 					if (isValidURL(url)) {
-						getFileInfoFromSever(fileUrl = URL(url)).let { urlFileInfo ->
-							if (urlFileInfo.fileSize > 0) {
-								val filename = decodeURLFileName(urlFileInfo.fileName)
-								ThreadsUtility.executeOnMain {
-									webviewEngine.webViewDownloadHandler.showDownloadAvailableDialog(
-										url = url,
-										contentLength = urlFileInfo.fileSize,
-										userAgent = aioSettings.downloadHttpUserAgent,
-										contentDisposition = null,
-										safeWebEngineRef = webviewEngine,
-										mimetype = FileSystemUtility.getMimeType(urlFileInfo.fileName),
-										userGivenFileName = filename
-									)
-								}
+						val urlFileInfo = getFileInfoFromSever(fileUrl = URL(url))
+						if (urlFileInfo.fileSize > 0) {
+							val filename = decodeURLFileName(urlFileInfo.fileName)
+							logger.d("File info retrieved: $filename, size: ${urlFileInfo.fileSize}")
+							ThreadsUtility.executeOnMain {
+								webviewEngine.webViewDownloadHandler.showDownloadAvailableDialog(
+									url = url,
+									contentLength = urlFileInfo.fileSize,
+									userAgent = aioSettings.downloadHttpUserAgent,
+									contentDisposition = null,
+									safeWebEngineRef = webviewEngine,
+									mimetype = FileSystemUtility.getMimeType(urlFileInfo.fileName),
+									userGivenFileName = filename
+								)
 							}
 						}
 					}
 				})
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error triggering download manually: ${error.message}", error)
 		}
 	}
 
+	/**
+	 * Checks whether a URL points to a supported downloadable file type.
+	 *
+	 * @param url The URL to check
+	 * @return true if the URL matches known downloadable formats, false otherwise
+	 */
 	private fun isDownloadableUrl(url: String): Boolean {
 		return ALL_DOWNLOADABLE_FORMATS.any { ext ->
 			url.endsWith(".$ext", ignoreCase = true) ||
@@ -222,27 +273,34 @@ class BrowserWebClient(val webviewEngine: WebViewEngine) : WebViewClient() {
 	}
 
 	/**
-	 * Handles special URL cases with appropriate behavior
-	 * @param url The special URL to handle
-	 * @return true if handled, false to continue normal processing
+	 * Handles special or deep link URLs that require custom behavior.
+	 *
+	 * For recognized schemes (e.g., Facebook), attempts to open the native app.
+	 * Falls back to loading the corresponding web URL if the native app is unavailable.
+	 *
+	 * @param url The URL to handle
+	 * @return true if the URL was handled by this method, false to allow normal WebView processing
 	 */
 	private fun handleSpecialUrl(url: String): Boolean {
 		val context = webviewEngine.safeMotherActivityRef
 		return when {
 			url.startsWith("fb://") -> {
-				// Handle Facebook deep link
+				logger.d("Handling Facebook deep link: $url")
 				try {
 					context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
 					true
-				} catch (e: Exception) {
-					// Fallback to web URL if app not installed
+				} catch (error: Exception) {
+					logger.e("Facebook app not available, falling back to web URL: ${error.message}", error)
 					val webUrl = url.replace("fb://", "https://www.facebook.com/")
 					webviewEngine.currentWebView?.loadUrl(webUrl)
 					true
 				}
 			}
-			// Add other special cases here...
-			else -> false
+			// TODO: Add other app-specific deep links (Instagram, Twitter, etc.)
+			else -> {
+				logger.d("No special handling for URL: $url")
+				false
+			}
 		}
 	}
 }
