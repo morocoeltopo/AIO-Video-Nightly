@@ -37,7 +37,7 @@ dependencyResolutionManagement {
 }
 
 // Root project name
-rootProject.name = "AIO - Video Downloader"
+rootProject.name = "AIO_VD"
 
 // Includes app module
 include ':app'

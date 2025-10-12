@@ -50,44 +50,41 @@ class M3U8InfoExtractor {
 	 */
 	@OptIn(UnstableApi::class)
 	fun getDurationAndResolutionFrom(m3u8Url: String, callback: InfoCallback) {
-		logger.d("Starting M3U8 metadata extraction for: $m3u8Url")
+		logger.d("Start extraction for: $m3u8Url")
 
 		ThreadsUtility.executeInBackground(codeBlock = {
 			// Step 1: Configure HTTP data source with user-agent
 			val factory = DefaultHttpDataSource.Factory()
-			val userAgent = getText(R.string.title_mobile_user_agent)
-			val dataSourceFactory = factory.setUserAgent(userAgent)
-			val playlistParser = HlsPlaylistParser()
+			val ua = getText(R.string.title_mobile_user_agent)
+			val dataSourceFactory = factory.setUserAgent(ua)
+			val parser = HlsPlaylistParser()
 
 			try {
 				// Step 2: Initialize data source and request
 				val dataSource = dataSourceFactory.createDataSource()
-				val dataSpec = DataSpec(m3u8Url.toUri())
-				dataSource.open(dataSpec)
-				logger.d("Successfully opened data stream for: $m3u8Url")
+				val spec = DataSpec(m3u8Url.toUri())
+				dataSource.open(spec)
+				logger.d("Opened data stream for: $m3u8Url")
 
-				// Step 3: Use InputStream to parse playlist and extract metadata
-				DataSourceInputStream(dataSource, dataSpec).use { stream ->
-					logger.d("Parsing playlist for resolution and duration info...")
-					val resolutions = extractResolution(playlistParser, dataSpec, stream, m3u8Url)
-					val durationMs = extractDuration(playlistParser, dataSpec, stream, m3u8Url)
-					logger.d("Extraction complete for $m3u8Url — Resolutions: $resolutions, Duration: ${durationMs}ms")
+				DataSourceInputStream(dataSource, spec).use { stream ->
+					logger.d("Parsing playlist for info...")
+					val res = extractResolution(parser, spec, stream, m3u8Url)
+					val dur = extractDuration(parser, spec, stream, m3u8Url)
+					logger.d("Done: $res, ${dur}ms")
 
 					try {
-						executeOnMain { callback.onResolutionsAndDuration(resolutions = resolutions, durationMS = durationMs) }
-					} catch (callbackError: Exception) {
-						logger.d("Callback error during main thread dispatch: ${callbackError.localizedMessage}")
-						logger.e("Resolution extraction failed for URL: $m3u8Url", callbackError)
-						executeOnMain { callback.onError("Callback dispatch failed: ${callbackError.message}") }
+						executeOnMain { callback.onResolutionsAndDuration(res, dur) }
+					} catch (cbErr: Exception) {
+						logger.d("Callback error: ${cbErr.localizedMessage}")
+						logger.e("Callback failed for: $m3u8Url", cbErr)
+						executeOnMain { callback.onError("Dispatch failed: ${cbErr.message}") }
 					}
 				}
-				logger.d("Completed parsing workflow for: $m3u8Url")
-			} catch (error: Exception) {
-				logger.d("Error while processing M3U8 URL: ${error.localizedMessage}")
-				logger.e("Error during duration and resolution extraction for: $m3u8Url", error)
-				executeOnMain {
-					callback.onError("Error extracting duration/resolution: ${error.message}")
-				}
+				logger.d("Parsing done for: $m3u8Url")
+			} catch (err: Exception) {
+				logger.d("Error: ${err.localizedMessage}")
+				logger.e("Extraction failed for: $m3u8Url", err)
+				executeOnMain { callback.onError("Extraction failed: ${err.message}") }
 			}
 		})
 	}
@@ -118,29 +115,16 @@ class M3U8InfoExtractor {
 		logger.d("Starting M3U8 resolution extraction for: $m3u8FileLink")
 
 		return try {
-			when (val playlist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)) {
-
-				// Case 1: Master playlist — contains multiple variant streams with different resolutions
+			val hlsPlaylist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)
+			when (val playlist = hlsPlaylist) {
 				is HlsMultivariantPlaylist -> {
 					logger.d("Master playlist detected with ${playlist.variants.size} variants.")
 					val resolutions = playlist.variants.mapNotNull { variant ->
 						when {
-							variant.format.width > 0 && variant.format.height > 0 -> {
-								val res = "${variant.format.width}×${variant.format.height}"
-								logger.d("Detected resolution: $res")
-								res
-							}
-
-							variant.format.height > 0 -> {
-								val res = "${variant.format.height}p"
-								logger.d("Detected height-based resolution: $res")
-								res
-							}
-
-							else -> {
-								logger.d("Skipped variant with unknown resolution: ${variant.url}")
-								null
-							}
+							variant.format.width > 0 && variant.format.height > 0 ->
+								"${variant.format.width}×${variant.format.height}"
+							variant.format.height > 0 -> "${variant.format.height}p"
+							else -> null
 						}
 					}.distinct()
 
@@ -148,9 +132,8 @@ class M3U8InfoExtractor {
 					resolutions
 				}
 
-				// Case 2: Media playlist — single resolution or inferred resolution
 				is HlsMediaPlaylist -> {
-					logger.d("Media playlist detected. Attempting resolution extraction from URL.")
+					logger.d("Media playlist detected. Attempting resolution extraction.")
 					val inferredResolution = extractResolutionFromUrl(m3u8FileLink)
 					val resultList = inferredResolution?.let { listOf(it) }
 						?: listOf(getText(R.string.title_player_default))
@@ -197,27 +180,11 @@ class M3U8InfoExtractor {
 		return try {
 			when (val playlist = hlsPlaylistParser.parse(dataSpec.uri, sourceInputStream)) {
 				is HlsMultivariantPlaylist -> {
-					logger.d("Detected master playlist — resolving first available variant.")
 					val variantUrl = playlist.variants.firstOrNull()?.url?.toString()
-					if (variantUrl != null) {
-						logger.d("Fetching variant duration from: $variantUrl")
-						getDurationFromM3U8(variantUrl)
-					} else {
-						logger.d("No variant URLs found in master playlist for: $m3u8UrlFileLink")
-						0L
-					}
+					if (variantUrl != null) getDurationFromM3U8(variantUrl) else 0L
 				}
-
-				is HlsMediaPlaylist -> {
-					val durationMs = (playlist.durationUs / 1000)
-					logger.d("Parsed media playlist duration: ${durationMs}ms from $m3u8UrlFileLink")
-					durationMs
-				}
-
-				else -> {
-					logger.d("Encountered unknown playlist type for: $m3u8UrlFileLink")
-					0L
-				}
+				is HlsMediaPlaylist -> (playlist.durationUs / 1000)
+				else -> 0L
 			}
 		} catch (error: Exception) {
 			logger.d("Error parsing M3U8 playlist for: $m3u8UrlFileLink -> ${error.localizedMessage}")
