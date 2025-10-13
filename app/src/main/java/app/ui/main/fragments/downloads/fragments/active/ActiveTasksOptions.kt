@@ -17,6 +17,7 @@ import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import app.ui.main.MotherActivity
@@ -63,16 +64,17 @@ import java.io.File
 import java.lang.ref.WeakReference
 
 /**
- * Class that handles options and actions for active download tasks.
+ * Manages and provides user actions for active or completed download tasks.
  *
- * Provides functionality for:
- * - Managing download tasks (pause/resume/remove/delete)
- * - Viewing/download information
- * - Sharing/copying download URLs
- * - Playing media files
- * - Renaming downloads
+ * This class centralizes all download-related operations, including pausing,
+ * resuming, deleting, or removing tasks. It also provides quick access to
+ * file-related actions such as opening the media file, copying or sharing
+ * the download URL, and renaming downloaded items.
  *
- * @param motherActivity The parent activity that hosts these options
+ * The class ensures consistent handling of download states and user
+ * interactions within the main download interface.
+ *
+ * @param motherActivity The parent activity responsible for hosting and controlling these actions.
  */
 class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 
@@ -98,14 +100,14 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Displays the options dialog for a given download model.
+	 * Opens and initializes the options dialog for the specified download item.
 	 *
-	 * Behavior:
-	 * - Ensures dialog is not already showing.
-	 * - Stores current download model.
-	 * - Updates dialog UI with model info.
+	 * Functionality:
+	 * - Prevents multiple dialogs from appearing simultaneously.
+	 * - Caches the active [DownloadDataModel] for reference.
+	 * - Populates the dialog UI with relevant file details such as name, URL, and icons.
 	 *
-	 * @param downloadModel The download model whose info will be displayed
+	 * @param downloadModel The [DownloadDataModel] representing the selected download item.
 	 */
 	fun show(downloadModel: DownloadDataModel) {
 		if (!dialogBuilder.isShowing) {
@@ -119,7 +121,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Closes the options dialog if it's currently visible.
+	 * Safely dismisses the active options dialog if it is currently displayed.
+	 *
+	 * Ensures that the dialog is only closed when visible, preventing redundant
+	 * dismiss calls or potential UI state exceptions.
 	 */
 	fun close() {
 		if (dialogBuilder.isShowing) {
@@ -131,17 +136,17 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Updates the dialog UI with details from the download model.
+	 * Populates the dialog UI with information from the given download model.
 	 *
-	 * Displays:
-	 * - File name
-	 * - File URL
-	 * - Thumbnail
-	 * - File type indicator
-	 * - Site favicon
-	 * - Media play indicator (for audio/video)
+	 * This method updates all key UI elements to reflect the current download’s
+	 * metadata and visual details, including:
+	 * - File name and source URL
+	 * - Thumbnail preview
+	 * - File type indicator icon
+	 * - Website favicon
+	 * - Media play indicator (shown for audio/video files)
 	 *
-	 * @param downloadModel The download model providing file info
+	 * @param downloadModel The [DownloadDataModel] containing the download’s details to display.
 	 */
 	private fun updateDialogFileInfo(downloadModel: DownloadDataModel) {
 		logger.d("updateDialogFileInfo() -> Updating dialog info for file: ${downloadModel.fileName}")
@@ -172,6 +177,12 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				logger.d("updateDialogFileInfo() -> File type indicator updated")
 			}
 
+			// Private folder indication
+			findViewById<ImageView>(R.id.img_private_folder_indicator).apply {
+				updatePrivateFolderIndicator(this, downloadModel)
+				logger.d("updateDialogFileInfo() -> Site favicon updated")
+			}
+
 			// Site favicon
 			findViewById<ImageView>(R.id.img_site_favicon).apply {
 				updateFaviconInfo(this, downloadModel)
@@ -187,14 +198,13 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Updates the media play indicator based on file type.
+	 * Updates the visibility of the media play indicator based on the file type.
 	 *
-	 * Logic:
-	 * - Visible if file is audio or video.
-	 * - Hidden otherwise.
+	 * Displays the play icon for audio and video files, while hiding it for
+	 * non-media file types to maintain a clean UI presentation.
 	 *
-	 * @param mediaPlayIndicator ImageView representing media play icon
-	 * @param downloadDataModel The download model being checked
+	 * @param mediaPlayIndicator The [ImageView] that represents the media play icon.
+	 * @param downloadDataModel The [DownloadDataModel] containing file metadata used for type detection.
 	 */
 	private fun updateMediaPlayIndicator(
 		mediaPlayIndicator: ImageView,
@@ -240,11 +250,44 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Loads and sets the favicon for the given download item.
-	 * Attempts to load a favicon from cache (via AIOApp.aioFavicons). If unavailable,
-	 * falls back to a default drawable.
+	 * Updates the private folder indicator icon in the download dialog.
 	 *
-	 * @param downloadDataModel The download data model containing the site referrer
+	 * Reflects the current download location setting by changing the icon
+	 * to indicate whether files are saved to a private (locked) folder or
+	 * a public directory. This ensures visual consistency with the user's
+	 * active preference in the UI.
+	 *
+	 * @param privateFolderImageView The [ImageView] used to display the private folder icon.
+	 * @param downloadModel The [DownloadDataModel] containing the user's download configuration.
+	 */
+	private fun updatePrivateFolderIndicator(privateFolderImageView: ImageView, downloadModel: DownloadDataModel) {
+		logger.d("Updating private folder indicator UI state")
+		val downloadLocation = downloadModel.globalSettings.defaultDownloadLocation
+		logger.d("Current download location: $downloadLocation")
+
+		// Update indicator icon based on folder type
+		privateFolderImageView.setImageResource(
+			when (downloadLocation) {
+				PRIVATE_FOLDER -> R.drawable.ic_button_lock  // Private folder
+				else -> R.drawable.ic_button_folder         // Normal folder
+			}
+		)
+	}
+
+	/**
+	 * Loads and displays the favicon for a specific download entry.
+	 *
+	 * Functionality:
+	 * - Attempts to fetch a cached favicon using `AIOApp.aioFavicons`.
+	 * - Falls back to a default favicon drawable if unavailable or access fails.
+	 * - Skips favicon loading if video thumbnails are restricted by settings.
+	 *
+	 * Execution:
+	 * - Runs favicon retrieval in a background thread for efficiency.
+	 * - Updates the `ImageView` safely on the main thread.
+	 *
+	 * @param favicon The [ImageView] where the favicon will be displayed.
+	 * @param downloadDataModel The [DownloadDataModel] containing the site referrer used for favicon lookup.
 	 */
 	private fun updateFaviconInfo(favicon: ImageView, downloadDataModel: DownloadDataModel) {
 		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
@@ -288,15 +331,16 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Checks if video thumbnails are allowed for a given download.
+	 * Determines whether video thumbnails should be hidden for a given download item.
 	 *
-	 * Logic:
-	 * - A video thumbnail is disallowed if:
-	 *   1. The file is a video, AND
-	 *   2. The global settings specify to hide video thumbnails.
+	 * Behavior:
+	 * - Returns `true` only when:
+	 *   - The file type is video, **and**
+	 *   - The global settings disable showing video thumbnails.
+	 * - Used to decide whether to skip thumbnail or favicon rendering for videos.
 	 *
-	 * @param downloadDataModel The download data model containing file and settings info
-	 * @return true if thumbnails are not allowed, false otherwise
+	 * @param downloadDataModel The [DownloadDataModel] containing file type and global settings.
+	 * @return `true` if video thumbnails are disabled, otherwise `false`.
 	 */
 	private fun isVideoThumbnailNotAllowed(downloadDataModel: DownloadDataModel): Boolean {
 		val isVideoHidden = downloadDataModel.globalSettings.downloadHideVideoThumbnail
@@ -388,11 +432,15 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Loads a bitmap into an ImageView using URI.
+	 * Loads a thumbnail image into the provided [ImageView] from a given file path URI.
 	 *
-	 * @param thumbImageView The ImageView to display the bitmap
-	 * @param thumbFilePath The file path of the thumbnail
-	 * @param defaultThumb The fallback thumbnail resource ID if loading fails
+	 * Behavior:
+	 * - Attempts to decode and display the bitmap from the given file path.
+	 * - Falls back to a default thumbnail image if loading fails or the file is missing.
+	 *
+	 * @param thumbImageView The [ImageView] where the thumbnail will be displayed.
+	 * @param thumbFilePath The absolute file path pointing to the thumbnail image.
+	 * @param defaultThumb The resource ID of the default image to display on failure.
 	 */
 	private fun loadBitmapWithGlide(
 		thumbImageView: ImageView,
@@ -410,17 +458,17 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Loads an APK file's icon and sets it as the thumbnail.
+	 * Loads an APK file's icon and sets it as a thumbnail in the specified [ImageView].
 	 *
 	 * Behavior:
-	 * - If the file doesn't exist or is not an APK → fallback to default thumbnail.
-	 * - If valid APK → Extracts the app icon via PackageManager and applies it.
-	 * - On error → Logs exception, applies fallback thumbnail, and resets ImageView styling.
+	 * - If the APK file does not exist or the path is invalid, displays the fallback thumbnail.
+	 * - If the APK is valid, extracts its application icon via [PackageManager] and sets it in [imageViewHolder].
+	 * - Catches any exceptions, logs the error, and applies the fallback thumbnail while resetting view styling.
 	 *
-	 * @param downloadModel The download model containing APK file info
-	 * @param imageViewHolder The ImageView where the icon will be displayed
-	 * @param defaultThumbDrawable The default thumbnail if APK icon can't be loaded
-	 * @return true if APK icon was loaded successfully, false otherwise
+	 * @param downloadModel The [DownloadDataModel] containing the APK file information.
+	 * @param imageViewHolder The [ImageView] where the APK icon or fallback thumbnail will be displayed.
+	 * @param defaultThumbDrawable The drawable resource to use as a fallback if APK icon cannot be loaded.
+	 * @return `true` if the APK icon was successfully loaded, `false` otherwise.
 	 */
 	private fun loadApkThumbnail(
 		downloadModel: DownloadDataModel,
@@ -480,12 +528,18 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Plays the media file associated with the download.
+	 * Plays the media file linked to the given download.
 	 *
 	 * Behavior:
-	 * 1. If video info and format exist → Extracts a streamable URL using YoutubeDL,
-	 *    shows a waiting dialog, and launches media player with that stream URL.
-	 * 2. Otherwise (non-video file) → Opens the media file directly with MediaPlayerActivity.
+	 * 1. For video files with available metadata:
+	 *    - Extracts a playable stream URL using [YoutubeDL].
+	 *    - Displays a waiting dialog while extraction occurs.
+	 *    - Launches the media player activity with the obtained stream URL.
+	 *
+	 * 2. For non-video files or when metadata is unavailable:
+	 *    - Opens the local media file directly using [MediaPlayerActivity].
+	 *
+	 * @param downloadModel The [DownloadDataModel] representing the media to play.
 	 */
 	@OptIn(UnstableApi::class)
 	private fun playTheMedia() {
@@ -564,11 +618,15 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Opens the media player activity with a streamable URL.
+	 * Launches the media player activity to play a streamable video.
 	 *
-	 * @param videoInfo Video metadata (title, source, etc.)
-	 * @param videoFormat Selected video format details
-	 * @param streamableMediaUrl The extracted playable stream URL
+	 * Behavior:
+	 * - Uses the provided video metadata and format information to configure playback.
+	 * - Opens the player with the given stream URL for immediate playback.
+	 *
+	 * @param videoInfo Metadata of the video, including title and source.
+	 * @param videoFormat Selected video format details (resolution, codec, etc.).
+	 * @param streamableMediaUrl The URL of the playable video stream.
 	 */
 	@OptIn(UnstableApi::class)
 	private fun openMediaPlayerActivity(
@@ -599,14 +657,13 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Resumes a paused download task.
+	 * Resumes a paused or interrupted download task.
 	 *
 	 * Behavior:
-	 * 1. Closes the current options dialog.
-	 * 2. If the task is already active, pauses it first then retries after a short delay.
-	 * 3. If the task has yt-dlp problems indicating login is required, shows a login dialog
-	 *    and opens the browser for user authentication.
-	 * 4. Otherwise, resumes the download normally.
+	 * - Closes the currently visible options dialog before resuming.
+	 * - If the download task is still active, temporarily pauses it and retries after a short delay.
+	 * - Detects yt-dlp errors related to login/authentication, prompting the user to log in via browser.
+	 * - Otherwise, resumes the download task using standard download procedures.
 	 */
 	private fun resumeDownloadTask() {
 		logger.d("Attempting to resume download task")
@@ -681,8 +738,10 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 							downloadModel = model,
 							coroutineScope = CoroutineScope(Dispatchers.IO),
 							onResumed = {
-								showToast(safeMotherActivityRef,
-									msgId = string.title_resumed_task_successfully)
+								showToast(
+									activityInf = safeMotherActivityRef,
+									msgId = string.title_resumed_task_successfully
+								)
 							}
 						)
 						logger.d("Download ID: ${model.id} resumed successfully")
@@ -695,14 +754,15 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	}
 
 	/**
-	 * Pauses an active download task.
+	 * Pauses an ongoing download task.
 	 *
 	 * Behavior:
-	 * 1. Closes the current options dialog.
-	 * 2. If the task is already paused, show a toast and exit.
-	 * 3. If the task does not support resume, warn the user before pausing.
-	 * 4. Otherwise, pause the task normally.
+	 * - Closes the currently visible options dialog before pausing.
+	 * - If the task is already paused, displays a toast and exits.
+	 * - If the task does not support resuming, warns the user prior to pausing.
+	 * - Otherwise, pauses the download task normally.
 	 */
+
 	private fun pauseDownloadTask() {
 		logger.d("Attempting to pause download task")
 
@@ -1160,6 +1220,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					toggleDownloadThumbnail()
 				},
 				R.id.btn_copy_site_link to {
+					logger.d("Copy download site link button clicked")
 
 				},
 				R.id.btn_copy_download_url to {

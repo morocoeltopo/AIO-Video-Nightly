@@ -22,6 +22,7 @@ import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.ui.main.fragments.downloads.dialogs.DownloadFileRenamer
 import app.ui.main.fragments.downloads.dialogs.DownloadInfoTracker
 import app.ui.others.media_player.MediaPlayerActivity
@@ -246,6 +247,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				val txtMediaPlaybackDuration = findViewById<TextView>(R.id.txt_media_duration)
 				val imgMediaPlayIndicator = findViewById<View>(R.id.img_media_play_indicator)
 				val imgFileTypeIndicator = findViewById<ImageView>(R.id.img_file_type_indicator)
+				val imgPrivateFolderIndicator = findViewById<ImageView>(R.id.img_private_folder_indicator)
 
 				// 🔹 Title and subtitle
 				txtFileNameTitle.isSelected = true
@@ -266,6 +268,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 
 				// 🔹 Update favicon (site icon)
 				updateFaviconInfo(downloadModel, imgFileFavicon)
+
+				// 🔹 Update private folder indication
+				updatePrivateFolderIndicator(downloadModel, imgPrivateFolderIndicator)
 
 				// 🔹 Thumbnail toggle button text
 				btnToggleThumbnail.apply {
@@ -376,6 +381,31 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 			logger.e("Error loading favicon: ${it.message}", it)
 			imgFavicon.setImageDrawable(defaultFaviconDrawable)
 		})
+	}
+
+	/**
+	 * Updates the private folder indicator icon in the download dialog.
+	 *
+	 * Reflects the current download location setting by changing the icon
+	 * to indicate whether files are saved to a private (locked) folder or
+	 * a public directory. This ensures visual consistency with the user's
+	 * active preference in the UI.
+	 *
+	 * @param downloadModel The [DownloadDataModel] containing the user's download configuration.
+	 * @param privateFolderImageView The [ImageView] used to display the private folder icon.
+	 */
+	private fun updatePrivateFolderIndicator(downloadModel: DownloadDataModel, privateFolderImageView: ImageView) {
+		logger.d("Updating private folder indicator UI state")
+		val downloadLocation = downloadModel.globalSettings.defaultDownloadLocation
+		logger.d("Current download location: $downloadLocation")
+
+		// Update indicator icon based on folder type
+		privateFolderImageView.setImageResource(
+			when (downloadLocation) {
+				PRIVATE_FOLDER -> R.drawable.ic_button_lock  // Private folder
+				else -> R.drawable.ic_button_folder         // Normal folder
+			}
+		)
 	}
 
 	/**

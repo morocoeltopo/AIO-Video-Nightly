@@ -88,14 +88,14 @@
 						android:adjustViewBounds="true"
 						android:elevation="@dimen/_5"
 						android:importantForAccessibility="no"
-						android:src="@drawable/ic_button_information"
+						android:src="@drawable/ic_image_default_favicon"
 						android:visibility="visible"
 						tools:ignore="ImageContrastCheck" />
 
 					<!-- File type indicator -->
 					<ImageView
 						android:id="@+id/img_file_type_indicator"
-						android:layout_width="@dimen/_15"
+						android:layout_width="@dimen/_17"
 						android:layout_height="wrap_content"
 						android:layout_gravity="start|bottom"
 						android:layout_marginStart="@dimen/_5"
@@ -106,6 +106,25 @@
 						android:elevation="@dimen/_2"
 						android:importantForAccessibility="no"
 						android:src="@drawable/ic_button_video"
+						android:tint="@color/color_on_primary"
+						android:visibility="visible"
+						tools:ignore="ImageContrastCheck" />
+
+					<!-- Private folder activation indicator -->
+					<ImageView
+						android:id="@+id/img_private_folder_indicator"
+						android:layout_width="@dimen/_17"
+						android:layout_height="wrap_content"
+						android:layout_gravity="end|bottom"
+						android:layout_marginStart="@dimen/_5"
+						android:layout_marginTop="@dimen/_5"
+						android:layout_marginEnd="@dimen/_5"
+						android:layout_marginBottom="@dimen/_5"
+						android:adjustViewBounds="true"
+						android:background="@drawable/rounded_transparent_black"
+						android:elevation="@dimen/_2"
+						android:importantForAccessibility="no"
+						android:src="@drawable/ic_button_folder"
 						android:tint="@color/color_on_primary"
 						android:visibility="visible"
 						tools:ignore="ImageContrastCheck" />
