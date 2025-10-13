@@ -313,7 +313,7 @@ class BookmarksActivity : BaseActivity(),
 			bookmarksAdapter.loadMoreBookmarks(/* searchTerms = */ null)
 			showToast(
 				activityInf = safeBookmarksActivityRef,
-				msgId = R.string.text_loaded_successfully
+				msgId = R.string.title_loaded_successfully
 			)
 		}
 	}
@@ -497,7 +497,7 @@ class BookmarksActivity : BaseActivity(),
 		if (containerSearchLayout.isVisible) {
 			hideView(buttonLoadMoreBookmarks, true)
 			findViewById<TextView>(R.id.txt_empty_bookmark_indicator)
-				.text = getText(R.string.text_no_bookmark_matched_with_search)
+				.text = getText(R.string.title_no_bookmark_matched_with_search)
 		} else {
 			findViewById<TextView>(R.id.txt_empty_bookmark_indicator)
 				.text = getText(R.string.title_your_bookmark_collection_empty)

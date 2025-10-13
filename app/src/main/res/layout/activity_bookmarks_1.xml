@@ -159,7 +159,7 @@
 					android:ellipsize="end"
 					android:fontFamily="@font/application_font_family"
 					android:gravity="center_vertical"
-					android:hint="@string/text_search_something"
+					android:hint="@string/title_search_something"
 					android:importantForAutofill="no"
 					android:inputType="textUri"
 					android:maxLines="1"

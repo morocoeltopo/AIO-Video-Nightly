@@ -50,7 +50,7 @@ class HistoryActivity : BaseActivity(),
 	private var historyOptionPopup: HistoryOptionPopup? = null
 
 	private val arg = safeHistoryActivityRef
-	private val historyAdapter by lazy { HistoryAdapter(arg, arg, arg) }
+	open val historyAdapter by lazy { HistoryAdapter(arg, arg, arg) }
 
 	/** Defines which layout to render for this activity. */
 	override fun onRenderingLayout(): Int = R.layout.activity_browser_history_1
@@ -165,7 +165,7 @@ class HistoryActivity : BaseActivity(),
 			historyAdapter.loadMoreHistory()
 			showToast(
 				activityInf = safeHistoryActivityRef,
-				msgId = R.string.text_loaded_successfully
+				msgId = R.string.title_loaded_successfully
 			)
 		}
 	}

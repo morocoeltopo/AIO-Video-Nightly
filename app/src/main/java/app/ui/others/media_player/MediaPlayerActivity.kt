@@ -699,7 +699,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	private fun playVideoFromDownloadModel(downloadModel: DownloadDataModel) {
 		val mediaFile = fromFile(File("${downloadModel.fileDirectory}/${downloadModel.fileName}"))
 		if (mediaFile.exists()) playVideoFromFile(mediaFile = mediaFile, subtitleFile = null)
-		else showQuickPlayerInfo(msgText = getString(string.title_media_file_is_not_existed))
+		else showQuickPlayerInfo(msgText = getString(string.title_media_file_not_existed))
 	}
 
 	/**
@@ -1303,7 +1303,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	private fun validateSelectedSubtitleFileByUser() {
 		scopedStorageHelper?.onFileSelected = { _, files ->
 			if (!isFileReadable(files)) {
-				val errorMsg = getString(string.title_file_not_readable)
+				val errorMsg = getString(string.title_file_not_readable_permission_issue)
 				throw Exception(errorMsg)
 			}
 
@@ -1312,7 +1312,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				subtitleFile.name?.let { fileName -> getFileExtension(fileName) ?: "" }
 			}
 
-			if (fileExtension.isNullOrEmpty()) throw Exception(getString(string.title_file_not_readable))
+			if (fileExtension.isNullOrEmpty()) throw Exception(getString(string.title_file_not_readable_permission_issue))
 			if (!isSubtitleFileExtension(fileExtension)) showUnsupportedSubtitleFileMessage() else {
 				getDownloadModelFromIntent()?.let { downloadDataModel ->
 					val videoFile = downloadDataModel.getDestinationDocumentFile()

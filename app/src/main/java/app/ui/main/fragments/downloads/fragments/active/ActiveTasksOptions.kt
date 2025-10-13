@@ -1122,7 +1122,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				safeMotherActivityRef.doSomeVibration(50)
 				showToast(
 					activityInf = safeMotherActivityRef,
-					msgId = string.text_no_referer_link_found
+					msgId = string.title_no_referer_link_found
 				)
 				return
 			}

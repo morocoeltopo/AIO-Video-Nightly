@@ -294,7 +294,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 	private fun updateActiveDownloadsInfo(layout: View, activeDownloadsCount: Int) {
 		val activeDownloadsInfo = layout.findViewById<TextView>(R.id.txt_active_downloads_info)
 		val string = getString(
-			R.string.text_you_have_b_active_downloads_b,
+			R.string.title_you_have_b_active_downloads_b,
 			activeDownloadsCount.toString()
 		)
 		activeDownloadsInfo.text = string

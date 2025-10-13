@@ -72,7 +72,7 @@
 					android:drawablePadding="@dimen/_5"
 					android:drawableTint="@color/color_secondary"
 					android:gravity="center_vertical"
-					android:hint="@string/text_enter_the_url"
+					android:hint="@string/title_enter_the_url"
 					android:importantForAutofill="no"
 					android:inputType="textUri"
 					android:maxLines="1"
@@ -125,7 +125,7 @@
 				android:layout_marginEnd="@dimen/_10"
 				android:layout_marginBottom="@dimen/_8"
 				android:fontFamily="@font/application_font_family"
-				android:text="@string/text_app_need_restart_to_take_effect"
+				android:text="@string/title_app_need_restart_to_take_effect"
 				android:textColor="@color/color_text_secondary"
 				android:textSize="@dimen/small_text_size" />
 		</LinearLayout>

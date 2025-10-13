@@ -930,7 +930,7 @@ class M3U8VideoDownloader(
 
 		// Convert total time spent into a formatted string
 		val timeSpentMillis = downloadDataModel.timeSpentInMilliSec.toFloat()
-		val format = calculateTime(timeSpentMillis, getText(R.string.text_spent))
+		val format = calculateTime(timeSpentMillis, getText(R.string.title_spent))
 		logger.d("Formatted time spent: $format")
 
 		// Update the download model

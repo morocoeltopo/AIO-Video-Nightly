@@ -92,7 +92,7 @@ class DownloadFileRenamer(
 						safeMotherActivityRef.doSomeVibration(50)
 						showMessageDialog(
 							baseActivityInf = safeMotherActivityRef,
-							messageTxt = getText(string.title_error_advice_renaming_download_file),
+							messageTxt = getText(string.title_error_try_give_another_file_name),
 							negativeButtonTextCustomize = { it.setLeftSideDrawable(R.drawable.ic_button_cancel) },
 							positiveButtonTextCustomize = { it.setLeftSideDrawable(R.drawable.ic_button_checked_circle) })
 						return@setOnClickForPositiveButton

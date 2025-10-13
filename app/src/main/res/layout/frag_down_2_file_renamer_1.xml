@@ -128,7 +128,7 @@
 				android:ellipsize="end"
 				android:fontFamily="@font/application_font_family"
 				android:maxLines="2"
-				android:text="@string/text_file_name_will_be_renamed"
+				android:text="@string/title_file_name_will_be_renamed"
 				android:textColor="@color/color_text_hint"
 				android:textSize="@dimen/small_text_size"
 				tools:ignore="TextContrastCheck" />

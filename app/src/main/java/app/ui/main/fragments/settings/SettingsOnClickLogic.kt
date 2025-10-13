@@ -536,7 +536,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				ThreadsUtility.executeOnMain {
 					waitingDialog = WaitingDialog(
 						baseActivityInf = safeBaseActivityRef,
-						loadingMessage = getText(R.string.text_checking_for_new_update),
+						loadingMessage = getText(R.string.title_checking_for_new_update),
 						isCancelable = false,
 					); waitingDialog.show()
 					delay(1000)
@@ -553,7 +553,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 						safeBaseActivityRef.doSomeVibration(50)
 						showToast(
 							activityInf = safeBaseActivityRef,
-							msgId = R.string.text_you_are_using_the_latest_version
+							msgId = R.string.title_you_using_latest_version
 						)
 					}
 				}

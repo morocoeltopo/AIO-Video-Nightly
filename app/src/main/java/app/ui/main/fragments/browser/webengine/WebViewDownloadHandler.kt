@@ -110,7 +110,7 @@ class WebViewDownloadHandler(val webviewEngine: WebViewEngine) : DownloadListene
 			safeActivityRef.doSomeVibration(50)
 			showToast(
 				activityInf = safeActivityRef,
-				msgId = R.string.text_unsupported_file_link
+				msgId = R.string.title_unsupported_file_link
 			)
 			return
 		}

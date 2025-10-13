@@ -183,7 +183,7 @@ class SingleResolutionPrompter(
 		safeBaseActivity?.let { safeMotherActivity ->
 			val videoResView = layout.findViewById<TextView>(R.id.text_video_resolution)
 			if (singleResolutionName.isNotEmpty()) {
-				val resId = R.string.text_resolution_info
+				val resId = R.string.title_resolution_info
 				videoResView.text = safeMotherActivity.getString(resId, singleResolutionName)
 			} else videoResView.text = getText(R.string.title_not_available)
 		}

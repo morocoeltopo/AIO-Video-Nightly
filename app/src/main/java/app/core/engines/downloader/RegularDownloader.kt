@@ -1158,7 +1158,7 @@ class RegularDownloader(
 
 		val timeSpentInMillis = downloadDataModel.timeSpentInMilliSec.toFloat()
 		downloadDataModel.timeSpentInFormat =
-			calculateTime(timeSpentInMillis, getText(string.text_spent))
+			calculateTime(timeSpentInMillis, getText(string.title_spent))
 
 		logger.d("Total download time updated: ${downloadDataModel.timeSpentInFormat}")
 	}
@@ -1175,7 +1175,7 @@ class RegularDownloader(
 			val remainingTime = getRemainingDownloadTime(remainingByte, averageSpeed)
 			downloadDataModel.remainingTimeInSec = remainingTime
 			downloadDataModel.remainingTimeInFormat =
-				calculateTime(remainingTime.toFloat(), getText(string.text_left))
+				calculateTime(remainingTime.toFloat(), getText(string.title_left))
 		} else {
 			downloadDataModel.remainingTimeInSec = 0L
 			downloadDataModel.remainingTimeInFormat = "-:-"

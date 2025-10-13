@@ -105,7 +105,7 @@
 							android:drawablePadding="@dimen/_5"
 							android:drawableTint="@color/color_secondary"
 							android:gravity="center_vertical"
-							android:hint="@string/text_enter_updated_bookmark_title"
+							android:hint="@string/title_enter_updated_bookmark_title"
 							android:importantForAutofill="no"
 							android:inputType="textUri"
 							android:maxLines="1"

@@ -129,7 +129,7 @@ object ShareUtility {
 					putExtra(EXTRA_STREAM, fileUri)
 					addFlags(FLAG_GRANT_READ_URI_PERMISSION)
 				}
-				val intentChooser = createChooser(shareIntent, getText(R.string.text_sharing_media_file))
+				val intentChooser = createChooser(shareIntent, getText(R.string.title_sharing_media_file))
 				safeContextRef.startActivity(intentChooser)
 			} catch (error: Exception) {
 				error.printStackTrace()

@@ -218,7 +218,7 @@ class SharedVideoURLIntercept(
 						safeBaseActivityRef?.doSomeVibration(50)
 						showToast(
 							activityInf = safeBaseActivityRef,
-							msgId = R.string.text_unsupported_video_link
+							msgId = R.string.title_unsupported_video_link
 						)
 						openInBuiltInBrowser(targetVideoUrl)
 					}
