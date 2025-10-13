@@ -46,7 +46,6 @@
 	<string name="text_failed_to_write_file_to_storage">Download failed to save the file. This may happen if access is denied or the file was deleted.\n\nTry restarting the download and choose a folder the app can access, like the Downloads folder.</string>
 
 	<string name="text_missing_webpage_link_info">The downloaded file is missing <b> its associated webpage link</b>.</string>
-	<string name="text_not_support_youtube_download"><b>We don\'t support downloading videos from YouTube and other Google services</b> in compliance with YouTube\'s terms of service.</string>
 	<string name="text_allow_permission_in_setting">You need to allow necessary permissions in the settings manually.</string>
 	<string name="text_many_tabs_open_consider_warning"><b>You have %1$s browser tabs open.</b> After closing them, you can access the lost tabs <b>from your browser history</b>.</string>
 	<string name="text_delete_bookmarks_confirmation">Deleting bookmarks is permanent and cannot be undone. <b>Do you want to continue?</b></string>
@@ -102,7 +101,6 @@
 	<string name="title_copied_to_clipboard">Copied To The Clipboard</string>
 	<string name="title_new_download">New Download</string>
 	<string name="title_describe_your_experience">Describe Your Experience</string>
-	<string name="title_content_policy">Content Policy</string>
 	<string name="title_share_feedback">Share Feedback</string>
 	<string name="title_active_downloads">Active Downloads</string>
 	<string name="title_unknown">Unknown</string>
@@ -230,7 +228,6 @@
 	<string name="title_previous_download_data_found">Previous Download Data Found…</string>
 	<string name="title_failed_deleted_paused">File Deleted: Paused</string>
 	<string name="title_download_complete_click_to_open">Download\'s Completed, Click Here To Open</string>
-	<string name="title_media_file_has_deleted">Media File\'s Deleted</string>
 	<string name="title_rename_the_file">Rename The File</string>
 	<string name="title_you_dont_have_any_downloads"><b> You Don\'t Have Any Downloads</b>\nGo And Download Something!</string>
 	<string name="title_open_link_in_browser">Open With Browser</string>
@@ -262,7 +259,6 @@
 	<string name="title_successful">Successful</string>
 	<string name="title_no_app_found_to_open_this_file">No App Found To Open This File</string>
 	<string name="title_analyzing_url_please_wait">Analyzing URL, Please Wait…</string>
-	<string name="title_content_download_policy">Content Download Policy</string>
 	<string name="title_download_now">Download Now</string>
 	<string name="title_failed_open_the_video">Failed To Open The Video</string>
 	<string name="title_allow_now">Allow Now</string>
@@ -369,7 +365,6 @@
 	<string name="title_hide_task_notifications">Hide Task Notifications</string>
 	<string name="title_wifi_only_download">Wifi Only Downloads</string>
 	<string name="title_play_notification_sound">Play Notification Sound</string>
-	<string name="title_tasks">Tasks</string>
 	<string name="title_build_version">Build Version:</string>
 	<string name="title_version_number">Version Number:</string>
 	<string name="title_system_gallery">System Gallery</string>
@@ -525,14 +520,15 @@
 	<string name="title_fix_unseekable_mp4_file_risky">Fix Unseekable Mp4 Files (Risky)</string>
 	<string name="title_fixing_mp4_file_please_wait">Fixing Mp4 File, Please Wait…</string>
 
-	<string name="title_fixing_mp4_done_successfully">Fixed Mp4 File Successfully</string>
+	<!-- Section Break -->
+	<string name="title_fixing_mp4_done_successfully">Fixed MP4 File Successfully</string>
 	<string name="title_proceed_anyway">Proceed Anyway</string>
 	<string name="title_go_back_to_finished_tasks">Downloaded Files</string>
 	<string name="title_convert_video_file_to_mp3_audio">Convert Video File To MP3 Audio</string>
 	<string name="title_open_externally">Open Externally</string>
 	<string name="title_play_the_video">Play The Video</string>
 	<string name="title_play_the_audio">Play The Audio</string>
-	<string name="title_copy_website_link">Copy Site Link</string>
+	<string name="title_copy_website_link">Copy Website Link</string>
 	<string name="title_speed_limiter">Speed Limiter</string>
 	<string name="title_update_link">Update File Link</string>
 	<string name="title_downloading_media_json_metadata">Downloading Media JSON Metadata…</string>
@@ -541,13 +537,11 @@
 	<string name="title_processing_fragments">Processing Fragments (Wait…)</string>
 	<string name="title_advanced_download_settings">Advanced Download Settings</string>
 	<string name="title_no_videos_found">No Videos Found</string>
-	<string name="title_configuring_connection">Configuring Connection…</string>
 	<string name="title_parsing_json_data">Parsing JSON Information…</string>
 	<string name="title_theme_appearance">Theme Appearance</string>
 	<string name="title_system_default">System Default</string>
 	<string name="title_dark_mode_ui">Dark Mode UI</string>
 	<string name="title_light_mode_ui">Light Mode UI</string>
-	<string name="text_changing_theme_require_restart">Changing the theme requires restarting the application.</string>
 	<string name="title_b_latest_version_b"><![CDATA["\n<b>Latest Version:</b> %1$s\n"]]></string>
 	<string name="title_downloads">Downloads</string>
 	<string name="title_attempt_to_load_download_models">Attempting To Load %1$d Downloads…</string>
@@ -558,6 +552,6 @@
 	<string name="title_found_in_headers_b_">Found %1$s In Headers</string>
 	<string name="title_no_checksum_header_found">No Checksum Header Found</string>
 	<string name="title_download_at_private_folder">Download The File To <b>Private Folder</b></string>
-	<string name="title_failed_extract_video_info">Failed Extract Video Info</string>
+	<string name="title_failed_extract_video_info">Failed To Extract Video Info</string>
 
 </resources>
