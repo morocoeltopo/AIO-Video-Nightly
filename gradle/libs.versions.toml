@@ -17,6 +17,9 @@ coreKtx = "1.17.0"
 # AndroidX AppCompat (backward-compatible UI components)
 appcompat = "1.7.1"
 
+# AndroidX Biometric (AndroidX library, supports DEVICE_CREDENTIAL)
+biometric = "1.1.0"
+
 # NewPipeExtractor (used for media extraction from streaming sites)
 new_pipe_extractor = "v0.24.8"
 
@@ -87,6 +90,9 @@ jsonbind = "1.0"
 # AndroidX core library
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 
+# AndroidX Biometric (correct AndroidX library)
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+
 # WebKit support
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
 
@@ -128,6 +134,7 @@ media3_exoplayer_dash = { module = "androidx.media3:media3-exoplayer-dash", vers
 media3_session = { module = "androidx.media3:media3-session", version.ref = "media3player" }
 media3-datasource = { module = "androidx.media3:media3-datasource", version.ref = "media3player" }
 media3_ui = { module = "androidx.media3:media3-ui", version.ref = "media3player" }
+
 mp4_iso_parser = { module = "com.googlecode.mp4parser:isoparser", version.ref = "mp4_iso_parser" }
 
 # Retrofit networking

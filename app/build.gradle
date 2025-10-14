@@ -121,6 +121,7 @@ dependencies {
     implementation libs.androidx.webkit
     implementation libs.constraint.layout
     implementation libs.androidx.core.ktx
+    implementation libs.androidx.biometric
     implementation libs.androidx.lifecycle.process
 
     // Kotlin Coroutines (async support)
