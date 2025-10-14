@@ -1028,11 +1028,11 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 						isNegativeButtonVisible = true,
 						negativeButtonTextCustomize = {
 							it.setLeftSideDrawable(drawable.ic_button_cancel)
-							it.text = getString(string.title_skip_for_now)
+							it.text = getString(string.title_not_now)
 						},
 						positiveButtonTextCustomize = {
 							it.setLeftSideDrawable(drawable.ic_button_media_play)
-							it.text = getString(string.title_play_all)
+							it.text = getString(string.title_unlock_and_play_all)
 						}
 					)?.apply {
 						setOnClickForNegativeButton {
@@ -1141,11 +1141,11 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 						isNegativeButtonVisible = true,
 						negativeButtonTextCustomize = {
 							it.setLeftSideDrawable(drawable.ic_button_cancel)
-							it.text = getString(string.title_skip_for_now)
+							it.text = getString(string.title_not_now)
 						},
 						positiveButtonTextCustomize = {
 							it.setLeftSideDrawable(drawable.ic_button_media_play)
-							it.text = getString(string.title_play_all)
+							it.text = getString(string.title_unlock_and_play_all)
 						}
 					)?.apply {
 						setOnClickForNegativeButton {
