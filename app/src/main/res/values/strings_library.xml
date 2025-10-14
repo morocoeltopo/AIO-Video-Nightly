@@ -1,5 +1,4 @@
 <resources>
-
 	<string name="title_app_name" translatable="false">AIO</string>
 	<string name="title_aio_video_downloader" translatable="false">AIO Video Downloader</string>
 	<string name="title_default_application_folder" translatable="false">AIO Downloads</string>
@@ -90,13 +89,14 @@
 
 	<string name="text_empty_string" translatable="false" />
 
+	<!-- Section Break -->
 	<string name="title_home">Home</string>
 	<string name="title_browser">Browser</string>
 	<string name="title_check_new_update">Check New Update</string>
-	<string name="title_search_or_enter_url">Search or Enter URL…</string>
+	<string name="title_search_or_enter_url">Search Or Enter URL…</string>
 	<string name="title_browser_history">Browsing History</string>
 	<string name="title_clear_now">Clear Now</string>
-	<string name="title_your_browsing_history_empty">Your Browsing History\'s Empty</string>
+	<string name="title_your_browsing_history_empty">Your Browsing History Is Empty</string>
 	<string name="title_copy_site_url">Copy Page Link</string>
 	<string name="title_copied_to_clipboard">Copied To The Clipboard</string>
 	<string name="title_new_download">New Download</string>
@@ -111,16 +111,16 @@
 	<string name="title_title_goes_here">Title Goes Here</string>
 	<string name="title_message_goes_here">Message Goes Here</string>
 	<string name="title_download_information">Download Information</string>
-	<string name="title_file_url_not_valid">File Link\'s Not Valid</string>
+	<string name="title_file_url_not_valid">File Link Is Not Valid</string>
 	<string name="title_invalid_file_url">Invalid File URL</string>
-	<string name="title_dont_have_anything_to_share">You Don\'t Have Anything to Share</string>
+	<string name="title_dont_have_anything_to_share">You Don\'t Have Anything To Share</string>
 	<string name="title_share_download_file_url">Share Download File URL…</string>
 	<string name="title_dont_have_anything_to_copy">You Don\'t Have Anything To Copy</string>
-	<string name="title_file_url_has_been_copied">URL\'s Copied To Clipboard</string>
+	<string name="title_file_url_has_been_copied">URL Copied To Clipboard</string>
 	<string name="title_delete_file">Delete File</string>
-	<string name="title_clear_from_list">Clear from List</string>
+	<string name="title_clear_from_list">Clear From List</string>
 	<string name="title_pause_anyway">Pause Anyway</string>
-	<string name="title_download_task_already_paused">The Download Task\'s Already Paused</string>
+	<string name="title_download_task_already_paused">The Download Task Is Already Paused</string>
 	<string name="title_are_you_sure_about_this">Are You Sure About This?</string>
 	<string name="title_no_referral_site_added">No Referral Site Added</string>
 	<string name="title_open_download_url">Open Download URL</string>
@@ -158,15 +158,16 @@
 	<string name="title_no_next_item_to_play">No Next Item To Play</string>
 	<string name="title_no_previous_item_to_play">No Previous Item To Play</string>
 	<string name="title_invalid_media_file">Invalid Media File…</string>
-	<string name="title_file_not_readable_permission_issue">File\'s Not Readable, Due To Permission Issue</string>
+	<string name="title_file_not_readable_permission_issue">File Is Not Readable, Due To Permission Issue</string>
 	<string name="title_open_new_tab">Open New Tab</string>
-	<string name="title_invalid_url">The URL\'s Invalid</string>
+	<string name="title_invalid_url">The URL Is Invalid</string>
 	<string name="title_recalculating_file_size">Recalculating File Size…</string>
 	<string name="title_calculating">Calculating…</string>
 	<string name="title_closed">Closed</string>
 	<string name="title_in_progress">In Progress</string>
 	<string name="title_completed">Completed</string>
 
+	<!-- Section Break -->
 	<string name="title_file_name_b_br"><![CDATA[<b>File Name:</b> %1$s<br>]]></string>
 	<string name="title_file_size_b_br"><![CDATA[<b>File Size:</b> %1$s<br>]]></string>
 	<string name="title_file_type_b_br"><![CDATA[<b>File Type:</b> %1$s<br>]]></string>
@@ -180,25 +181,24 @@
 	<string name="title_bitrate_b_bps_br"><![CDATA[<b>Bitrate:</b> %1$sbps<br>]]></string>
 	<string name="title_audio_codec_b_br"><![CDATA[<b>Audio Codec:</b> %1$s]]></string>
 	<string name="title_file_directory_b"><![CDATA[<b>File Directory:</b>%1$s<br>]]></string>
-	<string name="title_video_available_resolutions">Type : M3U8 / Available Resolutions: %1$s</string>
-	<string name="title_video_type_m3u8_resolution">Type : M3U8 / Resolution: %1$s</string>
-	<string name="title_video_type_mp4_resolution">Type : Mp4 / Resolution: %1$s</string>
-	<string name="title_video_type_mp4_resolution_duration">Type : Mp4 / Resolution: %1$s  ‣  %2$s </string>
+	<string name="title_video_available_resolutions">Type: M3U8 / Available Resolutions: %1$s</string>
+	<string name="title_video_type_m3u8_resolution">Type: M3U8 / Resolution: %1$s</string>
+	<string name="title_video_type_mp4_resolution">Type: MP4 / Resolution: %1$s</string>
+	<string name="title_video_type_mp4_resolution_duration">Type: MP4 / Resolution: %1$s  ‣  %2$s</string>
 	<string name="title_video_type_mp4">Type: MP4 / %1$s</string>
-
-	<string name="title_b_download_id_b_br"><![CDATA[<b>Download Id:</b> %1$s<br>]]></string>
+	<string name="title_b_download_id_b_br"><![CDATA[<b>Download ID:</b> %1$s<br>]]></string>
 	<string name="title_b_file_name_b_br"><![CDATA[<b>File Name:</b> %1$s<br>]]></string>
 	<string name="title_b_progress_percentage_b_br"><![CDATA[<b>Progress Percentage:</b> %1$s<br>]]></string>
 	<string name="title_b_download_stream_info_b_br"><![CDATA[<b>Download Stream Info:</b> %1$s<br>]]></string>
 	<string name="title_b_file_size_b_br"><![CDATA[<b>File Size:</b> %1$s<br>]]></string>
-	<string name="title_b_downloaded_bytes_b_bytes_br"><![CDATA[<b>Downloaded Bytes:</b> %1$s bytes<br>]]></string>
+	<string name="title_b_downloaded_bytes_b_bytes_br"><![CDATA[<b>Downloaded Bytes:</b> %1$s Bytes<br>]]></string>
 	<string name="title_b_downloaded_bytes_in_format_b_br"><![CDATA[<b>Downloaded Bytes In Format:</b> %1$s<br>]]></string>
 	<string name="title_b_file_category_b_br"><![CDATA[<b>File Category:</b> %1$s<br>]]></string>
 	<string name="title_b_file_directory_b_br"><![CDATA[<b>File Directory:</b> %1$s<br>]]></string>
 	<string name="title_b_file_url_b_br"><![CDATA[<b>File URL:</b> %1$s<br>]]></string>
 	<string name="title_b_download_webpage_b_br"><![CDATA[<b>Download Webpage:</b> %1$s<br>]]></string>
 	<string name="title_b_download_status_info_b_br"><![CDATA[<b>Download Status Info:</b> %1$s<br>]]></string>
-	<string name="title_b_download_started_b_br"><![CDATA[<b>Download Started :</b> %1$s<br>]]></string>
+	<string name="title_b_download_started_b_br"><![CDATA[<b>Download Started:</b> %1$s<br>]]></string>
 	<string name="title_b_download_last_modified_b_br"><![CDATA[<b>Download Last Modified:</b> %1$s<br>]]></string>
 	<string name="title_b_time_spent_b_br"><![CDATA[<b>Time Spent:</b> %1$s<br>]]></string>
 	<string name="title_b_is_file_url_expired_b_br"><![CDATA[<b>Is File URL Expired:</b> %1$s<br>]]></string>
@@ -207,8 +207,8 @@
 	<string name="title_b_checksum_validation_b_br"><![CDATA[<b>Checksum Validation:</b> %1$s<br>]]></string>
 	<string name="title_b_multi_thread_support_b_br"><![CDATA[<b>Multi-thread Support:</b> %1$s<br>]]></string>
 	<string name="title_b_resume_support_b_br"><![CDATA[<b>Resume Support:</b> %1$s<br>]]></string>
-	<string name="title_b_unknown_file_size_b_br"><![CDATA[<b>Unknown File size:</b> %1$s<br>]]></string>
-	<string name="title_b_connection_retry_counts_b_times_br"><![CDATA[<b>Connection Retry Counts:</b> %1$s times<br>]]></string>
+	<string name="title_b_unknown_file_size_b_br"><![CDATA[<b>Unknown File Size:</b> %1$s<br>]]></string>
+	<string name="title_b_connection_retry_counts_b_times_br"><![CDATA[<b>Connection Retry Counts:</b> %1$s Times<br>]]></string>
 	<string name="title_b_default_parallel_connections_b_br"><![CDATA[<b>Default Parallel Connections:</b> %1$s<br>]]></string>
 	<string name="title_b_default_thread_connections_b_br"><![CDATA[<b>Default Thread Connections:</b> %1$s<br>]]></string>
 	<string name="title_b_buffer_size_b_br"><![CDATA[<b>Buffer Size:</b> %1$s<br>]]></string>
@@ -223,13 +223,14 @@
 	<string name="title_b_part_progress_percentages_b_br"><![CDATA[<b>Part Progress Percentages:</b> %1$s<br>]]></string>
 	<string name="title_b_parts_downloaded_bytes_b_br"><![CDATA[<b>Parts Downloaded Bytes:</b> %1$s<br>]]></string>
 
+	<!-- Section Break -->
 	<string name="title_media_file_info">Media File Information</string>
 	<string name="title_validating_download_task">Validating Download Task…</string>
 	<string name="title_previous_download_data_found">Previous Download Data Found…</string>
 	<string name="title_failed_deleted_paused">File Deleted: Paused</string>
-	<string name="title_download_complete_click_to_open">Download\'s Completed, Click Here To Open</string>
+	<string name="title_download_complete_click_to_open">Download Completed, Click Here To Open</string>
 	<string name="title_rename_the_file">Rename The File</string>
-	<string name="title_you_dont_have_any_downloads"><b> You Don\'t Have Any Downloads</b>\nGo And Download Something!</string>
+	<string name="title_you_dont_have_any_downloads"><b>You Don\'t Have Any Downloads</b>\nGo And Download Something!</string>
 	<string name="title_open_link_in_browser">Open With Browser</string>
 	<string name="title_info">Info</string>
 	<string name="title__">--</string>
@@ -237,7 +238,7 @@
 	<string name="title_generating_download_parts">Generating Download Parts…</string>
 	<string name="title_creating_empty_destination_file">Creating Empty Destination File…</string>
 	<string name="title_started_downloading">Started Downloading…</string>
-	<string name="title_download_io_failed">Download Failed : File IO…</string>
+	<string name="title_download_io_failed">Download Failed: File IO…</string>
 	<string name="title_paused">Paused</string>
 	<string name="title_waiting_for_network">Waiting For The Network…</string>
 	<string name="title_waiting_for_wifi">Waiting For The WiFi…</string>
@@ -249,7 +250,7 @@
 	<string name="title_download_has_been_paused">Download Has Been Paused</string>
 	<string name="title_copy_file_link">Copy File Link</string>
 	<string name="title_resume_task">Resume Task</string>
-	<string name="title_resumed_task_successfully">Download\'s Resumed Successfully</string>
+	<string name="title_resumed_task_successfully">Download Resumed Successfully</string>
 	<string name="title_pause_task">Pause Task</string>
 	<string name="title_share_file_link">Share File Link</string>
 	<string name="title_type_new_file_name_hint">Type New File Name Here…</string>
@@ -266,14 +267,16 @@
 	<string name="title_press_back_button_to_exit">Press Back Once More To Exit</string>
 	<string name="title_unknown_video_title">Unknown Video Title</string>
 	<string name="title_00_00">00:00</string>
+
+	<!-- Section Break -->
 	<string name="title_failed_to_add_download_task">Failed To Add Download</string>
-	<string name="title_download_added_successfully">Download\'s Added Successfully</string>
-	<string name="title_player_is_locked_unlock_first">Player\'s Locked, Unlock First</string>
+	<string name="title_download_added_successfully">Download Added Successfully</string>
+	<string name="title_player_is_locked_unlock_first">Player Locked, Unlock First</string>
 	<string name="title_getting_name_from_server">Getting Name From Server…</string>
 	<string name="title_select_a_video_resolution">Select Your Desired Resolution</string>
-	<string name="title_wait_till_server_return_video_title">Wait Till Server Return The Video Title</string>
+	<string name="title_wait_till_server_return_video_title">Wait Till Server Returns The Video Title</string>
 	<string name="title_something_went_wrong">Something\'s Wrong, Try Again Later</string>
-	<string name="title_bookmark_saved">Bookmark\'s Saved</string>
+	<string name="title_bookmark_saved">Bookmark Saved</string>
 	<string name="title_preparing_download">Preparing The Download…</string>
 	<string name="title_downloaded">Downloaded</string>
 	<string name="title_connecting_to_the_server">Connecting To The Server…</string>
@@ -290,14 +293,14 @@
 	<string name="title_copied_url_to_clipboard">Copied URL To The Clipboard</string>
 	<string name="title_not_available">Not Available</string>
 	<string name="title_pick_video_resolution_for_file_name">Pick Video Resolution To Generate File Name</string>
-	<string name="title_webpage_url_invalid">Webpage URL\'s Invalid</string>
+	<string name="title_webpage_url_invalid">Webpage URL Is Invalid</string>
 	<string name="title_waiting_for_server_to_respond">Waiting For The Server To Respond</string>
 	<string name="title_reached_limit_for_going_back">Reached The Limit For Going Back</string>
 	<string name="title_reached_limit_for_going_forward">Reached The Limit For Going Forward</string>
 	<string name="title_exit_now">Exit Now</string>
 	<string name="title_close_tabs">Close Tabs</string>
 	<string name="title_load_more_browser_bookmarks">Load More Bookmarks</string>
-	<string name="title_your_bookmark_collection_empty">Your Bookmarks Collection\'s Empty</string>
+	<string name="title_your_bookmark_collection_empty">Your Bookmarks Collection Is Empty</string>
 	<string name="title_bookmarks">Bookmarks</string>
 	<string name="title_aio_system_service">AIO System Service</string>
 	<string name="title_no_sound">No Sound On Downloaded Videos</string>
@@ -308,15 +311,15 @@
 	<string name="title_other_problems">Other Problem Found</string>
 	<string name="title_user_message">"User Message: "</string>
 	<string name="title_no_sound_in_videos">- No Sound In Videos\n</string>
-	<string name="title_videos_are_incomplete">-Videos Are Incomplete\n</string>
+	<string name="title_videos_are_incomplete">- Videos Are Incomplete\n</string>
 	<string name="title_app_crashed_during_use">- App Crashed During Use\n</string>
 	<string name="title_videos_are_glitching">- Videos Are Glitching\n</string>
-	<string name="title_too_many_ads_are_being_shown">-Too Many Ads Are Being Shown\n</string>
+	<string name="title_too_many_ads_are_being_shown">- Too Many Ads Are Being Shown\n</string>
 	<string name="title_other_problems_experienced">- Other Problems Experienced\n</string>
 	<string name="title_no_specific_issues_reported">No Specific Issues Reported\n</string>
 	<string name="title_device_information">\nDevice Information:\n</string>
 	<string name="title_issues_reported">Issues Reported:\n</string>
-	<string name="title_feedbacks_sent_successfully">Feedback\'s Been Sent Successfully</string>
+	<string name="title_feedbacks_sent_successfully">Feedback Has Been Sent Successfully</string>
 	<string name="title_send_feedback">Send Feedback</string>
 	<string name="title_oops_app_was_crashed">Oops, App Was Crashed</string>
 	<string name="title_open_in_browser">Open In Browser</string>
@@ -332,9 +335,11 @@
 	<string name="title_closed_tab">Closed Tab</string>
 	<string name="title_click_to_get_info">Click To Get Info…</string>
 	<string name="title_fetching_file_info">Fetching File Info…</string>
-	<string name="title_youtube_download_not_supported">Youtube Download Not Supported</string>
+
+	<!-- Section Break -->
+	<string name="title_youtube_download_not_supported">YouTube Download Not Supported</string>
 	<string name="title_add_to_bookmark">Add To Bookmark</string>
-	<string name="title_media_file_not_existed">Media File\'s Not Existed Anymore</string>
+	<string name="title_media_file_not_existed">Media File No Longer Exists</string>
 	<string name="title_private_folder">Private Folder</string>
 	<string name="title_fixing_mpeg_ts_in_mp4_container">Fixing MPEG-TS In MP4 Container…</string>
 	<string name="title_checking_m3u8_live_status">Checking M3U8 Live Status…</string>
@@ -346,13 +351,13 @@
 	<string name="title_user_email">User Email:</string>
 	<string name="title_enter_your_email_message_first">Enter Your Email And Message First</string>
 	<string name="title_time_representation">--:--</string>
-	<string name="title_couldnt_play_media">⚠️ Could\'t Play The Media</string>
+	<string name="title_couldnt_play_media">⚠️ Couldn\'t Play The Media</string>
 	<string name="title_unavailable_for_streaming">⚠️ Unavailable For Streaming</string>
 	<string name="title_no_app_can_handle_this_request">No App Can Handle This Request</string>
 	<string name="title_cancel_converting">Cancel Converting</string>
 	<string name="title_converted_successfully">Converted Successfully</string>
 	<string name="title_converting_failed">Converting Failed</string>
-	<string name="title_converting_audio_progress">Converting Audio… Progress(%1$s)</string>
+	<string name="title_converting_audio_progress">Converting Audio… Progress (%1$s)</string>
 	<string name="title_converting_audio_progress_0">Converting Audio… Progress (0%)</string>
 	<string name="title_settings">Settings</string>
 	<string name="title_open_application_info">Open Application Info</string>
@@ -361,16 +366,15 @@
 	<string name="title_your_send_feedback">Send Your Feedback</string>
 	<string name="title_share_with_friends">Share With Friends</string>
 	<string name="title_browser_homepage">Browser Homepage</string>
-	<string name="title_block_popup_ads">Block Popup-Ads</string>
+	<string name="title_block_popup_ads">Block Popup Ads</string>
 	<string name="title_hide_task_notifications">Hide Task Notifications</string>
-	<string name="title_wifi_only_download">Wifi Only Downloads</string>
+	<string name="title_wifi_only_download">Wi-Fi Only Downloads</string>
 	<string name="title_play_notification_sound">Play Notification Sound</string>
 	<string name="title_build_version">Build Version:</string>
 	<string name="title_version_number">Version Number:</string>
 	<string name="title_system_gallery">System Gallery</string>
 	<string name="title_apply_changes">Apply Changes</string>
 	<string name="title_changes_will_apply_on_next_download">Changes Will Apply To Your Next Download</string>
-
 	<string name="title_current_homepage"><b>Current Homepage:</b> %1$s</string>
 	<string name="title_enter_the_url">Enter The URL…</string>
 	<string name="title_how_to_download">How To Download</string>
@@ -388,6 +392,7 @@
 	<string name="title_open_web_history">Open Web History</string>
 	<string name="title_share_page_link">Share Page Link</string>
 
+	<!-- Section Break -->
 	<string name="title_please_install_web_browser">Please Install Web Browser</string>
 	<string name="title_server_issue">%1$s: Server Issue</string>
 	<string name="title_video_info_unavailable">Video Info Unavailable…</string>
@@ -400,51 +405,48 @@
 	<string name="title_x_com">X.com</string>
 	<string name="title_instagram">Instagram</string>
 	<string name="title_dailymotion">Dailymotion</string>
-	<string name="title_whatsapp">Whatsapp</string>
+	<string name="title_whatsapp">WhatsApp</string>
 	<string name="title_high_quality">High Quality</string>
 	<string name="title_history">History</string>
 	<string name="title_all_downloads">All Downloads</string>
 	<string name="title_recent_downloads">Recent Downloads</string>
-
 	<string name="title_pick_video_hosting_platform">Select Video Sharing Platform</string>
 	<string name="title_copied_link">Copied Link</string>
 	<string name="title_open_the_link">Open The Link</string>
-	<string name="title_youtube">Youtube</string>
+	<string name="title_youtube">YouTube</string>
 	<string name="title_file_size">File Size:</string>
-
-	<string name="title_you_have_b_active_downloads_b">You Have <b>%1$s Active Downloads</b></string>
+	<string name="title_you_have_b_active_downloads_b">You Have %1$s Active Downloads</string>
 	<string name="title_app_will_restart_to_take_effect">The App Will Restart To Take Effect</string>
-	<string name="title_app_need_restart_to_take_effect">The Change Will Apply After The App\'s Restarted</string>
-	<string name="title_loaded_successfully">Loaded successfully</string>
+	<string name="title_app_need_restart_to_take_effect">The Change Will Apply After The App’s Restarted</string>
+	<string name="title_loaded_successfully">Loaded Successfully</string>
 	<string name="title_sharing_media_file">Sharing Media File…</string>
-
 	<string name="title_change_file_name">Change File Name</string>
 	<string name="title_no_referer_link_found">No Referer Link Found</string>
-	<string name="title_go_to_tasks_tab_to_see_progress">Monitor The Download Progress In The <b><u> Tasks</u></b> Tab</string>
+	<string name="title_go_to_tasks_tab_to_see_progress">Monitor The Download Progress In The <b><u>Tasks</u></b> Tab</string>
 	<string name="title_paste_video_link">Paste The Video Link</string>
 	<string name="title_download_location">Download Location</string>
 	<string name="title_download_instagram_reel">Download Instagram Reels</string>
 	<string name="title_download_fb_videos">Download Facebook Videos</string>
 	<string name="title_download_video_from_web">Download Web Videos</string>
-
 	<string name="title_internet">Internet</string>
 	<string name="title_download_system_information">Download System Information…</string>
-	<string name="title_file_name_will_be_renamed"><b><u> The Actual File Name</u></b> On Disk Will Be Changed</string>
+	<string name="title_file_name_will_be_renamed"><b><u>The Actual File Name</u></b> On Disk Will Be Changed</string>
 	<string name="title_experimental_feature">Experimental Feature</string>
 	<string name="title_proceed">Proceed</string>
 	<string name="title_restart_application">Restart Application</string>
 
+	<!-- Section Break -->
 	<string name="title_left">Left</string>
 	<string name="title_spent">Spent</string>
 	<string name="title_turn_off_battery_optimization">Turn Off Battery Optimization</string>
 	<string name="title_disable_now">Disable Now</string>
 	<string name="title_server_busy_opening_browser">Server\'s Busy, Opening Browser</string>
-	<string name="title_app_splash_credit">Made With ❤️ In India 🇮🇳</string>
+	<string name="title_app_splash_credit">Made With ❤️  In India  🇮🇳</string>
 	<string name="title_version">Version</string>
-	<string name="title_other_advance_settings">Other Advance Settings</string>
-	<string name="title_xhamster">Xhamster</string>
-	<string name="title_redwap">Redwap</string>
-	<string name="title_hentaicity">Hentaicity</string>
+	<string name="title_other_advance_settings">Other Advanced Settings</string>
+	<string name="title_xhamster">XHamster</string>
+	<string name="title_redwap">RedWap</string>
+	<string name="title_hentaicity">HentaiCity</string>
 	<string name="title_xvideos">XVideos</string>
 	<string name="title_loading_downloads_data">Loading Data, Please Wait…</string>
 	<string name="title_open_video_site">Open Video Site</string>
@@ -453,22 +455,22 @@
 	<string name="title_downloading_webpage">Downloading Webpage…</string>
 	<string name="title_downloading_client_config">Downloading Client Config…</string>
 	<string name="title_extracting_player_api">Extracting Player API…</string>
-	<string name="title_setting_applied">Setting Has Applied</string>
+	<string name="title_setting_applied">Setting Has Been Applied</string>
 	<string name="title_application_settings">Application Settings</string>
 	<string name="title_app_version">Application Version</string>
 	<string name="title_acknowledgement">Acknowledgement</string>
 	<string name="title_pinterest">Pinterest</string>
 	<string name="title_reddit">Reddit</string>
 	<string name="title_youtube_music">YT Music</string>
-	<string name="title_soundcloud">Soundcloud</string>
-	<string name="title_tiktok">Tiktok</string>
+	<string name="title_soundcloud">SoundCloud</string>
+	<string name="title_tiktok">TikTok</string>
 	<string name="title_tedtalks">TED Talks</string>
 	<string name="title_pornhub">Pornhub</string>
-	<string name="title_aio_downloader_tagline">Download, Watch &amp; Share with Friends</string>
+	<string name="title_aio_downloader_tagline">Download, Watch &amp; Share With Friends</string>
 	<string name="title_download_yt_videos">Download YouTube Videos</string>
 	<string name="title_new_version_available">New Version Available</string>
 	<string name="title_update_now">Update Now</string>
-	<string name="title_customer_service">Customer Services</string>
+	<string name="title_customer_service">Customer Service</string>
 	<string name="title_checking_for_new_update">Checking For New Update, Please Wait…</string>
 	<string name="title_you_using_latest_version">You\'re Using The Latest Version</string>
 	<string name="title_search_something">Search Something…</string>
@@ -477,33 +479,34 @@
 	<string name="title_edit_history">Update History</string>
 	<string name="title_no_bookmark_matched_with_search">No Bookmarks Matched Your Search Query</string>
 	<string name="title_update_bookmark_info">Update Bookmark Info</string>
-	<string name="title_enter_updated_bookmark_title">Enter updated bookmark title</string>
+	<string name="title_enter_updated_bookmark_title">Enter Updated Bookmark Title</string>
 	<string name="title_enter_updated_history_title">Enter Updated History Title</string>
 	<string name="title_enter_updated_bookmark_url">Enter Updated Bookmark URL</string>
 	<string name="title_enter_updated_history_url">Enter Updated History URL</string>
 
-	<string name="title_bookmark_name_can_not_be_empty">Bookmark Name Can Not Be Empty</string>
-	<string name="title_bookmark_url_can_not_be_empty">Bookmark URL Can Not Be Empty</string>
-	<string name="title_bookmark_url_not_valid">Bookmark URL\'s Not Valid</string>
+	<!-- Section Break -->
+	<string name="title_bookmark_name_can_not_be_empty">Bookmark Name Cannot Be Empty</string>
+	<string name="title_bookmark_url_can_not_be_empty">Bookmark URL Cannot Be Empty</string>
+	<string name="title_bookmark_url_not_valid">Bookmark URL Is Not Valid</string>
 	<string name="title_update_history_info">Update Browser History</string>
 	<string name="title_sign_in_register">Sign In / Register</string>
-	<string name="text_enable_browser_javascript">Enable javascript</string>
+	<string name="text_enable_browser_javascript">Enable JavaScript</string>
 	<string name="title_enable_browser_adblock">Enable Adblocker</string>
 	<string name="title_show_image_on_webpage">Show Web Images</string>
 	<string name="text_browser_useragent">Browser User-Agent</string>
 	<string name="title_browser_settings">Browser Settings</string>
 	<string name="title_download_settings">Download Settings</string>
 	<string name="text_clear_browser_caches">Clear Browser Caches</string>
-	<string name="text_sample_email">youremailaddress@email.com</string>
+	<string name="text_sample_email">YourEmailAddress@email.com</string>
 	<string name="title_sample_username">Your Name</string>
 	<string name="title_default_download_folder">Default Download Folder</string>
 	<string name="title_enable_daily_suggestions">Enable Daily Suggestions</string>
 	<string name="title_preferred_content_region">Preferred Content Region</string>
-	<string name="text_enable_desktop_mode">Enable desktop mode</string>
+	<string name="text_enable_desktop_mode">Enable Desktop Mode</string>
 	<string name="title_reset_settings">Reset Settings</string>
-	<string name="text_enable_private_mode">Enable Private mode</string>
-	<string name="text_export_browser_bookmark">Export Bookmarks/history</string>
-	<string name="text_import_browser_bookmark">Import Bookmarks/history</string>
+	<string name="text_enable_private_mode">Enable Private Mode</string>
+	<string name="text_export_browser_bookmark">Export Bookmarks/History</string>
+	<string name="text_import_browser_bookmark">Import Bookmarks/History</string>
 	<string name="text_make_default_homepage">Default Homepage</string>
 	<string name="title_your_content_region">Your Content Region</string>
 	<string name="title_application_language">Application Language</string>
@@ -517,8 +520,8 @@
 	<string name="title_successfully_cleared">Successfully Cleared</string>
 	<string name="title_successfully_deleted">Successfully Deleted</string>
 	<string name="title_open_website">Open Website</string>
-	<string name="title_fix_unseekable_mp4_file_risky">Fix Unseekable Mp4 Files (Risky)</string>
-	<string name="title_fixing_mp4_file_please_wait">Fixing Mp4 File, Please Wait…</string>
+	<string name="title_fix_unseekable_mp4_file_risky">Fix Unseekable MP4 Files (Risky)</string>
+	<string name="title_fixing_mp4_file_please_wait">Fixing MP4 File, Please Wait…</string>
 
 	<!-- Section Break -->
 	<string name="title_fixing_mp4_done_successfully">Fixed MP4 File Successfully</string>
@@ -528,7 +531,7 @@
 	<string name="title_open_externally">Open Externally</string>
 	<string name="title_play_the_video">Play The Video</string>
 	<string name="title_play_the_audio">Play The Audio</string>
-	<string name="title_copy_website_link">Copy Website Link</string>
+	<string name="title_copy_website_link">Copy Website</string>
 	<string name="title_speed_limiter">Speed Limiter</string>
 	<string name="title_update_link">Update File Link</string>
 	<string name="title_downloading_media_json_metadata">Downloading Media JSON Metadata…</string>
