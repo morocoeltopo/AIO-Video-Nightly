@@ -19,23 +19,10 @@ import lib.ui.builders.PopupBuilder
 import lib.ui.builders.ToastView.Companion.showToast
 import java.lang.ref.WeakReference
 
-/**
- * A popup dialog that provides various media options for the currently playing media file.
- *
- * This class handles operations like:
- * - Deleting the media file
- * - Converting video to audio
- * - Opening the media in another app
- * - Showing media information
- * - Discovering related content
- *
- * @property mediaPlayerActivity The parent MediaPlayerActivity instance (held weakly to prevent leaks)
- */
 @UnstableApi
 class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 
-	// Weak reference to prevent memory leaks
-	private val safeMediaPlayerActivityRef = WeakReference(mediaPlayerActivity).get()
+	private val safePlayerActivityRef = WeakReference(mediaPlayerActivity).get()
 	private lateinit var popupBuilder: PopupBuilder
 
 	init {
@@ -43,26 +30,17 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 		setupClickEvents()
 	}
 
-	/**
-	 * Displays the media options popup.
-	 */
 	fun show() {
 		refreshPrivateSession()
 		popupBuilder.show()
 	}
 
-	/**
-	 * Closes the media options popup.
-	 */
 	fun close() {
 		popupBuilder.close()
 	}
 
-	/**
-	 * Initializes the popup builder with the appropriate layout and anchor view.
-	 */
 	private fun setupPopupBuilder() {
-		safeMediaPlayerActivityRef?.let { safeActivityRef ->
+		safePlayerActivityRef?.let { safeActivityRef ->
 			popupBuilder = PopupBuilder(
 				activityInf = safeActivityRef,
 				popupLayoutId = layout.activity_player_5_options,
@@ -71,13 +49,9 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 		}
 	}
 
-	/**
-	 * Sets up click listeners for all options in the popup.
-	 */
 	private fun setupClickEvents() {
-		safeMediaPlayerActivityRef?.let { _ ->
+		safePlayerActivityRef?.let { _ ->
 			with(popupBuilder.getPopupView()) {
-				// Map of view IDs to their corresponding actions
 				mapOf(
 					R.id.btn_delete_file to { close(); deleteFile() },
 					R.id.btn_convert_to_audio to { close(); convertAudio() },
@@ -92,22 +66,12 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 		}
 	}
 
-	/**
-	 * Helper function to set click listeners on views.
-	 *
-	 * @param id The view ID to set the listener on
-	 * @param action The action to perform when clicked
-	 */
 	private fun View.setClickListener(id: Int, action: () -> Unit) {
 		findViewById<View>(id)?.setOnClickListener { action() }
 	}
 
-	/**
-	 * Handles the file deletion operation with confirmation dialog.
-	 */
 	private fun deleteFile() {
-		safeMediaPlayerActivityRef?.let { safeActivityRef ->
-			// Check if currently playing streaming video (cannot delete)
+		safePlayerActivityRef?.let { safeActivityRef ->
 			if (safeActivityRef.isPlayingStreamingVideo()) {
 				showMessageDialog(
 					baseActivityInf = safeActivityRef,
@@ -121,11 +85,14 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 						positiveButton.setLeftSideDrawable(R.drawable.ic_okay_done)
 						positiveButton.setText(string.title_okay)
 					},
-					messageTextViewCustomize = { it.setText(string.text_delete_stream_media_unavailable) }
-				); return
+					messageTextViewCustomize = {
+						val stringId = string.text_delete_stream_media_unavailable
+						it.setText(stringId)
+					}
+				)
+				return
 			}
 
-			// Show confirmation dialog for deletion
 			val dialogBuilder = getMessageDialog(
 				baseActivityInf = safeActivityRef,
 				titleText = getText(string.title_are_you_sure_about_this),
@@ -148,7 +115,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	}
 
 	private fun togglePrivateSession() {
-		safeMediaPlayerActivityRef?.let { playerActivity ->
+		safePlayerActivityRef?.let { playerActivity ->
 			if (playerActivity.isPrivateSessionAllowed) {
 				playerActivity.isPrivateSessionAllowed = false
 				playerActivity.hasMadeDecisionOverPrivateAccess = false
@@ -158,30 +125,22 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	}
 
 	private fun refreshPrivateSession() {
-		safeMediaPlayerActivityRef?.let { playerActivity ->
+		safePlayerActivityRef?.let { playerActivity ->
 			val popupView = popupBuilder.getPopupView()
-			popupView.findViewById<CheckBox>(R.id.checkbox_private_session).let {
-				it.isChecked = playerActivity.isPrivateSessionAllowed
-			}
+			val checkBox = popupView.findViewById<CheckBox>(R.id.checkbox_private_session)
+			checkBox.isChecked = playerActivity.isPrivateSessionAllowed
 		}
 	}
 
-	/**
-	 * Opens the media file information dialog.
-	 */
 	private fun openMediaFileInfo() {
-		safeMediaPlayerActivityRef?.openMediaFileInfo()
+		safePlayerActivityRef?.openMediaFileInfo()
 	}
 
-	/**
-	 * Handles the "discover more" action by opening the referrer URL.
-	 */
 	private fun discoverMore() {
-		safeMediaPlayerActivityRef?.let { playerActivityRef ->
-			// Check if currently playing streaming video (cannot discover)
-			if (playerActivityRef.isPlayingStreamingVideo()) {
+		safePlayerActivityRef?.let { playerActivity ->
+			if (playerActivity.isPlayingStreamingVideo()) {
 				showMessageDialog(
-					baseActivityInf = playerActivityRef,
+					baseActivityInf = playerActivity,
 					isTitleVisible = true,
 					isNegativeButtonVisible = false,
 					titleTextViewCustomize = { titleView ->
@@ -193,35 +152,32 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 						positiveButton.setLeftSideDrawable(R.drawable.ic_okay_done)
 						positiveButton.setText(string.title_okay)
 					}
-				); return
+				)
+				return
 			}
 
-			// Try to open the referrer URL in a browser
-			playerActivityRef.getCurrentPlayingDownloadModel()?.siteReferrer?.let { referrer ->
+			val candidate = playerActivity.getCurrentPlayingDownloadModel()
+			candidate?.siteReferrer?.let { referrer ->
 				try {
 					val intent = Intent(Intent.ACTION_VIEW, referrer.toUri())
-					playerActivityRef.startActivity(intent)
+					playerActivity.startActivity(intent)
 				} catch (error: Exception) {
 					error.printStackTrace()
-					showToast(activityInf = safeMediaPlayerActivityRef,
-						msgId = string.title_no_app_can_handle_this_request)
+					val msgId = string.title_no_app_can_handle_this_request
+					showToast(playerActivity, msgId = msgId)
 				}
 			}
 		}
 	}
 
-	/**
-	 * Converts the current video file to audio format.
-	 */
 	private fun convertAudio() {
-		showMp4ToAudioConverterDialog(safeMediaPlayerActivityRef,
-			safeMediaPlayerActivityRef?.getCurrentPlayingDownloadModel())
+		showMp4ToAudioConverterDialog(
+			safePlayerActivityRef,
+			safePlayerActivityRef?.getCurrentPlayingDownloadModel()
+		)
 	}
 
-	/**
-	 * Opens the current media file in another application.
-	 */
 	private fun openMediaFile() {
-		safeMediaPlayerActivityRef?.openMediaFile()
+		safePlayerActivityRef?.openMediaFile()
 	}
 }
