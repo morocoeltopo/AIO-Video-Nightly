@@ -13,11 +13,13 @@ import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOTimer.AIOTimerListener
 import app.core.bases.BaseFragment
 import app.core.engines.downloader.DownloadDataModel
+import app.core.engines.settings.AIOSettings
 import app.ui.main.MotherActivity
 import app.ui.main.fragments.downloads.DownloadsFragment
 import app.ui.main.guides.GuidePlatformPicker
 import com.aio.R
 import com.airbnb.lottie.LottieAnimationView
+import lib.device.SecureFileUtil.authenticate
 import lib.ui.ViewUtility.hideView
 import lib.ui.ViewUtility.showView
 import java.lang.ref.WeakReference
@@ -98,18 +100,42 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 
 	/** Called when a finished download is clicked. Delegates to long-click handler. */
 	override fun onFinishedDownloadClick(downloadModel: DownloadDataModel) {
-		if (aioSettings.openDownloadedFileOnSingleClick) {
-			finishTaskOptions.setDownloadModel(downloadModel)
-			finishTaskOptions.playTheMedia()
-		} else {
-			finishTaskOptions.show(downloadModel)
+		safeMotherActivityRef?.let {
+			val globalSettings = downloadModel.globalSettings
+			val downloadLocation = globalSettings.defaultDownloadLocation
+			fun openDownloadOptions() {
+				if (aioSettings.openDownloadedFileOnSingleClick) {
+					finishTaskOptions.setDownloadModel(downloadModel)
+					finishTaskOptions.playTheMedia()
+				} else finishTaskOptions.show(downloadModel)
+			}
+
+			if (downloadLocation == AIOSettings.PRIVATE_FOLDER) {
+				authenticate(activity = it, onResult = { isSuccess ->
+					if (isSuccess) openDownloadOptions()
+				})
+			} else {
+				openDownloadOptions()
+			}
 		}
 	}
 
 	/** Handles long-click on a finished download by showing options. */
 	override fun onFinishedDownloadLongClick(downloadModel: DownloadDataModel) {
-		safeMotherActivityRef?.doSomeVibration(50)
-		finishTaskOptions.show(downloadModel)
+		safeMotherActivityRef?.let {
+			fun openDownloadOptions() {
+				safeMotherActivityRef?.doSomeVibration(50)
+				finishTaskOptions.show(downloadModel)
+			}
+
+			val globalSettings = downloadModel.globalSettings
+			val downloadLocation = globalSettings.defaultDownloadLocation
+			if (downloadLocation == AIOSettings.PRIVATE_FOLDER) {
+				authenticate(activity = it, onResult = { isSuccess ->
+					if (isSuccess) openDownloadOptions()
+				})
+			} else openDownloadOptions()
+		}
 	}
 
 	/** Returns a list of all finished download models from DownloadSystem. */

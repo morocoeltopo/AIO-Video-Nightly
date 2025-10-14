@@ -61,6 +61,7 @@ import app.core.bases.BaseActivity
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
 import app.core.engines.downloader.DownloadURLHelper.getFileInfoFromSever
+import app.core.engines.settings.AIOSettings
 import app.ui.others.media_player.dialogs.MediaInfoHtmlBuilder.buildMediaInfoHtmlString
 import app.ui.others.media_player.dialogs.MediaOptionsPopup
 import com.aio.R
@@ -74,6 +75,7 @@ import com.airbnb.lottie.LottieCompositionFactory.fromRawRes
 import com.anggrayudi.storage.file.FileFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.google.common.io.Files.getFileExtension
+import lib.device.SecureFileUtil.authenticate
 import lib.device.ShareUtility
 import lib.device.ShareUtility.shareMediaFile
 import lib.files.FileSystemUtility.getFileFromUri
@@ -181,6 +183,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	// Handler for quick info display
 	val quickInfoHandler = Handler(Looper.getMainLooper())
 	var quickInfoDelayRunnable: Runnable? = null
+	var isPrivateSessionAllowed: Boolean = false
+	var hasMadeDecisionOverPrivateAccess: Boolean = false
 
 	/**
 	 * Sets up the activity layout and appearance.
@@ -1012,8 +1016,73 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		if (matchedIndex != -1) {
 			val nextIndex = matchedIndex + 1
 			if (mediaFiles.size > nextIndex) {
-				val nextDownloadDataModel = mediaFiles[nextIndex]
-				playVideoFromDownloadModel(nextDownloadDataModel)
+				val candidate = mediaFiles[nextIndex]
+				val downloadLocation = candidate.globalSettings.defaultDownloadLocation
+				val isPrivateVideo = downloadLocation == AIOSettings.PRIVATE_FOLDER
+				if (isPrivateVideo && !hasMadeDecisionOverPrivateAccess) {
+					getMessageDialog(
+						baseActivityInf = safeSelfReference,
+						isTitleVisible = true,
+						titleText = getText(string.title_private_videos_alert),
+						messageTxt = getString(string.text_prompt_skip_or_play_private_video),
+						isNegativeButtonVisible = true,
+						negativeButtonTextCustomize = {
+							it.setLeftSideDrawable(drawable.ic_button_cancel)
+							it.text = getString(string.title_skip_for_now)
+						},
+						positiveButtonTextCustomize = {
+							it.setLeftSideDrawable(drawable.ic_button_media_play)
+							it.text = getString(string.title_play_all)
+						}
+					)?.apply {
+						setOnClickForNegativeButton {
+							close()
+							isPrivateSessionAllowed = false
+							hasMadeDecisionOverPrivateAccess = true
+							playNextMedia()
+						}
+
+						setOnClickForPositiveButton {
+							close()
+							authenticate(activity = safeSelfReference, onResult = { isSuccess ->
+								if (isSuccess) {
+									isPrivateSessionAllowed = true
+									hasMadeDecisionOverPrivateAccess = true
+									playNextMedia()
+								} else {
+									safeSelfReference?.doSomeVibration(50)
+									showToast(safeSelfReference, msgId = string.title_authentication_failed)
+								}
+							})
+						}
+					}?.show()
+				} else {
+					if (isPrivateSessionAllowed) {
+						playVideoFromDownloadModel(candidate)
+					} else {
+						if (matchedIndex != -1) {
+							var nextIndex = matchedIndex + 1
+							var nextDownloadDataModel: DownloadDataModel? = null
+
+							while (nextIndex < mediaFiles.size) {
+								val candidate = mediaFiles[nextIndex]
+								val downloadLocation = candidate.globalSettings.defaultDownloadLocation
+								if (downloadLocation != AIOSettings.PRIVATE_FOLDER) {
+									nextDownloadDataModel = candidate
+									break
+								}
+								nextIndex++
+							}
+
+							if (nextDownloadDataModel != null) {
+								playVideoFromDownloadModel(nextDownloadDataModel)
+							} else {
+								val infoText = getString(string.title_no_next_item_to_play)
+								showQuickPlayerInfo(infoText)
+							}
+						}
+					}
+				}
 			} else {
 				val infoText = getString(string.title_no_next_item_to_play)
 				showQuickPlayerInfo(infoText)
@@ -1060,12 +1129,92 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		if (matchedIndex != -1) {
 			val previousIndex = matchedIndex - 1
 			if (previousIndex > -1) {
-				val nextDownloadDataModel = mediaFiles[previousIndex]
-				playVideoFromDownloadModel(nextDownloadDataModel)
+				val candidate = mediaFiles[previousIndex]
+				val downloadLocation = candidate.globalSettings.defaultDownloadLocation
+				val isPrivateVideo = downloadLocation == AIOSettings.PRIVATE_FOLDER
+				if (isPrivateVideo && !hasMadeDecisionOverPrivateAccess) {
+					getMessageDialog(
+						baseActivityInf = safeSelfReference,
+						isTitleVisible = true,
+						titleText = getText(string.title_private_videos_alert),
+						messageTxt = getString(string.text_prompt_skip_or_play_private_video),
+						isNegativeButtonVisible = true,
+						negativeButtonTextCustomize = {
+							it.setLeftSideDrawable(drawable.ic_button_cancel)
+							it.text = getString(string.title_skip_for_now)
+						},
+						positiveButtonTextCustomize = {
+							it.setLeftSideDrawable(drawable.ic_button_media_play)
+							it.text = getString(string.title_play_all)
+						}
+					)?.apply {
+						setOnClickForNegativeButton {
+							close()
+							isPrivateSessionAllowed = false
+							hasMadeDecisionOverPrivateAccess = true
+							playPreviousMedia()
+						}
+
+						setOnClickForPositiveButton {
+							close()
+							authenticate(activity = safeSelfReference, onResult = { isSuccess ->
+								if (isSuccess) {
+									isPrivateSessionAllowed = true
+									hasMadeDecisionOverPrivateAccess = true
+									playPreviousMedia()
+								} else {
+									safeSelfReference?.doSomeVibration(50)
+									showToast(safeSelfReference, msgId = string.title_authentication_failed)
+								}
+							})
+						}
+					}?.show()
+				} else {
+					if (isPrivateSessionAllowed) {
+						playVideoFromDownloadModel(candidate)
+					} else {
+						if (matchedIndex != -1) {
+							var previousIndex = matchedIndex - 1
+							var previousDownloadDataModel: DownloadDataModel? = null
+
+							while (previousIndex >= 0) {
+								val candidate = mediaFiles[previousIndex]
+								val downloadLocation = candidate.globalSettings.defaultDownloadLocation
+								if (downloadLocation != AIOSettings.PRIVATE_FOLDER) {
+									previousDownloadDataModel = candidate
+									break
+								}
+								previousIndex--
+							}
+
+							if (previousDownloadDataModel != null) {
+								playVideoFromDownloadModel(previousDownloadDataModel)
+							} else {
+								val infoText = getString(string.title_no_previous_item_to_play)
+								showQuickPlayerInfo(infoText)
+							}
+						}
+					}
+				}
 			} else {
 				val infoText = getString(string.title_no_previous_item_to_play)
 				showQuickPlayerInfo(infoText)
 			}
+		}
+	}
+
+	fun enablePrivateSession() {
+		safeSelfReference?.let { playerActivity ->
+			if (playerActivity.isPrivateSessionAllowed) return
+			authenticate(activity = playerActivity, onResult = { isSuccess ->
+				if (isSuccess) {
+					playerActivity.isPrivateSessionAllowed = true
+					playerActivity.hasMadeDecisionOverPrivateAccess = true
+				} else {
+					playerActivity.doSomeVibration(50)
+					showToast(playerActivity, msgId = string.title_authentication_failed)
+				}
+			})
 		}
 	}
 

@@ -48,6 +48,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import lib.device.SecureFileUtil.authenticate
 import lib.device.ShareUtility
 import lib.device.ShareUtility.openApkFile
 import lib.files.FileSystemUtility.endsWithExtension
@@ -863,8 +864,16 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			downloadDataModel: DownloadDataModel,
 			safeMotherActivityRef: MotherActivity?
 		) {
+			val activityRef = safeMotherActivityRef
+			if (activityRef == null) return
 			holderLayoutView.findViewById<View>(R.id.main_container).setOnClickListener {
-				playTheMedia(downloadDataModel, safeMotherActivityRef)
+				val globalSettings = downloadDataModel.globalSettings
+				val downloadLocation = globalSettings.defaultDownloadLocation
+				if (downloadLocation == PRIVATE_FOLDER) {
+					authenticate(activity = activityRef, onResult = { isSuccess ->
+						if (isSuccess) playTheMedia(downloadDataModel, activityRef)
+					})
+				} else playTheMedia(downloadDataModel, activityRef)
 			}
 		}
 

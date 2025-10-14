@@ -5,7 +5,7 @@ import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.AuthenticationResult
 import androidx.core.content.ContextCompat
-import app.core.bases.BaseFragment
+import app.core.bases.BaseActivity
 import com.aio.R
 import lib.texts.CommonTextUtils.getText
 import lib.ui.builders.ToastView.Companion.showToast
@@ -14,12 +14,8 @@ object SecureFileUtil {
 	private const val KEY_ALIAS = "PrivateFileKey"
 	private const val ANDROID_KEYSTORE = "AndroidKeyStore"
 
-	fun authenticate(fragment: BaseFragment, onResult: (Boolean) -> Unit) {
-		val activity = fragment.safeBaseActivityRef
-		if (activity == null) {
-			onResult(false); return
-		}
-
+	fun authenticate(activity: BaseActivity?, onResult: (Boolean) -> Unit) {
+		if (activity == null) return
 		// Use AndroidX Biometric PromptInfo
 		val promptInfo = BiometricPrompt.PromptInfo.Builder()
 			.setTitle(getText(R.string.title_unlock_requires))
@@ -27,7 +23,7 @@ object SecureFileUtil {
 			.build()
 
 		val executor = ContextCompat.getMainExecutor(activity)
-		val biometricPrompt = BiometricPrompt(fragment, executor,
+		val biometricPrompt = BiometricPrompt(activity, executor,
 			object : BiometricPrompt.AuthenticationCallback() {
 				override fun onAuthenticationSucceeded(result: AuthenticationResult) {
 					onResult(true)

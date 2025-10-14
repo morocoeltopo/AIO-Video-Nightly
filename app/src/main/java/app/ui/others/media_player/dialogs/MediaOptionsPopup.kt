@@ -2,6 +2,7 @@ package app.ui.others.media_player.dialogs
 
 import android.content.Intent
 import android.view.View
+import android.widget.CheckBox
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import app.ui.others.media_player.MediaPlayerActivity
@@ -46,6 +47,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	 * Displays the media options popup.
 	 */
 	fun show() {
+		refreshPrivateSession()
 		popupBuilder.show()
 	}
 
@@ -81,8 +83,8 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 					R.id.btn_convert_to_audio to { close(); convertAudio() },
 					R.id.btn_open_in_another to { close(); openMediaFile() },
 					R.id.btn_media_info to { close(); openMediaFileInfo() },
-					R.id.btn_private_session to { close(); togglePrivateSession() }
-							R . id . btn_discover_video to { close(); discoverMore() }
+					R.id.btn_private_session to { close(); togglePrivateSession() },
+					R.id.btn_discover_video to { close(); discoverMore() }
 				).forEach { (id, action) ->
 					setClickListener(id) { action() }
 				}
@@ -146,7 +148,22 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	}
 
 	private fun togglePrivateSession() {
+		safeMediaPlayerActivityRef?.let { playerActivity ->
+			if (playerActivity.isPrivateSessionAllowed) {
+				playerActivity.isPrivateSessionAllowed = false
+				playerActivity.hasMadeDecisionOverPrivateAccess = false
+			} else playerActivity.enablePrivateSession()
+			refreshPrivateSession()
+		}
+	}
 
+	private fun refreshPrivateSession() {
+		safeMediaPlayerActivityRef?.let { playerActivity ->
+			val popupView = popupBuilder.getPopupView()
+			popupView.findViewById<CheckBox>(R.id.checkbox_private_session).let {
+				it.isChecked = playerActivity.isPrivateSessionAllowed
+			}
+		}
 	}
 
 	/**

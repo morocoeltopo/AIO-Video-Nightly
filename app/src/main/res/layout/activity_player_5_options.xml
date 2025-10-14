@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Media options dialog layout with action buttons -->
+<?xml version="1.0" encoding="utf-8"?><!-- Media options dialog layout with action buttons -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -43,8 +42,8 @@
 					android:fontFamily="@font/application_font_family"
 					android:text="@string/title_media_options"
 					android:textColor="@color/color_text_primary"
-					android:textSize="@dimen/normal_text_size"
-					android:textFontWeight="600" />
+					android:textFontWeight="600"
+					android:textSize="@dimen/normal_text_size" />
 			</LinearLayout>
 
 			<!-- Delete file option -->
@@ -154,6 +153,43 @@
 					android:text="@string/title_open_video_site"
 					android:textColor="@color/color_text_primary"
 					android:textSize="@dimen/normal_text_size" />
+			</LinearLayout>
+
+			<!--Private playback session option -->
+			<LinearLayout
+				android:id="@+id/btn_private_session"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:layout_marginStart="@dimen/_10"
+				android:layout_marginTop="@dimen/_0"
+				android:layout_marginEnd="@dimen/_10"
+				android:layout_marginBottom="@dimen/_0"
+				android:background="@drawable/ic_button_negative_selector"
+				android:clickable="true"
+				android:orientation="vertical"
+				android:visibility="visible"
+				tools:ignore="TouchTargetSizeCheck">
+
+				<CheckBox
+					android:id="@+id/checkbox_private_session"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="@dimen/_8"
+					android:background="@drawable/ic_button_negative_selector"
+					android:button="@null"
+					android:clickable="false"
+					android:drawableStart="@drawable/ic_button_radio_selector"
+					android:drawableEnd="@drawable/ic_button_play_arrow_small"
+					android:drawablePadding="@dimen/_5"
+					android:drawableTint="@color/color_secondary"
+					android:ellipsize="end"
+					android:fontFamily="@font/application_font_family"
+					android:gravity="center_vertical"
+					android:maxLines="1"
+					android:text="@string/title_private_session"
+					android:textColor="@color/color_text_primary"
+					android:textSize="@dimen/normal_text_size"
+					tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 			</LinearLayout>
 
 			<!-- File information option -->
