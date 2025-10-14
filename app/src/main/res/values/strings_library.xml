@@ -68,6 +68,7 @@
 	<string name="text_feature_is_experimental_msg">This feature is currently experimental. <b>We don\'t recommend switching the language.</b></string>
 	<string name="text_cation_msg_of_restarting_application"><b>You are about to restart the application.</b> Please proceed with caution, and only if you are sure.</string>
 	<string name="text_battery_optimization_msg"><b>To ensure downloads are not interrupted</b>, exclude this app from battery optimization.</string>
+	<string name="text_unlock_before_access_private_file">Please confirm your device PIN, pattern, password, or biometric to securely access this private file.</string>
 
 	<string name="text_fb_how_to_guide_1">Tap the <b>Share 📤</b> button below the video or reel, then <b>Copy link 🔗</b> to copy its address.</string>
 	<string name="text_yt_how_to_guide_1">Tap the <b>Share 📤</b> button below the video, then <b>scroll ↔️</b> to find the <b>More...</b> option.</string>
@@ -556,5 +557,8 @@
 	<string name="title_no_checksum_header_found">No Checksum Header Found</string>
 	<string name="title_download_at_private_folder">Download The File To <b>Private Folder</b></string>
 	<string name="title_failed_extract_video_info">Failed To Extract Video Info</string>
+	<string name="title_unlock_requires">Unlock Requires</string>
+	<string name="title_setup_device_password">Set Up Device Lock First</string>
+	<string name="title_authentication_failed">Authentication Failed Or Cancelled</string>
 
 </resources>
