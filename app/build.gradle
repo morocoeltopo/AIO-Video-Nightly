@@ -1,45 +1,22 @@
-// Gradle configuration for Android application module
-
 plugins {
-    // Android application plugin
     alias(libs.plugins.android.application)
-
-    // Kotlin Android plugin
     alias(libs.plugins.kotlin.android)
-
-    // Kotlin Kapt (annotation processing, needed for DSL-JSON.)
     alias(libs.plugins.kotlin.kapt)
 }
 
 android {
-    // Unique namespace for app’s R and BuildConfig
     namespace 'com.aio'
-
-    // Android SDK used to compile the app
     compileSdkVersion 36
-
-    // NDK version used for native builds
     ndkVersion '28.0.12916984 rc3'
 
     defaultConfig {
-        // Application package name
         applicationId "com.aio.video_downloader"
-
-        // Minimum and target Android versions
         minSdk 28
         targetSdk 36
-
-        // App versioning
         versionCode 81
         versionName '2025.10.03'
-
-        // Use vector drawables support
         vectorDrawables.useSupportLibrary = true
-
-        // Enable MultiDex support
         multiDexEnabled true
-
-        // Supported native architectures
         ndk {
             abiFilters "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
         }
@@ -47,16 +24,14 @@ android {
 
     buildTypes {
         debug {
-            // Debug build settings
             debuggable true
             minifyEnabled false
             shrinkResources false
             buildConfigField "boolean", "IS_DEBUG_MODE_ON", "true"
         }
         release {
-            // Release build settings
-            minifyEnabled true          // Enable code shrinking (R8/ProGuard)
-            shrinkResources true        // Remove unused resources
+            minifyEnabled true
+            shrinkResources true
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard-rules.pro'
@@ -64,56 +39,43 @@ android {
         }
     }
 
-    // Generate NDK debug symbols in release builds
     buildTypes.release.ndk.debugSymbolLevel = "FULL"
-
-    // Enable BuildConfig generation
     android.buildFeatures.buildConfig = true
 
     packagingOptions {
-        // Exclude unnecessary files from final APK/AAB
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/*.kotlin_module'
-
-        // Use legacy JNI packaging
         jniLibs.useLegacyPackaging = true
     }
 
     splits {
         abi {
-            // Generate APKs for each ABI
             enable true
             reset()
             include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-            universalApk true // Also generate a universal APK
+            universalApk true
         }
     }
 
     compileOptions {
-        // Enable Java 17 APIs (desugaring for older devices)
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlin {
-        // Use Java 17 toolchain for Kotlin
         jvmToolchain(17)
     }
 
     dependenciesInfo {
-        // Exclude dependency metadata
         includeInBundle false
         includeInApk false
     }
 }
 
 dependencies {
-    // Local JAR libraries
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    // AndroidX + UI
     implementation libs.androidx.appcompat
     implementation libs.androidx.viewpager2
     implementation libs.androidx.cardview
@@ -123,53 +85,32 @@ dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.biometric
     implementation libs.androidx.lifecycle.process
-
-    // Kotlin Coroutines (async support)
     implementation libs.kotlin.coroutines.core
     implementation libs.kotlin.coroutines
-
-    // Media / ExoPlayer
     implementation libs.media3.exoplayer
     implementation libs.media3.exoplayer.hls
     implementation libs.media3.exoplayer.dash
     implementation libs.media3.datasource
     implementation libs.media3.ui
     implementation libs.media3.session
-
-    // Fast Serialization (binary)
+    implementation libs.jellyfin.ffmpeg
     implementation libs.fst
-
-    // HTML parser
     implementation libs.jsoup
-
-    // GSON & DSL-JSON (high-performance JSON)
     implementation libs.gson
     implementation(libs.dsljson)
     kapt(libs.dsljson)
     compileOnly(libs.jsonbind.api)
-
-    // Networking
     implementation libs.retrofit
     implementation libs.retrofit.converter.gson
     implementation libs.okhttp
-
-    // UI / Animations / Images
     implementation libs.lottie
     implementation libs.glide
-
-    // Permissions / Storage
     implementation libs.permissionx
     implementation libs.saf.storage
-
-    // Backend SDK
     implementation libs.parse
-
-    // Downloading (yt-dlp, ffmpeg, NewPipe extractor)
     implementation libs.ytdlp.library
     implementation libs.ytdlp.ffmpeg
     implementation libs.newpipe.extractor
     implementation libs.mp4.iso.parser
-
-    // Java 11 desugaring library
     coreLibraryDesugaring libs.desugar.jdk.libs.nio
 }
