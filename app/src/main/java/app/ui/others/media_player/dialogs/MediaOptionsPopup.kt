@@ -44,7 +44,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 			popupBuilder = PopupBuilder(
 				activityInf = safeActivityRef,
 				popupLayoutId = layout.activity_player_5_options,
-				popupAnchorView = safeActivityRef.buttonOptionActionbar
+				popupAnchorView = safeActivityRef.optionsButton
 			)
 		}
 	}

@@ -24,8 +24,8 @@ import app.ui.main.MotherActivity
 import app.ui.main.fragments.downloads.dialogs.DownloadFileRenamer
 import app.ui.main.fragments.downloads.dialogs.DownloadInfoTracker
 import app.ui.others.media_player.MediaPlayerActivity
-import app.ui.others.media_player.MediaPlayerActivity.Companion.STREAM_MEDIA_TITLE
-import app.ui.others.media_player.MediaPlayerActivity.Companion.STREAM_MEDIA_URL
+import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_STREAM_TITLE
+import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_STREAM_URL
 import com.aio.R
 import com.aio.R.layout
 import com.aio.R.string
@@ -603,8 +603,8 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				context.startActivity(Intent(context, destinationActivity).apply {
 					flags = context.getSingleTopIntentFlags()
 					downloadDataModel?.let {
-						putExtra(STREAM_MEDIA_URL, it.fileURL)
-						putExtra(STREAM_MEDIA_TITLE, it.fileName)
+						putExtra(INTENT_EXTRA_STREAM_URL, it.fileURL)
+						putExtra(INTENT_EXTRA_STREAM_TITLE, it.fileName)
 					}
 				})
 
@@ -642,12 +642,12 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 
 			activity.startActivity(Intent(activity, playerClass).apply {
 				flags = activity.getSingleTopIntentFlags()
-				putExtra(STREAM_MEDIA_URL, streamableMediaUrl)
+				putExtra(INTENT_EXTRA_STREAM_URL, streamableMediaUrl)
 
 				// Build proper title with extension
 				val selectedExtension = videoFormat.formatExtension
 				val streamingTitle = "${videoInfo.videoTitle}.$selectedExtension"
-				putExtra(STREAM_MEDIA_TITLE, streamingTitle)
+				putExtra(INTENT_EXTRA_STREAM_TITLE, streamingTitle)
 			})
 
 			logger.d("openMediaPlayerActivity() -> Launched MediaPlayerActivity with title: ${videoInfo.videoTitle}")

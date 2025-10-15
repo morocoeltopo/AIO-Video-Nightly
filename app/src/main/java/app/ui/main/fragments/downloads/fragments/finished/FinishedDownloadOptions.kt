@@ -26,9 +26,9 @@ import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.ui.main.fragments.downloads.dialogs.DownloadFileRenamer
 import app.ui.main.fragments.downloads.dialogs.DownloadInfoTracker
 import app.ui.others.media_player.MediaPlayerActivity
-import app.ui.others.media_player.MediaPlayerActivity.Companion.FROM_FINISHED_DOWNLOADS_LIST
-import app.ui.others.media_player.MediaPlayerActivity.Companion.PLAY_MEDIA_FILE_PATH
-import app.ui.others.media_player.MediaPlayerActivity.Companion.WHERE_DID_YOU_COME_FROM
+import app.ui.others.media_player.MediaPlayerActivity.Companion.SOURCE_FINISHED_DOWNLOADS
+import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_MEDIA_FILE_PATH
+import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_SOURCE_ORIGIN
 import app.ui.others.media_player.dialogs.Mp4ToAudioConverterDialog.showMp4ToAudioConverterDialog
 import com.aio.R
 import lib.device.ShareUtility.openApkFile
@@ -648,8 +648,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * Implementation details:
 	 * - Passes important extras to the media player activity:
 	 *   - [DOWNLOAD_MODEL_ID_KEY]: ID of the download model for tracking.
-	 *   - [PLAY_MEDIA_FILE_PATH]: Boolean flag to instruct playback from file path.
-	 *   - [WHERE_DID_YOU_COME_FROM]: Used for navigation context ("Finished Downloads List").
+	 *   - [INTENT_EXTRA_MEDIA_FILE_PATH]: Boolean flag to instruct playback from file path.
+	 *   - [INTENT_EXTRA_SOURCE_ORIGIN]: Used for navigation context ("Finished Downloads List").
 	 * - Uses activity fade animation when starting playback.
 	 *
 	 * ⚠ Requires `UnstableApi` opt-in due to usage of experimental APIs from Media3.
@@ -672,8 +672,8 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 								).apply {
 									flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 									putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.id)
-									putExtra(PLAY_MEDIA_FILE_PATH, true)
-									putExtra(WHERE_DID_YOU_COME_FROM, FROM_FINISHED_DOWNLOADS_LIST)
+									putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
+									putExtra(INTENT_EXTRA_SOURCE_ORIGIN, SOURCE_FINISHED_DOWNLOADS)
 								}
 							)
 

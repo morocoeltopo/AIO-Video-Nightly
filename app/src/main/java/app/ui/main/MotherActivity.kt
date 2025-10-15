@@ -23,7 +23,7 @@ import app.ui.main.fragments.downloads.DownloadsFragment
 import app.ui.main.fragments.downloads.intercepter.SharedVideoURLIntercept
 import app.ui.main.fragments.home.HomeFragment
 import app.ui.main.fragments.settings.SettingsFragment
-import app.ui.others.media_player.MediaPlayerActivity.Companion.WHERE_DID_YOU_COME_FROM
+import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_SOURCE_ORIGIN
 import com.aio.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -389,7 +389,7 @@ class MotherActivity : BaseActivity() {
 	@UnstableApi
 	private fun openDownloadsFragmentIfIntended() {
 		logger.d("Checking if should open DownloadsFragment from intent")
-		intent.getIntExtra(WHERE_DID_YOU_COME_FROM, -2).let { result ->
+		intent.getIntExtra(INTENT_EXTRA_SOURCE_ORIGIN, -2).let { result ->
 			if (result == -2) {
 				logger.d("No WHERE_DID_YOU_COME_FROM extra found")
 				return

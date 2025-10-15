@@ -40,9 +40,9 @@ import app.ui.main.fragments.browser.activities.HistoryActivity
 import app.ui.main.fragments.browser.webengine.WebViewEngine
 import app.ui.main.guides.GuidePlatformPicker
 import app.ui.others.media_player.MediaPlayerActivity
-import app.ui.others.media_player.MediaPlayerActivity.Companion.FROM_FINISHED_DOWNLOADS_LIST
-import app.ui.others.media_player.MediaPlayerActivity.Companion.PLAY_MEDIA_FILE_PATH
-import app.ui.others.media_player.MediaPlayerActivity.Companion.WHERE_DID_YOU_COME_FROM
+import app.ui.others.media_player.MediaPlayerActivity.Companion.SOURCE_FINISHED_DOWNLOADS
+import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_MEDIA_FILE_PATH
+import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_SOURCE_ORIGIN
 import com.aio.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -987,8 +987,8 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 							Intent(safeMotherActivityRef, MediaPlayerActivity::class.java).apply {
 								flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 								putExtra(DOWNLOAD_MODEL_ID_KEY, downloadDataModel.id)
-								putExtra(PLAY_MEDIA_FILE_PATH, true)
-								putExtra(WHERE_DID_YOU_COME_FROM, FROM_FINISHED_DOWNLOADS_LIST)
+								putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
+								putExtra(INTENT_EXTRA_SOURCE_ORIGIN, SOURCE_FINISHED_DOWNLOADS)
 							})
 						animActivityFade(safeMotherActivityRef)
 					} else {
