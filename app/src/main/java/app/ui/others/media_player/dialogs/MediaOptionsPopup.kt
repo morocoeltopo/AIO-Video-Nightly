@@ -72,7 +72,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 
 	private fun deleteFile() {
 		safePlayerActivityRef?.let { safeActivityRef ->
-			if (safeActivityRef.isPlayingStreamingVideo()) {
+			if (safeActivityRef.isStreamingVideoPlaying()) {
 				showMessageDialog(
 					baseActivityInf = safeActivityRef,
 					isTitleVisible = true,
@@ -138,7 +138,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 
 	private fun discoverMore() {
 		safePlayerActivityRef?.let { playerActivity ->
-			if (playerActivity.isPlayingStreamingVideo()) {
+			if (playerActivity.isStreamingVideoPlaying()) {
 				showMessageDialog(
 					baseActivityInf = playerActivity,
 					isTitleVisible = true,

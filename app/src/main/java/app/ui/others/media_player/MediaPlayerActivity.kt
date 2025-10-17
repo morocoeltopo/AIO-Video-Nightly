@@ -112,7 +112,7 @@ import kotlin.math.abs
 class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	private val logger = LogHelperUtils.from(javaClass)
-	private val selfRef = WeakReference(this).get()
+	private val selfActivityRef = WeakReference(this).get()
 
 	companion object {
 		const val INTENT_EXTRA_DOWNLOAD_ID = "EXTRA_DOWNLOAD_ID"
@@ -174,8 +174,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	override fun onAfterLayoutRender() {
 		initializeActivityViews().let {
-			initVideoPlayer().let {
-				initializeSwipeGestureSeeking(targetView = overlayTouchArea)
+			initializePlayer().let {
+				setupSwipeSeekGestures(targetView = overlayTouchArea)
 				playVideoFromIntent().let {
 					hideView(nightModeOverlay, true, 1000)
 				}
@@ -231,7 +231,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @param playbackState The new playback state
 	 */
 	override fun onPlaybackStateChanged(playbackState: Int) {
-		if (playbackState == Player.STATE_ENDED) onPlaybackCompleted()
+		if (playbackState == Player.STATE_ENDED) handlePlaybackCompletion()
 		else takeIf { isPlayerBufferingOrGettingReady(playbackState) }
 			?.let { updateVideoProgressContainer() }
 	}
@@ -260,9 +260,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @param error The playback error
 	 */
 	override fun onPlayerError(error: PlaybackException) {
-		error.printStackTrace()
+		logger.e("onPlayerError:", error)
 		showMessageDialog(
-			baseActivityInf = selfRef,
+			baseActivityInf = selfActivityRef,
 			titleText = getString(string.title_couldnt_play_media),
 			isTitleVisible = true,
 			isCancelable = true,
@@ -291,7 +291,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Checks if currently playing a streaming video.
 	 * @return True if streaming video is playing
 	 */
-	fun isPlayingStreamingVideo(): Boolean {
+	fun isStreamingVideoPlaying(): Boolean {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
 			intent.getParcelableExtra(INTENT_EXTRA_STREAM_URL, Uri::class.java)?.let { return true }
 		else intent.getStringExtra(INTENT_EXTRA_STREAM_URL)?.let { if (isValidURL(it)) return true }
@@ -303,13 +303,13 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @param isPlaying True if player is currently playing
 	 */
 	override fun onIsPlayingChanged(isPlaying: Boolean) {
-		selfRef?.let { safeActivityRef ->
+		selfActivityRef?.let { safeActivityRef ->
 			let {
 				if (isPlaying) aioTimer.register(safeActivityRef)
 				else aioTimer.unregister(safeActivityRef)
 			}.apply {
 				val incomingVideoTitle = intent.getStringExtra(INTENT_EXTRA_STREAM_TITLE)
-				if (incomingVideoTitle.isNullOrEmpty()) updateCurrentVideoName()
+				if (incomingVideoTitle.isNullOrEmpty()) refreshCurrentVideoTitle()
 				updateIconOfVideoPlayPauseButton(isPlaying)
 			}
 		}
@@ -347,21 +347,15 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		})
 	}
 
-	/**
-	 * Shows quick player info message.
-	 * @param msgText The message to display
-	 */
 	fun showQuickPlayerInfo(msgText: String) {
 		quickInfoText.apply { visibility = VISIBLE; text = msgText }
 		quickInfoRunnable?.let { quickInfoHandler.removeCallbacks(it) }
-		quickInfoRunnable = Runnable {
-			quickInfoText.apply { visibility = GONE; text = "" }
-		}; quickInfoHandler.postDelayed(quickInfoRunnable!!, 1500)
+		quickInfoRunnable = Runnable { quickInfoText.apply { visibility = GONE; text = "" } }
+		quickInfoHandler.postDelayed(quickInfoRunnable!!, 1500)
 	}
 
-
 	private fun initializeActivityViews() {
-		selfRef?.let { _ ->
+		selfActivityRef?.let { _ ->
 			// Initialize ExoPlayer view and other UI components
 			playerView = findViewById(id.video_player_view)
 			quickInfoText = findViewById(id.txt_video_quick_info)
@@ -389,7 +383,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 			videoTitleText = findViewById(id.txt_video_file_name)
 			videoTitleText.apply {
-				isSelected = true; text = getDownloadModelFromIntent()?.fileName ?: ""
+				isSelected = true; text = extractDownloadModelFromIntent()?.fileName ?: ""
 			}
 
 			optionsButton = findViewById(id.btn_actionbar_option)
@@ -398,7 +392,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			// Initialize progress display
 			currentTimeText = findViewById(id.txt_video_progress_timer)
 			progressBar = findViewById(id.video_progress_bar)
-			progressBar.apply { addListener(generateOnScrubberListener()) }
+			progressBar.apply { addListener(createScrubberSeekListener()) }
 
 			durationText = findViewById(id.txt_video_duration)
 
@@ -423,50 +417,58 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		}
 	}
 
-	/**
-	 * Initializes the ExoPlayer instance with proper configuration.
-	 */
-	private fun initVideoPlayer() {
-		selfRef?.let { safeActivityRef ->
-			// Configure renderers factory
-			val defaultRenderersFactory = DefaultRenderersFactory(safeActivityRef)
+	private fun initializePlayer() {
+		selfActivityRef?.let { activityRef ->
+			// Renderers factory with FFmpeg extension preference
+			val renderersFactory = DefaultRenderersFactory(activityRef)
 				.setExtensionRendererMode(EXTENSION_RENDERER_MODE_PREFER)
 				.forceEnableMediaCodecAsynchronousQueueing()
 				.setEnableDecoderFallback(true)
+				.setEnableAudioTrackPlaybackParams(true)
 
-			// Set up track selector
-			trackSelector = DefaultTrackSelector(safeActivityRef)
-			player =
-				ExoPlayer.Builder(safeActivityRef, defaultRenderersFactory)
-					.setTrackSelector(trackSelector)
-					.build().apply { addListener(safeActivityRef) }
-			player.setForegroundMode(false)
-			player.setSeekParameters(CLOSEST_SYNC)
+			// Track selector (set preferred audio language)
+			trackSelector = DefaultTrackSelector(activityRef).apply {
+				setParameters(buildUponParameters().setPreferredAudioLanguage("eng"))
+			}
 
-			// Configure player view
+			// Build ExoPlayer with renderers factory
+			// (FFmpeg will be automatically picked for unsupported codecs)
+			player = ExoPlayer.Builder(activityRef, renderersFactory)
+				.setTrackSelector(trackSelector)
+				.setUseLazyPreparation(true)
+				.setHandleAudioBecomingNoisy(true)
+				.setSeekForwardIncrementMs(seekIntervalMs)
+				.setSeekBackIncrementMs(seekIntervalMs)
+				.build().apply {
+					addListener(activityRef)
+					setForegroundMode(false)
+					setSeekParameters(CLOSEST_SYNC)
+				}
+
+			// Attach player to PlayerView
 			playerView.player = player
+
+			// Configure subtitles
 			playerView.subtitleView?.apply {
 				setFixedTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
 				setApplyEmbeddedStyles(true)
 				setApplyEmbeddedFontSizes(false)
 				setCues(emptyList())
-				val playerStyle = CaptionStyleCompat(
-					getColor(safeActivityRef, color.transparent_white),
-					getColor(safeActivityRef, color.transparent),
-					getColor(safeActivityRef, color.transparent),
-					EDGE_TYPE_NONE,
-					getColor(safeActivityRef, color.color_primary_variant),
-					Typeface.DEFAULT_BOLD
-				); setStyle(playerStyle)
+				setStyle(
+					CaptionStyleCompat(
+						getColor(activityRef, color.transparent_white),
+						getColor(activityRef, color.transparent),
+						getColor(activityRef, color.transparent),
+						EDGE_TYPE_NONE,
+						getColor(activityRef, color.color_primary_variant),
+						Typeface.DEFAULT_BOLD
+					)
+				)
 			}
 		}
 	}
 
-	/**
-	 * Generates scrubber listener for progress bar.
-	 * @return Configured VideoScrubberListener instance
-	 */
-	private fun generateOnScrubberListener(): VideoScrubberListener {
+	private fun createScrubberSeekListener(): VideoScrubberListener {
 		return object : VideoScrubberListener() {
 			override fun onScrubStart(timeBar: TimeBar, position: Long) = Unit
 
@@ -476,51 +478,32 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		}
 	}
 
-	/**
-	 * Updates the current video name display.
-	 */
-	private fun updateCurrentVideoName() {
-		val currentItem = player.currentMediaItem
-		val currentMediaUri = currentItem?.localConfiguration?.uri.toString()
-		if (currentMediaUri.isEmpty()) return
+	private fun refreshCurrentVideoTitle() {
+		val mediaItem = player.currentMediaItem
+		val mediaUriString = mediaItem?.localConfiguration?.uri.toString()
+		if (mediaUriString.isEmpty()) return
 
-		val currentFileName = currentMediaUri.toUri().lastPathSegment ?: return
-		updateMediaTitleWith(currentFileName)
+		val videoFileName = mediaUriString.toUri().lastPathSegment ?: return
+		applyVideoTitle(videoFileName)
 	}
 
-	/**
-	 * Updates media title display.
-	 * @param videoName The name to display
-	 */
-	private fun updateMediaTitleWith(videoName: CharSequence) {
+	private fun applyVideoTitle(videoName: CharSequence) {
 		::videoTitleText.isInitialized.takeIf { it }.let {
 			if (videoTitleText.text != videoName) videoTitleText.text = videoName
 		}
 	}
 
-	/**
-	 * Gets current playback position.
-	 * @return Current position in milliseconds
-	 */
-	private fun getCurrentPosition(): Long = player.currentPosition
+	private fun getPlaybackPosition(): Long = player.currentPosition
 
-	/**
-	 * Gets media duration.
-	 * @return Duration in milliseconds
-	 */
-	private fun getDuration(): Long = player.duration
+	private fun getVideoDuration(): Long = player.duration
 
-	/**
-	 * Initializes swipe gesture seeking on target view.
-	 * @param targetView The view to attach gesture detector to
-	 */
-	private fun initializeSwipeGestureSeeking(targetView: View) {
-		var isSeeking = false
-		var initialSeekPosition = 0L
-		var wasPlayerPlaying = false
-		var isScrolling = false
-		var isLongPressActive = false
-		val longPressTimeout = 500L
+	private fun setupSwipeSeekGestures(targetView: View) {
+		var isUserSeeking = false
+		var startSeekPosition = 0L
+		var wasPlayingBeforeSeek = false
+		var isFingerScrolling = false
+		var isLongPressTriggered = false
+		val longPressDelay = 500L
 		val longPressHandler = Handler(Looper.getMainLooper())
 
 		// Set up gesture detector for seeking
@@ -528,15 +511,18 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			targetView.context,
 			object : GestureDetector.SimpleOnGestureListener() {
 				override fun onDown(e: MotionEvent): Boolean {
-					isScrolling = false; isLongPressActive = false
+					isFingerScrolling = false
+					isLongPressTriggered = false
 					longPressHandler.postDelayed({
-						if (!isScrolling && !isSeeking) {
-							wasPlayerPlaying = player.isPlaying
-							if (wasPlayerPlaying) {
-								player.pause(); isLongPressActive = true
+						if (!isFingerScrolling && !isUserSeeking) {
+							wasPlayingBeforeSeek = player.isPlaying
+							if (wasPlayingBeforeSeek) {
+								player.pause()
+								isLongPressTriggered = true
 							}
 						}
-					}, longPressTimeout); return true
+					}, longPressDelay)
+					return true
 				}
 
 				override fun onScroll(
@@ -544,31 +530,35 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					distanceX: Float, distanceY: Float,
 				): Boolean {
 					longPressHandler.removeCallbacksAndMessages(null)
-					if (!isScrolling) {
-						isScrolling = true; wasPlayerPlaying = player.isPlaying
-						if (wasPlayerPlaying) player.pause()
-						isSeeking = true; initialSeekPosition = getCurrentPosition()
+					if (!isFingerScrolling) {
+						isFingerScrolling = true
+						wasPlayingBeforeSeek = player.isPlaying
+						if (wasPlayingBeforeSeek) player.pause()
+						isUserSeeking = true
+						startSeekPosition = getPlaybackPosition()
 					}
 
-					val duration = getDuration()
-					if (isSeeking && e1 != null && duration > 0) {
+					val duration = getVideoDuration()
+					if (isUserSeeking && e1 != null && duration > 0) {
 						val deltaX = e2.x - e1.x
 						val threshold = 120
 
 						if (abs(deltaX) > threshold && abs(distanceX) > abs(distanceY)) {
 							val seekOffset = ((deltaX / targetView.width) * 25000).toLong()
 							val newSeekPosition =
-								(initialSeekPosition + seekOffset).coerceIn(0, getDuration())
+								(startSeekPosition + seekOffset).coerceIn(0, getVideoDuration())
 							progressBar.setPosition(newSeekPosition)
 							player.seekTo(newSeekPosition)
-							showQuickPlayerInfo(formatTimeDuration(newSeekPosition))
+							showQuickPlayerInfo(formatPlaybackTime(newSeekPosition))
 							return true
 						}
-					}; return false
+					}
+					return false
 				}
 
 				override fun onSingleTapUp(e: MotionEvent): Boolean {
-					toggleVisibilityOfPlaybackController(shouldTogglePlayback = false); return false
+					toggleVisibilityOfPlaybackController(shouldTogglePlayback = false)
+					return false
 				}
 
 				override fun onDoubleTap(e: MotionEvent): Boolean {
@@ -582,172 +572,145 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			when (event.action) {
 				MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
 					longPressHandler.removeCallbacksAndMessages(null)
-					if (isSeeking) {
-						isSeeking = false; if (wasPlayerPlaying) player.play()
-					} else if (isLongPressActive) {
-						isLongPressActive = false; player.play()
+					if (isUserSeeking) {
+						isUserSeeking = false
+						if (wasPlayingBeforeSeek) player.play()
+					} else if (isLongPressTriggered) {
+						isLongPressTriggered = false
+						player.play()
 					}
 					touchedView.performClick()
 				}
-			}; true
+			}
+			true
 		}
 	}
 
-	/**
-	 * Formats time duration for display.
-	 * @param milliseconds Duration in milliseconds
-	 * @return Formatted time string (MM:SS)
-	 */
-	fun formatTimeDuration(milliseconds: Long): String {
+	fun formatPlaybackTime(milliseconds: Long): String {
 		val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
 		val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds) % 60
 		return String.format(Locale.US, "%02d:%02d", minutes, seconds)
 	}
 
-	/**
-	 * Handles playback completion.
-	 */
-	private fun onPlaybackCompleted() {
-		if (isPlayingStreamingVideo()) return
+	private fun handlePlaybackCompletion() {
+		if (isStreamingVideoPlaying()) return
 
-		val currentItem = player.currentMediaItem
-		val currentMediaUri = currentItem?.localConfiguration?.uri.toString()
-		if (currentMediaUri.isEmpty()) return
+		val currentMediaItem = player.currentMediaItem
+		val mediaUri = currentMediaItem?.localConfiguration?.uri.toString()
+		if (mediaUri.isEmpty()) return
 
-		val mediaFiles = getAllMediaRelatedDownloadDataModels()
-		val matchedIndex = getFirstMatchingModelIndex(currentMediaUri, mediaFiles)
-		if (matchedIndex == -1) return
-		playbackPosition = 0; playVideoFromDownloadModel(mediaFiles[matchedIndex])
+		val downloadedMediaList = getAllMediaRelatedDownloadDataModels()
+		val matchedMediaIndex = getFirstMatchingModelIndex(mediaUri, downloadedMediaList)
+		if (matchedMediaIndex == -1) return
+		playbackPosition = 0
+		playDownloadedVideo(downloadedMediaList[matchedMediaIndex])
 	}
 
-	/**
-	 * Starts playback based on intent data.
-	 */
 	private fun playVideoFromIntent() {
-		getDownloadModelFromIntent()?.let { playVideoFromDownloadModel(it) } ?: run {
+		extractDownloadModelFromIntent()?.let { playDownloadedVideo(it) } ?: run {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 				intent.getParcelableExtra(INTENT_EXTRA_STREAM_URL, Uri::class.java)
-					?.let { streamVideoWithUri(it); return }
-			} else intent.getStringExtra(INTENT_EXTRA_STREAM_URL)?.let { streamVideoWithURL(it) }
+					?.let { startStreamingPlayback(it); return }
+			} else intent.getStringExtra(INTENT_EXTRA_STREAM_URL)?.let {
+				streamVideoFromUrl(it)
+			}
 		}
 	}
 
-	/**
-	 * Plays streaming video from URI.
-	 * @param fileUri The video URI
-	 */
-	private fun streamVideoWithUri(fileUri: Uri) {
-		val incomingVideoTitle = intent.getStringExtra(INTENT_EXTRA_STREAM_TITLE)
-		if (!incomingVideoTitle.isNullOrEmpty()) updateMediaTitleWith(videoName = incomingVideoTitle)
-		else getFileFromUri(fileUri)?.let { updateMediaTitleWith(videoName = it.name) }
+	private fun startStreamingPlayback(fileUri: Uri) {
+		val videoTitle = intent.getStringExtra(INTENT_EXTRA_STREAM_TITLE)
+		if (!videoTitle.isNullOrEmpty()) applyVideoTitle(videoName = videoTitle)
+		else getFileFromUri(fileUri)?.let { applyVideoTitle(videoName = it.name) }
 
 		val mediaItem = MediaItem.fromUri(fileUri)
 		player.setMediaItem(mediaItem)
 		player.prepare()
 		resumePlayer()
 
-		val incomingIntent = getDownloadModelFromIntent()
-		val audioMediaFie = incomingIntent?.getDestinationDocumentFile()
-		ifAudioShowAlbumArt(audioMediaFie)
+		val downloadModel = extractDownloadModelFromIntent()
+		val audioFile = downloadModel?.getDestinationDocumentFile()
+		showAlbumArtIfAudio(audioFile)
 	}
 
-	/**
-	 * Gets download model from intent.
-	 * @return DownloadDataModel or null if not found
-	 */
-	private fun getDownloadModelFromIntent(): DownloadDataModel? {
-		intent?.let { intent ->
-			val downloadModelID = intent.getIntExtra(DOWNLOAD_MODEL_ID_KEY, -1)
+	private fun extractDownloadModelFromIntent(): DownloadDataModel? {
+		intent?.let { incomingIntent ->
+			val downloadModelID = incomingIntent.getIntExtra(DOWNLOAD_MODEL_ID_KEY, -1)
 			if (downloadModelID > -1) downloadSystem.finishedDownloadDataModels
 				.find { it.id == downloadModelID }?.let { return it }
 		}; return null
 	}
 
-	/**
-	 * Plays video from download model.
-	 * @param downloadModel The model containing video info
-	 */
-	private fun playVideoFromDownloadModel(downloadModel: DownloadDataModel) {
-		val mediaFile = fromFile(File("${downloadModel.fileDirectory}/${downloadModel.fileName}"))
-		if (mediaFile.exists()) playVideoFromFile(mediaFile = mediaFile, subtitleFile = null)
+	private fun playDownloadedVideo(downloadModel: DownloadDataModel) {
+		val videoFile = fromFile(File("${downloadModel.fileDirectory}/${downloadModel.fileName}"))
+		if (videoFile.exists()) playVideoFile(mediaFile = videoFile, subtitleFile = null)
 		else showQuickPlayerInfo(msgText = getString(string.title_media_file_not_existed))
 	}
 
-	/**
-	 * Plays video from file with optional subtitle.
-	 * @param mediaFile The media file to play
-	 * @param subtitleFile Optional subtitle file
-	 */
-	private fun playVideoFromFile(mediaFile: DocumentFile, subtitleFile: DocumentFile?) {
+	private fun playVideoFile(mediaFile: DocumentFile, subtitleFile: DocumentFile?) {
 		mediaFile.canWrite().let {
 			stopAndReleasePlayer()
-			initVideoPlayer()
+			initializePlayer()
 
 			subtitleFile?.let {
-				val combineMediaFileWithSubtitle =
-					combineMediaFileWithSubtitle(mediaFile, subtitleFile)
-				player.setMediaItem(combineMediaFileWithSubtitle)
+				val mediaWithSubtitles = combineMediaFileWithSubtitle(
+					mediaFile = mediaFile, subtitleFile = subtitleFile)
+				player.setMediaItem(mediaWithSubtitles)
 					.apply { prepareMediaAndPlay(mediaFile) }
 			} ?: run {
-				val generateMediaItemWithURI = generateMediaItemWithURI(mediaFile.uri)
-				player.setMediaItem(generateMediaItemWithURI)
+				val mediaItem = createMediaItemFromUri(mediaFile.uri)
+				player.setMediaItem(mediaItem)
 					.apply { prepareMediaAndPlay(mediaFile) }
 			}
 		}
 	}
 
-	/**
-	 * Plays streaming video from URL.
-	 * @param fileUrl The video URL
-	 */
-	private fun streamVideoWithURL(fileUrl: String) {
-		selfRef?.let { safeActivityRef ->
+	private fun streamVideoFromUrl(fileUrl: String) {
+		selfActivityRef?.let { activityRef ->
 			if (!isValidURL(fileUrl)) {
 				getMessageDialog(
-					baseActivityInf = safeActivityRef, isCancelable = false,
+					baseActivityInf = activityRef,
+					isCancelable = false,
 					titleText = getString(string.title_invalid_streaming_link),
-					isNegativeButtonVisible = false, isTitleVisible = true,
+					isNegativeButtonVisible = false,
+					isTitleVisible = true,
 					titleTextViewCustomize = {
-						it.setTextColor(
-							resources.getColor(
-								color.color_error,
-								theme
-							)
-						)
+						val color = resources.getColor(color.color_error, theme)
+						it.setTextColor(color)
 					},
 					messageTextViewCustomize = {
-						it.text = getString(string.text_streaming_link_invalid)
+						val messageString = getString(string.text_streaming_link_invalid)
+						it.text = messageString
 					},
 					positiveButtonText = getString(string.title_exit_the_player),
 					positiveButtonTextCustomize = { it.setLeftSideDrawable(drawable.ic_button_exit) },
 					dialogBuilderCustomize = { dialogBuilder ->
 						dialogBuilder.setOnClickForPositiveButton {
-							dialogBuilder.close(); closeActivityWithFadeAnimation()
+							dialogBuilder.close()
+							closeActivityWithFadeAnimation()
 						}
 					}
-				)?.show(); return
+				)?.show()
+				return
 			}
 
-			val incomingVideoTitle = intent.getStringExtra(INTENT_EXTRA_STREAM_TITLE)
-			if (!incomingVideoTitle.isNullOrEmpty()) {
-				updateMediaTitleWith(videoName = incomingVideoTitle)
-			} else updateTitleFromUrl(fileUrl)
+			val streamTitle = intent.getStringExtra(INTENT_EXTRA_STREAM_TITLE)
+			if (!streamTitle.isNullOrEmpty()) {
+				applyVideoTitle(videoName = streamTitle)
+			} else {
+				updateTitleFromUrl(fileUrl)
+			}
 
 			val mediaItem = MediaItem.fromUri(fileUrl)
 			player.setMediaItem(mediaItem)
 			player.prepare()
 			resumePlayer()
 
-			val incomingIntent = getDownloadModelFromIntent()
-			val audioMediaFie = incomingIntent?.getDestinationDocumentFile()
-			ifAudioShowAlbumArt(audioMediaFie)
+			val downloadModel = extractDownloadModelFromIntent()
+			val audioFile = downloadModel?.getDestinationDocumentFile()
+			showAlbumArtIfAudio(audioFile)
 		}
 	}
 
-	/**
-	 * Updates title from URL metadata.
-	 * @param fileUrl The media URL
-	 */
 	private fun updateTitleFromUrl(fileUrl: String) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			val modelId = intent.getIntExtra(INTENT_EXTRA_DOWNLOAD_ID, -1)
@@ -768,7 +731,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @param mediaUri The media URI
 	 * @return Configured MediaItem
 	 */
-	private fun generateMediaItemWithURI(mediaUri: Uri): MediaItem =
+	private fun createMediaItemFromUri(mediaUri: Uri): MediaItem =
 		Builder().setUri(mediaUri).build()
 
 	/**
@@ -776,7 +739,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @param mediaFile The media file
 	 */
 	private fun prepareMediaAndPlay(mediaFile: DocumentFile) {
-		player.prepare(); resumePlayer(); ifAudioShowAlbumArt(mediaFile)
+		player.prepare(); resumePlayer(); showAlbumArtIfAudio(mediaFile)
 	}
 
 	/**
@@ -812,8 +775,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Shows album art for audio files.
 	 * @param mediaFile The media file
 	 */
-	private fun ifAudioShowAlbumArt(mediaFile: DocumentFile?) {
-		selfRef?.let { safeActivityRef ->
+	private fun showAlbumArtIfAudio(mediaFile: DocumentFile?) {
+		selfActivityRef?.let { safeActivityRef ->
 			mediaFile?.let {
 				val retriever = MediaMetadataRetriever()
 				val file = mediaFile.getAbsolutePath(safeActivityRef)
@@ -839,7 +802,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @param mediaFile The audio file
 	 */
 	private fun showDefaultAudioAlbumArt(mediaFile: DocumentFile) {
-		selfRef?.let { safeActivityRef ->
+		selfActivityRef?.let { safeActivityRef ->
 			showView(audioVisualizerView, true)
 			showView(albumArtView, true)
 			setAlbumArt(mediaFile.getAbsolutePath(safeActivityRef), albumArtView)
@@ -953,7 +916,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	private fun playNextMedia() {
 		if (!::player.isInitialized) return
 
-		if (isPlayingStreamingVideo()) {
+		if (isStreamingVideoPlaying()) {
 			val infoText = getString(string.title_no_next_item_to_play)
 			showQuickPlayerInfo(infoText); return
 		}
@@ -988,7 +951,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				val isPrivateVideo = downloadLocation == AIOSettings.PRIVATE_FOLDER
 				if (isPrivateVideo && !hasMadeDecisionOverPrivateAccess) {
 					getMessageDialog(
-						baseActivityInf = selfRef,
+						baseActivityInf = selfActivityRef,
 						isTitleVisible = true,
 						titleText = getText(string.title_private_videos_alert),
 						messageTxt = getString(string.text_prompt_skip_or_play_private_video),
@@ -1011,21 +974,21 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 						setOnClickForPositiveButton {
 							close()
-							authenticate(activity = selfRef, onResult = { isSuccess ->
+							authenticate(activity = selfActivityRef, onResult = { isSuccess ->
 								if (isSuccess) {
 									isPrivateSessionAllowed = true
 									hasMadeDecisionOverPrivateAccess = true
 									playNextMedia()
 								} else {
-									selfRef?.doSomeVibration(50)
-									showToast(selfRef, msgId = string.title_authentication_failed)
+									selfActivityRef?.doSomeVibration(50)
+									showToast(selfActivityRef, msgId = string.title_authentication_failed)
 								}
 							})
 						}
 					}?.show()
 				} else {
 					if (isPrivateSessionAllowed) {
-						playVideoFromDownloadModel(candidate)
+						playDownloadedVideo(candidate)
 					} else {
 						if (matchedIndex != -1) {
 							var nextIndex = matchedIndex + 1
@@ -1042,7 +1005,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 							}
 
 							if (nextDownloadDataModel != null) {
-								playVideoFromDownloadModel(nextDownloadDataModel)
+								playDownloadedVideo(nextDownloadDataModel)
 							} else {
 								val infoText = getString(string.title_no_next_item_to_play)
 								showQuickPlayerInfo(infoText)
@@ -1063,7 +1026,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	private fun playPreviousMedia() {
 		if (!::player.isInitialized) return
 
-		if (isPlayingStreamingVideo()) {
+		if (isStreamingVideoPlaying()) {
 			val infoText = getString(string.title_no_previous_item_to_play)
 			showQuickPlayerInfo(infoText); return
 		}
@@ -1101,7 +1064,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				val isPrivateVideo = downloadLocation == AIOSettings.PRIVATE_FOLDER
 				if (isPrivateVideo && !hasMadeDecisionOverPrivateAccess) {
 					getMessageDialog(
-						baseActivityInf = selfRef,
+						baseActivityInf = selfActivityRef,
 						isTitleVisible = true,
 						titleText = getText(string.title_private_videos_alert),
 						messageTxt = getString(string.text_prompt_skip_or_play_private_video),
@@ -1124,21 +1087,21 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 						setOnClickForPositiveButton {
 							close()
-							authenticate(activity = selfRef, onResult = { isSuccess ->
+							authenticate(activity = selfActivityRef, onResult = { isSuccess ->
 								if (isSuccess) {
 									isPrivateSessionAllowed = true
 									hasMadeDecisionOverPrivateAccess = true
 									playPreviousMedia()
 								} else {
-									selfRef?.doSomeVibration(50)
-									showToast(selfRef, msgId = string.title_authentication_failed)
+									selfActivityRef?.doSomeVibration(50)
+									showToast(selfActivityRef, msgId = string.title_authentication_failed)
 								}
 							})
 						}
 					}?.show()
 				} else {
 					if (isPrivateSessionAllowed) {
-						playVideoFromDownloadModel(candidate)
+						playDownloadedVideo(candidate)
 					} else {
 						if (matchedIndex != -1) {
 							var previousIndex = matchedIndex - 1
@@ -1155,7 +1118,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 							}
 
 							if (previousDownloadDataModel != null) {
-								playVideoFromDownloadModel(previousDownloadDataModel)
+								playDownloadedVideo(previousDownloadDataModel)
 							} else {
 								val infoText = getString(string.title_no_previous_item_to_play)
 								showQuickPlayerInfo(infoText)
@@ -1171,7 +1134,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	}
 
 	fun enablePrivateSession() {
-		selfRef?.let { playerActivity ->
+		selfActivityRef?.let { playerActivity ->
 			if (playerActivity.isPrivateSessionAllowed) return
 			authenticate(activity = playerActivity, onResult = { isSuccess ->
 				if (isSuccess) {
@@ -1224,8 +1187,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Updates video progress display.
 	 */
 	private fun updateVideoProgressContainer() {
-		currentTimeText.text = formatTimeDuration(player.currentPosition)
-		val tmpTimer = formatTimeDuration(player.duration)
+		currentTimeText.text = formatPlaybackTime(player.currentPosition)
+		val tmpTimer = formatPlaybackTime(player.duration)
 		if (!tmpTimer.startsWith("-")) durationText.text = tmpTimer
 		else durationText.text = getString(string.title_00_00)
 
@@ -1325,8 +1288,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Shares current media file.
 	 */
 	fun shareMediaFile() {
-		selfRef?.let { safeActivityRef ->
-			if (isPlayingStreamingVideo()) {
+		selfActivityRef?.let { safeActivityRef ->
+			if (isStreamingVideoPlaying()) {
 				showMessageDialog(
 					baseActivityInf = safeActivityRef,
 					isTitleVisible = true,
@@ -1366,7 +1329,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	private fun invalidMediaFileToast() {
 		doSomeVibration(timeInMillis = 50)
 		showToast(
-			activityInf = selfRef,
+			activityInf = selfActivityRef,
 			msg = getString(string.title_invalid_media_file)
 		)
 	}
@@ -1375,7 +1338,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Opens and syncs subtitle file.
 	 */
 	fun openAndSyncSubtitle() {
-		selfRef?.let { safeActivityRef ->
+		selfActivityRef?.let { safeActivityRef ->
 			getMessageDialog(
 				baseActivityInf = safeActivityRef,
 				messageTxt = getString(string.text_select_subtitle_from_file_manager),
@@ -1407,7 +1370,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 */
 	private fun warnUserAboutSubtitleSelectionFailure() {
 		val msgText = getString(string.text_subtitle_file_not_readable)
-		showMessageDialog(baseActivityInf = selfRef, messageTxt = msgText)
+		showMessageDialog(baseActivityInf = selfActivityRef, messageTxt = msgText)
 	}
 
 	/**
@@ -1427,7 +1390,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 			if (fileExtension.isNullOrEmpty()) throw Exception(getString(string.title_file_not_readable_permission_issue))
 			if (!isSubtitleFileExtension(fileExtension)) showUnsupportedSubtitleFileMessage() else {
-				getDownloadModelFromIntent()?.let { downloadDataModel ->
+				extractDownloadModelFromIntent()?.let { downloadDataModel ->
 					val videoFile = downloadDataModel.getDestinationDocumentFile()
 					playVideoWithSubtitle(videoFile, subtitleFile)
 				}
@@ -1441,7 +1404,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @param subtitleFile The subtitle file
 	 */
 	private fun playVideoWithSubtitle(videoFile: DocumentFile, subtitleFile: DocumentFile) {
-		playVideoFromFile(videoFile, subtitleFile); resumePlayer()
+		playVideoFile(videoFile, subtitleFile); resumePlayer()
 	}
 
 	/**
@@ -1449,7 +1412,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 */
 	private fun showUnsupportedSubtitleFileMessage() {
 		val msgText = getString(string.text_subtitle_file_not_supported)
-		showMessageDialog(baseActivityInf = selfRef, messageTxt = msgText)
+		showMessageDialog(baseActivityInf = selfActivityRef, messageTxt = msgText)
 	}
 
 	/**
@@ -1479,7 +1442,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Requests user to pick subtitle file.
 	 */
 	private fun requestToPickSubtitleFile() {
-		selfRef?.let { safeActivityRef ->
+		selfActivityRef?.let { safeActivityRef ->
 			val pubicDownloadFolder = INSTANCE.getPublicDownloadDir()?.getAbsolutePath(INSTANCE)
 			val defaultAIOFolder = getText(string.text_default_aio_download_folder_path)
 			val pathToPick = pubicDownloadFolder ?: defaultAIOFolder
@@ -1516,7 +1479,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 */
 	private fun showOptionMenuPopup() {
 		if (!::optionsPopup.isInitialized)
-			optionsPopup = MediaOptionsPopup(selfRef); optionsPopup.show()
+			optionsPopup = MediaOptionsPopup(selfActivityRef); optionsPopup.show()
 	}
 
 	/**
@@ -1524,7 +1487,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 */
 	@Suppress("DEPRECATION")
 	private fun toggleFullscreen() {
-		selfRef?.let { safeActivityRef ->
+		selfActivityRef?.let { safeActivityRef ->
 			var newUiOptions = safeActivityRef.window.decorView.systemUiVisibility
 			newUiOptions = newUiOptions xor SYSTEM_UI_FLAG_HIDE_NAVIGATION
 			newUiOptions = newUiOptions xor SYSTEM_UI_FLAG_FULLSCREEN
@@ -1566,7 +1529,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		deletedDownloadDataModel.deleteModelFromDisk()
 		executeOnMainThread {
 			showToast(
-				activityInf = selfRef,
+				activityInf = selfActivityRef,
 				msg = getString(string.title_successfully_deleted)
 			)
 		}
@@ -1583,10 +1546,10 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		executeOnMainThread {
 			if (matchedIndex != -1) {
 				if (audioAndVideoFiles.size > (matchedIndex + 1)) {
-					playVideoFromDownloadModel(audioAndVideoFiles[(matchedIndex + 1)])
+					playDownloadedVideo(audioAndVideoFiles[(matchedIndex + 1)])
 				} else {
 					if ((matchedIndex - 1) > -1)
-						playVideoFromDownloadModel(audioAndVideoFiles[(matchedIndex - 1)]) else {
+						playDownloadedVideo(audioAndVideoFiles[(matchedIndex - 1)]) else {
 						stopAndReleasePlayer(); closeActivityWithSwipeAnimation()
 					}
 				}
@@ -1599,7 +1562,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * @return Current DownloadDataModel or null
 	 */
 	fun getCurrentPlayingDownloadModel(): DownloadDataModel? {
-		selfRef?.let { _ ->
+		selfActivityRef?.let { _ ->
 			try {
 				if (!::player.isInitialized) return null
 
@@ -1623,8 +1586,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Opens current media file in external app.
 	 */
 	fun openMediaFile() {
-		selfRef?.let { safeActivityRef ->
-			if (isPlayingStreamingVideo()) {
+		selfActivityRef?.let { safeActivityRef ->
+			if (isStreamingVideoPlaying()) {
 				val msgText = getString(string.text_open_stream_media_unavailable)
 				showMessageDialog(
 					baseActivityInf = safeActivityRef,
@@ -1649,8 +1612,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 * Opens media file information dialog.
 	 */
 	fun openMediaFileInfo() {
-		selfRef?.let { safeActivityRef ->
-			if (isPlayingStreamingVideo()) {
+		selfActivityRef?.let { safeActivityRef ->
+			if (isStreamingVideoPlaying()) {
 				showMessageDialog(
 					baseActivityInf = safeActivityRef,
 					isTitleVisible = true,

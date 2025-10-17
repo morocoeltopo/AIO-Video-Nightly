@@ -17,7 +17,6 @@ coroutine = "1.10.2"
 lottie = "6.6.7"
 circleimageview = "3.1.0"
 media3player = "1.8.0"
-jellyfin_ffmpeg = "1.8.0+1"
 mp4_iso_parser = "1.1.22"
 okhttp = "5.1.0"
 gson = "2.13.1"
@@ -51,7 +50,6 @@ media3_exoplayer_dash = { module = "androidx.media3:media3-exoplayer-dash", vers
 media3_session = { module = "androidx.media3:media3-session", version.ref = "media3player" }
 media3-datasource = { module = "androidx.media3:media3-datasource", version.ref = "media3player" }
 media3_ui = { module = "androidx.media3:media3-ui", version.ref = "media3player" }
-jellyfin_ffmpeg = { module = "org.jellyfin.media3:media3-ffmpeg-decoder", version.ref = "jellyfin_ffmpeg" }
 mp4_iso_parser = { module = "com.googlecode.mp4parser:isoparser", version.ref = "mp4_iso_parser" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit_converter_gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
