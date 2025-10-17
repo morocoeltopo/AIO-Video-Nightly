@@ -155,7 +155,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	lateinit var unlockButton: View
 
 	var areControllersLocked = false
-	var playbackPosition: Long = 0L
+	var currentPlaybackPosition: Long = 0L
 	var isNightModeEnabled = false
 
 	var invisibleAreaClickCount = 0
@@ -271,7 +271,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 		player.playWhenReady = true
 		player.playbackState; player.play()
-		player.seekTo(playbackPosition)
+		player.seekTo(currentPlaybackPosition)
 	}
 
 	fun enablePrivateSession() {
@@ -755,7 +755,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val downloadedMediaList = fetchAllValidMediaDownloads()
 		val matchedMediaIndex = findMatchingModelIndex(mediaUri, downloadedMediaList)
 		if (matchedMediaIndex == -1) return
-		playbackPosition = 0
+		currentPlaybackPosition = 0
 		playDownloadedVideo(downloadedMediaList[matchedMediaIndex])
 	}
 
@@ -1221,7 +1221,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val totalDuration = player.duration
 		val currentPos = player.currentPosition
 		val bufferedPos = player.bufferedPosition
-		playbackPosition = currentPos
+		currentPlaybackPosition = currentPos
 
 		progressBar.setDuration(totalDuration)
 		progressBar.setPosition(currentPos)
