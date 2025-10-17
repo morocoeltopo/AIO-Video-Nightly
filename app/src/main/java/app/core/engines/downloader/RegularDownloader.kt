@@ -202,7 +202,8 @@ class RegularDownloader(
 	 */
 	@Synchronized
 	override fun onPartCanceled(downloadPart: RegularDownloadPart) {
-		logger.d("Download part canceled: ${downloadPart.partIndex}, user initiated: ${downloadPart.isPartCanceledByUser}")
+		logger.d("Download part canceled: ${downloadPart.partIndex}," +
+				"user initiated: ${downloadPart.isPartCanceledByUser}")
 
 		coroutineScope.launch {
 			if (downloadPart.isPartCanceledByUser) return@launch

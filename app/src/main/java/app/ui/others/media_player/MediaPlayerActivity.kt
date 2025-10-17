@@ -112,7 +112,8 @@ import kotlin.math.abs
 class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	private val logger = LogHelperUtils.from(javaClass)
-	private val selfActivityRef = WeakReference(this).get()
+	private val activity by lazy { this@MediaPlayerActivity }
+	private val selfActivityRef = WeakReference(activity).get()
 
 	companion object {
 		const val INTENT_EXTRA_DOWNLOAD_ID = "EXTRA_DOWNLOAD_ID"
@@ -176,25 +177,23 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		initializeActivityViews().let {
 			initializePlayer().let {
 				setupSwipeSeekGestures(targetView = overlayTouchArea)
-				playVideoFromIntent().let {
-					hideView(nightModeOverlay, true, 1000)
-				}
+				playVideoFromIntent().let { hideView(nightModeOverlay, true, 1000) }
 			}
 		}
 	}
 
 	override fun onBackPressActivity() {
 		if (areControllersLocked) {
-			doSomeVibration(20)
-			val quickInfoText = getString(string.title_player_is_locked_unlock_first)
-			showQuickPlayerInfo(quickInfoText); return
-		}; stopAndDisposePlayer()
+			doSomeVibration(timeInMillis = 20)
+			val quickInfoText = getText(string.title_player_is_locked_unlock_first)
+			showQuickPlayerInfo(quickInfoText.toString())
+			return
+		}
 
+		stopAndDisposePlayer()
 		hideView(playerView, true, 300).let {
 			delay(200, object : OnTaskFinishListener {
-				override fun afterDelay() {
-					closeActivityWithFadeAnimation(true)
-				}
+				override fun afterDelay() = closeActivityWithFadeAnimation(true)
 			})
 		}
 	}
