@@ -107,7 +107,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 			dialogBuilder?.setOnClickForPositiveButton {
 				dialogBuilder.close()
 				this@MediaOptionsPopup.close()
-				safeActivityRef.deleteMediaFile()
+				safeActivityRef.deleteCurrentMediaFile()
 			}
 
 			dialogBuilder?.show()
@@ -133,7 +133,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	}
 
 	private fun openMediaFileInfo() {
-		safePlayerActivityRef?.openMediaFileInfo()
+		safePlayerActivityRef?.openCurrentMediaFileInfo()
 	}
 
 	private fun discoverMore() {
@@ -156,7 +156,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 				return
 			}
 
-			val candidate = playerActivity.getCurrentPlayingDownloadModel()
+			val candidate = playerActivity.getCurrentPlayingDownload()
 			candidate?.siteReferrer?.let { referrer ->
 				try {
 					val intent = Intent(Intent.ACTION_VIEW, referrer.toUri())
@@ -173,11 +173,11 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	private fun convertAudio() {
 		showMp4ToAudioConverterDialog(
 			safePlayerActivityRef,
-			safePlayerActivityRef?.getCurrentPlayingDownloadModel()
+			safePlayerActivityRef?.getCurrentPlayingDownload()
 		)
 	}
 
 	private fun openMediaFile() {
-		safePlayerActivityRef?.openMediaFile()
+		safePlayerActivityRef?.openCurrentMediaFile()
 	}
 }

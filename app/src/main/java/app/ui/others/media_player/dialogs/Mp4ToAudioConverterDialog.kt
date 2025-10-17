@@ -82,7 +82,7 @@ object Mp4ToAudioConverterDialog {
 			// Pause player if inside MediaPlayerActivity
 			if (safeActivityRef is MediaPlayerActivity) {
 				logger.d("Pausing MediaPlayer before conversion")
-				safeActivityRef.pausePlayer()
+				safeActivityRef.pausePlayback()
 			}
 
 			waitingDialog.show()
@@ -122,7 +122,7 @@ object Mp4ToAudioConverterDialog {
 
 										// Resume media player if paused
 										if (safeActivityRef is MediaPlayerActivity) {
-											safeActivityRef.resumePlayer()
+											safeActivityRef.resumePlayback()
 											logger.d("Resumed MediaPlayer after conversion")
 										}
 
@@ -147,7 +147,7 @@ object Mp4ToAudioConverterDialog {
 										logger.d("Conversion failed: $errorMessage")
 										waitingDialog.close()
 										if (safeActivityRef is MediaPlayerActivity) {
-											safeActivityRef.resumePlayer()
+											safeActivityRef.resumePlayback()
 											logger.d("Resumed MediaPlayer after failure")
 										}; showToast(
 										activityInf = safeActivityRef,
@@ -163,7 +163,7 @@ object Mp4ToAudioConverterDialog {
 					executeOnMainThread {
 						waitingDialog.close()
 						if (safeActivityRef is MediaPlayerActivity) {
-							safeActivityRef.resumePlayer()
+							safeActivityRef.resumePlayback()
 							logger.d("Resumed MediaPlayer after unexpected error")
 						}
 

@@ -216,6 +216,7 @@ class AIOBookmarks : Serializable {
 			"Porn.com" to "https://porn.com/",
 			"Thumbzilla" to "https://thumbzilla.com/",
 			"Tnaflix" to "https://tnaflix.com/",
+			"SexTB" to "https://sextb.net/",
 			"Beeg" to "https://beeg.com/",
 			"DrTuber" to "https://drtuber.com/",
 			"SunPorno" to "https://sunporno.com/",
