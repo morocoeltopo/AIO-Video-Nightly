@@ -369,6 +369,40 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		})
 	}
 
+	fun shareCurrentMediaFile() {
+		selfActivityRef?.let { activityRef ->
+			if (isStreamingVideoPlaying()) {
+				showMessageDialog(
+					baseActivityInf = activityRef,
+					isTitleVisible = true,
+					isNegativeButtonVisible = false,
+					titleTextViewCustomize = { titleView ->
+						titleView.setText(string.title_unavailable_for_streaming)
+						titleView.setTextColorKT(color.color_error)
+					},
+					positiveButtonTextCustomize = { positiveButton ->
+						positiveButton.setLeftSideDrawable(drawable.ic_button_checked_circle)
+						positiveButton.setText(string.title_okay)
+					},
+					messageTextViewCustomize = { it.setText(string.text_share_stream_media_unavailable) }
+				); return
+			} else {
+				val currentMediaItem = player.currentMediaItem
+				val currentMediaUri = currentMediaItem?.localConfiguration?.uri.toString()
+				if (currentMediaUri.isEmpty()) {
+					showInvalidMediaToast(); return
+				}
+
+				downloadSystem.finishedDownloadDataModels.find {
+					it.getDestinationFile().path == currentMediaUri.toUri().path
+				}?.let { downloadDataModel ->
+					shareMediaFile(activityRef, downloadDataModel.getDestinationFile())
+					return
+				}; showInvalidMediaToast()
+			}; showInvalidMediaToast()
+		}
+	}
+
 	fun promptAndSyncSubtitle() {
 		selfActivityRef?.let { safeActivityRef ->
 			getMessageDialog(
@@ -1248,40 +1282,6 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		hideView(targetView = unlockButton, shouldAnimate = true)
 		showPlaybackControls()
 		areControllersLocked = false
-	}
-
-	fun shareCurrentMediaFile() {
-		selfActivityRef?.let { activityRef ->
-			if (isStreamingVideoPlaying()) {
-				showMessageDialog(
-					baseActivityInf = activityRef,
-					isTitleVisible = true,
-					isNegativeButtonVisible = false,
-					titleTextViewCustomize = { titleView ->
-						titleView.setText(string.title_unavailable_for_streaming)
-						titleView.setTextColorKT(color.color_error)
-					},
-					positiveButtonTextCustomize = { positiveButton ->
-						positiveButton.setLeftSideDrawable(drawable.ic_button_checked_circle)
-						positiveButton.setText(string.title_okay)
-					},
-					messageTextViewCustomize = { it.setText(string.text_share_stream_media_unavailable) }
-				); return
-			} else {
-				val currentMediaItem = player.currentMediaItem
-				val currentMediaUri = currentMediaItem?.localConfiguration?.uri.toString()
-				if (currentMediaUri.isEmpty()) {
-					showInvalidMediaToast(); return
-				}
-
-				downloadSystem.finishedDownloadDataModels.find {
-					it.getDestinationFile().path == currentMediaUri.toUri().path
-				}?.let { downloadDataModel ->
-					shareMediaFile(activityRef, downloadDataModel.getDestinationFile())
-					return
-				}; showInvalidMediaToast()
-			}; showInvalidMediaToast()
-		}
 	}
 
 	private fun showInvalidMediaToast() {
