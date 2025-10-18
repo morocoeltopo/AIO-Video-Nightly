@@ -157,7 +157,7 @@
 
 			<!--Private playback session option -->
 			<LinearLayout
-				android:id="@+id/btn_private_session"
+				android:id="@+id/btn_private_videos"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
 				android:layout_marginStart="@dimen/_10"
@@ -171,7 +171,7 @@
 				tools:ignore="TouchTargetSizeCheck">
 
 				<CheckBox
-					android:id="@+id/checkbox_private_session"
+					android:id="@+id/checkbox_private_videos"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_margin="@dimen/_8"
@@ -186,7 +186,7 @@
 					android:fontFamily="@font/application_font_family"
 					android:gravity="center_vertical"
 					android:maxLines="1"
-					android:text="@string/title_private_session"
+					android:text="@string/title_private_videos"
 					android:textColor="@color/color_text_primary"
 					android:textSize="@dimen/normal_text_size"
 					tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />

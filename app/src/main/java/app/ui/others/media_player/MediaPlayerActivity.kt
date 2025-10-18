@@ -18,6 +18,7 @@ import android.os.Looper
 import android.text.method.LinkMovementMethod.getInstance
 import android.util.TypedValue
 import android.view.GestureDetector
+import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -669,9 +670,10 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 		// Set up gesture detector for seeking
 		val gestureDetector = GestureDetector(
-			targetView.context,
-			object : GestureDetector.SimpleOnGestureListener() {
+			/* context = */ targetView.context,
+			/* listener = */ object : SimpleOnGestureListener() {
 				override fun onDown(e: MotionEvent): Boolean {
+					if (areControllersLocked) return true
 					isFingerScrolling = false
 					isLongPressTriggered = false
 					longPressHandler.postDelayed({
@@ -690,6 +692,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					e1: MotionEvent?, e2: MotionEvent,
 					distanceX: Float, distanceY: Float,
 				): Boolean {
+					if (areControllersLocked) return true
 					longPressHandler.removeCallbacksAndMessages(null)
 					if (!isFingerScrolling) {
 						isFingerScrolling = true
@@ -1006,11 +1009,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 		val currentMediaUri = player.currentMediaItem?.localConfiguration?.uri.toString()
 		if (currentMediaUri.isEmpty()) return
-
-		intent.getIntExtra(INTENT_EXTRA_SOURCE_ORIGIN, -2).let { result ->
-			if (result == -2) return
-			playNextFromCompletedDownloads(currentMediaUri)
-		}
+		playNextFromCompletedDownloads(currentMediaUri)
 	}
 
 	private fun playNextFromCompletedDownloads(currentMediaUri: String) {
@@ -1105,12 +1104,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val currentItem = player.currentMediaItem
 		val currentMediaUri = currentItem?.localConfiguration?.uri.toString()
 		if (currentMediaUri.isEmpty()) return
-
-		intent.getIntExtra(INTENT_EXTRA_SOURCE_ORIGIN, -2).let { result ->
-			if (result == -2) return
-			playPreviousFromCompletedDownloads(currentMediaUri)
-			return
-		}
+		playPreviousFromCompletedDownloads(currentMediaUri)
 	}
 
 	private fun playPreviousFromCompletedDownloads(currentMediaUri: String) {
@@ -1193,8 +1187,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		}
 	}
 
-	private fun findMatchingModelIndex(targetUri: String, dataModels: List<DownloadDataModel>): Int {
-		val targetPath = targetUri.toUri().path
+	private fun findMatchingModelIndex(targetFileUri: String, dataModels: List<DownloadDataModel>): Int {
+		val targetPath = targetFileUri.toUri().path
 		return dataModels.indexOfFirst { model ->
 			val modelFilePath = Uri.fromFile(model.getDestinationFile()).path
 			modelFilePath == targetPath

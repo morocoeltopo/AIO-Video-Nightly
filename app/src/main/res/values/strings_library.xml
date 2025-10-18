@@ -564,6 +564,6 @@
 	<string name="title_private_videos_alert">Private Session Alert</string>
 	<string name="title_not_now">Not Now</string>
 	<string name="title_unlock_and_play_all">Unlock &amp; Play</string>
-	<string name="title_private_session">Private Session</string>
+	<string name="title_private_videos">Private Videos</string>
 
 </resources>
