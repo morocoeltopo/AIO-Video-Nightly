@@ -26,7 +26,6 @@ import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.ui.main.fragments.downloads.dialogs.DownloadFileRenamer
 import app.ui.main.fragments.downloads.dialogs.DownloadInfoTracker
 import app.ui.others.media_player.MediaPlayerActivity
-import app.ui.others.media_player.MediaPlayerActivity.Companion.SOURCE_FINISHED_DOWNLOADS
 import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_MEDIA_FILE_PATH
 import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_SOURCE_ORIGIN
 import app.ui.others.media_player.dialogs.Mp4ToAudioConverterDialog.showMp4ToAudioConverterDialog
@@ -673,7 +672,6 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 									flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 									putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.id)
 									putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
-									putExtra(INTENT_EXTRA_SOURCE_ORIGIN, SOURCE_FINISHED_DOWNLOADS)
 								}
 							)
 

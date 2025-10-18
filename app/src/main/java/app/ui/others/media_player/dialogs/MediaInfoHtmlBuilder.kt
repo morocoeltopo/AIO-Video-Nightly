@@ -17,6 +17,7 @@ import app.core.engines.downloader.DownloadStatus.DOWNLOADING
 import com.aio.R
 import lib.files.FileSystemUtility.getFileExtension
 import lib.files.FileSystemUtility.isVideo
+import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
 import java.io.File
 import java.text.SimpleDateFormat
@@ -28,7 +29,9 @@ import java.util.Locale.getDefault
  * it into a readable HTML structure.
  */
 object MediaInfoHtmlBuilder {
-	
+
+	private val logger = LogHelperUtils.from(javaClass)
+
 	/**
 	 * Builds an HTML-formatted string containing media file information.
 	 *
@@ -37,7 +40,7 @@ object MediaInfoHtmlBuilder {
 	 */
 	fun buildMediaInfoHtmlString(dataModel: DownloadDataModel): String {
 		val mediaFile = dataModel.getDestinationFile()
-		
+
 		return try {
 			// Use MediaMetadataRetriever to extract metadata from the file
 			MediaMetadataRetriever().use { retriever ->
@@ -45,11 +48,11 @@ object MediaInfoHtmlBuilder {
 				buildHtmlInfo(retriever, dataModel, mediaFile)
 			}
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while building media info html string:", error)
 			INSTANCE.getString(R.string.text_failed_to_load_media_info)
 		}
 	}
-	
+
 	/**
 	 * Constructs the HTML information string from extracted metadata.
 	 *
@@ -67,50 +70,50 @@ object MediaInfoHtmlBuilder {
 		val fileName = downloadDataModel.fileName
 		val fileSize = downloadDataModel.fileSizeInFormat
 		val fileDirectory = downloadDataModel.fileDirectory
-		
+
 		// File format and type
 		val format = getFileExtension(fileName)
 		val isVideo = isVideo(fromFile(mediaFile))
-		
+
 		// Duration information
 		val duration = mediaMetaDataRetriever
 			.extractMetadata(METADATA_KEY_DURATION)?.toLongOrNull()
 		val durationFormatted = duration?.let { formatDuration(it) }
-		
+
 		// Media-specific metadata
 		val width = mediaMetaDataRetriever.extractMetadata(METADATA_KEY_VIDEO_WIDTH)
 		val height = mediaMetaDataRetriever.extractMetadata(METADATA_KEY_VIDEO_HEIGHT)
 		val videoCodec = mediaMetaDataRetriever.extractMetadata(METADATA_KEY_MIMETYPE)
 		val bitRate = mediaMetaDataRetriever.extractMetadata(METADATA_KEY_BITRATE)
 		val audioCodec = mediaMetaDataRetriever.extractMetadata(METADATA_KEY_MIMETYPE)
-		
+
 		// Format download date
 		val downloadDateFormatted = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", getDefault())
 			.format(downloadDataModel.startTimeDate)
-		
+
 		// Build the HTML string using StringBuilder
 		return StringBuilder().apply {
 			val mediaFileType = if (isVideo) getText(R.string.title_videos)
 			else getText(R.string.title_sounds)
-			
+
 			// Append basic file information
 			append(INSTANCE.getString(R.string.title_file_name_b_br, fileName))
 			append(INSTANCE.getString(R.string.title_file_directory_b, fileDirectory))
 			append(INSTANCE.getString(R.string.title_file_size_b_br, fileSize))
 			append(INSTANCE.getString(R.string.title_file_type_b_br, mediaFileType))
-			
+
 			append("------------------------<br>")
-			
+
 			// Append format and duration information
 			append(INSTANCE.getString(R.string.title_file_format_b_br, format))
 			append(INSTANCE.getString(R.string.title_duration_b_br, durationFormatted))
-			
+
 			// Append download status information
 			val downloadStatusText = getDownloadStatusText(downloadDataModel.status)
 			append(INSTANCE.getString(R.string.title_download_status_b_br, downloadStatusText))
 			append(INSTANCE.getString(R.string.title_downloaded_date_b_br, downloadDateFormatted))
 			append("------------------------<br>")
-			
+
 			// Append video-specific information if file is a video
 			if (isVideo) {
 				if (width == null && height == null) {
@@ -121,13 +124,13 @@ object MediaInfoHtmlBuilder {
 					append(resolution).append(getVideoCodec(videoCodec))
 				}
 			}
-			
+
 			// Append audio and bitrate information
 			append(INSTANCE.getString(R.string.title_bitrate_b_bps_br, bitRate))
 			append(INSTANCE.getString(R.string.title_audio_codec_b_br, audioCodec))
 		}.toString()
 	}
-	
+
 	/**
 	 * Formats the video codec information for display.
 	 *
@@ -137,7 +140,7 @@ object MediaInfoHtmlBuilder {
 	private fun getVideoCodec(videoCodec: String?): String {
 		return INSTANCE.getString(R.string.title_video_codec_b_br, videoCodec)
 	}
-	
+
 	/**
 	 * Formats duration from milliseconds to a human-readable format.
 	 *
@@ -149,7 +152,7 @@ object MediaInfoHtmlBuilder {
 		val minutes = (durationMs / 1000) / 60
 		return "$minutes min $seconds sec"
 	}
-	
+
 	/**
 	 * Gets the MIME type of a file.
 	 *
@@ -161,11 +164,11 @@ object MediaInfoHtmlBuilder {
 			val extension = MimeTypeMap.getFileExtensionFromUrl(file.path)
 			getSingleton().getMimeTypeFromExtension(extension)
 		} catch (error: Exception) {
-			error.printStackTrace()
+			logger.e("Error while getting media mime type:", error)
 			null
 		}
 	}
-	
+
 	/**
 	 * Converts download status code to a human-readable string.
 	 *

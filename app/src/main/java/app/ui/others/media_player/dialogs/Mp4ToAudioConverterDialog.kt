@@ -33,6 +33,9 @@ import java.io.File
  */
 object Mp4ToAudioConverterDialog {
 
+	/**
+	 * Lo
+	 */
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**

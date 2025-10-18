@@ -40,9 +40,7 @@ import app.ui.main.fragments.browser.activities.HistoryActivity
 import app.ui.main.fragments.browser.webengine.WebViewEngine
 import app.ui.main.guides.GuidePlatformPicker
 import app.ui.others.media_player.MediaPlayerActivity
-import app.ui.others.media_player.MediaPlayerActivity.Companion.SOURCE_FINISHED_DOWNLOADS
 import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_MEDIA_FILE_PATH
-import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_SOURCE_ORIGIN
 import com.aio.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -798,17 +796,17 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 				viewType: Int
 			): RecentDownloadsViewHolder {
 				val layoutInflater = LayoutInflater.from(parent.context)
-				val view =
-					layoutInflater.inflate(R.layout.frag_home_1_main_1_recent_item_1, parent, false)
+				val layoutResId = R.layout.frag_home_1_main_1_recent_item_1
+				val view = layoutInflater.inflate(layoutResId, parent, false)
 				return RecentDownloadsViewHolder(view)
 			}
 
 			override fun onBindViewHolder(holder: RecentDownloadsViewHolder, position: Int) {
 				holder.setImageThumbnail(downloadsModels[position])
-				holder.setMediaDurationPreview(downloadsModels[position])
 				holder.setSiteImageFavicon(downloadsModels[position])
 				holder.setFileTypeIndication(downloadsModels[position])
 				holder.setPrivateFolderIndicator(downloadsModels[position])
+				holder.setMediaDurationPreview(downloadsModels[position])
 				holder.setOnClickEvent(downloadsModels[position], safeMotherActivityRef)
 			}
 
@@ -946,8 +944,8 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			ThreadsUtility.executeInBackground(codeBlock = {
 				val downloadedFileName = downloadDataModel.fileName
 				if (isVideoByName(downloadedFileName) || isAudioByName(downloadedFileName)) {
-					repeat(3) { attempt ->
-						Thread.sleep(1000) // wait 1 sec between retries
+					repeat(5) { attempt ->
+						Thread.sleep(2000) // wait 2 sec between retries
 						val cleaned = downloadDataModel.mediaFilePlaybackDuration
 							.replace("(", "")
 							.replace(")", "")
@@ -988,7 +986,6 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 								flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 								putExtra(DOWNLOAD_MODEL_ID_KEY, downloadDataModel.id)
 								putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
-								putExtra(INTENT_EXTRA_SOURCE_ORIGIN, SOURCE_FINISHED_DOWNLOADS)
 							})
 						animActivityFade(safeMotherActivityRef)
 					} else {

@@ -31,10 +31,9 @@ import lib.ui.builders.DialogBuilder;
  */
 public class UserFeedbackActivity extends BaseActivity {
 
-	private final LogHelperUtils logger = LogHelperUtils.from(getClass());
 	public static final String WHERE_DIS_YOU_COME_FROM = "WHERE_DIS_YOU_COME_FROM";
 	public static final int FROM_CRASH_HANDLER = 12;
-
+	private final LogHelperUtils logger = LogHelperUtils.from(getClass());
 	private View buttonSendMessage;
 	private EditText editEmailField, editMessageField;
 	private View buttonBack, containerEditEmailField, containerEditMessageField;

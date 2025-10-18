@@ -23,78 +23,78 @@ import java.lang.ref.WeakReference
  */
 class LauncherActivity : BaseActivity() {
 
-    // Safe reference to this activity to avoid leaks
-    private val safeLauncherActivityRef = WeakReference(this).get()
+	// Safe reference to this activity to avoid leaks
+	private val safeLauncherActivityRef = WeakReference(this).get()
 
-    /**
-     * Skip rendering a layout since this activity acts as a launcher/router.
-     * Returning -1 indicates no layout is set.
-     */
-    override fun onRenderingLayout(): Int {
-        return -1
-    }
+	/**
+	 * Skip rendering a layout since this activity acts as a launcher/router.
+	 * Returning -1 indicates no layout is set.
+	 */
+	override fun onRenderingLayout(): Int {
+		return -1
+	}
 
-    /**
-     * Called after layout (if any) would be rendered.
-     * Decides whether to show crash feedback or launch the main flow.
-     */
-    override fun onAfterLayoutRender() {
-        if (aioSettings.hasAppCrashedRecently) launchFeedbackActivity()
-        else launchOpeningActivity()
-    }
+	/**
+	 * Called after layout (if any) would be rendered.
+	 * Decides whether to show crash feedback or launch the main flow.
+	 */
+	override fun onAfterLayoutRender() {
+		if (aioSettings.hasAppCrashedRecently) launchFeedbackActivity()
+		else launchOpeningActivity()
+	}
 
-    /**
-     * Handles back button press by requiring a double press to exit.
-     */
-    override fun onBackPressActivity() {
-        exitActivityOnDoubleBackPress()
-    }
+	/**
+	 * Handles back button press by requiring a double press to exit.
+	 */
+	override fun onBackPressActivity() {
+		exitActivityOnDoubleBackPress()
+	}
 
-    /**
-     * Launches feedback activity if app crashed recently.
-     * Passes extras to indicate it came from crash handler.
-     */
-    private fun launchFeedbackActivity() {
-        safeLauncherActivityRef?.let { context ->
-            // Reset crash flag so feedback is not shown repeatedly
-            aioSettings.hasAppCrashedRecently = false
-            aioSettings.updateInStorage()
+	/**
+	 * Launches feedback activity if app crashed recently.
+	 * Passes extras to indicate it came from crash handler.
+	 */
+	private fun launchFeedbackActivity() {
+		safeLauncherActivityRef?.let { context ->
+			// Reset crash flag so feedback is not shown repeatedly
+			aioSettings.hasAppCrashedRecently = false
+			aioSettings.updateInStorage()
 
-            Intent(context, UserFeedbackActivity::class.java).apply {
-                flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
-                putExtra(WHERE_DIS_YOU_COME_FROM, FROM_CRASH_HANDLER)
-                startActivity(this)
-                finish()
-                animActivityFade(context)
-            }
-        }
-    }
+			Intent(context, UserFeedbackActivity::class.java).apply {
+				flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
+				putExtra(WHERE_DIS_YOU_COME_FROM, FROM_CRASH_HANDLER)
+				startActivity(this)
+				finish()
+				animActivityFade(context)
+			}
+		}
+	}
 
-    /**
-     * Launches the main MotherActivity (main container of the app).
-     */
-    private fun launchMotherActivity() {
-        safeLauncherActivityRef?.let { context ->
-            Intent(context, MotherActivity::class.java).apply {
-                flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
-                startActivity(this)
-                finish()
-                animActivityFade(getActivity())
-            }
-        }
-    }
+	/**
+	 * Launches the main MotherActivity (main container of the app).
+	 */
+	private fun launchMotherActivity() {
+		safeLauncherActivityRef?.let { context ->
+			Intent(context, MotherActivity::class.java).apply {
+				flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
+				startActivity(this)
+				finish()
+				animActivityFade(getActivity())
+			}
+		}
+	}
 
-    /**
-     * Launches the initial OpeningActivity (app intro/startup screen).
-     */
-    private fun launchOpeningActivity() {
-        safeLauncherActivityRef?.let { context ->
-            Intent(context, OpeningActivity::class.java).apply {
-                flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
-                startActivity(this)
-                finish()
-                animActivityFade(getActivity())
-            }
-        }
-    }
+	/**
+	 * Launches the initial OpeningActivity (app intro/startup screen).
+	 */
+	private fun launchOpeningActivity() {
+		safeLauncherActivityRef?.let { context ->
+			Intent(context, OpeningActivity::class.java).apply {
+				flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
+				startActivity(this)
+				finish()
+				animActivityFade(getActivity())
+			}
+		}
+	}
 }

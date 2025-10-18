@@ -57,6 +57,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 		// App mode flags
 		const val IS_DEBUG_MODE_ON = true
+		const val IS_CLOUD_BACKUP_ENABLED = false
 		const val IS_ULTIMATE_VERSION_UNLOCKED = true
 		const val IS_PREMIUM_USER = true
 

@@ -121,9 +121,10 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		const val INTENT_EXTRA_STREAM_TITLE = "INTENT_EXTRA_STREAM_TITLE"
 		const val INTENT_EXTRA_MEDIA_FILE_PATH = "INTENT_EXTRA_MEDIA_FILE_PATH"
 		const val INTENT_EXTRA_SOURCE_ORIGIN = "INTENT_EXTRA_SOURCE_ORIGIN"
+	}
 
-		const val SOURCE_FINISHED_DOWNLOADS = 1
-		const val SOURCE_PRIVATE_FOLDER = 2
+	abstract class VideoScrubberListener : TimeBar.OnScrubListener {
+		override fun onScrubMove(timeBar: TimeBar, position: Long) = Unit
 	}
 
 	lateinit var player: ExoPlayer
@@ -202,7 +203,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		resumePlayback()
 	}
 
-	override fun onPauseActivity() = pausePlayback()
+	override fun onPauseActivity() {
+		pausePlayback()
+	}
 
 	override fun onDestroy() {
 		super.onDestroy()
@@ -268,7 +271,6 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	fun resumePlayback() {
 		if (player.isPlaying) return
-
 		player.playWhenReady = true
 		player.playbackState; player.play()
 		player.seekTo(currentPlaybackPosition)
@@ -375,6 +377,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					baseActivityInf = activityRef,
 					isTitleVisible = true,
 					isNegativeButtonVisible = false,
+					messageTextViewCustomize = { it.setText(string.text_share_stream_media_unavailable) },
 					titleTextViewCustomize = { titleView ->
 						titleView.setText(string.title_unavailable_for_streaming)
 						titleView.setTextColorKT(color.color_error)
@@ -382,8 +385,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					positiveButtonTextCustomize = { positiveButton ->
 						positiveButton.setLeftSideDrawable(drawable.ic_button_checked_circle)
 						positiveButton.setText(string.title_okay)
-					},
-					messageTextViewCustomize = { it.setText(string.text_share_stream_media_unavailable) }
+					}
 				); return
 			} else {
 				val currentMediaItem = player.currentMediaItem
@@ -395,7 +397,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				downloadSystem.finishedDownloadDataModels.find {
 					it.getDestinationFile().path == currentMediaUri.toUri().path
 				}?.let { downloadDataModel ->
-					shareMediaFile(activityRef, downloadDataModel.getDestinationFile())
+					val destinationFile = downloadDataModel.getDestinationFile()
+					shareMediaFile(activityRef, destinationFile)
 					return
 				}; showInvalidMediaToast()
 			}; showInvalidMediaToast()
@@ -447,6 +450,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					baseActivityInf = activityRef,
 					isTitleVisible = true,
 					isNegativeButtonVisible = false,
+					messageTextViewCustomize = { it.setText(string.text_video_stream_info_unavailable) },
 					titleTextViewCustomize = { titleView ->
 						titleView.setText(string.title_unavailable_for_streaming)
 						titleView.setTextColorKT(color.color_error)
@@ -454,8 +458,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					positiveButtonTextCustomize = { positiveButton ->
 						positiveButton.setLeftSideDrawable(drawable.ic_button_checked_circle)
 						positiveButton.setText(string.title_okay)
-					},
-					messageTextViewCustomize = { it.setText(string.text_video_stream_info_unavailable) }
+					}
 				); return
 			}
 
@@ -591,7 +594,6 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			}
 
 			// Build ExoPlayer with renderers factory
-			// (FFmpeg will be automatically picked for unsupported codecs)
 			player = ExoPlayer.Builder(activityRef, renderersFactory)
 				.setTrackSelector(trackSelector)
 				.setUseLazyPreparation(true)
@@ -807,8 +809,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			subtitleFile?.let {
 				val mediaWithSubtitles = buildMediaItemWithSubtitles(
 					mediaDocument = mediaFile, subtitleDocument = subtitleFile)
-				player.setMediaItem(mediaWithSubtitles)
-					.apply { prepareAndStartPlayback(mediaFile) }
+				player.setMediaItem(mediaWithSubtitles).apply {
+					prepareAndStartPlayback(mediaFile)
+				}
 			} ?: run {
 				val mediaItem = buildMediaItemFromUri(mediaFile.uri)
 				player.setMediaItem(mediaItem)
@@ -826,6 +829,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					titleText = getString(string.title_invalid_streaming_link),
 					isNegativeButtonVisible = false,
 					isTitleVisible = true,
+					positiveButtonTextCustomize = { it.setLeftSideDrawable(drawable.ic_button_exit) },
+					positiveButtonText = getString(string.title_exit_the_player),
 					titleTextViewCustomize = {
 						val color = resources.getColor(color.color_error, theme)
 						it.setTextColor(color)
@@ -834,8 +839,6 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 						val messageString = getString(string.text_streaming_link_invalid)
 						it.text = messageString
 					},
-					positiveButtonText = getString(string.title_exit_the_player),
-					positiveButtonTextCustomize = { it.setLeftSideDrawable(drawable.ic_button_exit) },
 					dialogBuilderCustomize = { dialogBuilder ->
 						dialogBuilder.setOnClickForPositiveButton {
 							dialogBuilder.close()
@@ -1105,10 +1108,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 		intent.getIntExtra(INTENT_EXTRA_SOURCE_ORIGIN, -2).let { result ->
 			if (result == -2) return
-			if (result == SOURCE_FINISHED_DOWNLOADS) {
-				playPreviousFromCompletedDownloads(currentMediaUri)
-				return
-			}
+			playPreviousFromCompletedDownloads(currentMediaUri)
+			return
 		}
 	}
 
@@ -1418,9 +1419,5 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				}
 			}
 		}
-	}
-
-	abstract class VideoScrubberListener : TimeBar.OnScrubListener {
-		override fun onScrubMove(timeBar: TimeBar, position: Long) = Unit
 	}
 }

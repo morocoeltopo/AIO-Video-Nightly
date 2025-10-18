@@ -21,7 +21,6 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
 import app.ui.main.MotherActivity
 import app.ui.others.media_player.MediaPlayerActivity
-import app.ui.others.media_player.MediaPlayerActivity.Companion.SOURCE_FINISHED_DOWNLOADS
 import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_MEDIA_FILE_PATH
 import com.aio.R
 import lib.files.FileSystemUtility.isAudio
@@ -205,7 +204,6 @@ class DownloadNotification {
 			flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 			putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.id)
 			putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
-			putExtra(WHERE_DID_YOU_COME_FROM, SOURCE_FINISHED_DOWNLOADS)
 			putExtra(WHERE_DID_YOU_COME_FROM, FROM_DOWNLOAD_NOTIFICATION)
 		}
 	}
