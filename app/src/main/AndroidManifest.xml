@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
-	tools:ignore="AllFilesAccessPolicy,ScopedStorage, ForegroundServicesPolicy, RequestInstallPackagesPolicy">
+	tools:ignore="AllFilesAccessPolicy,ScopedStorage,ForegroundServicesPolicy,RequestInstallPackagesPolicy">
 
 	<!-- =======================
 	     Required Permissions
@@ -37,11 +37,13 @@
 		android:name="android.permission.READ_EXTERNAL_STORAGE"
 		android:maxSdkVersion="32" />
 
-	<!-- Foreground service for downloads, sync, etc. -->
+	<!-- Foreground service permissions -->
+	<!-- Used for handling background operations such as sync, downloads, and playback -->
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
-	<!-- APK installation (if your app supports installing APKs from inside the app) -->
+	<!-- APK installation permission (used for installing APKs directly from the app) -->
 	<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
 	<!-- =======================
@@ -125,7 +127,7 @@
 			android:theme="@style/style.application"
 			android:windowSoftInputMode="adjustPan" />
 
-		<!-- Advance browser activity screen -->
+		<!-- Advance browser settings activity -->
 		<activity
 			android:name="app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActivity"
 			android:exported="false"
@@ -160,20 +162,31 @@
 			android:launchMode="singleTop"
 			android:windowSoftInputMode="adjustPan" />
 
-		<!-- Foreground service for sync/downloads -->
+		<!-- Foreground service handling downloads/sync -->
 		<service
 			android:name="app.core.engines.services.AIOForegroundService"
 			android:enabled="true"
 			android:exported="false"
 			android:foregroundServiceType="dataSync" />
 
-		<!-- Broadcast receiver for restarting services when idle -->
+		<!-- Foreground service for media playback -->
+		<service
+			android:name="app.ui.others.media_player.MediaPlaybackService"
+			android:exported="true"
+			android:foregroundServiceType="mediaPlayback"
+			android:permission="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK">
+			<intent-filter>
+				<action android:name="androidx.media3.session.MediaSessionService" />
+			</intent-filter>
+		</service>
+
+		<!-- Broadcast receiver for restarting idle services -->
 		<receiver
 			android:name="app.core.engines.services.RestartIdleServiceReceiver"
 			android:enabled="true"
 			android:exported="false" />
 
-		<!-- File provider (for secure file sharing) -->
+		<!-- File provider for secure URI-based file sharing -->
 		<provider
 			android:name="androidx.core.content.FileProvider"
 			android:authorities="${applicationId}.provider"
@@ -221,7 +234,7 @@
 			<data android:scheme="https" />
 		</intent>
 
-		<!-- Supported third-party apps -->
+		<!-- Supported third-party apps for sharing and playback -->
 		<package android:name="com.google.android.youtube" />
 		<package android:name="com.instagram.android" />
 		<package android:name="com.facebook.katana" />

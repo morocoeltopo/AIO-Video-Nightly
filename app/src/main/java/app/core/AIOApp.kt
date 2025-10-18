@@ -4,7 +4,6 @@ import android.app.Activity
 import androidx.documentfile.provider.DocumentFile
 import androidx.documentfile.provider.DocumentFile.fromFile
 import androidx.lifecycle.LifecycleObserver
-import androidx.media3.common.util.UnstableApi
 import app.core.bases.BaseActivity
 import app.core.bases.language.LanguageAwareApplication
 import app.core.engines.backend.AIOBackend
@@ -16,7 +15,6 @@ import app.core.engines.caches.AIOFavicons
 import app.core.engines.caches.AIORawFiles
 import app.core.engines.downloader.DownloadModelMerger
 import app.core.engines.downloader.DownloadSystem
-import app.core.engines.media_player.MediaPlayerHelper
 import app.core.engines.settings.AIOSettings
 import app.core.engines.video_parser.parsers.YoutubeVidParser
 import com.anggrayudi.storage.file.DocumentFileCompat.fromPublicFolder
@@ -48,7 +46,6 @@ import lib.process.ThreadsUtility.executeInBackground
  * This class also centralizes access to global engines, settings, download system,
  * and ensures lifecycle-aware behavior.
  */
-@UnstableApi
 class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 	private val logger = LogHelperUtils.from(javaClass)
@@ -86,11 +83,10 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		val aioGSONInstance: Gson by lazy { GsonBuilder().setStrictness(LENIENT).create() }
 		val aioDSLJsonInstance = DslJson<Any>()
 
-		// Download engines & manager, media playback helper
+		// Download engines & manager
 		val downloadSystem: DownloadSystem by lazy { DownloadSystem() }
 		val downloadModelMerger: DownloadModelMerger by lazy { DownloadModelMerger() }
 		val youtubeVidParser: YoutubeVidParser by lazy { YoutubeVidParser() }
-		val mediaPlayerHelper: MediaPlayerHelper by lazy { MediaPlayerHelper() }
 
 		// Global timer
 		val aioTimer: AIOTimer by lazy { AIOTimer(3600000, 200).apply { start() } }
