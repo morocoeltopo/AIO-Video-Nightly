@@ -11,167 +11,142 @@ import lib.ui.builders.DialogBuilder
 import java.lang.ref.WeakReference
 
 /**
- * Dialog controller for selecting the application's theme appearance
- * (System default / Dark mode / Light mode).
+ * Dialog for selecting the application's theme appearance
+ * (System default, Dark mode, or Light mode).
  *
- * Handles dialog creation, UI binding, logging of key actions,
- * and persistence of the selected theme into storage.
+ * Handles UI binding, persistence of selection, and optional callbacks
+ * when a theme is applied. Keeps logs minimal but informative.
  */
 class ThemeAppearanceSelector(private val baseActivity: BaseActivity) {
 
-	/** Logger for tracking lifecycle and user actions. */
+	/** Logger for short lifecycle tracking. */
 	private val logger = LogHelperUtils.from(javaClass)
 
-	/** Weak reference to BaseActivity to prevent memory leaks. */
+	/** Prevents memory leaks by holding a weak reference. */
 	private val safeBaseActivityRef by lazy { WeakReference(baseActivity).get() }
 
-	/**
-	 * DialogBuilder instance configured with the theme selection layout.
-	 * Lazily created on first access.
-	 */
-	private val themeAppearanceSelectionDialog by lazy {
-		logger.d("Creating ThemeAppearanceSelectionDialog with layout R.layout.dialog_dark_theme_picker_1")
+	/** Builds the theme selection dialog with appropriate layout. */
+	private val themeDialog by lazy {
+		logger.d("Init Theme Dialog")
 		DialogBuilder(safeBaseActivityRef).apply {
 			setView(R.layout.dialog_dark_theme_picker_1)
 		}
 	}
 
-	/** RadioButton for system default theme. */
-	private val systemDefaultUIRadioBtn by lazy {
-		themeAppearanceSelectionDialog.view.findViewById<RadioButton>(R.id.btn_system_default)
+	/** UI references for theme radio buttons. */
+	private val sysDefaultBtn by lazy {
+		themeDialog.view.findViewById<RadioButton>(R.id.btn_system_default)
+	}
+	private val darkModeBtn by lazy {
+		themeDialog.view.findViewById<RadioButton>(R.id.btn_dark_mode_ui)
+	}
+	private val lightModeBtn by lazy {
+		themeDialog.view.findViewById<RadioButton>(R.id.btn_light_mode_ui)
 	}
 
-	/** RadioButton for dark mode theme. */
-	private val darkModeUIRadioBtn by lazy {
-		themeAppearanceSelectionDialog.view
-			.findViewById<RadioButton>(R.id.btn_dark_mode_ui)
-	}
-
-	/** RadioButton for light mode theme. */
-	private val lightModeUIRadioBtn by lazy {
-		themeAppearanceSelectionDialog.view
-			.findViewById<RadioButton>(R.id.btn_light_mode_ui)
-	}
-
-	/**
-	 * Callback triggered when the user applies the selected theme.
-	 * Can be assigned externally to react after the theme is saved.
-	 */
+	/** Optional external callback triggered after apply. */
 	var onApplyListener: () -> Unit? = {}
 
 	init {
-		logger.d("Initializing ThemeAppearanceSelector dialog.")
-		themeAppearanceSelectionDialog.view.apply {
-			setButtonOnClickListeners(this)
-		}
+		logger.d("Setup click listeners")
+		themeDialog.view.apply { setDialogActionListeners(this) }
 	}
 
-	/** Returns the underlying DialogBuilder for further customization. */
+	/** Returns dialog builder for further customization. */
 	fun getDialogBuilder(): DialogBuilder {
-		logger.d("getDialogBuilder() called.")
-		return themeAppearanceSelectionDialog
+		logger.d("getDialogBuilder()")
+		return themeDialog
 	}
 
-	/** Closes the dialog if it is currently visible. */
-	fun close() {
-		if (themeAppearanceSelectionDialog.isShowing) {
-			logger.d("Closing theme appearance dialog.")
-			themeAppearanceSelectionDialog.close()
-		} else {
-			logger.d("close() called but dialog was not showing.")
-		}
-	}
-
-	/** Shows the dialog if it is not already visible. */
+	/** Shows dialog; sets initial state based on stored preference. */
 	fun show() {
-		if (!themeAppearanceSelectionDialog.isShowing) {
+		if (!themeDialog.isShowing) {
+			// Apply last saved theme selection
 			when (aioSettings.themeAppearance) {
-				-1 -> systemDefaultUIRadioBtn.isChecked = true
-				1 -> darkModeUIRadioBtn.isChecked = true
-				2 -> lightModeUIRadioBtn.isChecked = true
-				else -> systemDefaultUIRadioBtn.isChecked = true
+				-1 -> sysDefaultBtn.isChecked = true
+				1 -> darkModeBtn.isChecked = true
+				2 -> lightModeBtn.isChecked = true
+				else -> sysDefaultBtn.isChecked = true
 			}
-			logger.d("Showing theme appearance dialog.")
-			themeAppearanceSelectionDialog.show()
-		} else {
-			logger.d("show() called but dialog is already visible.")
-		}
+			logger.d("Show Theme Dialog")
+			themeDialog.show()
+		} else logger.d("Already showing")
 	}
 
-	/** Returns true if the dialog is currently displayed. */
+	/** Closes dialog if visible. */
+	fun close() {
+		if (themeDialog.isShowing) {
+			logger.d("Close Dialog")
+			themeDialog.close()
+		} else logger.d("Dialog not showing")
+	}
+
+	/** Returns dialog visibility state. */
 	fun isShowing(): Boolean {
-		val showing = themeAppearanceSelectionDialog.isShowing
-		logger.d("isShowing() -> $showing")
+		val showing = themeDialog.isShowing
+		logger.d("isShowing=$showing")
 		return showing
 	}
 
 	/**
-	 * Sets up action button listeners inside the dialog.
-	 *
-	 * @param dialogLayoutView The root view of the dialog layout.
+	 * Sets up UI button click listeners inside dialog.
+	 * @param dialogLayoutView The dialog's main layout view.
 	 */
-	private fun setButtonOnClickListeners(dialogLayoutView: View) {
-		logger.d("Setting up button click listeners.")
-		dialogLayoutView.findViewById<View>(R.id.btn_dialog_positive_container).apply {
-			setOnClickListener {
-				logger.d("Positive button clicked.")
-				applySelectedApplicationTheme(dialogLayoutView)
-			}
+	private fun setDialogActionListeners(dialogLayoutView: View) {
+		val btnViewId = R.id.btn_dialog_positive_container
+		dialogLayoutView.findViewById<View>(btnViewId)?.setOnClickListener {
+			logger.d("Apply clicked")
+			applySelectedTheme(dialogLayoutView)
 		}
 	}
 
 	/**
-	 * Retrieves the RadioGroup containing theme options.
-	 *
+	 * Returns RadioGroup containing all theme options.
 	 * @param view The dialog layout view.
-	 * @return RadioGroup instance for theme selection.
 	 */
-	private fun getRegionsRadioGroupView(view: View): RadioGroup {
-		logger.d("Fetching theme options RadioGroup.")
+	private fun getThemesRadioGroup(view: View): RadioGroup {
 		return view.findViewById(R.id.theme_options_container)
 	}
 
 	/**
-	 * Applies the theme selected by the user, persists it into storage,
-	 * and triggers the [onApplyListener] callback after saving.
-	 *
-	 * @param dialogLayoutView The dialog's root view.
+	 * Applies selected theme, saves it to preferences,
+	 * closes dialog, and invokes external callback.
+	 * @param dialogLayoutView The root layout of the dialog.
 	 */
-	private fun applySelectedApplicationTheme(dialogLayoutView: View) {
-		logger.d("applySelectedApplicationTheme() invoked.")
+	private fun applySelectedTheme(dialogLayoutView: View) {
+		logger.d("Apply theme")
+		val themeGroup = getThemesRadioGroup(dialogLayoutView)
+		val selectedId = themeGroup.checkedRadioButtonId
 
-		val contentRegionRadioGroup = getRegionsRadioGroupView(dialogLayoutView)
-		val selectedRegionId = contentRegionRadioGroup.checkedRadioButtonId
-
-		if (selectedRegionId == -1) {
-			logger.d("No theme option selected. Aborting apply.")
+		// Abort if nothing selected
+		if (selectedId == -1) {
+			logger.d("No selection")
 			return
 		}
 
+		// Store user selection
 		when {
-			systemDefaultUIRadioBtn.isChecked -> {
-				logger.d("System Default theme selected.")
+			sysDefaultBtn.isChecked -> {
+				logger.d("System Default")
 				aioSettings.themeAppearance = -1
 			}
-
-			darkModeUIRadioBtn.isChecked -> {
-				logger.d("Dark Mode theme selected.")
+			darkModeBtn.isChecked -> {
+				logger.d("Dark Mode")
 				aioSettings.themeAppearance = 1
 			}
-
-			lightModeUIRadioBtn.isChecked -> {
-				logger.d("Light Mode theme selected.")
+			lightModeBtn.isChecked -> {
+				logger.d("Light Mode")
 				aioSettings.themeAppearance = 2
 			}
 		}
 
-		logger.d("Persisting selected theme into storage.")
+		// Commit and notify
+		logger.d("Save theme")
 		aioSettings.updateInStorage()
 
-		logger.d("Closing dialog after apply.")
+		// Close dialog and call listener
 		close()
-
-		logger.d("Triggering onApplyListener callback.")
 		onApplyListener()
+		logger.d("Done")
 	}
 }
