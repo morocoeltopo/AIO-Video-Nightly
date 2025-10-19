@@ -7,8 +7,9 @@ import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.core.content.ContextCompat.getDrawable
 import androidx.core.net.toUri
-import app.core.AIOApp
+import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.aioSettings
+import app.core.engines.settings.AIOSettings.Companion.AIO_SETTING_DARK_MODE_FILE_NAME
 import app.core.engines.updater.AIOUpdater
 import app.ui.main.fragments.settings.activities.browser.AdvBrowserSettingsActivity
 import app.ui.main.fragments.settings.dialogs.ContentRegionSelector
@@ -35,6 +36,7 @@ import lib.ui.ViewUtility.showOnScreenKeyboard
 import lib.ui.builders.DialogBuilder
 import lib.ui.builders.ToastView.Companion.showToast
 import lib.ui.builders.WaitingDialog
+import java.io.File
 import java.lang.ref.WeakReference
 
 /**
@@ -132,19 +134,24 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	 */
 	fun togglesDarkModeUISettings() {
 		logger.d("Toggling Dark Mode UI setting")
-		try {
-			aioSettings.enableDarkUIMode = !aioSettings.enableDarkUIMode
-			aioSettings.updateInStorage()
-			aioSettings.updateUIMode()
-			updateSettingStateUI()
-			safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
-				ViewUtility.changesSystemTheme(this)
-				logger.d("Dark Mode UI is now: ${aioSettings.enableDarkUIMode}")
+		ThreadsUtility.executeInBackground(codeBlock = {
+			try {
+				val tempFile = File(INSTANCE.filesDir, AIO_SETTING_DARK_MODE_FILE_NAME)
+				if (tempFile.exists()) tempFile.delete()
+				else tempFile.createNewFile()
+
+				aioSettings.updateInStorage()
+				ThreadsUtility.executeOnMain {
+					updateSettingStateUI()
+					safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+						ViewUtility.changesSystemTheme(this)
+						logger.d("Dark Mode UI is now: ${tempFile.exists()}")
+					}
+				}
+			} catch (error: Exception) {
+				logger.e("Error toggling Dark Mode UI: ${error.message}", error)
 			}
-		} catch (error: Exception) {
-			logger.e("Error toggling Dark Mode UI: ${error.message}", error)
-			error.printStackTrace()
-		}
+		})
 	}
 
 	/**
@@ -580,7 +587,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			listOf(
 				SettingViewConfig(
 					viewId = R.id.txt_dark_mode_ui,
-					isEnabled = aioSettings.enableDarkUIMode
+					isEnabled = File(INSTANCE.filesDir, AIO_SETTING_DARK_MODE_FILE_NAME).exists()
 				),
 				SettingViewConfig(
 					viewId = R.id.txt_daily_suggestions,
@@ -708,7 +715,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 	 */
 	private fun processedToRestart() {
 		logger.d("Processing application restart")
-		val context = AIOApp.INSTANCE
+		val context = INSTANCE
 		val packageManager = context.packageManager
 		val intent = packageManager.getLaunchIntentForPackage(context.packageName)
 		intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -81,10 +81,6 @@ class AIOSettings : Serializable {
 	//-1 for automatic, 1 for dark, 2 for light
 	var themeAppearance: Int = -1
 
-	// Other settings
-	@JsonAttribute(name = "enableDarkUIMode")
-	var enableDarkUIMode: Boolean = false
-
 	@JsonAttribute(name = "enableDailyContentSuggestion")
 	var enableDailyContentSuggestion: Boolean = true
 
@@ -287,6 +283,7 @@ class AIOSettings : Serializable {
 						}
 					}
 				}
+
 			} catch (error: Exception) {
 				logger.e("Error reading settings from storage: ${error.message}", error)
 			}
@@ -428,27 +425,6 @@ class AIOSettings : Serializable {
 		val outputStream = ByteArrayOutputStream()
 		aioDSLJsonInstance.serialize(this, outputStream) // write to stream
 		return outputStream.toByteArray().decodeToString() // convert to String
-	}
-
-	/**
-	 * Updates the UI mode marker by creating or deleting the `darkmode.on` file.
-	 *
-	 * - Creates the file if dark mode is enabled.
-	 * - Deletes the file if dark mode is disabled.
-	 *
-	 * This lightweight file-based flag allows other parts of the app to
-	 * quickly detect the current UI mode without reading settings.
-	 */
-	fun updateUIMode() {
-		try {
-			val tempFile = File(INSTANCE.filesDir, AIO_SETTING_DARK_MODE_FILE_NAME)
-
-			if (aioSettings.enableDarkUIMode) {
-				if (!tempFile.exists()) tempFile.createNewFile()
-			} else tempFile.delete()
-		} catch (error: Exception) {
-			logger.e("Error saving or deleting darkmode.on file:", error)
-		}
 	}
 
 	/**
