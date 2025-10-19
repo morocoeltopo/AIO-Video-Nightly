@@ -19,19 +19,19 @@ import java.lang.ref.WeakReference
  *
  * @param context The application context (held weakly to prevent memory leaks)
  */
-class AudioPlayerUtils(private val context: Context?) {
+open class AudioPlayerUtils(private val context: Context?) {
 
 	/** Logger for debugging and error tracking. */
 	private val logger = LogHelperUtils.from(javaClass)
 
 	// MediaPlayer instance for audio playback
-	private var mediaPlayer: MediaPlayer? = null
+	protected var mediaPlayer: MediaPlayer? = null
 
 	// Callback for when playback completes naturally
-	private var onCompletionListener: (() -> Unit)? = null
+	protected var completionListener: (() -> Unit)? = null
 
 	// Callback for playback errors
-	private var onErrorListener: ((Int, Int) -> Unit)? = null
+	protected var errorListener: ((Int, Int) -> Unit)? = null
 
 	/**
 	 * Starts playback of an audio resource.
@@ -49,13 +49,13 @@ class AudioPlayerUtils(private val context: Context?) {
 
 				// Set completion listener to clean up after playback finishes
 				setOnCompletionListener {
-					onCompletionListener?.invoke()
+					completionListener?.invoke()
 					stop()
 				}
 
 				// Set error listener to handle playback errors
 				setOnErrorListener { _, what, extra ->
-					onErrorListener?.invoke(what, extra)
+					errorListener?.invoke(what, extra)
 					stop()
 					false // Indicates we handled the error
 				}
@@ -141,7 +141,7 @@ class AudioPlayerUtils(private val context: Context?) {
 	 * @param listener Callback to invoke on completion
 	 */
 	fun setOnCompletionListener(listener: () -> Unit) {
-		onCompletionListener = listener
+		completionListener = listener
 	}
 
 	/**
@@ -150,6 +150,6 @@ class AudioPlayerUtils(private val context: Context?) {
 	 * @param listener Callback that receives error codes (what, extra)
 	 */
 	fun setOnErrorListener(listener: (Int, Int) -> Unit) {
-		onErrorListener = listener
+		errorListener = listener
 	}
 }

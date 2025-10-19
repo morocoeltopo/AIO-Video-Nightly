@@ -266,14 +266,14 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	fun pausePlayback() {
 		if (!isFinishing && !isDestroyed) {
 			player.playWhenReady = false
-			player.playbackState; player.pause()
+			player.pause()
 		}
 	}
 
 	fun resumePlayback() {
 		if (player.isPlaying) return
 		player.playWhenReady = true
-		player.playbackState; player.play()
+		player.play()
 		player.seekTo(currentPlaybackPosition)
 	}
 
