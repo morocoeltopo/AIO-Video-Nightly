@@ -1,5 +1,6 @@
 package app.ui.others.media_player
 
+import android.app.Activity
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.content.res.Configuration
@@ -8,6 +9,7 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory.decodeByteArray
 import android.graphics.Typeface
+import android.media.AudioManager
 import android.media.MediaMetadataRetriever
 import android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
 import android.media.MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
@@ -665,17 +667,30 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		var wasPlayingBeforeSeek = false
 		var isFingerScrolling = false
 		var isLongPressTriggered = false
-		val longPressDelay = 500L
+		val longPressDelay = 200L
 		val longPressHandler = Handler(Looper.getMainLooper())
 
-		// Set up gesture detector for seeking
+		val audioManager = targetView.context.getSystemService(AUDIO_SERVICE) as AudioManager
+		val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+		var initialVolume = 0
+
+		val window = (targetView.context as Activity).window
+		var initialBrightness = window.attributes.screenBrightness
+
+		var gestureDirection: String? = null // "vertical" or "horizontal"
+
 		val gestureDetector = GestureDetector(
-			/* context = */ targetView.context,
-			/* listener = */ object : SimpleOnGestureListener() {
+			targetView.context,
+			object : SimpleOnGestureListener() {
 				override fun onDown(e: MotionEvent): Boolean {
 					if (areControllersLocked) return true
 					isFingerScrolling = false
 					isLongPressTriggered = false
+					gestureDirection = null
+					initialVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+					initialBrightness = window.attributes.screenBrightness.takeIf { it >= 0 }
+						?: 0.5f // fallback for auto brightness
+
 					longPressHandler.postDelayed({
 						if (!isFingerScrolling && !isUserSeeking) {
 							wasPlayingBeforeSeek = player.isPlaying
@@ -690,31 +705,62 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 				override fun onScroll(
 					e1: MotionEvent?, e2: MotionEvent,
-					distanceX: Float, distanceY: Float,
+					distanceX: Float, distanceY: Float
 				): Boolean {
-					if (areControllersLocked) return true
+					if (areControllersLocked || e1 == null) return true
 					longPressHandler.removeCallbacksAndMessages(null)
-					if (!isFingerScrolling) {
-						isFingerScrolling = true
-						wasPlayingBeforeSeek = player.isPlaying
-						if (wasPlayingBeforeSeek) player.pause()
-						isUserSeeking = true
-						startSeekPosition = getPlaybackPosition()
+
+					val deltaX = e2.x - e1.x
+					val deltaY = e1.y - e2.y
+					val screenWidth = targetView.width
+					val screenHeight = targetView.height
+					val threshold = 80
+
+					// Determine direction only once
+					if (gestureDirection == null) {
+						gestureDirection = if (abs(deltaY) > abs(deltaX)) "vertical" else "horizontal"
 					}
 
-					val duration = getVideoDuration()
-					if (isUserSeeking && e1 != null && duration > 0) {
-						val deltaX = e2.x - e1.x
-						val threshold = 120
-
-						if (abs(deltaX) > threshold && abs(distanceX) > abs(distanceY)) {
-							val seekOffset = ((deltaX / targetView.width) * 25000).toLong()
-							val newSeekPosition =
-								(startSeekPosition + seekOffset).coerceIn(0, getVideoDuration())
-							progressBar.setPosition(newSeekPosition)
-							player.seekTo(newSeekPosition)
-							showQuickPlayerInfo(formatPlaybackTime(newSeekPosition))
+					when (gestureDirection) {
+						"vertical" -> {
+							val sensitivity = 10f // increase to make swipe more responsive
+							val percentage = (deltaY / screenHeight) * sensitivity
+							if (e1.x < screenWidth / 2) {
+								// Brightness control
+								val newBrightness = (initialBrightness + percentage).coerceIn(0.0f, 1.0f)
+								val params = window.attributes
+								params.screenBrightness = newBrightness
+								window.attributes = params
+								showQuickPlayerInfo("Brightness: ${(newBrightness * 100).toInt()}%")
+							} else {
+								// Volume control
+								val change = (percentage * maxVolume).toInt()
+								val newVolume = (initialVolume + change).coerceIn(0, maxVolume)
+								audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+								showQuickPlayerInfo("Volume: ${(newVolume * 100) / maxVolume}%")
+							}
 							return true
+						}
+
+						"horizontal" -> {
+							if (!isFingerScrolling) {
+								isFingerScrolling = true
+								wasPlayingBeforeSeek = player.isPlaying
+								if (wasPlayingBeforeSeek) player.pause()
+								isUserSeeking = true
+								startSeekPosition = getPlaybackPosition()
+							}
+
+							val duration = getVideoDuration()
+							if (isUserSeeking && duration > 0 && abs(deltaX) > threshold) {
+								val seekOffset = ((deltaX / screenWidth) * 25000).toLong()
+								val newSeekPosition =
+									(startSeekPosition + seekOffset).coerceIn(0, getVideoDuration())
+								progressBar.setPosition(newSeekPosition)
+								player.seekTo(newSeekPosition)
+								showQuickPlayerInfo(formatPlaybackTime(newSeekPosition))
+								return true
+							}
 						}
 					}
 					return false
@@ -726,16 +772,17 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				}
 
 				override fun onDoubleTap(e: MotionEvent): Boolean {
-					togglePlaybackState(); return true
+					togglePlaybackState()
+					return true
 				}
 			})
 
-		// Set touch listener to handle gestures
 		targetView.setOnTouchListener { touchedView, event ->
 			gestureDetector.onTouchEvent(event)
 			when (event.action) {
 				MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
 					longPressHandler.removeCallbacksAndMessages(null)
+					gestureDirection = null
 					if (isUserSeeking) {
 						isUserSeeking = false
 						if (wasPlayingBeforeSeek) player.play()
