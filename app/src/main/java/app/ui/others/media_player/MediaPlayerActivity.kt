@@ -780,23 +780,23 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					when (gestureDirection) {
 						"vertical" -> {
 							// Handle volume or brightness change
-							val brightnessSensitivity = 5f // increase for faster response
-							val brightnessPercentage = (deltaY / screenHeight) * brightnessSensitivity
+							val brightnessAdjustmentFactor = 5f // higher = faster brightness change per swipe
+							val brightnessDelta = (deltaY / screenHeight) * brightnessAdjustmentFactor
 
-							val volumeSensitivity = 6f // increase for faster response
-							val volumePercentage = (deltaY / screenHeight) * volumeSensitivity
+							val volumeAdjustmentFactor = 6f // higher = faster volume change per swipe
+							val volumeDelta = (deltaY / screenHeight) * volumeAdjustmentFactor
 
 							if (e1.x < screenWidth / 2) {
 								// Left side → brightness control
-								val newBrightness = (initialBrightness + brightnessPercentage).coerceIn(0.0f, 1.0f)
+								val newBrightness = (initialBrightness + brightnessDelta).coerceIn(0.0f, 1.0f)
 								val params = window.attributes
 								params.screenBrightness = newBrightness
 								window.attributes = params
-								val progress = ( newBrightness * 100).toInt()
+								val progress = (newBrightness * 100).toInt()
 								setBrightness(process = progress)
 							} else {
 								// Right side → volume control
-								val change = (volumePercentage * maxVolume).toInt()
+								val change = (volumeDelta * maxVolume).toInt()
 								val newVolume = (initialVolume + change).coerceIn(0, maxVolume)
 								audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
 								val progress = (newVolume * 100) / maxVolume
