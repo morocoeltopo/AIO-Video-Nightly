@@ -24,7 +24,7 @@ import lib.networks.URLUtility.ensureHttps
 import lib.networks.URLUtility.isValidURL
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
-import lib.process.IntentHelperUtils
+import lib.process.IntentHelperUtils.openInstagramApp
 import lib.process.LogHelperUtils
 import lib.process.OSProcessUtils.restartApp
 import lib.process.ThreadsUtility
@@ -140,9 +140,8 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				aioSettings.updateInStorage()
 				logger.d("✔ Daily suggestions: $contentSuggestion")
 				updateSettingStateUI()
-			} catch (e: Exception) {
-				logger.d("× Error toggling suggestions: ${e.message}")
-				e.printStackTrace()
+			} catch (error: Exception) {
+				logger.e("× Error toggling suggestions: ${error.message}", error)
 			}
 		} ?: logger.d("× Failed: Activity null (Daily Suggestions)")
 	}
@@ -162,9 +161,8 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			aioSettings.updateInStorage()
 			logger.d("✔ Notifications hidden: $hideNotification")
 			updateSettingStateUI()
-		} catch (e: Exception) {
-			logger.d("× Error toggling notifications: ${e.message}")
-			e.printStackTrace()
+		} catch (error: Exception) {
+			logger.e("× Error toggling notifications: ${error.message}", error)
 		}
 	}
 
@@ -175,9 +173,8 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			aioSettings.updateInStorage()
 			logger.d("✔ Wi-Fi only: ${aioSettings.downloadWifiOnly}")
 			updateSettingStateUI()
-		} catch (e: Exception) {
-			logger.d("× Error toggling Wi-Fi only: ${e.message}")
-			e.printStackTrace()
+		} catch (error: Exception) {
+			logger.e("× Error toggling Wi-Fi only: ${error.message}", error)
 		}
 	}
 
@@ -218,9 +215,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 					msgTextView.setText(R.string.text_feature_isnt_available_yet)
 				}, isNegativeButtonVisible = false
 			)
-		} ?: run {
-			logger.d("Failed to show Advanced Downloads dialog: safeMotherActivityRef is null")
-		}
+		} ?: run { logger.d("Failed: null activity") }
 	}
 
 	fun setBrowserDefaultHomepage() {
@@ -262,7 +257,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 						showOnScreenKeyboard(activityRef, editTextURL)
 					}
 				})
-			} ?: run { logger.d("Failed to open Browser Homepage dialog: activity is null") }
+			} ?: run { logger.d("Failed: null activity") }
 		} catch (error: Exception) {
 			logger.e("Error setting browser homepage: ${error.message}", error)
 			showToast(
@@ -281,8 +276,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			logger.d("Browser Ad Blocker toggled: $browserEnableAdblocker")
 			updateSettingStateUI()
 		} catch (error: Exception) {
-			logger.d("Error toggling browser ad blocker: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error toggling browser ad blocker: ${error.message}", error)
 		}
 	}
 
@@ -295,8 +289,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			logger.d("Popup Blocker toggled: $browserEnablePopupBlocker")
 			updateSettingStateUI()
 		} catch (error: Exception) {
-			logger.d("Error toggling popup blocker: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error toggling popup blocker: ${error.message}", error)
 		}
 	}
 
@@ -308,8 +301,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			logger.d("Browser enable images: ${aioSettings.browserEnableImages}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
-			logger.d("Error toggling browser enable images: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error toggling browser enable images: ${error.message}", error)
 		}
 	}
 
@@ -322,8 +314,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			logger.d("Video Grabber toggled: $enableVideoGrabber")
 			updateSettingStateUI()
 		} catch (error: Exception) {
-			logger.d("Error toggling video grabber: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error toggling video grabber: ${error.message}", error)
 		}
 	}
 
@@ -333,216 +324,166 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			?.openActivity(
 				activity = AdvBrowserSettingsActivity::class.java,
 				shouldAnimate = true
-			) ?: run {
-			logger.d("Failed to open Advanced Browser Settings: activity is null")
-		}
+			) ?: run { logger.d("Failed: null activity") }
 	}
 
 	fun shareApplicationWithFriends() {
 		logger.d("Sharing application with friends")
-		settingsFragmentRef?.safeMotherActivityRef?.let { context ->
+		settingsFragmentRef?.safeMotherActivityRef?.let { activityRef ->
 			ShareUtility.shareText(
-				context = context,
+				context = activityRef,
 				title = getText(R.string.title_share_with_others),
-				text = getApplicationShareText(context)
+				text = getApplicationShareText(activityRef)
 			)
-		} ?: run {
-			logger.d("Failed to share application: safeMotherActivityRef is null")
-		}
+		} ?: run { logger.d("Failed: null activity") }
 	}
 
 	fun openUserFeedbackActivity() {
 		logger.d("Opening User Feedback Activity")
 		settingsFragmentRef?.safeMotherActivityRef?.openActivity(
 			UserFeedbackActivity::class.java, shouldAnimate = false
-		) ?: run {
-			logger.d("Failed to open User Feedback Activity: safeMotherActivityRef is null")
-		}
+		) ?: run { logger.d("Failed: null activity") }
 	}
 
 	fun openApplicationInformation() {
 		logger.d("Opening Application Info in system settings")
-		settingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting() ?: run {
-			logger.d("Failed to open Application Info: safeBaseActivityRef is null")
-		}
+		val safeBaseActivityRef = settingsFragmentRef?.safeBaseActivityRef
+		safeBaseActivityRef?.openAppInfoSetting() ?: run { logger.d("Failed: null activity") }
 	}
 
 	fun showPrivacyPolicyActivity() {
 		logger.d("Opening Privacy Policy in browser")
-		settingsFragmentRef?.safeBaseActivityRef?.apply {
+		val safeBaseActivityRef = settingsFragmentRef?.safeBaseActivityRef
+		safeBaseActivityRef?.let { activityRef ->
 			try {
-				val uri = getText(R.string.text_aio_official_privacy_policy_url).toString()
+				val urlResId = R.string.text_aio_official_privacy_policy_url
+				val uri = getText(urlResId)
 				logger.d("Privacy Policy URL: $uri")
-				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
+				activityRef.startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 			} catch (error: Exception) {
 				logger.d("Error opening Privacy Policy: ${error.message}")
 				error.printStackTrace()
-				showToast(
-					activityInf = this@apply,
-					msgId = R.string.title_please_install_web_browser
-				)
+				val toastMsgId = R.string.title_please_install_web_browser
+				showToast(activityInf = activityRef, msgId = toastMsgId)
 			}
-		} ?: run {
-			logger.d("Failed to open Privacy Policy: safeBaseActivityRef is null")
-		}
+		} ?: run { logger.d("Failed: null activity") }
 	}
 
 	fun showTermsConditionActivity() {
 		logger.d("Opening Terms & Conditions in browser")
-		settingsFragmentRef?.safeBaseActivityRef?.apply {
+		val safeBaseActivityRef = settingsFragmentRef?.safeBaseActivityRef
+		safeBaseActivityRef?.let { activityRef ->
 			try {
-				val uri = getText(R.string.text_aio_official_terms_conditions_url).toString()
+				val urlResId = R.string.text_aio_official_terms_conditions_url
+				val uri = getText(urlResId)
 				logger.d("Terms & Conditions URL: $uri")
-				startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
+				activityRef.startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
 			} catch (error: Exception) {
-				logger.d("Error opening Terms & Conditions: ${error.message}")
-				error.printStackTrace()
-				showToast(activityInf = this@apply, msgId = R.string.title_please_install_web_browser)
+				logger.e("Failed to open Terms: ${error.message}", error)
+				val toastMsgId = R.string.title_please_install_web_browser
+				showToast(activityInf = activityRef, msgId = toastMsgId)
 			}
 		} ?: run {
-			logger.d("Failed to open Terms & Conditions: safeBaseActivityRef is null")
+			logger.d("Failed: null activity")
 		}
 	}
 
 	fun checkForNewApkVersion() {
-		logger.d("Checking for new APK version")
-		settingsFragmentRef?.safeBaseActivityRef?.let { safeBaseActivityRef ->
+		logger.d("Check for APK update")
+		settingsFragmentRef?.safeBaseActivityRef?.let { activityRef ->
 			ThreadsUtility.executeInBackground(codeBlock = {
 				var waitingDialog: WaitingDialog? = null
 				ThreadsUtility.executeOnMain {
 					waitingDialog = WaitingDialog(
-						baseActivityInf = safeBaseActivityRef,
+						baseActivityInf = activityRef,
 						loadingMessage = getText(R.string.title_checking_for_new_update),
 						isCancelable = false,
-					); waitingDialog.show()
+					)
+					waitingDialog.show()
 					delay(1000)
 				}
 
 				if (AIOUpdater().isNewUpdateAvailable()) {
 					ThreadsUtility.executeOnMain { waitingDialog?.close() }
-					logger.d("New update available → opening official site")
-					safeBaseActivityRef.openApplicationOfficialSite()
+					logger.d("Update found → opening site")
+					activityRef.openApplicationOfficialSite()
 				} else {
 					ThreadsUtility.executeOnMain { waitingDialog?.close() }
-					logger.d("Already on latest version")
+					logger.d("Already latest version")
 					ThreadsUtility.executeOnMain {
-						safeBaseActivityRef.doSomeVibration(50)
-						showToast(
-							activityInf = safeBaseActivityRef,
-							msgId = R.string.title_you_using_latest_version
-						)
+						activityRef.doSomeVibration(50)
+						val msgResId = R.string.title_you_using_latest_version
+						showToast(activityInf = activityRef, msgId = msgResId)
 					}
 				}
 			}, errorHandler = {
-				logger.d("Error while checking updates: ${it.message}")
-				safeBaseActivityRef.doSomeVibration(50)
-				showToast(
-					activityInf = safeBaseActivityRef,
-					msgId = R.string.title_something_went_wrong
-				)
+				logger.d("Update check failed: ${it.message}")
+				activityRef.doSomeVibration(50)
+				val toastMsgId = R.string.title_something_went_wrong
+				showToast(activityInf = activityRef, msgId = toastMsgId)
 			})
-		} ?: run {
-			logger.d("Failed to check for updates: safeBaseActivityRef is null")
-		}
+		} ?: run { logger.d("Update check failed: null activity") }
 	}
 
 	fun updateSettingStateUI() {
-		logger.d("Updating Setting State UI")
+		logger.d("Update settings UI")
+		val darkModeTempConfigFile = File(INSTANCE.filesDir, AIO_SETTING_DARK_MODE_FILE_NAME)
 		settingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
 			listOf(
-				SettingViewConfig(
-					viewId = R.id.txt_dark_mode_ui,
-					isEnabled = File(INSTANCE.filesDir, AIO_SETTING_DARK_MODE_FILE_NAME).exists()
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_daily_suggestions,
-					isEnabled = aioSettings.enableDailyContentSuggestion
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_play_notification_sound,
-					isEnabled = aioSettings.downloadPlayNotificationSound
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_wifi_only_downloads,
-					isEnabled = aioSettings.downloadWifiOnly
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_single_click_open,
-					isEnabled = aioSettings.openDownloadedFileOnSingleClick
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_hide_task_notifications,
-					isEnabled = aioSettings.downloadHideNotification
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_enable_adblock,
-					isEnabled = aioSettings.browserEnableAdblocker
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_enable_popup_blocker,
-					isEnabled = aioSettings.browserEnablePopupBlocker
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_show_image_on_web,
-					isEnabled = aioSettings.browserEnableImages
-				),
-				SettingViewConfig(
-					viewId = R.id.txt_enable_video_grabber,
-					isEnabled = aioSettings.browserEnableVideoGrabber
-				),
+				SettingViewConfig(R.id.txt_dark_mode_ui, darkModeTempConfigFile.exists()),
+				SettingViewConfig(R.id.txt_daily_suggestions, aioSettings.enableDailyContentSuggestion),
+				SettingViewConfig(R.id.txt_play_notification_sound, aioSettings.downloadPlayNotificationSound),
+				SettingViewConfig(R.id.txt_wifi_only_downloads, aioSettings.downloadWifiOnly),
+				SettingViewConfig(R.id.txt_single_click_open, aioSettings.openDownloadedFileOnSingleClick),
+				SettingViewConfig(R.id.txt_hide_task_notifications, aioSettings.downloadHideNotification),
+				SettingViewConfig(R.id.txt_enable_adblock, aioSettings.browserEnableAdblocker),
+				SettingViewConfig(R.id.txt_enable_popup_blocker, aioSettings.browserEnablePopupBlocker),
+				SettingViewConfig(R.id.txt_show_image_on_web, aioSettings.browserEnableImages),
+				SettingViewConfig(R.id.txt_enable_video_grabber, aioSettings.browserEnableVideoGrabber),
 			).forEach { config ->
 				layout.findViewById<TextView>(config.viewId)?.updateEndDrawable(config.isEnabled)
 			}
 		} ?: run {
-			logger.d("Failed to update UI: safeFragmentLayoutRef is null")
+			logger.d("UI update failed")
 		}
 	}
 
 	fun restartApplication() {
-		logger.d("Showing Restart Application confirmation dialog")
+		logger.d("Show restart dialog")
 		settingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
+			val msgResId = R.string.text_cation_msg_of_restarting_application
 			MsgDialogUtils.getMessageDialog(
 				baseActivityInf = safeMotherActivityRef,
 				isTitleVisible = true,
 				titleText = getText(R.string.title_are_you_sure_about_this),
+				messageTextViewCustomize = { it.setText(msgResId) },
 				isNegativeButtonVisible = false,
-				positiveButtonTextCustomize = { positiveButton ->
-					positiveButton.setLeftSideDrawable(R.drawable.ic_button_exit)
-					positiveButton.setText(R.string.title_restart_application)
-				},
-				messageTextViewCustomize = { msgTextView ->
-					msgTextView.setText(R.string.text_cation_msg_of_restarting_application)
+				positiveButtonTextCustomize = {
+					it.setLeftSideDrawable(R.drawable.ic_button_exit)
+					it.setText(R.string.title_restart_application)
 				}
 			)?.apply {
 				setOnClickForPositiveButton {
-					logger.d("User confirmed application restart")
-					processedToRestart()
+					logger.d("Restart confirmed")
+					restartApplicationProcess()
 				}
 			}?.show()
-		} ?: run {
-			logger.d("Failed to show restart dialog: safeMotherActivityRef is null")
-		}
+		} ?: run { logger.d("Restart dialog failed") }
 	}
 
 	fun followDeveloperAtInstagram() {
 		try {
 			settingsFragmentRef?.safeMotherActivityRef?.let {
-				IntentHelperUtils.openInstagramApp(
-					context = it,
-					profileUrl = "https://www.instagram.com/shibafoss/"
-				)
+				openInstagramApp(it, "https://www.instagram.com/shibafoss/")
 			}
 		} catch (error: Exception) {
-			logger.e("Error found at opening instagram", error)
+			logger.e("Instagram open failed", error)
 		}
 	}
 
 	private fun TextView.updateEndDrawable(isEnabled: Boolean) {
-		val endDrawableRes = if (isEnabled) {
-			R.drawable.ic_button_checked_circle_small
-		} else {
-			R.drawable.ic_button_unchecked_circle_small
-		}
+		val endDrawableRes = if (isEnabled) R.drawable.ic_button_checked_circle_small
+		else R.drawable.ic_button_unchecked_circle_small
 		val current = compoundDrawables
 		val checkedDrawable = getDrawable(context, endDrawableRes)
 		setCompoundDrawablesWithIntrinsicBounds(current[0], current[1], checkedDrawable, current[3])
@@ -555,8 +496,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			.trimIndent()
 	}
 
-	private fun processedToRestart() {
-		logger.d("Processing application restart")
+	private fun restartApplicationProcess() {
 		val context = INSTANCE
 		val packageManager = context.packageManager
 		val intent = packageManager.getLaunchIntentForPackage(context.packageName)
