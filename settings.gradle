@@ -1,43 +1,29 @@
-// Plugin management section controls where Gradle looks for plugins
 pluginManagement {
     repositories {
         google {
             content {
-                // Include Android Gradle Plugin and Google dependencies
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
             }
         }
-        // Central Maven repository
         mavenCentral()
-        // Gradle’s own plugin portal
         gradlePluginPortal()
     }
 }
 
-// Plugins applied at the settings level
 plugins {
-    // Automatically resolve JDK toolchains using Foojay API
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
-// Dependency resolution config (applies to all subprojects)
 dependencyResolutionManagement {
-    // Prevents project-level repos, enforces centralized repo definitions
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // Google’s Maven repo (Android dependencies)
         google()
-        // Central Maven repo
         mavenCentral()
-        // JitPack (GitHub projects published as Maven artifacts)
         maven { url "https://jitpack.io" }
     }
 }
 
-// Root project name
 rootProject.name = "AIO_VD"
-
-// Includes app module
 include ':app'

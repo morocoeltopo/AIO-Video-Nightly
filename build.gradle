@@ -1,15 +1,4 @@
-/**
- * Gradle plugin configuration for the project.
- *
- * This block defines which plugins are available to subprojects.
- * The `apply false` means the plugins are declared here but not
- * automatically applied to the root project. Instead, they can be
- * applied individually in module-level build.gradle files.
- */
 plugins {
-    // Android application plugin (used for app modules)
-    alias(libs.plugins.android.application) apply false
-
-    // Kotlin Android plugin (enables Kotlin support for Android)
-    alias(libs.plugins.kotlin.android) apply false
+	alias(libs.plugins.android.application) apply false
+	alias(libs.plugins.kotlin.android) apply false
 }
