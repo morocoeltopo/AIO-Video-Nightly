@@ -561,11 +561,12 @@
 	<string name="title_unlock_requires">Unlock Requires</string>
 	<string name="title_setup_device_password">Set Up Device Lock First</string>
 	<string name="title_authentication_failed">Authentication Failed Or Cancelled</string>
-	<string name="title_private_videos_alert">Private Session Alert</string>
+	<string name="title_private_videos_alert">Private Videos Alert</string>
 	<string name="title_not_now">Not Now</string>
 	<string name="title_unlock_and_play_all">Unlock &amp; Play</string>
 	<string name="title_private_videos">Private Videos</string>
 	<string name="title_now_playing">Now Playing</string>
 	<string name="title_frame_snapshot">Frame Snapshot</string>
+	<string name="title_snapshot_saved_open_gallery">Snapshot Saved, Open Your Gallery</string>
 
 </resources>

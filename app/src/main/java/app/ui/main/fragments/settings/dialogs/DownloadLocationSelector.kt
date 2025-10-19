@@ -33,6 +33,8 @@ import java.lang.ref.WeakReference
  * @property baseActivity The activity context required for building the dialog.
  */
 class DownloadLocationSelector(private val baseActivity: BaseActivity) {
+
+	/** Logger for short lifecycle tracking. */
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/** Weak reference to avoid memory leaks with the base activity */
@@ -130,7 +132,8 @@ class DownloadLocationSelector(private val baseActivity: BaseActivity) {
 	 */
 	private fun updateRadioButtons(privateRadio: ImageView, galleryRadio: ImageView) {
 		val isPrivate = aioSettings.defaultDownloadLocation == PRIVATE_FOLDER
-		logger.d("Updating radio buttons: current = ${if (isPrivate) "Private Folder" else "System Gallery"}")
+		logger.d("Updating radio buttons: current " +
+				"= ${if (isPrivate) "Private Folder" else "System Gallery"}")
 		privateRadio.setImageResource(
 			if (isPrivate) R.drawable.ic_button_checked_circle
 			else R.drawable.ic_button_unchecked_circle
