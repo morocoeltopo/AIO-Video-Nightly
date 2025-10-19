@@ -113,7 +113,8 @@ class ContentRegionSelector(private val baseActivity: BaseActivity) {
 					// After all added → highlight selected region
 					val currentRegionCode = aioSettings.userSelectedContentRegion
 					val selectedIndex = regionsList.indexOfFirst { it.first == currentRegionCode }
-					logger.d("Finished populating regions. Current region: $currentRegionCode (index: $selectedIndex)")
+					logger.d("Finished populating regions. " +
+							"Current region: $currentRegionCode (index: $selectedIndex)")
 					if (selectedIndex >= 0) {
 						radioGroup.findViewById<RadioButton>(selectedIndex)?.isChecked = true
 					}

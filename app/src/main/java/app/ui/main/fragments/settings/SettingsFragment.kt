@@ -13,50 +13,44 @@ import lib.texts.CommonTextUtils.fromHtmlStringToSpanned
 import java.lang.ref.WeakReference
 
 /**
- * Fragment responsible for displaying and managing application settings.
+ * Fragment responsible for displaying and managing the application settings UI.
  *
- * This fragment provides:
- * - Application version information
- * - Update checking functionality
- * - Various toggle settings (notifications, WiFi-only downloads, etc.)
- * - Navigation to legal documents (privacy policy, terms of service)
- * - Language and download location preferences
- * - Browser-related settings
+ * This fragment primarily handles:
+ * - Displaying app version information (name and build code)
+ * - Providing settings navigation (e.g., downloads, language, appearance)
+ * - Managing toggle states for preferences (WiFi-only downloads, ad-block, etc.)
+ * - Linking to legal and feedback sections
+ * - Integrating update checking and restart options
  *
- * The fragment maintains weak references to avoid memory leaks and delegates
- * click handling to a separate [SettingsOnClickLogic] class.
+ * The fragment uses weak references to avoid memory leaks and works in coordination
+ * with [SettingsOnClickLogic] for managing user click interactions.
  */
 class SettingsFragment : BaseFragment() {
 
+	/** Logger utility for internal debugging and event tracing. */
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
-	 * Weak reference to this fragment instance to prevent memory leaks.
-	 * Used when passing fragment reference to other components.
+	 * Weak reference to the SettingsFragment instance to prevent memory leaks.
+	 * This allows safe reference passing to external logic classes.
 	 */
 	val safeSettingsFragmentRef = WeakReference(this).get()
 
 	/**
-	 * Lazy-initialized weak reference to the host [MotherActivity].
-	 * Provides safe access to activity methods and properties.
+	 * Weak lazy reference to the parent [MotherActivity] to safely access activity-level
+	 * functionality without risking context leaks.
 	 */
 	val safeMotherActivityRef by lazy { WeakReference(safeBaseActivityRef as MotherActivity).get() }
 
 	/**
-	 * Handler for all click events in the settings UI.
-	 * Manages the business logic for each settings option.
+	 * Logic handler that defines and executes all click-based actions within the settings fragment.
 	 */
 	var settingsOnClickLogic: SettingsOnClickLogic? = null
 
 	/**
-	 * Reference to the "Check for Update" button view.
-	 * Maintained as a field to allow dynamic updates to its state.
-	 */
-	var buttonCheckNewUpdate: View? = null
-
-	/**
-	 * Provides the layout resource ID for this fragment.
-	 * @return The layout resource ID (R.layout.frag_settings_1_main_1)
+	 * Provides the layout resource identifier associated with this fragment.
+	 *
+	 * @return The ID of the layout file to inflate for this fragment.
 	 */
 	override fun getLayoutResId(): Int {
 		logger.d("Providing layout resource ID for SettingsFragment")
@@ -64,173 +58,184 @@ class SettingsFragment : BaseFragment() {
 	}
 
 	/**
-	 * Called after the fragment's layout is inflated and ready.
-	 * Initializes all views and sets up click listeners.
+	 * Initializes fragment logic after the layout is fully loaded and ready.
+	 * This is the starting point for UI setup and click-binding operations.
 	 *
-	 * @param layoutView The inflated layout view
-	 * @param state The saved instance state bundle, if any
+	 * @param layoutView Inflated root view of the fragment.
+	 * @param state Optional saved instance state bundle.
 	 */
 	override fun onAfterLayoutLoad(layoutView: View, state: Bundle?) {
-		logger.d("onAfterLayoutLoad() called: initializing views and click listeners")
-		safeSettingsFragmentRef?.let { fragmentRef ->
-			safeFragmentLayoutRef?.let { layoutRef ->
-				registerSelfReferenceInMotherActivity()
-				initializeViews(layoutRef)
-				initializeViewsOnClick(fragmentRef, layoutRef)
+		logger.d("onAfterLayoutLoad() called: Initializing views and listeners")
+		try {
+			safeSettingsFragmentRef?.let { fragmentRef ->
+				safeFragmentLayoutRef?.let { layoutRef ->
+					registerSelfReferenceInMotherActivity()
+					displayApplicationVersion(layoutRef)
+					setupViewsOnClickEvents(fragmentRef, layoutRef)
+				}
 			}
+		} catch (error: Exception) {
+			logger.e("Exception during onAfterLayoutLoad()", error)
 		}
 	}
 
 	/**
-	 * Called when the fragment becomes visible.
-	 * Re-registers with the activity and refreshes UI state.
+	 * Called when the fragment resumes. It refreshes UI states and ensures
+	 * synchronization with the host activity.
 	 */
 	override fun onResumeFragment() {
-		logger.d("onResumeFragment() called: re-registering fragment and updating UI state")
+		logger.d("onResumeFragment() called: Updating UI and re-registering references")
 		registerSelfReferenceInMotherActivity()
-		settingsOnClickLogic?.updateSettingStateUI()
+		try {
+			settingsOnClickLogic?.updateSettingStateUI()
+		} catch (error: Exception) {
+			logger.e("Exception while updating settings state UI", error)
+		}
 	}
 
 	/**
-	 * Called when the fragment is no longer visible.
-	 * Currently no cleanup needed here.
+	 * Lifecycle callback for when the fragment goes into the background.
+	 * Currently left empty since no action is required.
 	 */
 	override fun onPauseFragment() {
-		logger.d("onPauseFragment() called: no specific cleanup required")
-		// Intentionally left blank
+		logger.d("onPauseFragment() called: No cleanup necessary")
 	}
 
 	/**
-	 * Called when the fragment's view is being destroyed.
-	 * Cleans up references to prevent memory leaks.
+	 * Invoked before the fragment's view is destroyed.
+	 * Cleans up weak references and releases any held resources.
 	 */
 	override fun onDestroyView() {
-		logger.d("onDestroyView() called: unregistering fragment reference")
+		logger.d("onDestroyView() called: Cleaning up fragment references")
 		unregisterSelfReferenceInMotherActivity()
 		super.onDestroyView()
 	}
 
 	/**
-	 * Registers this fragment with the host activity.
-	 * Allows the activity to reference this fragment when needed.
+	 * Registers this fragment instance with its hosting [MotherActivity].
+	 * This ensures the parent can identify and communicate with this fragment.
 	 */
 	private fun registerSelfReferenceInMotherActivity() {
-		logger.d("Registering SettingsFragment reference in MotherActivity")
-		safeMotherActivityRef?.settingsFragment = safeSettingsFragmentRef
-		safeMotherActivityRef?.sideNavigation?.closeDrawerNavigation()
+		logger.d("Registering SettingsFragment reference with MotherActivity")
+		try {
+			safeMotherActivityRef?.settingsFragment = safeSettingsFragmentRef
+			safeMotherActivityRef?.sideNavigation?.closeDrawerNavigation()
+		} catch (error: Exception) {
+			logger.e("Error while registering fragment with MotherActivity", error)
+		}
 	}
 
 	/**
-	 * Unregisters this fragment from the host activity.
-	 * Prevents memory leaks when the fragment is destroyed.
+	 * Clears this fragment's reference from [MotherActivity] to prevent memory leaks.
 	 */
 	private fun unregisterSelfReferenceInMotherActivity() {
 		logger.d("Unregistering SettingsFragment reference from MotherActivity")
-		safeMotherActivityRef?.settingsFragment = null
+		try {
+			safeMotherActivityRef?.settingsFragment = null
+		} catch (error: Exception) {
+			logger.e("Error during fragment unregistration", error)
+		}
 	}
-
 	/**
-	 * Initializes all view references used in the fragment.
-	 * @param fragmentLayout The root view of the fragment
-	 */
-	private fun initializeViews(fragmentLayout: View) {
-		logger.d("Initializing view references for SettingsFragment")
-		buttonCheckNewUpdate = fragmentLayout.findViewById(R.id.btn_check_new_update)
-		initializeViewsInfo(fragmentLayout)
-	}
-
-	/**
-	 * Sets up all click listeners for the settings options.
-	 * Delegates actual click handling to [SettingsOnClickLogic].
+	 * Configures all onClick listeners for the settings controls.
+	 * Each view triggers a corresponding handler in [SettingsOnClickLogic].
 	 *
-	 * @param settingsFragmentRef Weak reference to this fragment
-	 * @param fragmentLayout The root view of the fragment
+	 * @param settingsFragmentRef Reference to the current settings fragment.
+	 * @param fragmentLayout Root view from which to resolve view IDs.
 	 */
-	private fun initializeViewsOnClick(
-		settingsFragmentRef: SettingsFragment,
-		fragmentLayout: View
-	) {
-		logger.d("Setting up click listeners for settings options")
-		settingsOnClickLogic = SettingsOnClickLogic(settingsFragmentRef)
+	private fun setupViewsOnClickEvents(settingsFragmentRef: SettingsFragment, fragmentLayout: View) {
+		logger.d("Setting up onClick listeners for settings actions")
+		try {
+			settingsOnClickLogic = SettingsOnClickLogic(settingsFragmentRef)
 
-		// Map of view IDs to their corresponding click actions
-		val clickActions = mapOf(
-			// Application settings
+			val clickActions = mapOf(
+				// Application settings
+				R.id.btn_user_info to { settingsOnClickLogic?.showUsernameEditor() },
+				R.id.btn_login_register_to_cloud to { settingsOnClickLogic?.showLoginOrRegistrationDialog() },
+				R.id.btn_default_download_location to { settingsOnClickLogic?.showDownloadLocationPicker() },
+				R.id.btn_language_picker to { settingsOnClickLogic?.showLanguageChanger() },
+				R.id.btn_dark_mode_ui to { settingsOnClickLogic?.togglesDarkModeUISettings() },
+				R.id.btn_content_location to { settingsOnClickLogic?.changeDefaultContentRegion() },
+				R.id.btn_daily_suggestions to { settingsOnClickLogic?.toggleDailyContentSuggestions() },
 
-			R.id.btn_user_info to { settingsOnClickLogic?.showUsernameEditor() },
-			R.id.btn_login_register_to_cloud to { settingsOnClickLogic?.showLoginOrRegistrationDialog() },
-			R.id.btn_default_download_location to { settingsOnClickLogic?.setDefaultDownloadLocationPicker() },
-			R.id.btn_language_picker to { settingsOnClickLogic?.showApplicationLanguageChanger() },
-			R.id.btn_dark_mode_ui to { settingsOnClickLogic?.togglesDarkModeUISettings() },
-			R.id.btn_content_location to { settingsOnClickLogic?.changeDefaultContentRegion() },
-			R.id.btn_daily_suggestions to { settingsOnClickLogic?.enableDailyContentSuggestions() },
+				// Download settings
+				R.id.btn_default_download_folder to { settingsOnClickLogic?.changeDefaultDownloadFolder() },
+				R.id.btn_hide_task_notifications to { settingsOnClickLogic?.toggleHideDownloadNotification() },
+				R.id.btn_wifi_only_downloads to { settingsOnClickLogic?.toggleWifiOnlyDownload() },
+				R.id.btn_single_click_open to { settingsOnClickLogic?.toggleSingleClickToOpenFile() },
+				R.id.btn_play_notification_sound to { settingsOnClickLogic?.toggleDownloadNotificationSound() },
+				R.id.btn_adv_downloads_settings to { settingsOnClickLogic?.openAdvanceDownloadsSettings() },
 
-			//Downloads settings
-			R.id.btn_default_download_folder to { settingsOnClickLogic?.changeDefaultDownloadFolder() },
-			R.id.btn_hide_task_notifications to { settingsOnClickLogic?.toggleHideDownloadNotification() },
-			R.id.btn_wifi_only_downloads to { settingsOnClickLogic?.toggleWifiOnlyDownload() },
-			R.id.btn_single_click_open to { settingsOnClickLogic?.toggleSingleClickToOpenFile() },
-			R.id.btn_play_notification_sound to { settingsOnClickLogic?.toggleDownloadNotificationSound() },
-			R.id.btn_adv_downloads_settings to { settingsOnClickLogic?.openAdvanceDownloadsSettings() },
+				// Browser settings
+				R.id.btn_browser_homepage to { settingsOnClickLogic?.setBrowserDefaultHomepage() },
+				R.id.btn_enable_adblock to { settingsOnClickLogic?.toggleBrowserBrowserAdBlocker() },
+				R.id.btn_enable_popup_blocker to { settingsOnClickLogic?.toggleBrowserPopupAdBlocker() },
+				R.id.btn_show_image_on_web to { settingsOnClickLogic?.toggleBrowserWebImages() },
+				R.id.btn_enable_video_grabber to { settingsOnClickLogic?.toggleBrowserVideoGrabber() },
+				R.id.btn_adv_browser_settings to { settingsOnClickLogic?.openAdvanceBrowserSettings() },
 
-			//Browser settings
-			R.id.btn_browser_homepage to { settingsOnClickLogic?.setBrowserDefaultHomepage() },
-			R.id.btn_enable_adblock to { settingsOnClickLogic?.toggleBrowserBrowserAdBlocker() },
-			R.id.btn_enable_popup_blocker to { settingsOnClickLogic?.toggleBrowserPopupAdBlocker() },
-			R.id.btn_show_image_on_web to { settingsOnClickLogic?.toggleBrowserWebImages() },
-			R.id.btn_enable_video_grabber to { settingsOnClickLogic?.toggleBrowserVideoGrabber() },
-			R.id.btn_adv_browser_settings to { settingsOnClickLogic?.openAdvanceBrowserSettings() },
+				// Custom services
+				R.id.btn_share_with_friends to { settingsOnClickLogic?.shareApplicationWithFriends() },
+				R.id.btn_open_feedback to { settingsOnClickLogic?.openUserFeedbackActivity() },
+				R.id.btn_open_about_info to { settingsOnClickLogic?.openApplicationInformation() },
+				R.id.btn_open_privacy_policy to { settingsOnClickLogic?.showPrivacyPolicyActivity() },
+				R.id.btn_open_terms_condition to { settingsOnClickLogic?.showTermsConditionActivity() },
 
-			//Custom service
-			R.id.btn_share_with_friends to { settingsOnClickLogic?.shareApplicationWithFriends() },
-			R.id.btn_open_feedback to { settingsOnClickLogic?.openUserFeedbackActivity() },
-			R.id.btn_open_about_info to { settingsOnClickLogic?.openApplicationInformation() },
-			R.id.btn_open_privacy_policy to { settingsOnClickLogic?.showPrivacyPolicyActivity() },
-			R.id.btn_open_terms_condition to { settingsOnClickLogic?.showTermsConditionActivity() },
+				// Updates and reset
+				R.id.btn_check_new_update to { settingsOnClickLogic?.checkForNewApkVersion() },
+				R.id.btn_restart_application to { settingsOnClickLogic?.restartApplication() },
 
-			//Check for new versions
-			R.id.btn_check_new_update to { settingsOnClickLogic?.checkForNewApkVersion() },
+				// Developer acknowledgements
+				R.id.btn_follow_shibafoss to { settingsOnClickLogic?.followDeveloperAtInstagram() },
+			)
 
-			//Reset application process
-			R.id.btn_restart_application to { settingsOnClickLogic?.restartApplication() },
-
-			//Acknowledgements
-			R.id.btn_follow_shibafoss to { settingsOnClickLogic?.followDeveloperAtInstagram() },
-		)
-
-		// Apply all click listeners
-		clickActions.forEach { (id, action) ->
-			fragmentLayout.setClickListener(id) {
-				logger.d("Click action triggered for viewId=$id")
-				action()
+			// Apply click actions to respective view elements
+			clickActions.forEach { (id, action) ->
+				fragmentLayout.setClickListener(id) {
+					logger.d("Click triggered for viewId=$id")
+					try {
+						action()
+					} catch (e: Exception) {
+						logger.e("Error executing click action for viewId=$id", e)
+					}
+				}
 			}
+		} catch (error: Exception) {
+			logger.e("Error during click listener setup", error)
 		}
 	}
 
 	/**
-	 * Initializes the version information display.
-	 * Shows both version name (user-facing) and version code (build number).
+	 * Displays application version details combining version name and version code.
 	 *
-	 * @param fragmentLayout The root view of the fragment
+	 * @param fragmentLayout Root layout used to find version TextView.
 	 */
-	private fun initializeViewsInfo(fragmentLayout: View) {
-		logger.d("Initializing version info views with versionName=$versionName and versionCode=$versionCode")
-		with(fragmentLayout) {
-			findViewById<TextView>(R.id.txt_version_info)?.apply {
-				val versionNameText = "${getString(R.string.title_version_number)} $versionName"
-				val versionCodeText = "${getString(R.string.title_build_version)} $versionCode"
-				text = fromHtmlStringToSpanned("${versionNameText}<br/>${versionCodeText}")
+	private fun displayApplicationVersion(fragmentLayout: View) {
+		logger.d("Setting version display: versionName=$versionName, versionCode=$versionCode")
+		try {
+			with(fragmentLayout) {
+				findViewById<TextView>(R.id.txt_version_info)?.apply {
+					val versionNameText = "${getString(R.string.title_version_number)} $versionName"
+					val versionCodeText = "${getString(R.string.title_build_version)} $versionCode"
+					text = fromHtmlStringToSpanned("${versionNameText}<br/>${versionCodeText}")
+				}
 			}
+		} catch (error: Exception) {
+			logger.e("Error initializing version info view", error)
 		}
 	}
 
 	/**
-	 * Extension function to simplify setting click listeners.
+	 * Simplifies setting click listeners to avoid redundant boilerplate.
 	 *
-	 * @param id The view ID to set the listener on
-	 * @param action The action to perform when clicked
+	 * @param id ID of the view to which the onClick action will be attached.
+	 * @param action Lambda to execute when the view is clicked.
 	 */
 	private fun View.setClickListener(id: Int, action: () -> Unit) {
-		findViewById<View>(id)?.setOnClickListener { action() }
+		try {
+			findViewById<View>(id)?.setOnClickListener { action() }
+		} catch (error: Exception) {
+			logger.e("Error setting click listener for id=$id", error)
+		}
 	}
 }
