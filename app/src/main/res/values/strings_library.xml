@@ -566,5 +566,6 @@
 	<string name="title_unlock_and_play_all">Unlock &amp; Play</string>
 	<string name="title_private_videos">Private Videos</string>
 	<string name="title_now_playing">Now Playing</string>
+	<string name="title_frame_snapshot">Frame Snapshot</string>
 
 </resources>

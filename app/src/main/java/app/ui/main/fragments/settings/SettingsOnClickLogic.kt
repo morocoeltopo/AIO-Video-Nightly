@@ -39,71 +39,40 @@ import lib.ui.builders.WaitingDialog
 import java.io.File
 import java.lang.ref.WeakReference
 
-/**
- * Handles the logic for Settings screen interactions (toggles, dialogs, navigation).
- * Uses [logger] for debugging flow across actions.
- *
- * This class manages all user interactions within the Settings fragment including:
- * - Application settings management
- * - Download configuration
- * - Browser preferences
- * - Customer service features
- * - UI state updates
- */
 class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 
-	// Logger instance for debugging and tracking user interactions
 	private val logger = LogHelperUtils.from(javaClass)
-
-	// Weak reference to avoid memory leaks with the fragment
-	private val safeSettingsFragmentRef = WeakReference(settingsFragment).get()
-
-	// Application settings section
+	private val settingsFragmentRef = WeakReference(settingsFragment).get()
 
 	fun showUsernameEditor() {
-		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+		settingsFragmentRef?.safeMotherActivityRef?.apply {
 			doSomeVibration(50)
 			showUpcomingFeatures()
 		}
 	}
 
-	/**
-	 * Launches the application sign-in or register prompt dialog to the user.
-	 */
 	fun showLoginOrRegistrationDialog() {
-		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+		settingsFragmentRef?.safeMotherActivityRef?.apply {
 			doSomeVibration(50)
 			showUpcomingFeatures()
 		}
 	}
 
-	/**
-	 * Shows a dialog to select the default download location
-	 * This allows users to choose where downloaded files will be saved
-	 */
-	fun setDefaultDownloadLocationPicker() {
-		logger.d("Opening Download Location Picker dialog")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivity ->
-			DownloadLocationSelector(baseActivity = safeMotherActivity).show()
-		} ?: run {
-			logger.d("Failed to open Download Location Picker: safeMotherActivityRef is null")
-		}
+	fun showDownloadLocationPicker() {
+		logger.d("→ Download Location Picker")
+		settingsFragmentRef?.safeMotherActivityRef?.let { activity ->
+			DownloadLocationSelector(baseActivity = activity).show()
+		} ?: logger.d("× Picker failed: Activity null")
 	}
 
-	/**
-	 * Launches the language picker dialog and restarts the app upon language change
-	 * Shows a warning about experimental feature before proceeding
-	 */
-	fun showApplicationLanguageChanger() {
-		logger.d("Opening Language Picker Dialog")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
+	fun showLanguageChanger() {
+		logger.d("→ Language Picker")
+		settingsFragmentRef?.safeMotherActivityRef?.let { activity ->
 			MsgDialogUtils.getMessageDialog(
-				baseActivityInf = safeMotherActivityRef,
+				baseActivityInf = activity,
 				isTitleVisible = true,
 				titleText = getText(R.string.title_experimental_feature),
-				messageTextViewCustomize = {
-					it.setText(R.string.text_feature_is_experimental_msg)
-				},
+				messageTextViewCustomize = { it.setText(R.string.text_feature_is_experimental_msg) },
 				isNegativeButtonVisible = false,
 				positiveButtonTextCustomize = {
 					it.setText(R.string.title_proceed)
@@ -111,27 +80,21 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				}
 			)?.apply {
 				setOnClickForPositiveButton {
-					logger.d("Language change confirmed → showing LanguagePickerDialog")
+					logger.d("✔ Proceeding to LanguagePickerDialog")
 					close()
-					LanguagePickerDialog(safeMotherActivityRef).apply {
+					LanguagePickerDialog(activity).apply {
 						getDialogBuilder().setCancelable(true)
 						onApplyListener = {
-							logger.d("Language selected → restarting application")
+							logger.d("✔ Language selected → Restarting app")
 							close()
 							restartApp(shouldKillProcess = true)
 						}
 					}.show()
 				}
 			}?.show()
-		} ?: run {
-			logger.d("Failed to open Language Picker: safeMotherActivityRef is null")
-		}
+		} ?: logger.d("× Language Picker failed: Activity null")
 	}
 
-	/**
-	 * Toggles the Dark Mode UI setting.
-	 * When enabled, the app interface will switch between light and dark themes.
-	 */
 	fun togglesDarkModeUISettings() {
 		logger.d("Toggling Dark Mode UI setting")
 		ThreadsUtility.executeInBackground(codeBlock = {
@@ -143,7 +106,7 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 				aioSettings.updateInStorage()
 				ThreadsUtility.executeOnMain {
 					updateSettingStateUI()
-					safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+					settingsFragmentRef?.safeMotherActivityRef?.apply {
 						ViewUtility.changesSystemTheme(this)
 						logger.d("Dark Mode UI is now: ${tempFile.exists()}")
 					}
@@ -154,118 +117,83 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		})
 	}
 
-	/**
-	 * Changes the default content region for the application
-	 * Shows a region selector dialog and restarts the app upon selection
-	 */
 	fun changeDefaultContentRegion() {
-		logger.d("Opening Content Region Selector")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+		logger.d("→ Content Region Selector")
+		settingsFragmentRef?.safeMotherActivityRef?.apply {
 			ContentRegionSelector(this).apply {
 				getDialogBuilder().setCancelable(true)
 				onApplyListener = {
-					logger.d("Content region selected → restarting application")
+					logger.d("✔ Region selected → Restarting app")
 					close()
 					restartApp(shouldKillProcess = true)
 				}
 			}.show()
-		} ?: run {
-			logger.d("Failed to open Content Region Selector: safeMotherActivityRef is null")
-		}
+		} ?: logger.d("× Failed: Activity null (Region Selector)")
 	}
 
-	/**
-	 * Toggles the daily content suggestions feature
-	 * Updates the setting in storage and refreshes the UI
-	 */
-	fun enableDailyContentSuggestions() {
-		logger.d("Toggling Daily Content Suggestions")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+	fun toggleDailyContentSuggestions() {
+		logger.d("→ Toggle Daily Suggestions")
+		settingsFragmentRef?.safeMotherActivityRef?.apply {
 			try {
-				aioSettings.enableDailyContentSuggestion = !aioSettings.enableDailyContentSuggestion
+				val contentSuggestion = aioSettings.enableDailyContentSuggestion
+				aioSettings.enableDailyContentSuggestion = !contentSuggestion
 				aioSettings.updateInStorage()
-				logger.d("Daily content suggestions: ${aioSettings.enableDailyContentSuggestion}")
+				logger.d("✔ Daily suggestions: $contentSuggestion")
 				updateSettingStateUI()
-			} catch (error: Exception) {
-				logger.d("Error toggling daily content suggestions: ${error.message}")
-				error.printStackTrace()
+			} catch (e: Exception) {
+				logger.d("× Error toggling suggestions: ${e.message}")
+				e.printStackTrace()
 			}
-		} ?: run {
-			logger.d("Failed to toggle Daily Content Suggestions: safeMotherActivityRef is null")
-		}
+		} ?: logger.d("× Failed: Activity null (Daily Suggestions)")
 	}
 
-	// Download settings section
-
-	/**
-	 * Changes the default download folder
-	 * Shows a dialog to select a custom folder for downloads
-	 */
 	fun changeDefaultDownloadFolder() {
-		logger.d("Opening Custom Download Folder Selector")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.apply {
+		logger.d("→ Custom Download Folder Selector")
+		settingsFragmentRef?.safeMotherActivityRef?.apply {
 			CustomDownloadFolderSelector(this).show()
-		} ?: run {
-			logger.d("Failed to open Custom Download Folder Selector: safeMotherActivityRef is null")
-		}
+		} ?: logger.d("× Failed: Activity null (Folder Selector)")
 	}
 
-	/**
-	 * Toggles the visibility of download notifications
-	 * Updates the setting in storage and refreshes the UI
-	 */
 	fun toggleHideDownloadNotification() {
-		logger.d("Toggling Download Notification Visibility")
+		logger.d("→ Toggle Download Notification")
 		try {
-			aioSettings.downloadHideNotification = !aioSettings.downloadHideNotification
+			val hideNotification = aioSettings.downloadHideNotification
+			aioSettings.downloadHideNotification = !hideNotification
 			aioSettings.updateInStorage()
-			logger.d("Download Notification Hidden: ${aioSettings.downloadHideNotification}")
+			logger.d("✔ Notifications hidden: $hideNotification")
 			updateSettingStateUI()
-		} catch (error: Exception) {
-			logger.d("Error toggling download notification: ${error.message}")
-			error.printStackTrace()
+		} catch (e: Exception) {
+			logger.d("× Error toggling notifications: ${e.message}")
+			e.printStackTrace()
 		}
 	}
 
-	/**
-	 * Toggles "Wi-Fi only" mode for downloads
-	 * When enabled, downloads will only occur when connected to Wi-Fi
-	 */
 	fun toggleWifiOnlyDownload() {
-		logger.d("Toggling Wi-Fi Only Download mode")
+		logger.d("→ Toggle Wi-Fi Only Mode")
 		try {
 			aioSettings.downloadWifiOnly = !aioSettings.downloadWifiOnly
 			aioSettings.updateInStorage()
-			logger.d("Wi-Fi only downloads: ${aioSettings.downloadWifiOnly}")
+			logger.d("✔ Wi-Fi only: ${aioSettings.downloadWifiOnly}")
 			updateSettingStateUI()
-		} catch (error: Exception) {
-			logger.d("Error toggling Wi-Fi only downloads: ${error.message}")
-			error.printStackTrace()
+		} catch (e: Exception) {
+			logger.d("× Error toggling Wi-Fi only: ${e.message}")
+			e.printStackTrace()
 		}
 	}
 
-	/**
-	 * Toggles Single-Click-Open file mode for downloads.
-	 * When enabled, downloaded files will be opened instantly instead of showing the options dialog.
-	 */
 	fun toggleSingleClickToOpenFile() {
 		logger.d("Toggling single-click open file setting")
 		try {
-			aioSettings.openDownloadedFileOnSingleClick =
-				!aioSettings.openDownloadedFileOnSingleClick
+			val singleClickOpen = aioSettings.openDownloadedFileOnSingleClick
+			aioSettings.openDownloadedFileOnSingleClick = !singleClickOpen
 			aioSettings.updateInStorage()
-			logger.d("Single-click open file is now: ${aioSettings.openDownloadedFileOnSingleClick}")
+			logger.d("Single-click open file is now: $singleClickOpen")
 			updateSettingStateUI()
 		} catch (error: Exception) {
 			logger.e("Error toggling single-click open file: ${error.message}", error)
-			error.printStackTrace()
 		}
 	}
 
-	/**
-	 * Toggles the sound played when a download completes
-	 * Updates the setting in storage and refreshes the UI
-	 */
 	fun toggleDownloadNotificationSound() {
 		logger.d("Toggling Download Notification Sound")
 		try {
@@ -274,18 +202,13 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			logger.d("Download Sound Enabled: ${aioSettings.downloadPlayNotificationSound}")
 			updateSettingStateUI()
 		} catch (error: Exception) {
-			logger.d("Error toggling download sound: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error toggling download sound: ${error.message}", error)
 		}
 	}
 
-	/**
-	 * Opens advanced download settings (placeholder implementation)
-	 * Currently shows a "not available" message as this feature isn't implemented
-	 */
 	fun openAdvanceDownloadsSettings() {
 		logger.d("Opening Advanced Downloads Settings (not implemented)")
-		safeSettingsFragmentRef?.safeMotherActivityRef.let {
+		settingsFragmentRef?.safeMotherActivityRef.let {
 			it?.doSomeVibration(50)
 			MsgDialogUtils.showMessageDialog(
 				baseActivityInf = it,
@@ -300,27 +223,19 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	// Browser settings section
-
-	/**
-	 * Displays a dialog to set the default homepage for the in-app browser
-	 * Validates the URL input and updates the setting if valid
-	 */
 	fun setBrowserDefaultHomepage() {
 		logger.d("Opening Browser Homepage dialog")
 		try {
-			safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeActivityRef ->
-				val dialogBuilder = DialogBuilder(safeActivityRef)
+			settingsFragmentRef?.safeMotherActivityRef?.let { activityRef ->
+				val dialogBuilder = DialogBuilder(activityRef)
 				dialogBuilder.setView(R.layout.dialog_browser_homepage_1)
 
 				val dialogLayout = dialogBuilder.view
-				val currentBrowserHomepageString = safeActivityRef.getString(
-					R.string.title_current_homepage, aioSettings.browserDefaultHomepage
-				)
+				val stringResId = R.string.title_current_homepage
+				val formatArgs = aioSettings.browserDefaultHomepage
+				val homepageString = activityRef.getString(stringResId, formatArgs)
 
-				dialogLayout.findViewById<TextView>(R.id.txt_current_homepage).text =
-					currentBrowserHomepageString
-
+				dialogLayout.findViewById<TextView>(R.id.txt_current_homepage).text = homepageString
 				val editTextURL = dialogLayout.findViewById<EditText>(R.id.edit_field_url)
 
 				dialogBuilder.setOnClickForPositiveButton {
@@ -332,11 +247,11 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 						aioSettings.updateInStorage()
 						logger.d("Homepage updated to: $finalNormalizedURL")
 						dialogBuilder.close()
-						showToast(activityInf = safeActivityRef, msgId = R.string.title_successful)
+						showToast(activityInf = activityRef, msgId = R.string.title_successful)
 					} else {
 						logger.d("Invalid homepage URL entered: $userEnteredURL")
-						safeActivityRef.doSomeVibration(50)
-						showToast(activityInf = safeActivityRef, msgId = R.string.title_invalid_url)
+						activityRef.doSomeVibration(50)
+						showToast(activityInf = activityRef, msgId = R.string.title_invalid_url)
 					}
 				}
 				dialogBuilder.show()
@@ -344,32 +259,26 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 					override fun afterDelay() {
 						logger.d("Showing on-screen keyboard for URL input")
 						editTextURL.requestFocus()
-						showOnScreenKeyboard(safeActivityRef, editTextURL)
+						showOnScreenKeyboard(activityRef, editTextURL)
 					}
 				})
-			} ?: run {
-				logger.d("Failed to open Browser Homepage dialog: safeActivityRef is null")
-			}
+			} ?: run { logger.d("Failed to open Browser Homepage dialog: activity is null") }
 		} catch (error: Exception) {
-			logger.d("Error setting browser homepage: ${error.message}")
-			error.printStackTrace()
+			logger.e("Error setting browser homepage: ${error.message}", error)
 			showToast(
-				activityInf = safeSettingsFragmentRef?.safeMotherActivityRef,
+				activityInf = settingsFragmentRef?.safeMotherActivityRef,
 				msgId = R.string.title_something_went_wrong
 			)
 		}
 	}
 
-	/**
-	 * Toggles the browser ad blocker feature
-	 * Updates the setting in storage and refreshes the UI
-	 */
 	fun toggleBrowserBrowserAdBlocker() {
 		logger.d("Toggling Browser Ad Blocker")
 		try {
-			aioSettings.browserEnableAdblocker = !aioSettings.browserEnableAdblocker
+			val browserEnableAdblocker = aioSettings.browserEnableAdblocker
+			aioSettings.browserEnableAdblocker = !browserEnableAdblocker
 			aioSettings.updateInStorage()
-			logger.d("Browser Ad Blocker toggled: ${aioSettings.browserEnableAdblocker}")
+			logger.d("Browser Ad Blocker toggled: $browserEnableAdblocker")
 			updateSettingStateUI()
 		} catch (error: Exception) {
 			logger.d("Error toggling browser ad blocker: ${error.message}")
@@ -377,16 +286,13 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Toggles the browser popup blocker feature
-	 * Updates the setting in storage and refreshes the UI
-	 */
 	fun toggleBrowserPopupAdBlocker() {
 		logger.d("Toggling Browser Popup Blocker")
 		try {
-			aioSettings.browserEnablePopupBlocker = !aioSettings.browserEnablePopupBlocker
+			val browserEnablePopupBlocker = aioSettings.browserEnablePopupBlocker
+			aioSettings.browserEnablePopupBlocker = !browserEnablePopupBlocker
 			aioSettings.updateInStorage()
-			logger.d("Popup Blocker toggled: ${aioSettings.browserEnablePopupBlocker}")
+			logger.d("Popup Blocker toggled: $browserEnablePopupBlocker")
 			updateSettingStateUI()
 		} catch (error: Exception) {
 			logger.d("Error toggling popup blocker: ${error.message}")
@@ -394,10 +300,6 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Toggles web images loading in the browser
-	 * Updates the setting in storage and refreshes the UI
-	 */
 	fun toggleBrowserWebImages() {
 		logger.d("Toggling Browser Web Images")
 		try {
@@ -411,16 +313,13 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Toggles the video grabber feature in the browser
-	 * Updates the setting in storage and refreshes the UI
-	 */
 	fun toggleBrowserVideoGrabber() {
 		logger.d("Toggling Browser Video Grabber")
 		try {
-			aioSettings.browserEnableVideoGrabber = !aioSettings.browserEnableVideoGrabber
+			val enableVideoGrabber = aioSettings.browserEnableVideoGrabber
+			aioSettings.browserEnableVideoGrabber = !enableVideoGrabber
 			aioSettings.updateInStorage()
-			logger.d("Video Grabber toggled: ${aioSettings.browserEnableVideoGrabber}")
+			logger.d("Video Grabber toggled: $enableVideoGrabber")
 			updateSettingStateUI()
 		} catch (error: Exception) {
 			logger.d("Error toggling video grabber: ${error.message}")
@@ -428,30 +327,20 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Opens advanced browser settings activity
-	 * Navigates to a dedicated screen for advanced browser configurations
-	 */
 	fun openAdvanceBrowserSettings() {
 		logger.d("Opening Advanced Settings For Browser")
-		safeSettingsFragmentRef?.safeMotherActivityRef
+		settingsFragmentRef?.safeMotherActivityRef
 			?.openActivity(
 				activity = AdvBrowserSettingsActivity::class.java,
 				shouldAnimate = true
 			) ?: run {
-			logger.d("Failed to open Advanced Browser Settings: safeMotherActivityRef is null")
+			logger.d("Failed to open Advanced Browser Settings: activity is null")
 		}
 	}
 
-	// Customer service section
-
-	/**
-	 * Shares the app with others via system sharing intent
-	 * Constructs a share message with app name and official page URL
-	 */
 	fun shareApplicationWithFriends() {
 		logger.d("Sharing application with friends")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.let { context ->
+		settingsFragmentRef?.safeMotherActivityRef?.let { context ->
 			ShareUtility.shareText(
 				context = context,
 				title = getText(R.string.title_share_with_others),
@@ -462,37 +351,25 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Navigates to user feedback screen
-	 * Opens the activity where users can provide feedback
-	 */
 	fun openUserFeedbackActivity() {
 		logger.d("Opening User Feedback Activity")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.openActivity(
+		settingsFragmentRef?.safeMotherActivityRef?.openActivity(
 			UserFeedbackActivity::class.java, shouldAnimate = false
 		) ?: run {
 			logger.d("Failed to open User Feedback Activity: safeMotherActivityRef is null")
 		}
 	}
 
-	/**
-	 * Opens application details screen in Android settings
-	 * Shows system app info for the current application
-	 */
 	fun openApplicationInformation() {
 		logger.d("Opening Application Info in system settings")
-		safeSettingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting() ?: run {
+		settingsFragmentRef?.safeBaseActivityRef?.openAppInfoSetting() ?: run {
 			logger.d("Failed to open Application Info: safeBaseActivityRef is null")
 		}
 	}
 
-	/**
-	 * Navigates to Privacy Policy screen
-	 * Opens the privacy policy in a web browser
-	 */
 	fun showPrivacyPolicyActivity() {
 		logger.d("Opening Privacy Policy in browser")
-		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
+		settingsFragmentRef?.safeBaseActivityRef?.apply {
 			try {
 				val uri = getText(R.string.text_aio_official_privacy_policy_url).toString()
 				logger.d("Privacy Policy URL: $uri")
@@ -510,13 +387,9 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Navigates to Terms & Conditions screen
-	 * Opens the terms and conditions in a web browser
-	 */
 	fun showTermsConditionActivity() {
 		logger.d("Opening Terms & Conditions in browser")
-		safeSettingsFragmentRef?.safeBaseActivityRef?.apply {
+		settingsFragmentRef?.safeBaseActivityRef?.apply {
 			try {
 				val uri = getText(R.string.text_aio_official_terms_conditions_url).toString()
 				logger.d("Terms & Conditions URL: $uri")
@@ -531,13 +404,9 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Checks for new application version updates
-	 * Shows a waiting dialog while checking and provides appropriate feedback
-	 */
 	fun checkForNewApkVersion() {
 		logger.d("Checking for new APK version")
-		safeSettingsFragmentRef?.safeBaseActivityRef?.let { safeBaseActivityRef ->
+		settingsFragmentRef?.safeBaseActivityRef?.let { safeBaseActivityRef ->
 			ThreadsUtility.executeInBackground(codeBlock = {
 				var waitingDialog: WaitingDialog? = null
 				ThreadsUtility.executeOnMain {
@@ -577,13 +446,9 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Updates the end icon of each setting option based on current settings
-	 * This refreshes the UI to reflect the current state of all toggleable settings
-	 */
 	fun updateSettingStateUI() {
 		logger.d("Updating Setting State UI")
-		safeSettingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
+		settingsFragmentRef?.safeFragmentLayoutRef?.let { layout ->
 			listOf(
 				SettingViewConfig(
 					viewId = R.id.txt_dark_mode_ui,
@@ -633,13 +498,9 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Restarts the application after user confirmation
-	 * Useful for applying major changes or recovering from unexpected states
-	 */
 	fun restartApplication() {
 		logger.d("Showing Restart Application confirmation dialog")
-		safeSettingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
+		settingsFragmentRef?.safeMotherActivityRef?.let { safeMotherActivityRef ->
 			MsgDialogUtils.getMessageDialog(
 				baseActivityInf = safeMotherActivityRef,
 				isTitleVisible = true,
@@ -663,13 +524,9 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Follow ShibaFoss the developer at instagram
-	 * Useful for building followers at social media for sharing insights of the app developments.
-	 */
 	fun followDeveloperAtInstagram() {
 		try {
-			safeSettingsFragmentRef?.safeMotherActivityRef?.let {
+			settingsFragmentRef?.safeMotherActivityRef?.let {
 				IntentHelperUtils.openInstagramApp(
 					context = it,
 					profileUrl = "https://www.instagram.com/shibafoss/"
@@ -680,11 +537,6 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		}
 	}
 
-	/**
-	 * Updates the end drawable (checkmark or empty circle) based on the setting state
-	 *
-	 * @param isEnabled Whether the setting is enabled (show checkmark) or disabled (show empty circle)
-	 */
 	private fun TextView.updateEndDrawable(isEnabled: Boolean) {
 		val endDrawableRes = if (isEnabled) {
 			R.drawable.ic_button_checked_circle_small
@@ -696,12 +548,6 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		setCompoundDrawablesWithIntrinsicBounds(current[0], current[1], checkedDrawable, current[3])
 	}
 
-	/**
-	 * Constructs the Play Store sharing message
-	 *
-	 * @param context The application context
-	 * @return The formatted share text containing app name and official page URL
-	 */
 	private fun getApplicationShareText(context: Context): String {
 		val appName = context.getString(R.string.title_aio_video_downloader)
 		val githubOfficialPage = context.getString(R.string.text_aio_official_page_url)
@@ -709,10 +555,6 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 			.trimIndent()
 	}
 
-	/**
-	 * Executes the actual application restart
-	 * Relaunches the main activity and exits the current process
-	 */
 	private fun processedToRestart() {
 		logger.d("Processing application restart")
 		val context = INSTANCE
@@ -723,11 +565,5 @@ class SettingsOnClickLogic(private val settingsFragment: SettingsFragment) {
 		Runtime.getRuntime().exit(0)
 	}
 
-	/**
-	 * Data class holding mapping of setting TextView and its state
-	 *
-	 * @property viewId The resource ID of the TextView
-	 * @property isEnabled Whether the setting is enabled or disabled
-	 */
 	data class SettingViewConfig(@field:IdRes val viewId: Int, val isEnabled: Boolean)
 }
