@@ -94,72 +94,93 @@
 	</RelativeLayout>
 
 	<!-- Volume slider container -->
-	<LinearLayout
+	<androidx.cardview.widget.CardView
 		android:id="@+id/container_volume_slider"
 		android:layout_width="wrap_content"
 		android:layout_height="@dimen/_150"
 		android:layout_alignParentEnd="true"
 		android:layout_centerVertical="true"
 		android:layout_marginStart="@dimen/_10"
-		android:layout_marginEnd="@dimen/_20"
+		android:layout_marginEnd="@dimen/_10"
 		android:elevation="@dimen/_0"
 		android:orientation="vertical"
-		android:visibility="gone">
+		android:visibility="gone"
+		app:cardBackgroundColor="@color/color_actionbar_title_bg"
+		app:cardCornerRadius="@dimen/_10">
 
-		<!-- Volume icon at top -->
-		<ImageView
-			android:id="@+id/img_volume"
-			android:layout_width="@dimen/_30"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_horizontal"
-			android:layout_marginTop="@dimen/_5"
-			android:adjustViewBounds="true"
-			android:importantForAccessibility="no"
-			android:rotation="270"
-			android:src="@drawable/ic_button_volume"
-			android:tint="@color/color_primary_dark" />
-
-		<!-- Vertical ProgressBar -->
-		<lib.ui.VerticalProgressBar
-			android:id="@+id/progress_volume"
+		<LinearLayout
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_gravity="center_horizontal" />
-	</LinearLayout>
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
+			<!-- Volume icon at top -->
+			<ImageView
+				android:id="@+id/img_volume"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_horizontal"
+				android:layout_marginTop="@dimen/_5"
+				android:adjustViewBounds="true"
+				android:importantForAccessibility="no"
+				android:rotation="270"
+				android:src="@drawable/ic_button_volume"
+				android:tint="@color/color_text_primary"
+				tools:ignore="ImageContrastCheck" />
+
+			<!-- Vertical ProgressBar -->
+			<lib.ui.VerticalProgressBar
+				android:id="@+id/progress_volume"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_gravity="center_horizontal"
+				android:layout_marginTop="@dimen/_3"
+				android:layout_marginBottom="@dimen/_10" />
+		</LinearLayout>
+	</androidx.cardview.widget.CardView>
 
 	<!-- Brightness slider container -->
-	<LinearLayout
+	<androidx.cardview.widget.CardView
 		android:id="@+id/container_brightness_slider"
 		android:layout_width="wrap_content"
 		android:layout_height="@dimen/_150"
 		android:layout_alignParentStart="true"
 		android:layout_centerVertical="true"
-		android:layout_marginStart="@dimen/_20"
+		android:layout_marginStart="@dimen/_10"
 		android:layout_marginEnd="@dimen/_10"
 		android:elevation="@dimen/_0"
 		android:orientation="vertical"
-		android:visibility="gone">
+		android:visibility="gone"
+		app:cardBackgroundColor="@color/color_actionbar_title_bg"
+		app:cardCornerRadius="@dimen/_10">
 
-		<!-- Brightness icon at top -->
-		<ImageView
-			android:id="@+id/img_brightness"
-			android:layout_width="@dimen/_30"
-			android:layout_height="wrap_content"
-			android:layout_gravity="center_horizontal"
-			android:layout_marginTop="@dimen/_5"
-			android:adjustViewBounds="true"
-			android:importantForAccessibility="no"
-			android:rotation="270"
-			android:src="@drawable/ic_button_brightness"
-			android:tint="@color/color_primary_dark" />
-
-		<!-- Vertical ProgressBar -->
-		<lib.ui.VerticalProgressBar
-			android:id="@+id/progress_brightness"
+		<LinearLayout
 			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_gravity="center_horizontal" />
-	</LinearLayout>
+			android:layout_height="wrap_content"
+			android:orientation="vertical">
+
+			<!-- Brightness icon at top -->
+			<ImageView
+				android:id="@+id/img_brightness"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_horizontal"
+				android:layout_marginTop="@dimen/_5"
+				android:adjustViewBounds="true"
+				android:importantForAccessibility="no"
+				android:rotation="270"
+				android:src="@drawable/ic_button_brightness"
+				android:tint="@color/color_text_primary"
+				tools:ignore="ImageContrastCheck" />
+
+			<!-- Vertical ProgressBar -->
+			<lib.ui.VerticalProgressBar
+				android:id="@+id/progress_brightness"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_gravity="center_horizontal"
+				android:layout_marginTop="@dimen/_2"
+				android:layout_marginBottom="@dimen/_10" />
+		</LinearLayout>
+	</androidx.cardview.widget.CardView>
 
 	<!-- Player controls container -->
 	<RelativeLayout
