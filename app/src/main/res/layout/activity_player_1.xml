@@ -76,7 +76,8 @@
 		android:layout_centerInParent="true"
 		android:layout_marginStart="@dimen/_10"
 		android:layout_marginEnd="@dimen/_10"
-		android:background="@drawable/rounded_transparent_black">
+		android:background="@drawable/rounded_transparent_black"
+		tools:ignore="RelativeOverlap">
 
 		<TextView
 			android:id="@+id/txt_video_quick_info"
@@ -91,6 +92,74 @@
 			android:textSize="@dimen/title_text_size"
 			android:visibility="gone" />
 	</RelativeLayout>
+
+	<!-- Volume slider container -->
+	<LinearLayout
+		android:id="@+id/container_volume_slider"
+		android:layout_width="wrap_content"
+		android:layout_height="@dimen/_150"
+		android:layout_alignParentEnd="true"
+		android:layout_centerVertical="true"
+		android:layout_marginStart="@dimen/_10"
+		android:layout_marginEnd="@dimen/_20"
+		android:elevation="@dimen/_0"
+		android:orientation="vertical"
+		android:visibility="gone">
+
+		<!-- Volume icon at top -->
+		<ImageView
+			android:id="@+id/img_volume"
+			android:layout_width="@dimen/_30"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_horizontal"
+			android:layout_marginTop="@dimen/_5"
+			android:adjustViewBounds="true"
+			android:importantForAccessibility="no"
+			android:rotation="270"
+			android:src="@drawable/ic_button_volume"
+			android:tint="@color/color_primary_dark" />
+
+		<!-- Vertical ProgressBar -->
+		<lib.ui.VerticalProgressBar
+			android:id="@+id/progress_volume"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_gravity="center_horizontal" />
+	</LinearLayout>
+
+	<!-- Brightness slider container -->
+	<LinearLayout
+		android:id="@+id/container_brightness_slider"
+		android:layout_width="wrap_content"
+		android:layout_height="@dimen/_150"
+		android:layout_alignParentStart="true"
+		android:layout_centerVertical="true"
+		android:layout_marginStart="@dimen/_20"
+		android:layout_marginEnd="@dimen/_10"
+		android:elevation="@dimen/_0"
+		android:orientation="vertical"
+		android:visibility="gone">
+
+		<!-- Brightness icon at top -->
+		<ImageView
+			android:id="@+id/img_brightness"
+			android:layout_width="@dimen/_30"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center_horizontal"
+			android:layout_marginTop="@dimen/_5"
+			android:adjustViewBounds="true"
+			android:importantForAccessibility="no"
+			android:rotation="270"
+			android:src="@drawable/ic_button_brightness"
+			android:tint="@color/color_primary_dark" />
+
+		<!-- Vertical ProgressBar -->
+		<lib.ui.VerticalProgressBar
+			android:id="@+id/progress_brightness"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_gravity="center_horizontal" />
+	</LinearLayout>
 
 	<!-- Player controls container -->
 	<RelativeLayout
@@ -143,7 +212,7 @@
 		</androidx.cardview.widget.CardView>
 	</RelativeLayout>
 
-	<!-- Unlock overlay button (for fullscreen/lock toggle) -->
+	<!-- Unlock overlay button (fullscreen/lock toggle) -->
 	<ImageView
 		android:id="@+id/btn_video_unlock_overlay"
 		android:layout_width="@dimen/_50"

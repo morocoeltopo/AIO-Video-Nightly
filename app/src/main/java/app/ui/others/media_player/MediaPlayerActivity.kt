@@ -180,7 +180,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	override fun onAfterLayoutRender() {
 		initializeActivityViews().let {
 			initializePlayer().let {
-				setupSwipeSeekGestures(targetView = overlayTouchArea)
+				setupPlayerGestures(targetView = overlayTouchArea)
 				playVideoFromIntent().let { hideView(nightModeOverlay, true, 1000) }
 			}
 		}
@@ -661,7 +661,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	private fun getVideoDuration(): Long = player.duration
 
-	private fun setupSwipeSeekGestures(targetView: View) {
+	private fun setupPlayerGestures(targetView: View) {
+		// Flags for tracking gesture and playback states
 		var isUserSeeking = false
 		var startSeekPosition = 0L
 		var wasPlayingBeforeSeek = false
@@ -670,6 +671,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val longPressDelay = 200L
 		val longPressHandler = Handler(Looper.getMainLooper())
 
+		// System services for volume and screen brightness
 		val audioManager = targetView.context.getSystemService(AUDIO_SERVICE) as AudioManager
 		val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
 		var initialVolume = 0
@@ -677,20 +679,27 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val window = (targetView.context as Activity).window
 		var initialBrightness = window.attributes.screenBrightness
 
-		var gestureDirection: String? = null // "vertical" or "horizontal"
+		// Track gesture direction: "vertical" for volume/brightness, "horizontal" for seeking
+		var gestureDirection: String? = null
 
 		val gestureDetector = GestureDetector(
 			targetView.context,
 			object : SimpleOnGestureListener() {
+
+				// Called when user first touches the screen
 				override fun onDown(e: MotionEvent): Boolean {
 					if (areControllersLocked) return true
+
 					isFingerScrolling = false
 					isLongPressTriggered = false
 					gestureDirection = null
+
+					// Store initial values for volume and brightness
 					initialVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
 					initialBrightness = window.attributes.screenBrightness.takeIf { it >= 0 }
-						?: 0.5f // fallback for auto brightness
+						?: 0.5f // fallback if screenBrightness is set to auto
 
+					// Detect long press: pause video if holding without moving
 					longPressHandler.postDelayed({
 						if (!isFingerScrolling && !isUserSeeking) {
 							wasPlayingBeforeSeek = player.isPlaying
@@ -703,6 +712,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					return true
 				}
 
+				// Called continuously while the user is moving their finger
 				override fun onScroll(
 					e1: MotionEvent?, e2: MotionEvent,
 					distanceX: Float, distanceY: Float
@@ -710,30 +720,33 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					if (areControllersLocked || e1 == null) return true
 					longPressHandler.removeCallbacksAndMessages(null)
 
+					// Compute movement delta
 					val deltaX = e2.x - e1.x
 					val deltaY = e1.y - e2.y
 					val screenWidth = targetView.width
 					val screenHeight = targetView.height
-					val threshold = 80
+					val threshold = 80 // min distance before horizontal seek activates
 
-					// Determine direction only once
+					// Determine whether gesture is vertical or horizontal
 					if (gestureDirection == null) {
 						gestureDirection = if (abs(deltaY) > abs(deltaX)) "vertical" else "horizontal"
 					}
 
 					when (gestureDirection) {
 						"vertical" -> {
-							val sensitivity = 10f // increase to make swipe more responsive
+							// Handle volume or brightness change
+							val sensitivity = 10f // increase for faster response
 							val percentage = (deltaY / screenHeight) * sensitivity
+
 							if (e1.x < screenWidth / 2) {
-								// Brightness control
+								// Left side → brightness control
 								val newBrightness = (initialBrightness + percentage).coerceIn(0.0f, 1.0f)
 								val params = window.attributes
 								params.screenBrightness = newBrightness
 								window.attributes = params
 								showQuickPlayerInfo("Brightness: ${(newBrightness * 100).toInt()}%")
 							} else {
-								// Volume control
+								// Right side → volume control
 								val change = (percentage * maxVolume).toInt()
 								val newVolume = (initialVolume + change).coerceIn(0, maxVolume)
 								audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
@@ -743,6 +756,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 						}
 
 						"horizontal" -> {
+							// Handle video seeking (scrubbing)
 							if (!isFingerScrolling) {
 								isFingerScrolling = true
 								wasPlayingBeforeSeek = player.isPlaying
@@ -753,6 +767,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 							val duration = getVideoDuration()
 							if (isUserSeeking && duration > 0 && abs(deltaX) > threshold) {
+								// Each full swipe across screen = 25 seconds seek
 								val seekOffset = ((deltaX / screenWidth) * 25000).toLong()
 								val newSeekPosition =
 									(startSeekPosition + seekOffset).coerceIn(0, getVideoDuration())
@@ -766,23 +781,30 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					return false
 				}
 
+				// Single tap toggles controller visibility
 				override fun onSingleTapUp(e: MotionEvent): Boolean {
 					handlePlaybackControllerVisibility(shouldTogglePlayback = false)
 					return false
 				}
 
+				// Double tap toggles play/pause
 				override fun onDoubleTap(e: MotionEvent): Boolean {
 					togglePlaybackState()
 					return true
 				}
 			})
 
+		// Attach gesture listener to the target view
 		targetView.setOnTouchListener { touchedView, event ->
 			gestureDetector.onTouchEvent(event)
+
 			when (event.action) {
 				MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+					// Reset states when user lifts finger
 					longPressHandler.removeCallbacksAndMessages(null)
 					gestureDirection = null
+
+					// Resume playback if user was seeking or long-press paused
 					if (isUserSeeking) {
 						isUserSeeking = false
 						if (wasPlayingBeforeSeek) player.play()
