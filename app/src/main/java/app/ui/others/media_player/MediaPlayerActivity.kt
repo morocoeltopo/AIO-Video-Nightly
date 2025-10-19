@@ -94,6 +94,7 @@ import lib.texts.CommonTextUtils.fromHtmlStringToSpanned
 import lib.ui.MsgDialogUtils.getMessageDialog
 import lib.ui.MsgDialogUtils.showMessageDialog
 import lib.ui.RoundedTimeBar
+import lib.ui.VerticalProgressBar
 import lib.ui.ViewUtility
 import lib.ui.ViewUtility.blurBitmap
 import lib.ui.ViewUtility.hideView
@@ -149,7 +150,12 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	lateinit var currentTimeText: TextView
 	lateinit var durationText: TextView
-	lateinit var progressBar: RoundedTimeBar
+	lateinit var mediaProgressBar: RoundedTimeBar
+
+	lateinit var brightnessSlider: VerticalProgressBar
+	lateinit var volumeSlider: VerticalProgressBar
+	lateinit var volumeSliderContainer: View
+	lateinit var brightnessSliderContainer: View
 
 	lateinit var lockButton: View
 	lateinit var prevButton: View
@@ -166,7 +172,13 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	val seekIntervalMs = 10000L
 
 	val quickInfoHandler = Handler(Looper.getMainLooper())
+	val brightnessSliderHandler = Handler(Looper.getMainLooper())
+	val volumeSliderHandler = Handler(Looper.getMainLooper())
+
+	var brightnessSliderRunnable: Runnable? = null
+	var volumeSliderRunnable: Runnable? = null
 	var quickInfoRunnable: Runnable? = null
+
 	var isPrivateSessionAllowed: Boolean = false
 	var hasMadeDecisionOverPrivateAccess: Boolean = false
 
@@ -352,6 +364,22 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		quickInfoHandler.postDelayed(quickInfoRunnable!!, 1500)
 	}
 
+	fun setBrightness(process: Int) {
+		showView(brightnessSliderContainer, true)
+		brightnessSlider.setProgress(value = process)
+		brightnessSliderRunnable?.let { brightnessSliderHandler.removeCallbacks(it) }
+		brightnessSliderRunnable = Runnable { hideView(brightnessSliderContainer, true, 100) }
+		brightnessSliderHandler.postDelayed(brightnessSliderRunnable!!, 500)
+	}
+
+	fun setVolume(process: Int) {
+		showView(volumeSliderContainer, true)
+		volumeSlider.setProgress(value = process)
+		volumeSliderRunnable?.let { volumeSliderHandler.removeCallbacks(it) }
+		volumeSliderRunnable = Runnable { hideView(volumeSliderContainer, true, 100) }
+		volumeSliderHandler.postDelayed(volumeSliderRunnable!!, 500)
+	}
+
 	fun formatPlaybackTime(milliseconds: Long): String {
 		val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds)
 		val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds) % 60
@@ -521,64 +549,81 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	private fun initializeActivityViews() {
 		selfActivityRef?.let { _ ->
-			// Initialize ExoPlayer view and other UI components
+			// Initialize ExoPlayer view
 			playerView = findViewById(id.video_player_view)
+
+			// Quick info text overlay (e.g., zoom, volume, brightness)
 			quickInfoText = findViewById(id.txt_video_quick_info)
+
+			// Night mode overlay view
 			nightModeOverlay = findViewById(id.night_mode_invisible_area)
 			nightModeOverlay.visibility = GONE
+
+			// Invisible touch area for gesture detection
 			overlayTouchArea = findViewById(id.invisible_touch_area)
 
-			// Set up device cutout handling
+			// Device cutout (notch) padding handling
 			cutoutPaddingView = findViewById(id.device_cutout_padding_view)
 			cutoutPaddingView.matchHeightToTopCutout()
 
-			// Initialize playback controls
+			// Playback controls container (hidden initially)
 			playbackController = findViewById(id.container_player_controller)
 			playbackController.visibility = GONE
 
-			// Initialize album art & visualizer holder for audio files
+			// Audio album art & visualizer
 			albumArtView = findViewById(id.img_audio_album_art)
 			audioVisualizerView = findViewById(id.anim_audio_visualizing)
 			fromRawRes(INSTANCE, R.raw.animation_audio_visualizing_v1)
 				.addListener { audioVisualizerView.setComposition(it) }
 
-			// Set up action bar buttons
+			// Action bar buttons
 			backButton = findViewById(id.btn_actionbar_back)
-			backButton.apply { setOnClickListener { onBackPressActivity() } }
+			backButton.setOnClickListener { onBackPressActivity() }
 
 			videoTitleText = findViewById(id.txt_video_file_name)
 			videoTitleText.apply {
-				isSelected = true; text = extractDownloadModelFromIntent()?.fileName ?: ""
+				isSelected = true
+				text = extractDownloadModelFromIntent()?.fileName ?: ""
 			}
 
 			optionsButton = findViewById(id.btn_actionbar_option)
-			optionsButton.apply { setOnClickListener { showMediaOptionsMenu() } }
+			optionsButton.setOnClickListener { showMediaOptionsMenu() }
 
-			// Initialize progress display
+			// Media progress display
 			currentTimeText = findViewById(id.txt_video_progress_timer)
-			progressBar = findViewById(id.video_progress_bar)
-			progressBar.apply { addListener(createScrubberSeekListener()) }
+			mediaProgressBar = findViewById(id.video_progress_bar)
+			mediaProgressBar.addListener(createScrubberSeekListener())
+
+			// Brightness slider & container
+			brightnessSlider = findViewById(id.progress_brightness)
+			brightnessSlider.setMax(100)
+			brightnessSliderContainer = findViewById(id.container_brightness_slider)
+
+			// Volume slider & container
+			volumeSlider = findViewById(id.progress_volume)
+			volumeSlider.setMax(100)
+			volumeSliderContainer = findViewById(id.container_volume_slider)
 
 			durationText = findViewById(id.txt_video_duration)
 
-			// Initialize control buttons
+			// Playback control buttons
 			lockButton = findViewById(id.btn_video_controllers_lock)
-			lockButton.apply { setOnClickListener { lockPlaybackControls() } }
+			lockButton.setOnClickListener { lockPlaybackControls() }
 
 			prevButton = findViewById(id.btn_video_previous)
-			prevButton.apply { setOnClickListener { playPreviousVideoItem() } }
+			prevButton.setOnClickListener { playPreviousVideoItem() }
 
 			playPauseButton = findViewById(id.btn_video_play_pause_toggle)
-			playPauseButton.apply { setOnClickListener { togglePlaybackState() } }
+			playPauseButton.setOnClickListener { togglePlaybackState() }
 
 			nextButton = findViewById(id.btn_video_next)
-			nextButton.apply { setOnClickListener { playNextVideoItem() } }
+			nextButton.setOnClickListener { playNextVideoItem() }
 
 			shareButton = findViewById(id.btn_video_file_share)
-			shareButton.apply { setOnClickListener { shareCurrentMediaFile() } }
+			shareButton.setOnClickListener { shareCurrentMediaFile() }
 
 			unlockButton = findViewById(id.btn_video_unlock_overlay)
-			unlockButton.apply { setOnClickListener { unlockPlaybackControls() } }
+			unlockButton.setOnClickListener { unlockPlaybackControls() }
 		}
 	}
 
@@ -735,22 +780,27 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					when (gestureDirection) {
 						"vertical" -> {
 							// Handle volume or brightness change
-							val sensitivity = 10f // increase for faster response
-							val percentage = (deltaY / screenHeight) * sensitivity
+							val brightnessSensitivity = 5f // increase for faster response
+							val brightnessPercentage = (deltaY / screenHeight) * brightnessSensitivity
+
+							val volumeSensitivity = 6f // increase for faster response
+							val volumePercentage = (deltaY / screenHeight) * volumeSensitivity
 
 							if (e1.x < screenWidth / 2) {
 								// Left side → brightness control
-								val newBrightness = (initialBrightness + percentage).coerceIn(0.0f, 1.0f)
+								val newBrightness = (initialBrightness + brightnessPercentage).coerceIn(0.0f, 1.0f)
 								val params = window.attributes
 								params.screenBrightness = newBrightness
 								window.attributes = params
-								showQuickPlayerInfo("Brightness: ${(newBrightness * 100).toInt()}%")
+								val progress = ( newBrightness * 100).toInt()
+								setBrightness(process = progress)
 							} else {
 								// Right side → volume control
-								val change = (percentage * maxVolume).toInt()
+								val change = (volumePercentage * maxVolume).toInt()
 								val newVolume = (initialVolume + change).coerceIn(0, maxVolume)
 								audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
-								showQuickPlayerInfo("Volume: ${(newVolume * 100) / maxVolume}%")
+								val progress = (newVolume * 100) / maxVolume
+								setVolume(process = progress)
 							}
 							return true
 						}
@@ -771,7 +821,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 								val seekOffset = ((deltaX / screenWidth) * 25000).toLong()
 								val newSeekPosition =
 									(startSeekPosition + seekOffset).coerceIn(0, getVideoDuration())
-								progressBar.setPosition(newSeekPosition)
+								mediaProgressBar.setPosition(newSeekPosition)
 								player.seekTo(newSeekPosition)
 								showQuickPlayerInfo(formatPlaybackTime(newSeekPosition))
 								return true
@@ -1287,9 +1337,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val bufferedPos = player.bufferedPosition
 		currentPlaybackPosition = currentPos
 
-		progressBar.setDuration(totalDuration)
-		progressBar.setPosition(currentPos)
-		progressBar.setBufferedPosition(bufferedPos)
+		mediaProgressBar.setDuration(totalDuration)
+		mediaProgressBar.setPosition(currentPos)
+		mediaProgressBar.setBufferedPosition(bufferedPos)
 	}
 
 	private fun handlePlaybackControllerVisibility(shouldTogglePlayback: Boolean = true) {
