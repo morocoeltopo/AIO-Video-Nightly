@@ -569,5 +569,10 @@
 	<string name="title_frame_snapshot">Frame Snapshot</string>
 	<string name="title_snapshot_saved_open_gallery">Snapshot Saved, Open Your Gallery</string>
 	<string name="title_share_media_file">Share Media File</string>
+	<string name="title_player_settings">Player Settings</string>
+	<string name="title_playback_speed">Playback Speed</string>
+	<string name="title_background_play">Background Play</string>
+	<string name="title_subtitle_tracks">Subtitle Tracks</string>
+	<string name="title_audio_tracks">Audio Tracks</string>
 
 </resources>

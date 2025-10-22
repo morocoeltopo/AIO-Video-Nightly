@@ -30,6 +30,7 @@ import java.util.Locale.getDefault
  */
 object MediaInfoHtmlBuilder {
 
+	/** Logger instance scoped to this class for consistent debug and error output. */
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
@@ -45,7 +46,7 @@ object MediaInfoHtmlBuilder {
 			// Use MediaMetadataRetriever to extract metadata from the file
 			MediaMetadataRetriever().use { retriever ->
 				retriever.setDataSource(mediaFile.path)
-				buildHtmlInfo(retriever, dataModel, mediaFile)
+				constructHtmlString(retriever, dataModel, mediaFile)
 			}
 		} catch (error: Exception) {
 			logger.e("Error while building media info html string:", error)
@@ -61,7 +62,7 @@ object MediaInfoHtmlBuilder {
 	 * @param mediaFile The actual media file
 	 * @return Formatted HTML string with all media information
 	 */
-	private fun buildHtmlInfo(
+	private fun constructHtmlString(
 		mediaMetaDataRetriever: MediaMetadataRetriever,
 		downloadDataModel: DownloadDataModel,
 		mediaFile: File

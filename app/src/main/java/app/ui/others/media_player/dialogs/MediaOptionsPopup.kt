@@ -111,7 +111,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 			logger.d("Setting up PopupBuilder for MediaOptionsPopup...")
 			popupBuilder = PopupBuilder(
 				activityInf = safeActivityRef,
-				popupLayoutId = layout.activity_player_5_options,
+				popupLayoutId = layout.activity_player_5_options_1,
 				popupAnchorView = safeActivityRef.optionsButton
 			)
 		} ?: logger.e("Failed to setup PopupBuilder: Activity reference is null")
