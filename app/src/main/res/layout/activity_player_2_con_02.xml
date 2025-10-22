@@ -110,9 +110,9 @@
 				tools:ignore="ImageContrastCheck" />
 		</RelativeLayout>
 
-		<!-- Share media file button -->
+		<!-- Player configurations button -->
 		<RelativeLayout
-			android:id="@+id/btn_video_file_share"
+			android:id="@+id/btn_player_configs"
 			android:layout_width="wrap_content"
 			android:layout_height="match_parent"
 			android:layout_weight="1"
@@ -128,7 +128,7 @@
 				android:layout_gravity="center"
 				android:adjustViewBounds="true"
 				android:importantForAccessibility="no"
-				android:src="@drawable/ic_button_share"
+				android:src="@drawable/ic_button_options"
 				android:tint="@color/color_secondary"
 				tools:ignore="ImageContrastCheck" />
 		</RelativeLayout>

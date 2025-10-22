@@ -123,7 +123,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	 * Implementation details depend on popup design and button functionality.
 	 */
 	private fun setupClickEvents() {
-		safePlayerActivityRef?.let { _ ->
+		safePlayerActivityRef?.let { playerActivity ->
 			with(popupBuilder.getPopupView()) {
 				logger.d("Binding click events for MediaOptionsPopup buttons...")
 				mapOf(
@@ -133,6 +133,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 					R.id.btn_media_info to { close(); openMediaFileInfo() },
 					R.id.btn_private_videos to { close(); togglePrivateSession() },
 					R.id.btn_snapshot to { close(); captureActivityViewSnapshot() },
+					R.id.btn_share_media to { close(); playerActivity.shareCurrentMediaFile() },
 					R.id.btn_discover_video to { close(); discoverMore() }
 				).forEach { (id, action) ->
 					setClickListener(id) { action() }

@@ -161,7 +161,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	lateinit var prevButton: View
 	lateinit var playPauseButton: View
 	lateinit var nextButton: View
-	lateinit var shareButton: View
+	lateinit var configButton: View
 	lateinit var unlockButton: View
 
 	var areControllersLocked = false
@@ -436,6 +436,11 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		}
 	}
 
+	fun openPlayerConfiguration() {
+		doSomeVibration(50)
+		showToast(selfActivityRef, msgId = string.title_experimental_feature)
+	}
+
 	fun promptAndSyncSubtitle() {
 		selfActivityRef?.let { safeActivityRef ->
 			getMessageDialog(
@@ -619,8 +624,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			nextButton = findViewById(id.btn_video_next)
 			nextButton.setOnClickListener { playNextVideoItem() }
 
-			shareButton = findViewById(id.btn_video_file_share)
-			shareButton.setOnClickListener { shareCurrentMediaFile() }
+			configButton = findViewById(id.btn_player_configs)
+			configButton.setOnClickListener { openPlayerConfiguration() }
 
 			unlockButton = findViewById(id.btn_video_unlock_overlay)
 			unlockButton.setOnClickListener { unlockPlaybackControls() }

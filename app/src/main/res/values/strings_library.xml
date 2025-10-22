@@ -568,5 +568,6 @@
 	<string name="title_now_playing">Now Playing</string>
 	<string name="title_frame_snapshot">Frame Snapshot</string>
 	<string name="title_snapshot_saved_open_gallery">Snapshot Saved, Open Your Gallery</string>
+	<string name="title_share_media_file">Share Media File</string>
 
 </resources>
