@@ -16,6 +16,7 @@ import app.core.engines.caches.AIORawFiles
 import app.core.engines.downloader.DownloadModelMerger
 import app.core.engines.downloader.DownloadSystem
 import app.core.engines.settings.AIOSettings
+import app.core.engines.settings.AIOSettingsDBManager
 import app.core.engines.video_parser.parsers.YoutubeVidParser
 import com.anggrayudi.storage.file.DocumentFileCompat.fromPublicFolder
 import com.anggrayudi.storage.file.PublicDirectory.DOWNLOADS
@@ -108,15 +109,35 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		startupManager.apply {
 			// Load essential settings and raw resources
 			addCriticalTask {
-				logger.d("Preloading OK-Http Client builder")
+				logger.d("[Startup] Preloading OkHttp client builder...")
 				HttpClientProvider.initialize()
-				logger.d("Preloaded OK-Http Client builder")
+				logger.d("[Startup] OkHttp client builder preloaded")
 
-				logger.d("Loading critical settings and resources")
-				aioSettings = AIOSettings().apply(AIOSettings::readObjectFromStorage)
-				aioRawFiles = AIORawFiles().apply(AIORawFiles::preloadLottieAnimation)
-				youtubeVidParser.initSystem()
-				logger.d("Critical settings and resources loaded")
+				logger.d("[Startup] Initializing critical settings and core resources...")
+				try {
+					AIOSettingsDBManager.init(INSTANCE)
+					aioSettings = AIOSettingsDBManager.loadSettingsFromDB()
+					logger.d("[Startup] Settings database initialized and loaded successfully")
+				} catch (error: Exception) {
+					logger.e("[Startup] Failed to initialize or load settings: ${error.message}", error)
+					aioSettings = AIOSettings().apply(AIOSettings::readObjectFromStorage)
+				}
+
+				try {
+					aioRawFiles = AIORawFiles().apply(AIORawFiles::preloadLottieAnimation)
+					logger.d("[Startup] Lottie animations preloaded successfully")
+				} catch (error: Exception) {
+					logger.e("[Startup] Failed to preload Lottie animations: ${error.message}", error)
+				}
+
+				try {
+					youtubeVidParser.initSystem()
+					logger.d("[Startup] YouTube video parser initialized successfully")
+				} catch (error: Exception) {
+					logger.e("[Startup] Failed to initialize YouTube parser: ${error.message}", error)
+				}
+
+				logger.d("[Startup] All critical settings and resources loaded")
 			}
 
 			// Load bookmarks/history and lifecycle tracking
@@ -216,6 +237,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 			downloadSystem.cleanUp()
 
 			aioTimer.cancel()
+			AIOSettingsDBManager.closeDB()
 			logger.d("Termination tasks completed")
 		})
 		super.onTerminate()

@@ -533,7 +533,7 @@ class AIOSettings : Serializable {
 					fileName = AIO_SETTINGS_FILE_NAME_JSON,
 					data = convertClassToJSON()
 				)
-
+				AIOSettingsDBManager.saveSettingsInDB(settings = this)
 				logger.d("Settings successfully updated in storage")
 			} catch (error: Exception) {
 				logger.e("Error updating settings in storage: ${error.message}", error)
