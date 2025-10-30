@@ -1,29 +1,63 @@
+// ============================================================================
+// settings.gradle
+// ----------------------------------------------------------------------------
+// Root Gradle configuration file for project setup.
+// Controls plugin management, dependency resolution, and included modules.
+// ============================================================================
+
+/* ---------------------------------------------------------------------------
+ * PLUGIN MANAGEMENT
+ * Defines where Gradle should look for build plugins (AGP, Kotlin, etc.).
+ * Using regex filters ensures faster syncs by limiting search to known groups.
+ * ---------------------------------------------------------------------------
+ */
 pluginManagement {
     repositories {
         google {
             content {
+                // Include only essential Android and Google plugin groups
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
             }
         }
-        mavenCentral()
-        gradlePluginPortal()
+        mavenCentral()        // Central Maven repository (standard JVM artifacts)
+        gradlePluginPortal()  // Required for community Gradle plugins (e.g., ObjectBox)
     }
 }
 
+/* ---------------------------------------------------------------------------
+ * GLOBAL PLUGINS
+ * Applies project-wide Gradle plugins before individual modules are configured.
+ * ---------------------------------------------------------------------------
+ */
 plugins {
+    // Foojay Resolver automatically configures JVM toolchains (JDK download/version mgmt)
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
+/* ---------------------------------------------------------------------------
+ * DEPENDENCY RESOLUTION MANAGEMENT
+ * Controls how Gradle resolves dependencies for all subprojects.
+ * Repositories are declared here (instead of each module) for consistency.
+ * ---------------------------------------------------------------------------
+ */
 dependencyResolutionManagement {
+    // Prevent subprojects from declaring their own repositories — ensures consistency
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+
     repositories {
-        google()
-        mavenCentral()
-        maven { url "https://jitpack.io" }
+        google()               // Official Google Maven repo (AndroidX, Play Services, etc.)
+        mavenCentral()         // Standard open-source Java/Kotlin libraries
+        maven { url "https://jitpack.io" }  // JitPack for GitHub-hosted libraries
     }
 }
 
-rootProject.name = "AIO_VD"
-include ':app'
+/* ---------------------------------------------------------------------------
+ * PROJECT STRUCTURE
+ * Sets the root project name and declares included modules.
+ * Each module appears as a Gradle subproject (e.g., ":app").
+ * ---------------------------------------------------------------------------
+ */
+rootProject.name = "AIO_VDM"   // Human-readable name for the root project
+include ':app'                // Main Android application module
