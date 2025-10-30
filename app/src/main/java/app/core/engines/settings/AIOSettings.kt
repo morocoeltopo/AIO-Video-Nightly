@@ -13,6 +13,8 @@ import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.dslplatform.json.CompiledJson
 import com.dslplatform.json.JsonAttribute
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import lib.files.FileSystemUtility.isWritableFile
 import lib.files.FileSystemUtility.readStringFromInternalStorage
 import lib.files.FileSystemUtility.saveStringToInternalStorage
@@ -38,10 +40,14 @@ import java.io.Serializable
  * - Validation of storage locations
  */
 @CompiledJson
+@Entity
 class AIOSettings : Serializable {
 
 	@Transient
 	private val logger = LogHelperUtils.from(javaClass)
+
+	@Id
+	var id: Long = 0
 
 	// Basic user state
 	@JsonAttribute(name = "userInstallationId")
@@ -249,60 +255,112 @@ class AIOSettings : Serializable {
 	 */
 	fun readObjectFromStorage() {
 		ThreadsUtility.executeInBackground(codeBlock = {
-			try {
-				var isBinaryFileValid = false
-				val internalDir = AIOApp.internalDataFolder
-				val settingsBinaryDataFile = internalDir.findFile(AIO_SETTINGS_FILE_NAME_BINARY)
-
-				if (settingsBinaryDataFile != null && settingsBinaryDataFile.exists()) {
-					logger.d("Found binary settings file, attempting to load")
-					val absolutePath = settingsBinaryDataFile.getAbsolutePath(INSTANCE)
-					val objectInMemory = loadFromBinary(File(absolutePath))
-
-					if (objectInMemory != null) {
-						logger.d("Successfully loaded settings from binary format")
-						aioSettings = objectInMemory
-						aioSettings.updateInStorage()
-						validateUserSelectedFolder()
-						isBinaryFileValid = true
-					} else {
-						logger.d("Failed to load settings from binary format")
-					}
-				}
-
-				if (!isBinaryFileValid) {
-					logger.d("Attempting to load settings from JSON format")
-					readStringFromInternalStorage(AIO_SETTINGS_FILE_NAME_JSON).let { jsonString ->
-						if (jsonString.isNotEmpty()) {
-							convertJSONStringToClass(jsonString = jsonString).let {
-								logger.d("Successfully loaded settings from JSON format")
-								aioSettings = it
-								aioSettings.updateInStorage()
-								validateUserSelectedFolder()
-							}
-						}
-					}
-				}
-
-			} catch (error: Exception) {
-				logger.e("Error reading settings from storage: ${error.message}", error)
-			}
+			initializeLegacyDataParser()
 		})
 	}
 
 	/**
-	 * Saves current settings to internal storage in both binary and JSON formats.
-	 * Executes in background thread to avoid UI freezing.
+	 * Attempts to restore previously saved AIO settings during app startup.
+	 * Supports both **binary** and **JSON** formats for backward compatibility.
+	 *
+	 * Priority:
+	 * 1. Load binary settings first (faster, more compact).
+	 * 2. If binary fails, attempt to load JSON as fallback.
+	 *
+	 * Automatically re-saves successfully loaded settings to storage and
+	 * validates the user-selected download folder to ensure it’s writable.
+	 */
+	private fun initializeLegacyDataParser() {
+		try {
+			var isBinaryFileValid = false
+
+			// Retrieve reference to the internal data folder
+			val internalDir = AIOApp.internalDataFolder
+
+			// Attempt to locate the binary settings file within internal storage
+			val settingsBinaryDataFile = internalDir.findFile(AIO_SETTINGS_FILE_NAME_BINARY)
+
+			// STEP 1: Try to restore from binary settings file
+			if (settingsBinaryDataFile != null && settingsBinaryDataFile.exists()) {
+				logger.d("Found binary settings file, attempting to load")
+
+				// Get absolute path and read binary contents
+				val absolutePath = settingsBinaryDataFile.getAbsolutePath(INSTANCE)
+				val objectInMemory = loadFromBinary(File(absolutePath))
+
+				// Validate and apply loaded settings
+				if (objectInMemory != null) {
+					logger.d("Successfully loaded settings from binary format")
+
+					// Assign loaded data to the global settings instance
+					aioSettings = objectInMemory
+
+					// Update persistent storage and validate directory access
+					aioSettings.updateInStorage()
+					validateUserSelectedFolder()
+
+					isBinaryFileValid = true
+				} else {
+					logger.d("Failed to load settings from binary format")
+				}
+			}
+
+			// STEP 2: Fallback to JSON format if binary load fails
+			if (!isBinaryFileValid) {
+				logger.d("Attempting to load settings from JSON format")
+
+				readStringFromInternalStorage(AIO_SETTINGS_FILE_NAME_JSON).let { jsonString ->
+					if (jsonString.isNotEmpty()) {
+						// Deserialize JSON into AIOSettings object
+						convertJSONStringToClass(jsonString = jsonString).let {
+							logger.d("Successfully loaded settings from JSON format")
+
+							// Assign loaded JSON data to the global instance
+							aioSettings = it
+
+							// Update persistent cache and validate folder access
+							aioSettings.updateInStorage()
+							validateUserSelectedFolder()
+						}
+					} else {
+						logger.d("No JSON settings found or file empty")
+					}
+				}
+			}
+
+		} catch (error: Exception) {
+			logger.e("Error reading settings from storage: ${error.message}", error)
+		}
+	}
+
+	/**
+	 * Saves the current settings object to the app’s internal storage.
+	 *
+	 * Behavior:
+	 * - Runs asynchronously using [ThreadsUtility.executeInBackground] to prevent UI lag.
+	 * - Serializes and saves settings in **two formats**:
+	 *   1. **Binary**: compact and fast for internal deserialization.
+	 *   2. **JSON**: human-readable format, useful for debugging and external tools.
+	 * - Ensures reliability — if one format fails, the other may still succeed.
+	 *
+	 * Exception handling:
+	 * - All operations are wrapped in a try-catch block.
+	 * - Logs both success and failure through the [logger].
 	 */
 	fun updateInStorage() {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {
 				logger.d("Updating settings in storage")
+
+				// Save optimized binary version
 				saveToBinary(fileName = AIO_SETTINGS_FILE_NAME_BINARY)
+
+				// Save readable JSON version
 				saveStringToInternalStorage(
 					fileName = AIO_SETTINGS_FILE_NAME_JSON,
 					data = convertClassToJSON()
 				)
+
 				logger.d("Settings successfully updated in storage")
 			} catch (error: Exception) {
 				logger.e("Error updating settings in storage: ${error.message}", error)
@@ -311,16 +369,32 @@ class AIOSettings : Serializable {
 	}
 
 	/**
-	 * Saves the current settings object to binary format.
-	 * @param fileName The name of the file to save to
+	 * Serializes and writes the current settings object to a binary file.
+	 *
+	 * Workflow:
+	 * 1. Uses [fstConfig] for high-performance object serialization.
+	 * 2. Opens the file output stream in **MODE_PRIVATE** (replaces existing file).
+	 * 3. Converts this instance to a byte array and writes it to disk.
+	 * 4. Closes the stream safely using `use` for automatic resource cleanup.
+	 *
+	 * Thread Safety:
+	 * - Annotated with [Synchronized] to prevent concurrent write conflicts.
+	 *
+	 * @param fileName The name of the file (e.g., `"aio_settings.dat"`)
 	 */
 	@Synchronized
 	private fun saveToBinary(fileName: String) {
 		try {
 			logger.d("Saving settings to binary file: $fileName")
+
+			// Open or create binary file inside app’s internal storage
 			val fileOutputStream = INSTANCE.openFileOutput(fileName, MODE_PRIVATE)
+
 			fileOutputStream.use { fos ->
+				// Serialize current object instance to binary format
 				val bytes = fstConfig.asByteArray(this)
+
+				// Write binary data to file
 				fos.write(bytes)
 				logger.d("Binary settings saved successfully")
 			}
@@ -330,9 +404,20 @@ class AIOSettings : Serializable {
 	}
 
 	/**
-	 * Loads settings from a binary file.
-	 * @param settingDataBinaryFile The binary file containing settings
-	 * @return The loaded AIOSettings object or null if loading fails
+	 * Loads and deserializes AIO settings from a binary file.
+	 *
+	 * Workflow:
+	 * 1. Checks if the provided file exists.
+	 * 2. Reads all bytes and deserializes them back into an [AIOSettings] object.
+	 * 3. Returns `null` if file is missing or corrupted.
+	 * 4. Automatically deletes corrupted binary files to prevent reloading errors.
+	 *
+	 * Reliability:
+	 * - Restores previously saved configuration quickly using binary format.
+	 * - Serves as a fast-loading alternative to JSON parsing.
+	 *
+	 * @param settingDataBinaryFile File reference pointing to the stored binary data.
+	 * @return A deserialized [AIOSettings] object if successful, or `null` on failure.
 	 */
 	private fun loadFromBinary(settingDataBinaryFile: File): AIOSettings? {
 		if (!settingDataBinaryFile.exists()) {
@@ -342,40 +427,72 @@ class AIOSettings : Serializable {
 
 		return try {
 			logger.d("Loading settings from binary file")
+
+			// Read all bytes and reconstruct the settings object
 			val bytes = settingDataBinaryFile.readBytes()
 			fstConfig.asObject(bytes).apply {
 				logger.d("Successfully loaded settings from binary file")
 			} as AIOSettings
 		} catch (error: Exception) {
 			logger.e("Error loading binary settings: ${error.message}", error)
+
+			// Delete corrupted settings file to avoid repeated failures
 			settingDataBinaryFile.delete()
 			null
 		}
 	}
 
 	/**
-	 * Validates whether the user-selected folder is writable.
-	 * If not writable, falls back to creating a default download folder.
+	 * Validates whether the folder selected by the user is writable.
+	 *
+	 * Workflow:
+	 * 1. Retrieves the current user-selected folder via [getUserSelectedDir].
+	 * 2. Checks if it is writable using [isWritableFile].
+	 * 3. If not writable or inaccessible, automatically creates a default AIO folder
+	 *    in the public download directory to prevent app errors.
+	 * 4. Persists the updated settings to storage after validation.
+	 *
+	 * This method provides robust handling to ensure that invalid or restricted
+	 * directory selections do not cause I/O issues during download operations.
 	 */
 	fun validateUserSelectedFolder() {
 		logger.d("Validating user selected folder")
+
+		// Check whether the currently configured folder is writable
 		if (!isWritableFile(getUserSelectedDir())) {
 			logger.d("User selected folder not writable, creating default folder")
+
+			// If folder is invalid or inaccessible, revert to default AIO folder
 			createDefaultAIODownloadFolder()
 		}
 
+		// Persist updated folder info in settings (e.g., JSON or binary file)
 		aioSettings.updateInStorage()
 	}
 
 	/**
-	 * Gets the user-selected download directory as a DocumentFile.
-	 * @return DocumentFile representing the selected directory or null if invalid
+	 * Retrieves the user-selected download directory as a [DocumentFile].
+	 *
+	 * Behavior:
+	 * - If the user preference points to the app’s private folder, returns a writable handle
+	 *   to that internal directory.
+	 * - If the preference targets the system gallery, resolves the external public folder path.
+	 * - Returns `null` if no valid option is detected.
+	 *
+	 * This method uses the `fromFullPath()` utility to safely convert a file path into
+	 * a [DocumentFile] object that supports scoped storage and runtime permissions.
+	 *
+	 * @return A [DocumentFile] representing the selected directory, or `null` if invalid.
 	 */
 	private fun getUserSelectedDir(): DocumentFile? {
 		return when (aioSettings.defaultDownloadLocation) {
 			PRIVATE_FOLDER -> {
 				logger.d("Getting private folder directory")
+
+				// Internal app data directory (private to the application)
 				val internalDataFolderPath = INSTANCE.dataDir.absolutePath
+
+				// Convert to DocumentFile for safe file access
 				fromFullPath(
 					context = INSTANCE,
 					fullPath = internalDataFolderPath,
@@ -385,8 +502,12 @@ class AIOSettings : Serializable {
 
 			SYSTEM_GALLERY -> {
 				logger.d("Getting system gallery directory")
+
+				// Retrieve localized path for system gallery folder
 				val resID = string.text_default_aio_download_folder_path
 				val externalDataFolderPath = getText(resID)
+
+				// Convert to DocumentFile representing the public gallery path
 				fromFullPath(
 					context = INSTANCE,
 					fullPath = externalDataFolderPath,
@@ -395,6 +516,7 @@ class AIOSettings : Serializable {
 			}
 
 			else -> {
+				// Unknown or unsupported download location type
 				logger.d("Unknown download location type")
 				null
 			}
@@ -402,66 +524,112 @@ class AIOSettings : Serializable {
 	}
 
 	/**
-	 * Attempts to create a default AIO folder in the public download directory.
-	 * Logs success or failure but does not throw exceptions.
+	 * Attempts to create the default AIO folder inside the public download directory.
+	 *
+	 * This method:
+	 * - Retrieves the localized default folder name from string resources.
+	 * - Attempts to create that folder in the device’s shared "Downloads" directory.
+	 * - Logs both success and failure states without throwing exceptions.
+	 *
+	 * The purpose is to ensure that the application always has a designated folder
+	 * for storing downloaded or generated media.
 	 */
 	private fun createDefaultAIODownloadFolder() {
 		try {
 			logger.d("Creating default AIO download folder")
+
+			// Retrieve default folder name from localized strings (e.g., "AIO Downloads")
 			val defaultFolderName = getText(string.title_default_application_folder)
+
+			// Attempt to create directory inside the public download folder
 			INSTANCE.getPublicDownloadDir()?.createDirectory(defaultFolderName)
+
+			// Log success if no exception occurred
 			logger.d("Default folder created successfully")
 		} catch (error: Exception) {
+			// Log detailed error message but do not propagate the exception
 			logger.e("Error creating default folder: ${error.message}", error)
 		}
 	}
 
 	/**
-	 * Converts this settings object to a JSON string.
-	 * @return JSON representation of the settings
+	 * Converts the current AIOSettings instance into a JSON string representation.
+	 *
+	 * This function:
+	 * - Uses the global DSL-JSON serializer (`aioDSLJsonInstance`) for efficient serialization.
+	 * - Writes the object into an in-memory output stream.
+	 * - Returns the final UTF-8 string.
+	 *
+	 * Useful for persisting user preferences or exporting configuration data.
+	 *
+	 * @return A JSON string containing all serialized AIOSettings fields.
 	 */
 	fun convertClassToJSON(): String {
 		logger.d("Converting settings to JSON")
+
+		// Create a temporary stream to hold the serialized JSON data
 		val outputStream = ByteArrayOutputStream()
-		aioDSLJsonInstance.serialize(this, outputStream) // write to stream
-		return outputStream.toByteArray().decodeToString() // convert to String
+
+		// Serialize the current object instance into the stream
+		aioDSLJsonInstance.serialize(this, outputStream)
+
+		// Convert the byte stream to a readable UTF-8 string and return
+		return outputStream.toByteArray().decodeToString()
 	}
 
 	/**
-	 * Converts a JSON string to an AIOSettings object.
-	 * @param jsonString The JSON string to convert
-	 * @return The deserialized AIOSettings object
+	 * Converts a JSON-formatted string into an AIOSettings object.
+	 *
+	 * This function:
+	 * - Wraps the given JSON string into an input stream.
+	 * - Uses the same DSL-JSON instance to deserialize it into an AIOSettings object.
+	 * - Falls back to a new default instance if deserialization fails (null result).
+	 *
+	 * Commonly used when restoring settings from disk or network.
+	 *
+	 * @param jsonString The JSON string to deserialize.
+	 * @return A fully populated AIOSettings object, or a default one if parsing fails.
 	 */
 	private fun convertJSONStringToClass(jsonString: String): AIOSettings {
 		logger.d("Converting JSON to settings object")
+
+		// Prepare a byte stream from the input JSON string
 		val inputStream = ByteArrayInputStream(jsonString.encodeToByteArray())
-		val loadedSettings: AIOSettings = aioDSLJsonInstance.deserialize(
-			AIOSettings::class.java, inputStream
-		) ?: AIOSettings()
+
+		// Deserialize the JSON into an AIOSettings object; fallback to default if null
+		val loadedSettings: AIOSettings = aioDSLJsonInstance
+			.deserialize(AIOSettings::class.java, inputStream) ?: AIOSettings()
+
 		return loadedSettings
 	}
 
 	companion object {
 
+		/**
+		 * Filename used to indicate that dark mode is enabled.
+		 * This file acts as a flag for the app's dark mode state.
+		 */
 		const val AIO_SETTING_DARK_MODE_FILE_NAME: String = "darkmode.on"
 
 		/**
-		 * JSON settings filename
+		 * Filename for storing user or app settings in JSON format.
 		 */
 		const val AIO_SETTINGS_FILE_NAME_JSON: String = "aio_settings.json"
 
 		/**
-		 * Binary settings filename
+		 * Filename for storing user or app settings in binary format.
 		 */
 		const val AIO_SETTINGS_FILE_NAME_BINARY: String = "aio_settings.dat"
 
 		/**
-		 * Download location constant for private folder
+		 * Constant representing the private download folder.
+		 * Files saved here are accessible only within the app.
 		 */
 		const val PRIVATE_FOLDER = 1
 
 		/**
-		 * Download location constant for system gallery
+		 * Constant representing the system gallery download folder.
+		 * Files saved here are visible to other apps (e.g., Photos, Gallery).
 		 */
 		const val SYSTEM_GALLERY = 2
 	}

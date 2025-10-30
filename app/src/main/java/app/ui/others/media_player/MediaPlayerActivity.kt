@@ -439,7 +439,6 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	}
 
 	fun openPlayerConfiguration() {
-		doSomeVibration(50)
 		if (!::playerConfigPopup.isInitialized) {
 			playerConfigPopup = MediaConfigsPopup(selfActivityRef)
 			playerConfigPopup.show()
