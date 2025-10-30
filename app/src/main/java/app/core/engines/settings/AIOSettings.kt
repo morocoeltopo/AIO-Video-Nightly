@@ -8,6 +8,8 @@ import app.core.AIOApp.Companion.aioDSLJsonInstance
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOLanguage.Companion.ENGLISH
 import app.core.FSTBuilder.fstConfig
+import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
+import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
 import com.aio.R.string
 import com.anggrayudi.storage.file.DocumentFileCompat.fromFullPath
 import com.anggrayudi.storage.file.getAbsolutePath
@@ -27,17 +29,30 @@ import java.io.File
 import java.io.Serializable
 
 /**
- * Class representing persistent user settings for the AIO application.
+ * Class representing persistent user settings for the AIO application using ObjectBox for storage.
  *
  * This class manages all user preferences and application state that needs to persist between sessions.
- * It handles serialization to both JSON and binary formats for reliability and performance.
+ * It replaces the previous JSON and binary file storage with ObjectBox database for better performance,
+ * reliability, and data integrity.
  *
- * Features include:
- * - User preferences for downloads, browser, and UI
- * - Analytics tracking for user interactions
- * - Persistent storage management
- * - Default values for all settings
- * - Validation of storage locations
+ * Key Features:
+ * - ObjectBox database persistence with automatic CRUD operations
+ * - User preferences for downloads, browser, and UI customization
+ * - Analytics tracking for user interactions and engagement metrics
+ * - Download management settings including performance and behavior configurations
+ * - Browser-specific configurations and privacy settings
+ * - Application appearance and theme management
+ * - Storage location validation and management
+ * - Comprehensive default values for all settings
+ *
+ * Storage Architecture:
+ * - Uses ObjectBox as the primary data store with a single entity record (ID = 1)
+ * - Maintains backward compatibility with previous serialization annotations
+ * - Provides thread-safe operations for concurrent access
+ * - Automatic background persistence without manual file management
+ *
+ * @see io.objectbox.annotation.Entity for database entity configuration
+ * @see com.dslplatform.json.CompiledJson for JSON serialization compatibility
  */
 @CompiledJson
 @Entity
@@ -46,205 +61,363 @@ class AIOSettings : Serializable {
 	@Transient
 	private val logger = LogHelperUtils.from(javaClass)
 
+	/**
+	 * Unique identifier for the settings record in ObjectBox database.
+	 * Fixed to 1 since there's only one settings instance per application.
+	 *
+	 * @see io.objectbox.annotation.Id for primary key configuration
+	 */
 	@Id
 	var id: Long = 0
 
-	// Basic user state
+	// =============================================
+	// BASIC USER STATE & APPLICATION IDENTIFICATION
+	// =============================================
+
+	/**
+	 * Unique installation identifier for analytics and user tracking.
+	 * Generated once during first app launch and persisted across sessions.
+	 */
 	@JsonAttribute(name = "userInstallationId")
 	var userInstallationId: String = ""
 
+	/**
+	 * Flag indicating whether the user has completed the initial language selection flow.
+	 * Used to determine if the language selection screen should be shown on app start.
+	 */
 	@JsonAttribute(name = "isFirstTimeLanguageSelectionComplete")
 	var isFirstTimeLanguageSelectionComplete: Boolean = false
 
+	/**
+	 * Tracks if the user has rated the application in the play store.
+	 * Used to control rating prompt frequency and user engagement flows.
+	 */
 	@JsonAttribute(name = "hasUserRatedTheApplication")
 	var hasUserRatedTheApplication: Boolean = false
 
+	/**
+	 * Counter for total successful download operations completed by the user.
+	 * Used for analytics, user engagement metrics, and feature unlocking.
+	 */
 	@JsonAttribute(name = "totalNumberOfSuccessfulDownloads")
 	var totalNumberOfSuccessfulDownloads: Int = 0
 
+	/**
+	 * Cumulative time spent in the application measured in milliseconds.
+	 * Tracked for user engagement analytics and session management.
+	 */
 	@JsonAttribute(name = "totalUsageTimeInMs")
 	var totalUsageTimeInMs: Float = 0.0f
 
+	/**
+	 * Formatted representation of total usage time for display purposes.
+	 * Automatically updated from totalUsageTimeInMs for UI presentation.
+	 */
 	@JsonAttribute(name = "totalUsageTimeInFormat")
 	var totalUsageTimeInFormat: String = ""
 
+	/**
+	 * Last clipboard text processed by the application for URL detection.
+	 * Used to prevent duplicate processing of the same clipboard content.
+	 */
 	@JsonAttribute(name = "lastProcessedClipboardText")
 	var lastProcessedClipboardText: String = ""
 
-	// Default download location
+	// =============================================
+	// STORAGE & DOWNLOAD CONFIGURATION
+	// =============================================
+
+	/**
+	 * Preferred download location setting.
+	 *
+	 * Possible values:
+	 * - [PRIVATE_FOLDER] (1): App's private internal storage
+	 * - [SYSTEM_GALLERY] (2): Public gallery or external storage
+	 *
+	 * @see PRIVATE_FOLDER
+	 * @see SYSTEM_GALLERY
+	 */
 	@JsonAttribute(name = "defaultDownloadLocation")
 	var defaultDownloadLocation: Int = PRIVATE_FOLDER
 
-	// Language & regions settings
+	// =============================================
+	// LANGUAGE & REGIONAL SETTINGS
+	// =============================================
+
+	/**
+	 * User-selected UI language for the application.
+	 * Defaults to English. Affects all text and interface elements.
+	 *
+	 * @see app.core.AIOLanguage for available language options
+	 */
 	@JsonAttribute(name = "userSelectedUILanguage")
 	var userSelectedUILanguage: String = ENGLISH
 
+	/**
+	 * User-selected content region for localized content and services.
+	 * Uses ISO country codes (e.g., "IN", "US", "GB").
+	 * Affects content recommendations and regional services.
+	 */
 	@JsonAttribute(name = "userSelectedContentRegion")
 	var userSelectedContentRegion: String = "IN"
 
-	// Other settings
+	// =============================================
+	// APPEARANCE & UI PREFERENCES
+	// =============================================
+
+	/**
+	 * Application theme appearance setting.
+	 *
+	 * Possible values:
+	 * - -1: Automatic (follows system theme)
+	 * - 1: Dark mode
+	 * - 2: Light mode
+	 */
 	@JsonAttribute(name = "themeAppearance")
-	//-1 for automatic, 1 for dark, 2 for light
 	var themeAppearance: Int = -1
 
+	/**
+	 * Enables or disables daily content suggestions in the application.
+	 * When enabled, users receive personalized content recommendations.
+	 */
 	@JsonAttribute(name = "enableDailyContentSuggestion")
 	var enableDailyContentSuggestion: Boolean = true
 
-	// Analytics / interaction counters
+	// =============================================
+	// ANALYTICS & USER INTERACTION TRACKING
+	// =============================================
+
+	/** Counter for language change button clicks */
 	@JsonAttribute(name = "totalClickCountOnLanguageChange")
 	var totalClickCountOnLanguageChange: Int = 0
 
+	/** Counter for media playback interactions */
 	@JsonAttribute(name = "totalClickCountOnMediaPlayback")
 	var totalClickCountOnMediaPlayback: Int = 0
 
+	/** Counter for how-to guide accesses */
 	@JsonAttribute(name = "totalClickCountOnHowToGuide")
 	var totalClickCountOnHowToGuide: Int = 0
 
+	/** Counter for video URL editor usages */
 	@JsonAttribute(name = "totalClickCountOnVideoUrlEditor")
 	var totalClickCountOnVideoUrlEditor: Int = 0
 
+	/** Counter for home history section accesses */
 	@JsonAttribute(name = "totalClickCountOnHomeHistory")
 	var totalClickCountOnHomeHistory: Int = 0
 
+	/** Counter for bookmark management interactions */
 	@JsonAttribute(name = "totalClickCountOnHomeBookmarks")
 	var totalClickCountOnHomeBookmarks: Int = 0
 
+	/** Counter for recent downloads section accesses */
 	@JsonAttribute(name = "totalClickCountOnRecentDownloads")
 	var totalClickCountOnRecentDownloads: Int = 0
 
+	/** Counter for home screen favicon interactions */
 	@JsonAttribute(name = "totalClickCountOnHomeFavicon")
 	var totalClickCountOnHomeFavicon: Int = 0
 
+	/** Counter for version check operations */
 	@JsonAttribute(name = "totalClickCountOnVersionCheck")
 	var totalClickCountOnVersionCheck: Int = 0
 
+	/** Tracks interstitial advertisement click interactions */
 	@JsonAttribute(name = "totalInterstitialAdClick")
 	var totalInterstitialAdClick: Int = 0
 
+	/** Tracks interstitial advertisement impression counts */
 	@JsonAttribute(name = "totalInterstitialImpression")
 	var totalInterstitialImpression: Int = 0
 
+	/** Tracks rewarded advertisement click interactions */
 	@JsonAttribute(name = "totalRewardedAdClick")
 	var totalRewardedAdClick: Int = 0
 
+	/** Tracks rewarded advertisement impression counts */
 	@JsonAttribute(name = "totalRewardedImpression")
 	var totalRewardedImpression: Int = 0
 
-	// Path to WhatsApp Statuses folder
+	// =============================================
+	// PATH CONFIGURATIONS
+	// =============================================
+
+	/**
+	 * Full folder path for WhatsApp status storage.
+	 * Read-only value initialized from string resources.
+	 */
 	@JsonAttribute(name = "whatsAppStatusFullFolderPath")
 	val whatsAppStatusFullFolderPath: String = getText(string.text_whatsapp_status_file_dir)
 
-	// Download preferences
+	// =============================================
+	// DOWNLOAD PREFERENCES & BEHAVIOR
+	// =============================================
+
+	/** Enables single progress UI for download operations */
 	@JsonAttribute(name = "downloadSingleUIProgress")
 	var downloadSingleUIProgress: Boolean = true
 
+	/** Hides video thumbnails in download lists for privacy */
 	@JsonAttribute(name = "downloadHideVideoThumbnail")
 	var downloadHideVideoThumbnail: Boolean = false
 
+	/** Plays notification sound on download completion */
 	@JsonAttribute(name = "downloadPlayNotificationSound")
 	var downloadPlayNotificationSound: Boolean = true
 
+	/** Hides system notifications for download operations */
 	@JsonAttribute(name = "downloadHideNotification")
 	var downloadHideNotification: Boolean = false
 
+	/** Hides download progress from main UI elements */
 	@JsonAttribute(name = "hideDownloadProgressFromUI")
 	var hideDownloadProgressFromUI: Boolean = false
 
+	/** Enables automatic removal of completed download tasks */
 	@JsonAttribute(name = "downloadAutoRemoveTasks")
 	var downloadAutoRemoveTasks: Boolean = false
 
+	/** Number of days after which completed tasks are automatically removed */
 	@JsonAttribute(name = "downloadAutoRemoveTaskAfterNDays")
 	var downloadAutoRemoveTaskAfterNDays: Int = 0
 
+	/** Opens downloaded files on single click instead of long press */
 	@JsonAttribute(name = "openDownloadedFileOnSingleClick")
 	var openDownloadedFileOnSingleClick: Boolean = true
 
-	// Advanced download features
+	// =============================================
+	// ADVANCED DOWNLOAD FEATURES
+	// =============================================
+
+	/** Enables automatic resumption of interrupted downloads */
 	@JsonAttribute(name = "downloadAutoResume")
 	var downloadAutoResume: Boolean = true
 
+	/** Maximum number of errors before stopping auto-resume attempts */
 	@JsonAttribute(name = "downloadAutoResumeMaxErrors")
 	var downloadAutoResumeMaxErrors: Int = 35
 
+	/** Enables automatic handling of URL redirections during downloads */
 	@JsonAttribute(name = "downloadAutoLinkRedirection")
 	var downloadAutoLinkRedirection: Boolean = true
 
+	/** Enables automatic cataloging of downloads into folders */
 	@JsonAttribute(name = "downloadAutoFolderCatalog")
 	var downloadAutoFolderCatalog: Boolean = true
 
+	/** Enables automatic thread selection for parallel downloads */
 	@JsonAttribute(name = "downloadAutoThreadSelection")
 	var downloadAutoThreadSelection: Boolean = true
 
+	/** Automatically moves downloaded files to private storage */
 	@JsonAttribute(name = "downloadAutoFileMoveToPrivate")
 	var downloadAutoFileMoveToPrivate: Boolean = false
 
+	/** Automatically converts downloaded videos to MP3 format */
 	@JsonAttribute(name = "downloadAutoConvertVideosToMp3")
 	var downloadAutoConvertVideosToMp3: Boolean = false
 
-	// Download performance settings
+	// =============================================
+	// DOWNLOAD PERFORMANCE SETTINGS
+	// =============================================
+
+	/** Buffer size in bytes for download operations (default: 8KB) */
 	@JsonAttribute(name = "downloadBufferSize")
 	var downloadBufferSize: Int = 1024 * 8
 
+	/** Maximum HTTP read timeout in milliseconds (default: 30 seconds) */
 	@JsonAttribute(name = "downloadMaxHttpReadingTimeout")
 	var downloadMaxHttpReadingTimeout: Int = 1000 * 30
 
+	/** Default number of thread connections per download */
 	@JsonAttribute(name = "downloadDefaultThreadConnections")
 	var downloadDefaultThreadConnections: Int = 1
 
+	/** Default number of parallel download connections */
 	@JsonAttribute(name = "downloadDefaultParallelConnections")
 	var downloadDefaultParallelConnections: Int = 10
 
+	/** Enables checksum verification for downloaded files */
 	@JsonAttribute(name = "downloadVerifyChecksum")
 	var downloadVerifyChecksum: Boolean = false
 
+	/** Maximum network speed in bytes per second (0 = unlimited) */
 	@JsonAttribute(name = "downloadMaxNetworkSpeed")
 	var downloadMaxNetworkSpeed: Long = 0
 
+	/** Restricts downloads to WiFi connections only */
 	@JsonAttribute(name = "downloadWifiOnly")
 	var downloadWifiOnly: Boolean = false
 
+	/** HTTP User-Agent string used for download requests */
 	@JsonAttribute(name = "downloadHttpUserAgent")
 	var downloadHttpUserAgent: String = getText(string.text_downloads_default_http_user_agent)
 
+	/** HTTP proxy server configuration for downloads */
 	@JsonAttribute(name = "downloadHttpProxyServer")
 	var downloadHttpProxyServer: String = ""
 
-	// Crash handling
+	// =============================================
+	// APPLICATION STABILITY & CRASH HANDLING
+	// =============================================
+
+	/**
+	 * Flag indicating if the application crashed during the previous session.
+	 * Used for crash recovery and stability monitoring.
+	 */
 	@JsonAttribute(name = "hasAppCrashedRecently")
 	var hasAppCrashedRecently: Boolean = false
 
-	// Privacy and limits
+	// =============================================
+	// PRIVACY & SECURITY SETTINGS
+	// =============================================
+
+	/** Password for accessing private folder (encrypted storage) */
 	@JsonAttribute(name = "privateFolderPassword")
 	var privateFolderPassword: String = ""
 
+	/** Maximum number of downloads allowed (rate limiting) */
 	@JsonAttribute(name = "numberOfMaxDownloadThreshold")
 	var numberOfMaxDownloadThreshold: Int = 1
 
+	/** Counter for total downloads performed by user */
 	@JsonAttribute(name = "numberOfDownloadsUserDid")
 	var numberOfDownloadsUserDid: Int = 0
 
-	// Browser-specific settings
+	// =============================================
+	// BROWSER-SPECIFIC SETTINGS
+	// =============================================
+
+	/** Default homepage URL for the in-app browser */
 	@JsonAttribute(name = "browserDefaultHomepage")
 	var browserDefaultHomepage: String = getText(string.text_https_google_com)
 
+	/** Enables desktop-mode browsing instead of mobile view */
 	@JsonAttribute(name = "browserDesktopBrowsing")
 	var browserDesktopBrowsing: Boolean = false
 
+	/** Enables ad-blocking functionality in the browser */
 	@JsonAttribute(name = "browserEnableAdblocker")
 	var browserEnableAdblocker: Boolean = true
 
+	/** Enables JavaScript execution in the browser */
 	@JsonAttribute(name = "browserEnableJavascript")
 	var browserEnableJavascript: Boolean = true
 
+	/** Enables image loading in the browser */
 	@JsonAttribute(name = "browserEnableImages")
 	var browserEnableImages: Boolean = true
 
+	/** Enables popup blocking in the browser */
 	@JsonAttribute(name = "browserEnablePopupBlocker")
 	var browserEnablePopupBlocker: Boolean = true
 
+	/** Enables video grabber functionality in the browser */
 	@JsonAttribute(name = "browserEnableVideoGrabber")
 	var browserEnableVideoGrabber: Boolean = true
 
+	/** HTTP User-Agent string used for browser requests */
 	@JsonAttribute(name = "browserHttpUserAgent")
 	var browserHttpUserAgent: String = getText(string.text_browser_default_mobile_http_user_agent)
 
