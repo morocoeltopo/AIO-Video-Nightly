@@ -8,6 +8,8 @@ import android.os.Looper
 import android.view.PixelCopy
 import android.view.SurfaceView
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.CheckBox
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
@@ -250,7 +252,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	 * Implementation details:
 	 * - Uses [VideoFrameMetadataListener] to intercept the next frame rendered to the display.
 	 * - Grabs the frame pixels using [PixelCopy.request] from the [SurfaceView] used by ExoPlayer.
-	 * - Saves the resulting bitmap via [saveBitmap].
+	 * - Saves the resulting bitmap via [saveCurrentVideoFrameBitmap].
 	 *
 	 * After successfully capturing one frame, the listener is cleared using
 	 * [ExoPlayer.clearVideoFrameMetadataListener] to prevent continuous capturing.
@@ -259,12 +261,14 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	 * or null activity references.
 	 */
 	private fun captureActivityViewSnapshot() {
-		safePlayerActivityRef?.let { activity ->
+		safePlayerActivityRef?.let { playerActivityRef ->
 			try {
 				logger.d("Initiating video frame snapshot capture...")
-				var captured = false
-				val playerView = activity.playerView
-				val exoPlayer = activity.player
+				var isVideoFrameCaptured = false
+				val playerView = playerActivityRef.playerView
+				val exoPlayer = playerActivityRef.player
+				val isPlayerRunning = exoPlayer.isPlaying
+				playerActivityRef.nightModeOverlay.visibility = VISIBLE
 
 				exoPlayer.setVideoFrameMetadataListener(object : VideoFrameMetadataListener {
 					override fun onVideoFrameAboutToBeRendered(
@@ -273,8 +277,8 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 						format: Format,
 						mediaFormat: MediaFormat?
 					) {
-						if (captured) return
-						captured = true
+						if (isVideoFrameCaptured) return
+						isVideoFrameCaptured = true
 						val srcView = playerView.videoSurfaceView as? SurfaceView
 						val surfaceView = srcView ?: return
 						val bitmap = createBitmap(surfaceView.width, surfaceView.height)
@@ -285,7 +289,11 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 							{ result ->
 								if (result == PixelCopy.SUCCESS) {
 									logger.d("Snapshot successfully copied from surface.")
-									saveBitmap(bitmap, activity)
+									saveCurrentVideoFrameBitmap(
+										bitmap = bitmap,
+										activity = playerActivityRef,
+										shouldResumePlayback = isPlayerRunning
+									)
 								} else logger.e("PixelCopy failed with result code $result")
 								exoPlayer.clearVideoFrameMetadataListener(this)
 							},
@@ -295,6 +303,8 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 				})
 			} catch (error: Exception) {
 				logger.e("Exception during snapshot capture", error)
+			} finally {
+				playerActivityRef.nightModeOverlay.visibility = GONE
 			}
 		} ?: logger.e("Activity reference lost while capturing snapshot")
 	}
@@ -315,7 +325,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	 * @param activity The [MediaPlayerActivity] instance, used for context and UI updates.
 	 * @param shouldResumePlayback If true, resumes playback after saving the image.
 	 */
-	private fun saveBitmap(bitmap: Bitmap, activity: MediaPlayerActivity,
+	private fun saveCurrentVideoFrameBitmap(bitmap: Bitmap, activity: MediaPlayerActivity,
 		shouldResumePlayback: Boolean = false) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {

@@ -65,6 +65,7 @@ import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
 import app.core.engines.downloader.DownloadURLHelper.getFileInfoFromSever
 import app.core.engines.settings.AIOSettings
+import app.ui.others.media_player.dialogs.MediaConfigsPopup
 import app.ui.others.media_player.dialogs.MediaInfoHtmlBuilder.buildMediaInfoHtmlString
 import app.ui.others.media_player.dialogs.MediaOptionsPopup
 import com.aio.R
@@ -135,7 +136,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	lateinit var playerView: PlayerView
 	lateinit var trackSelector: DefaultTrackSelector
 
-	lateinit var optionsPopup: MediaOptionsPopup
+	lateinit var mediaOptionsPopup: MediaOptionsPopup
+	lateinit var playerConfigPopup: MediaConfigsPopup
 	lateinit var quickInfoText: TextView
 	lateinit var overlayTouchArea: View
 	lateinit var nightModeOverlay: View
@@ -438,7 +440,12 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	fun openPlayerConfiguration() {
 		doSomeVibration(50)
-		showToast(selfActivityRef, msgId = string.title_experimental_feature)
+		if (!::playerConfigPopup.isInitialized) {
+			playerConfigPopup = MediaConfigsPopup(selfActivityRef)
+			playerConfigPopup.show()
+		} else {
+			playerConfigPopup.show()
+		}
 	}
 
 	fun promptAndSyncSubtitle() {
@@ -1495,8 +1502,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	}
 
 	private fun showMediaOptionsMenu() {
-		if (!::optionsPopup.isInitialized)
-			optionsPopup = MediaOptionsPopup(selfActivityRef); optionsPopup.show()
+		if (!::mediaOptionsPopup.isInitialized)
+			mediaOptionsPopup = MediaOptionsPopup(selfActivityRef); mediaOptionsPopup.show()
 	}
 
 	@Suppress("DEPRECATION")

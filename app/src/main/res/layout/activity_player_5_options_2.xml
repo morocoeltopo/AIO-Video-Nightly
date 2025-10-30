@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Player settings dialog layout -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -7,6 +8,7 @@
 	android:layout_height="wrap_content"
 	tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
 
+	<!-- CardView container for dialog content -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -18,11 +20,13 @@
 		app:cardCornerRadius="@dimen/_10"
 		app:cardElevation="@dimen/_2">
 
+		<!-- Root vertical layout inside CardView -->
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
+			<!-- Dialog title bar -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/_35"
@@ -34,6 +38,7 @@
 				android:orientation="horizontal"
 				android:visibility="visible">
 
+				<!-- Title text -->
 				<TextView
 					style="@style/style_dialog.title"
 					android:layout_gravity="center"
@@ -44,6 +49,7 @@
 					android:textSize="@dimen/normal_text_size" />
 			</LinearLayout>
 
+			<!-- Playback speed option -->
 			<LinearLayout
 				android:id="@+id/btn_playback_speed"
 				android:layout_width="match_parent"
@@ -71,6 +77,7 @@
 					android:textSize="@dimen/normal_text_size" />
 			</LinearLayout>
 
+			<!-- Playback mode option -->
 			<LinearLayout
 				android:id="@+id/btn_playback_mode"
 				android:layout_width="match_parent"
@@ -98,6 +105,7 @@
 					android:textSize="@dimen/normal_text_size" />
 			</LinearLayout>
 
+			<!-- Subtitle tracks option -->
 			<LinearLayout
 				android:id="@+id/btn_subtitle_tracks"
 				android:layout_width="match_parent"
@@ -125,6 +133,7 @@
 					android:textSize="@dimen/normal_text_size" />
 			</LinearLayout>
 
+			<!-- Audio tracks option -->
 			<LinearLayout
 				android:id="@+id/btn_audio_tracks"
 				android:layout_width="match_parent"
@@ -152,6 +161,7 @@
 					android:textSize="@dimen/normal_text_size" />
 			</LinearLayout>
 
+			<!-- Background play option -->
 			<LinearLayout
 				android:id="@+id/btn_play_in_background"
 				android:layout_width="match_parent"
