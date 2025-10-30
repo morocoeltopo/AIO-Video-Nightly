@@ -1,6 +1,8 @@
 package app.core.engines.browser.bookmarks
 
 import com.google.gson.annotations.SerializedName
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import java.io.Serializable
 import java.util.Date
 
@@ -13,7 +15,15 @@ import java.util.Date
  *
  * @constructor Creates a new instance of BookmarkModel with default values.
  */
+@Entity
 class BookmarkModel : Serializable {
+
+	/**
+	 * Unique identifier for the bookmarks record in ObjectBox database.
+	 * @see io.objectbox.annotation.Id for primary key configuration
+	 */
+	@Id
+	var id: Long = 0
 
 	/** The URL of the bookmarked web page.
 	 * This is the primary reference used to navigate to the saved content.

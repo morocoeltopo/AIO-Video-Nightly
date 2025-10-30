@@ -414,6 +414,7 @@ class AIOBookmarks : Serializable {
 					fileName = AIO_BOOKMARKS_FILE_NAME_JSON,
 					data = convertClassToJSON()
 				)
+				AIOBookmarksDBManager.saveBookmarksInDB(bookmarks = this)
 				logger.d("Bookmarks successfully updated in storage")
 			} catch (error: Exception) {
 				logger.d("Error updating bookmarks: ${error.message}")

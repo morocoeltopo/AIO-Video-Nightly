@@ -9,12 +9,14 @@ import app.core.bases.language.LanguageAwareApplication
 import app.core.engines.backend.AIOBackend
 import app.core.engines.backend.AppUsageTimer
 import app.core.engines.browser.bookmarks.AIOBookmarks
+import app.core.engines.browser.bookmarks.AIOBookmarksDBManager
 import app.core.engines.browser.history.AIOHistory
 import app.core.engines.caches.AIOAdBlocker
 import app.core.engines.caches.AIOFavicons
 import app.core.engines.caches.AIORawFiles
 import app.core.engines.downloader.DownloadModelMerger
 import app.core.engines.downloader.DownloadSystem
+import app.core.engines.objectbox.ObjectBoxManager
 import app.core.engines.settings.AIOSettings
 import app.core.engines.settings.AIOSettingsDBManager
 import app.core.engines.video_parser.parsers.YoutubeVidParser
@@ -105,6 +107,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		super.onCreate()
 		logger.d("AIOApp onCreate() started")
 		INSTANCE = this
+		ObjectBoxManager.init(INSTANCE)
 
 		startupManager.apply {
 			// Load essential settings and raw resources
@@ -142,11 +145,36 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 			// Load bookmarks/history and lifecycle tracking
 			addHighPriorityTask {
-				logger.d("Loading bookmarks and history")
-				aioBookmark = AIOBookmarks().apply(AIOBookmarks::readObjectFromStorage)
-				aioHistory = AIOHistory().apply(AIOHistory::readObjectFromStorage)
-				manageActivityLifeCycle()
-				logger.d("Bookmarks and history loaded")
+				logger.d("[Startup] Loading bookmarks and browsing history...")
+
+				try {
+					logger.d("[Startup] Initializing Bookmarks database manager...")
+					AIOBookmarksDBManager.init(INSTANCE)
+					aioBookmark = AIOBookmarksDBManager.loadBookmarksFromDB()
+					logger.d("[Startup] Bookmarks database initialized and loaded successfully")
+				} catch (error: Exception) {
+					logger.e("[Startup] Failed to initialize or load bookmarks: ${error.message}", error)
+					aioBookmark = AIOBookmarks().apply(AIOBookmarks::readObjectFromStorage)
+				}
+
+				try {
+					logger.d("[Startup] Loading browsing history from storage...")
+					aioHistory = AIOHistory().apply(AIOHistory::readObjectFromStorage)
+					logger.d("[Startup] Browsing history loaded successfully")
+				} catch (error: Exception) {
+					logger.e("[Startup] Failed to load browsing history: ${error.message}", error)
+					aioHistory = AIOHistory() // fallback
+				}
+
+				try {
+					logger.d("[Startup] Managing activity lifecycle bindings...")
+					manageActivityLifeCycle()
+					logger.d("[Startup] Activity lifecycle management initialized")
+				} catch (error: Exception) {
+					logger.e("[Startup] Failed to manage activity lifecycle: ${error.message}", error)
+				}
+
+				logger.d("[Startup] Bookmarks, history, and lifecycle setup completed")
 			}
 
 			// Load Youtube-DL and session tracker
