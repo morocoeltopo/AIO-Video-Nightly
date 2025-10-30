@@ -9,6 +9,8 @@ import app.core.FSTBuilder.fstConfig
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
@@ -41,27 +43,23 @@ import java.util.Locale
  *
  * All file operations are performed asynchronously to avoid blocking the UI thread.
  */
+@Entity
 class AIOBookmarks : Serializable {
 
 	@Transient
 	private val logger = LogHelperUtils.from(javaClass)
 
-	companion object {
-
-		/**
-		 * Default filename for JSON formatted bookmark storage
-		 */
-		const val AIO_BOOKMARKS_FILE_NAME_JSON: String = "aio_bookmarks.json"
-
-		/**
-		 * Default filename for binary formatted bookmark storage
-		 */
-		const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
-	}
+	/**
+	 * Unique identifier for the bookmarks record in ObjectBox database.
+	 * @see io.objectbox.annotation.Id for primary key configuration
+	 */
+	@Id
+	var id: Long = 0
 
 	/** List containing all recorded bookmark entries. */
-	@SerializedName("bookmarkLibrary")
-	private var bookmarkLibrary: ArrayList<BookmarkModel> = ArrayList()
+	@SerializedName("bookmarkModels")
+	@Transient
+	var bookmarkModels: ArrayList<BookmarkModel> = ArrayList()
 
 	/**
 	 * Reads bookmarks from persistent storage.
@@ -114,7 +112,7 @@ class AIOBookmarks : Serializable {
 
 					if (!configFile.exists()) {
 						// No JSON file available → start with preloaded defaults
-						aioBookmark.bookmarkLibrary = getPreloadedBookmarks()
+						aioBookmark.bookmarkModels = getPreloadedBookmarks()
 						logger.d("No bookmarks file found, starting with preloaded library")
 						return@executeInBackground
 					}
@@ -132,7 +130,7 @@ class AIOBookmarks : Serializable {
 					// Deserialize JSON → Kotlin class
 					if (json.isNotEmpty()) {
 						convertJSONStringToClass(json).let { bookmarkClass ->
-							logger.d("Successfully loaded ${bookmarkClass.bookmarkLibrary.size} bookmarks")
+							logger.d("Successfully loaded ${bookmarkClass.bookmarkModels.size} bookmarks")
 							aioBookmark = bookmarkClass
 							aioBookmark.updateInStorage()
 						}
@@ -142,8 +140,7 @@ class AIOBookmarks : Serializable {
 				}
 			} catch (error: Exception) {
 				// Catch-all safeguard to prevent crashes
-				logger.d("Error reading bookmarks: ${error.message}")
-				error.printStackTrace()
+				logger.e("Error reading bookmarks: ${error.message}", error)
 			}
 		})
 	}
@@ -298,7 +295,7 @@ class AIOBookmarks : Serializable {
 				logger.d("Bookmarks saved successfully to binary format")
 			}
 		} catch (error: Exception) {
-			logger.d("Error saving binary bookmarks: ${error.message}")
+			logger.e("Error saving binary bookmarks: ${error.message}", error)
 		}
 	}
 
@@ -320,9 +317,8 @@ class AIOBookmarks : Serializable {
 				logger.d("Successfully loaded bookmarks from binary format")
 			} as AIOBookmarks
 		} catch (error: Exception) {
-			logger.d("Error loading binary bookmarks: ${error.message}")
+			logger.e("Error loading binary bookmarks: ${error.message}", error)
 			bookmarksBinaryFile.delete()
-			error.printStackTrace()
 			null
 		}
 	}
@@ -363,7 +359,7 @@ class AIOBookmarks : Serializable {
 				Charsets.UTF_8.decode(buffer).toString()
 			}
 		} catch (error: OutOfMemoryError) {
-			logger.d("Falling back to line-by-line reading")
+			logger.e("Falling back to line-by-line reading: ${error.message}", error)
 			buildString {
 				BufferedReader(FileReader(file)).forEachLine { line ->
 					append(line)
@@ -397,7 +393,7 @@ class AIOBookmarks : Serializable {
 		val parsedList: ArrayList<BookmarkModel> =
 			aioGSONInstance.fromJson(bookmarksLibraryJSON, type)
 
-		bookmarks.bookmarkLibrary = parsedList
+		bookmarks.bookmarkModels = parsedList
 		return bookmarks
 	}
 
@@ -414,11 +410,10 @@ class AIOBookmarks : Serializable {
 					fileName = AIO_BOOKMARKS_FILE_NAME_JSON,
 					data = convertClassToJSON()
 				)
-				AIOBookmarksDBManager.saveBookmarksInDB(bookmarks = this)
+				AIOBookmarksDBManager.updateAllBookmarksInDB(bookmarks = getBookmarkLibrary())
 				logger.d("Bookmarks successfully updated in storage")
 			} catch (error: Exception) {
-				logger.d("Error updating bookmarks: ${error.message}")
-				error.printStackTrace()
+				logger.e("Error updating bookmarks: ${error.message}", error)
 			}
 		})
 	}
@@ -428,7 +423,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of all bookmarks
 	 */
 	fun getBookmarkLibrary(): ArrayList<BookmarkModel> {
-		return bookmarkLibrary
+		return bookmarkModels
 	}
 
 	/**
@@ -445,9 +440,9 @@ class AIOBookmarks : Serializable {
 	 * @param newBookmark New bookmark data
 	 */
 	fun updateBookmark(oldBookmark: BookmarkModel, newBookmark: BookmarkModel) {
-		val index = bookmarkLibrary.indexOf(oldBookmark)
+		val index = bookmarkModels.indexOf(oldBookmark)
 		if (index != -1) {
-			bookmarkLibrary[index] = newBookmark
+			bookmarkModels[index] = newBookmark
 		}
 	}
 
@@ -456,7 +451,7 @@ class AIOBookmarks : Serializable {
 	 * @param bookmarkModel Bookmark to remove
 	 */
 	fun removeBookmark(bookmarkModel: BookmarkModel) {
-		bookmarkLibrary.remove(bookmarkModel)
+		bookmarkModels.remove(bookmarkModel)
 	}
 
 	/**
@@ -465,7 +460,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of matching bookmarks (case-insensitive)
 	 */
 	fun searchBookmarksNormal(query: String): List<BookmarkModel> {
-		return bookmarkLibrary.filter {
+		return bookmarkModels.filter {
 			it.bookmarkName.contains(query, ignoreCase = true) ||
 					it.bookmarkUrl.contains(query, ignoreCase = true)
 		}
@@ -491,7 +486,7 @@ class AIOBookmarks : Serializable {
 		// Split query into words for multi-term support
 		val queryTerms = normalizedQuery.split("\\s+".toRegex()).filter { it.isNotEmpty() }
 
-		return bookmarkLibrary
+		return bookmarkModels
 			.map { bookmark ->
 				val name = bookmark.bookmarkName.lowercase()
 				val url = bookmark.bookmarkUrl.lowercase()
@@ -594,7 +589,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of duplicate bookmarks
 	 */
 	fun findDuplicateBookmarks(): List<BookmarkModel> {
-		return bookmarkLibrary
+		return bookmarkModels
 			.groupBy { it.bookmarkUrl }
 			.filter { it.value.size > 1 }
 			.flatMap { it.value }
@@ -607,9 +602,9 @@ class AIOBookmarks : Serializable {
 	 */
 	fun getBookmarksSortedBy(attribute: String): List<BookmarkModel> {
 		return when (attribute.lowercase(Locale.ROOT)) {
-			"name" -> bookmarkLibrary.sortedBy { it.bookmarkName }
-			"date" -> bookmarkLibrary.sortedBy { it.bookmarkCreationDate }
-			else -> bookmarkLibrary
+			"name" -> bookmarkModels.sortedBy { it.bookmarkName }
+			"date" -> bookmarkModels.sortedBy { it.bookmarkCreationDate }
+			else -> bookmarkModels
 		}
 	}
 
@@ -619,7 +614,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of bookmarks meeting the rating criteria
 	 */
 	fun filterBookmarksByRating(minRating: Float): List<BookmarkModel> {
-		return bookmarkLibrary.filter { it.bookmarkRating >= minRating }
+		return bookmarkModels.filter { it.bookmarkRating >= minRating }
 	}
 
 	/**
@@ -627,7 +622,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of favorite bookmarks
 	 */
 	fun getFavoriteBookmarks(): List<BookmarkModel> {
-		return bookmarkLibrary.filter { it.bookmarkFavorite }
+		return bookmarkModels.filter { it.bookmarkFavorite }
 	}
 
 	/**
@@ -636,7 +631,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of bookmarks containing the specified tag
 	 */
 	fun filterBookmarksByTag(tag: String): List<BookmarkModel> {
-		return bookmarkLibrary.filter { it.bookmarkTags.contains(tag) }
+		return bookmarkModels.filter { it.bookmarkTags.contains(tag) }
 	}
 
 	/**
@@ -645,7 +640,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of bookmarks meeting the priority criteria
 	 */
 	fun filterBookmarksByPriority(minPriority: Int): List<BookmarkModel> {
-		return bookmarkLibrary.filter { it.bookmarkPriority >= minPriority }
+		return bookmarkModels.filter { it.bookmarkPriority >= minPriority }
 	}
 
 	/**
@@ -653,7 +648,7 @@ class AIOBookmarks : Serializable {
 	 * @return List of archived bookmarks
 	 */
 	fun getArchivedBookmarks(): List<BookmarkModel> {
-		return bookmarkLibrary.filter { it.bookmarkArchived }
+		return bookmarkModels.filter { it.bookmarkArchived }
 	}
 
 	/**
@@ -661,9 +656,9 @@ class AIOBookmarks : Serializable {
 	 * @param bookmarkModel Bookmark to archive
 	 */
 	fun archiveBookmark(bookmarkModel: BookmarkModel) {
-		val index = bookmarkLibrary.indexOf(bookmarkModel)
+		val index = bookmarkModels.indexOf(bookmarkModel)
 		if (index != -1) {
-			bookmarkLibrary[index].bookmarkArchived = true
+			bookmarkModels[index].bookmarkArchived = true
 		}
 	}
 
@@ -673,14 +668,14 @@ class AIOBookmarks : Serializable {
 	 * @return List of shared bookmarks
 	 */
 	fun getBookmarksSharedWithUser(user: String): List<BookmarkModel> {
-		return bookmarkLibrary.filter { it.bookmarkSharedWith.contains(user) }
+		return bookmarkModels.filter { it.bookmarkSharedWith.contains(user) }
 	}
 
 	/**
 	 * Clears all bookmarks from the library.
 	 */
 	fun clearAllBookmarks() {
-		bookmarkLibrary.clear()
+		bookmarkModels.clear()
 	}
 
 	/**
@@ -688,6 +683,19 @@ class AIOBookmarks : Serializable {
 	 * @return Count of bookmarks
 	 */
 	fun countBookmarks(): Int {
-		return bookmarkLibrary.size
+		return bookmarkModels.size
+	}
+
+	companion object {
+
+		/**
+		 * Default filename for JSON formatted bookmark storage
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_JSON: String = "aio_bookmarks.json"
+
+		/**
+		 * Default filename for binary formatted bookmark storage
+		 */
+		const val AIO_BOOKMARKS_FILE_NAME_BINARY: String = "aio_bookmarks.dat"
 	}
 }

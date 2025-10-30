@@ -53,289 +53,290 @@ import java.io.Serializable
 class DownloadDataModel : Serializable {
 
 	/** Unique identifier for the download task */
-	@JsonAttribute(name = "id")
+	@JvmField @JsonAttribute(name = "id")
 	var id: Int = 0
 
 	/** Current operational status (see DownloadStatus constants) */
-	@JsonAttribute(name = "status")
+	@JvmField @JsonAttribute(name = "status")
 	var status: Int = DownloadStatus.CLOSE
 
 	/** Indicates if the download process is currently active */
-	@JsonAttribute(name = "isRunning")
+	@JvmField @JsonAttribute(name = "isRunning")
 	var isRunning: Boolean = false
 
 	/** Indicates if the download completed successfully */
-	@JsonAttribute(name = "isComplete")
+	@JvmField @JsonAttribute(name = "isComplete")
 	var isComplete: Boolean = false
 
 	/** Indicates if the download was explicitly deleted by user or system */
-	@JsonAttribute(name = "isDeleted")
+	@JvmField @JsonAttribute(name = "isDeleted")
 	var isDeleted: Boolean = false
 
 	/** Indicates if the download was removed from UI but may still exist in storage */
-	@JsonAttribute(name = "isRemoved")
+	@JvmField @JsonAttribute(name = "isRemoved")
 	var isRemoved: Boolean = false
 
 	/** Flag indicating if file was saved to private/secure storage location */
-	@JsonAttribute(name = "isWentToPrivateFolder")
+	@JvmField @JsonAttribute(name = "isWentToPrivateFolder")
 	var isWentToPrivateFolder: Boolean = false
 
 	/** Flag indicating if the source download URL has expired or become invalid */
-	@JsonAttribute(name = "isFileUrlExpired")
+	@JvmField @JsonAttribute(name = "isFileUrlExpired")
 	var isFileUrlExpired: Boolean = false
 
 	/** Flag indicating if yt-dlp encountered processing issues during download */
-	@JsonAttribute(name = "isYtdlpHavingProblem")
+	@JvmField @JsonAttribute(name = "isYtdlpHavingProblem")
 	var isYtdlpHavingProblem: Boolean = false
 
 	/** Detailed error message from yt-dlp when processing issues occur */
-	@JsonAttribute(name = "ytdlpProblemMsg")
+	@JvmField @JsonAttribute(name = "ytdlpProblemMsg")
 	var ytdlpProblemMsg: String = ""
 
 	/** Flag indicating if the expected destination file does not exist after download */
-	@JsonAttribute(name = "isDestinationFileNotExisted")
+	@JvmField @JsonAttribute(name = "isDestinationFileNotExisted")
 	var isDestinationFileNotExisted: Boolean = false
 
 	/** Flag indicating if file integrity check via checksum validation failed */
-	@JsonAttribute(name = "isFileChecksumValidationFailed")
+	@JvmField @JsonAttribute(name = "isFileChecksumValidationFailed")
 	var isFileChecksumValidationFailed: Boolean = false
 
 	/** Flag indicating download is paused waiting for network connectivity */
-	@JsonAttribute(name = "isWaitingForNetwork")
+	@JvmField @JsonAttribute(name = "isWaitingForNetwork")
 	var isWaitingForNetwork: Boolean = false
 
 	/** Flag indicating failure to access or read from source file location */
-	@JsonAttribute(name = "isFailedToAccessFile")
+	@JvmField @JsonAttribute(name = "isFailedToAccessFile")
 	var isFailedToAccessFile: Boolean = false
 
 	/** Flag indicating if URL expiration dialog has been shown to user */
-	@JsonAttribute(name = "isExpiredURLDialogShown")
+	@JvmField @JsonAttribute(name = "isExpiredURLDialogShown")
 	var isExpiredURLDialogShown: Boolean = false
 
 	/** Flag indicating if automatic file categorization has been processed */
-	@JsonAttribute(name = "isSmartCategoryDirProcessed")
+	@JvmField @JsonAttribute(name = "isSmartCategoryDirProcessed")
 	var isSmartCategoryDirProcessed: Boolean = false
 
 	/** Message to display to user via dialog or notification */
-	@JsonAttribute(name = "msgToShowUserViaDialog")
+	@JvmField @JsonAttribute(name = "msgToShowUserViaDialog")
 	var msgToShowUserViaDialog: String = ""
 
 	/** Flag indicating if download was initiated from browser context */
-	@JsonAttribute(name = "isDownloadFromBrowser")
+	@JvmField @JsonAttribute(name = "isDownloadFromBrowser")
 	var isDownloadFromBrowser: Boolean = false
 
 	/** Flag indicating if basic yt-dlp metadata extraction completed successfully */
-	@JsonAttribute(name = "isBasicYtdlpModelInitialized")
+	@JvmField @JsonAttribute(name = "isBasicYtdlpModelInitialized")
 	var isBasicYtdlpModelInitialized: Boolean = false
 
 	/** Custom HTTP headers to include in download requests */
-	@JsonAttribute(name = "additionalWebHeaders")
+	@JvmField @JsonAttribute(name = "additionalWebHeaders")
 	var additionalWebHeaders: Map<String, String>? = null
 
 	/** Name of the target file being downloaded */
-	@JsonAttribute(name = "fileName")
+	@JvmField @JsonAttribute(name = "fileName")
 	var fileName: String = ""
 
 	/** Source URL from which the file is being downloaded */
-	@JsonAttribute(name = "fileURL")
+	@JvmField @JsonAttribute(name = "fileURL")
 	var fileURL: String = ""
 
 	/** HTTP Referrer header value for the download request */
-	@JsonAttribute(name = "siteReferrer")
+	@JvmField @JsonAttribute(name = "siteReferrer")
 	var siteReferrer: String = ""
 
 	/** Target directory path where file will be saved */
-	@JsonAttribute(name = "fileDirectory")
+	@JvmField @JsonAttribute(name = "fileDirectory")
 	var fileDirectory: String = ""
 
 	/** MIME type of the file being downloaded */
-	@JsonAttribute(name = "fileMimeType")
+	@JvmField @JsonAttribute(name = "fileMimeType")
 	var fileMimeType: String = ""
 
 	/** Content-Disposition header value from server response */
-	@JsonAttribute(name = "fileContentDisposition")
+	@JvmField @JsonAttribute(name = "fileContentDisposition")
 	var fileContentDisposition: String = ""
 
 	/** Cookie string for authenticated download requests */
-	@JsonAttribute(name = "siteCookieString")
+	@JvmField @JsonAttribute(name = "siteCookieString")
 	var siteCookieString: String = ""
 
 	/** Local filesystem path to the downloaded file's thumbnail */
-	@JsonAttribute(name = "thumbPath")
+	@JvmField @JsonAttribute(name = "thumbPath")
 	var thumbPath: String = ""
 
 	/** Remote URL source for the file's thumbnail image */
-	@JsonAttribute(name = "thumbnailUrl")
+	@JvmField @JsonAttribute(name = "thumbnailUrl")
 	var thumbnailUrl: String = ""
 
 	/** Temporary file path used during yt-dlp processing phase */
-	@JsonAttribute(name = "tempYtdlpDestinationFilePath")
+	@JvmField @JsonAttribute(name = "tempYtdlpDestinationFilePath")
 	var tempYtdlpDestinationFilePath: String = ""
 
 	/** Temporary status information during yt-dlp processing */
-	@JsonAttribute(name = "tempYtdlpStatusInfo")
+	@JvmField @JsonAttribute(name = "tempYtdlpStatusInfo")
 	var tempYtdlpStatusInfo: String = ""
 
 	/** URI representation of the target directory location */
-	@JsonAttribute(name = "fileDirectoryURI")
+	@JvmField @JsonAttribute(name = "fileDirectoryURI")
 	var fileDirectoryURI: String = ""
 
 	/** Automatically determined category name for the file */
-	@JsonAttribute(name = "fileCategoryName")
+	@JvmField @JsonAttribute(name = "fileCategoryName")
 	var fileCategoryName: String = ""
 
 	/** Formatted timestamp string indicating download start time */
-	@JsonAttribute(name = "startTimeDateInFormat")
+	@JvmField @JsonAttribute(name = "startTimeDateInFormat")
 	var startTimeDateInFormat: String = ""
 
 	/** Unix timestamp in milliseconds indicating download start time */
-	@JsonAttribute(name = "startTimeDate")
+	@JvmField @JsonAttribute(name = "startTimeDate")
 	var startTimeDate: Long = 0L
 
 	/** Formatted timestamp string of last file modification time */
-	@JsonAttribute(name = "lastModifiedTimeDateInFormat")
+	@JvmField @JsonAttribute(name = "lastModifiedTimeDateInFormat")
 	var lastModifiedTimeDateInFormat: String = ""
 
 	/** Unix timestamp in milliseconds of last file modification */
-	@JsonAttribute(name = "lastModifiedTimeDate")
+	@JvmField @JsonAttribute(name = "lastModifiedTimeDate")
 	var lastModifiedTimeDate: Long = 0L
 
 	/** Flag indicating if file size could not be determined from source */
-	@JsonAttribute(name = "isUnknownFileSize")
+	@JvmField @JsonAttribute(name = "isUnknownFileSize")
 	var isUnknownFileSize: Boolean = false
 
 	/** Total file size in bytes */
-	@JsonAttribute(name = "fileSize")
+	@JvmField @JsonAttribute(name = "fileSize")
 	var fileSize: Long = 0L
 
 	/** Cryptographic hash/checksum for file integrity verification */
-	@JsonAttribute(name = "fileChecksum")
+	@JvmField @JsonAttribute(name = "fileChecksum")
 	var fileChecksum: String = "--"
 
 	/** Human-readable formatted string representation of file size */
-	@JsonAttribute(name = "fileSizeInFormat")
+	@JvmField @JsonAttribute(name = "fileSizeInFormat")
 	var fileSizeInFormat: String = ""
 
 	/** Average download speed in bytes per second */
-	@JsonAttribute(name = "averageSpeed")
+	@JvmField @JsonAttribute(name = "averageSpeed")
 	var averageSpeed: Long = 0L
 
 	/** Maximum achieved download speed in bytes per second */
-	@JsonAttribute(name = "maxSpeed")
+	@JvmField @JsonAttribute(name = "maxSpeed")
 	var maxSpeed: Long = 0L
 
 	/** Current real-time download speed in bytes per second */
-	@JsonAttribute(name = "realtimeSpeed")
+	@JvmField @JsonAttribute(name = "realtimeSpeed")
 	var realtimeSpeed: Long = 0L
 
 	/** Formatted string representation of average download speed */
-	@JsonAttribute(name = "averageSpeedInFormat")
+	@JvmField @JsonAttribute(name = "averageSpeedInFormat")
 	var averageSpeedInFormat: String = "--"
 
 	/** Formatted string representation of maximum download speed */
-	@JsonAttribute(name = "maxSpeedInFormat")
+	@JvmField @JsonAttribute(name = "maxSpeedInFormat")
 	var maxSpeedInFormat: String = "--"
 
 	/** Formatted string representation of current download speed */
-	@JsonAttribute(name = "realtimeSpeedInFormat")
+	@JvmField @JsonAttribute(name = "realtimeSpeedInFormat")
 	var realtimeSpeedInFormat: String = "--"
 
 	/** Flag indicating if the download supports resumption after interruption */
-	@JsonAttribute(name = "isResumeSupported")
+	@JvmField @JsonAttribute(name = "isResumeSupported")
 	var isResumeSupported: Boolean = false
 
 	/** Flag indicating if multi-threaded downloading is supported for this file */
-	@JsonAttribute(name = "isMultiThreadSupported")
+	@JvmField @JsonAttribute(name = "isMultiThreadSupported")
 	var isMultiThreadSupported: Boolean = false
 
 	/** Total number of connection retry attempts made */
-	@JsonAttribute(name = "resumeSessionRetryCount")
+	@JvmField @JsonAttribute(name = "resumeSessionRetryCount")
 	var resumeSessionRetryCount: Int = 0
 
 	/** Total number of connection retries that were tracked */
-	@JsonAttribute(name = "totalTrackedConnectionRetries")
+	@JvmField @JsonAttribute(name = "totalTrackedConnectionRetries")
 	var totalTrackedConnectionRetries: Int = 0
 
 	/** Download completion percentage (0-100) */
-	@JsonAttribute(name = "progressPercentage")
+	@JvmField @JsonAttribute(name = "progressPercentage")
 	var progressPercentage: Long = 0L
 
 	/** Formatted string representation of completion percentage */
-	@JsonAttribute(name = "progressPercentageInFormat")
+	@JvmField @JsonAttribute(name = "progressPercentageInFormat")
 	var progressPercentageInFormat: String = ""
 
 	/** Total number of bytes downloaded so far */
-	@JsonAttribute(name = "downloadedByte")
+	@JvmField @JsonAttribute(name = "downloadedByte")
 	var downloadedByte: Long = 0L
 
 	/** Formatted string representation of downloaded bytes */
-	@JsonAttribute(name = "downloadedByteInFormat")
+	@JvmField @JsonAttribute(name = "downloadedByteInFormat")
 	var downloadedByteInFormat: String = "--"
 
 	/** Array tracking starting byte positions for each download chunk (18 chunks max) */
-	@JsonAttribute(name = "partStartingPoint")
+	@JvmField @JsonAttribute(name = "partStartingPoint")
 	var partStartingPoint: LongArray = LongArray(18)
 
 	/** Array tracking ending byte positions for each download chunk (18 chunks max) */
-	@JsonAttribute(name = "partEndingPoint")
+	@JvmField @JsonAttribute(name = "partEndingPoint")
 	var partEndingPoint: LongArray = LongArray(18)
 
 	/** Array tracking total size of each download chunk (18 chunks max) */
-	@JsonAttribute(name = "partChunkSizes")
+	@JvmField @JsonAttribute(name = "partChunkSizes")
 	var partChunkSizes: LongArray = LongArray(18)
 
 	/** Array tracking bytes downloaded for each chunk (18 chunks max) */
-	@JsonAttribute(name = "partsDownloadedByte")
+	@JvmField @JsonAttribute(name = "partsDownloadedByte")
 	var partsDownloadedByte: LongArray = LongArray(18)
 
 	/** Array tracking completion percentage for each download chunk (18 chunks max) */
-	@JsonAttribute(name = "partProgressPercentage")
+	@JvmField @JsonAttribute(name = "partProgressPercentage")
 	var partProgressPercentage: IntArray = IntArray(18)
 
 	/** Total time spent on download in milliseconds */
-	@JsonAttribute(name = "timeSpentInMilliSec")
+	@JvmField @JsonAttribute(name = "timeSpentInMilliSec")
 	var timeSpentInMilliSec: Long = 0L
 
 	/** Estimated remaining time to complete download in seconds */
-	@JsonAttribute(name = "remainingTimeInSec")
+	@JvmField @JsonAttribute(name = "remainingTimeInSec")
 	var remainingTimeInSec: Long = 0L
 
 	/** Formatted string representation of time spent downloading */
-	@JsonAttribute(name = "timeSpentInFormat")
+	@JvmField @JsonAttribute(name = "timeSpentInFormat")
 	var timeSpentInFormat: String = "--"
 
 	/** Formatted string representation of estimated remaining time */
-	@JsonAttribute(name = "remainingTimeInFormat")
+	@JvmField @JsonAttribute(name = "remainingTimeInFormat")
 	var remainingTimeInFormat: String = "--"
 
 	/** Current status message for display purposes */
-	@JsonAttribute(name = "statusInfo")
+	@JvmField @JsonAttribute(name = "statusInfo")
 	var statusInfo: String = "--"
 
 	/** Video-specific metadata for media downloads */
-	@JsonAttribute(name = "videoInfo")
+	@JvmField @JsonAttribute(name = "videoInfo")
 	var videoInfo: VideoInfo? = null
 
 	/** Video format and codec information */
-	@JsonAttribute(name = "videoFormat")
+	@JvmField @JsonAttribute(name = "videoFormat")
 	var videoFormat: VideoFormat? = null
 
-	@JsonAttribute(name = "remoteFileInfo")
+	/** Remote file metadata obtained from server or yt-dlp */
+	@JvmField @JsonAttribute(name = "remoteFileInfo")
 	var remoteFileInfo: RemoteFileInfo? = null
 
 	/** Command string used to execute the download process */
-	@JsonAttribute(name = "executionCommand")
+	@JvmField @JsonAttribute(name = "executionCommand")
 	var executionCommand: String = ""
 
 	/** Playback duration string for media files (e.g., "02:30" for 2 minutes 30 seconds) */
-	@JsonAttribute(name = "mediaFilePlaybackDuration")
+	@JvmField @JsonAttribute(name = "mediaFilePlaybackDuration")
 	var mediaFilePlaybackDuration: String = ""
 
-	/** Indicator that reflect whether the download data model is sync to cloud or not */
-	@JsonAttribute(name = "isSyncToCloudBackup")
-	var isSyncToCloudBackup = false
+	/** Indicator reflecting whether the download data model is synced to cloud backup */
+	@JvmField @JsonAttribute(name = "isSyncToCloudBackup")
+	var isSyncToCloudBackup: Boolean = false
 
-	/** Snapshot of application settings at the time download was initiated */
+	/** Snapshot of global application settings at the time download was initiated */
 	@JsonAttribute(name = "globalSettings")
 	lateinit var globalSettings: AIOSettings
 

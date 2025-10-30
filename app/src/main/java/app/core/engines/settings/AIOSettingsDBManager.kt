@@ -1,8 +1,7 @@
 package app.core.engines.settings
 
-import app.core.AIOApp
+import app.core.engines.objectbox.ObjectBoxManager
 import app.core.engines.settings.AIOSettingsDBManager.createDefaultSettings
-import app.core.engines.settings.AIOSettingsDBManager.init
 import app.core.engines.settings.AIOSettingsDBManager.saveSettingsInDB
 import io.objectbox.Box
 import io.objectbox.BoxStore
@@ -45,59 +44,12 @@ object AIOSettingsDBManager {
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
-	 * Volatile singleton instance of BoxStore for thread-safe publication.
-	 *
-	 * The @Volatile annotation ensures:
-	 * - Visibility of changes across threads
-	 * - Prevention of instruction reordering
-	 * - Proper double-checked locking behavior
-	 */
-	@Volatile
-	private var boxStore: BoxStore? = null
-
-	/**
 	 * Fixed identifier for the settings record in the database.
 	 *
 	 * Since the application maintains only one settings instance throughout its lifecycle,
 	 * we use a constant ID to ensure consistent access and updates to the same record.
 	 */
 	private const val SETTINGS_ID = 1L
-
-	/**
-	 * Initializes the ObjectBox database connection with the application context.
-	 *
-	 * This method employs double-checked locking to ensure thread-safe initialization
-	 * while maintaining performance. It must be called exactly once during application
-	 * startup, typically in the Application.onCreate() method.
-	 *
-	 * @param applicationContext The AIOApp application context for database configuration
-	 * @throws IllegalStateException if ObjectBox initialization fails due to:
-	 *         - Missing application context
-	 *         - Database file corruption
-	 *         - Insufficient storage permissions
-	 *         - Internal ObjectBox configuration errors
-	 *
-	 * @see MyObjectBox for the generated ObjectBox builder
-	 * @see BoxStore for database instance management
-	 */
-	fun init(applicationContext: AIOApp) {
-		// First check (no synchronization) for performance
-		if (boxStore != null) return
-
-		// Synchronized block for thread-safe initialization
-		synchronized(this) {
-			// Second check (within synchronization) for correctness
-			if (boxStore == null) {
-				try {
-					boxStore = MyObjectBox.builder().androidContext(applicationContext).build()
-					logger.d("ObjectBox initialized successfully for AIOSettings persistence")
-				} catch (error: Exception) {
-					logger.e("Failed to initialize ObjectBox: ${error.message}", error)
-					throw IllegalStateException("ObjectBox initialization failed", error)
-				}
-			}
-		}
-	}
 
 	/**
 	 * Retrieves the initialized BoxStore instance.
@@ -110,10 +62,9 @@ object AIOSettingsDBManager {
 	 *
 	 * @see init for initialization requirements
 	 */
+	@JvmStatic
 	fun getBoxStore(): BoxStore {
-		return boxStore ?: throw IllegalStateException(
-			"ObjectBox not initialized. Call init() with application context first."
-		)
+		return ObjectBoxManager.getBoxStore()
 	}
 
 	/**
@@ -127,6 +78,7 @@ object AIOSettingsDBManager {
 	 *
 	 * @see Box for available entity operations
 	 */
+	@JvmStatic
 	fun getSettingsBox(): Box<AIOSettings> = getBoxStore().boxFor(AIOSettings::class.java)
 
 	/**
@@ -147,6 +99,7 @@ object AIOSettingsDBManager {
 	 * @see createDefaultSettings for default settings creation logic
 	 * @see saveSettingsInDB for persistence operations
 	 */
+	@JvmStatic
 	fun loadSettingsFromDB(): AIOSettings {
 		return try {
 			val settingsBox = getSettingsBox()
@@ -195,6 +148,7 @@ object AIOSettingsDBManager {
 	 *
 	 * @see Box.put for ObjectBox persistence operation
 	 */
+	@JvmStatic
 	fun saveSettingsInDB(settings: AIOSettings) {
 		try {
 			settings.id = SETTINGS_ID
@@ -217,6 +171,7 @@ object AIOSettingsDBManager {
 	 *
 	 * @see AIOSettings.readObjectFromStorage for legacy data migration
 	 */
+	@JvmStatic
 	private fun createDefaultSettings(): AIOSettings {
 		return AIOSettings().apply(AIOSettings::readObjectFromStorage).also {
 			logger.d("Default settings created with legacy data migration")
@@ -234,6 +189,7 @@ object AIOSettingsDBManager {
 	 * @return true if settings record exists in database, false otherwise
 	 *         (returns false on database errors as safe default)
 	 */
+	@JvmStatic
 	fun hasSettingsInDB(): Boolean {
 		return try {
 			getSettingsBox().get(SETTINGS_ID) != null
@@ -254,37 +210,13 @@ object AIOSettingsDBManager {
 	 * Warning: This operation is irreversible and will remove all application
 	 * settings, requiring the user to reconfigure the application.
 	 */
+	@JvmStatic
 	fun clearSettingsFromDB() {
 		try {
 			getSettingsBox().remove(SETTINGS_ID)
 			logger.d("Settings cleared from ObjectBox database")
 		} catch (error: Exception) {
 			logger.e("Error clearing settings: ${error.message}", error)
-		}
-	}
-
-	/**
-	 * Closes the ObjectBox database connection and releases resources.
-	 *
-	 * This method should be called during application shutdown to ensure:
-	 * - Proper cleanup of database connections
-	 * - Prevention of resource leaks
-	 * - Data integrity through proper transaction completion
-	 *
-	 * The synchronized block ensures thread-safe closure and prevents race conditions
-	 * during application termination.
-	 *
-	 * @see BoxStore.close for resource cleanup details
-	 */
-	fun closeDB() {
-		synchronized(this) {
-			try {
-				boxStore?.close()
-				boxStore = null
-				logger.d("ObjectBox database connection closed and resources released")
-			} catch (error: Exception) {
-				logger.e("Error closing ObjectBox: ${error.message}", error)
-			}
 		}
 	}
 }

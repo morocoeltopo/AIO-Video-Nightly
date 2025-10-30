@@ -37,7 +37,7 @@ object AIOBookmarksDBManager {
 	fun loadAIOBookmarksFromDB(): AIOBookmarks {
 		val aioBookmarks = AIOBookmarks()
 		val bookmarkModels = loadAllBookmarkModelsFromDB()
-		if (bookmarkModels.isNotEmpty()) aioBookmarks.bookmarkLibrary = bookmarkModels
+		if (bookmarkModels.isNotEmpty()) aioBookmarks.bookmarkModels = bookmarkModels
 		else aioBookmarks.readObjectFromStorage()
 		return aioBookmarks
 	}

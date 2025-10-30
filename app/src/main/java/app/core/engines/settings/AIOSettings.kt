@@ -78,49 +78,49 @@ class AIOSettings : Serializable {
 	 * Unique installation identifier for analytics and user tracking.
 	 * Generated once during first app launch and persisted across sessions.
 	 */
-	@JsonAttribute(name = "userInstallationId")
+	@JvmField @JsonAttribute(name = "userInstallationId")
 	var userInstallationId: String = ""
 
 	/**
 	 * Flag indicating whether the user has completed the initial language selection flow.
 	 * Used to determine if the language selection screen should be shown on app start.
 	 */
-	@JsonAttribute(name = "isFirstTimeLanguageSelectionComplete")
+	@JvmField @JsonAttribute(name = "isFirstTimeLanguageSelectionComplete")
 	var isFirstTimeLanguageSelectionComplete: Boolean = false
 
 	/**
 	 * Tracks if the user has rated the application in the play store.
 	 * Used to control rating prompt frequency and user engagement flows.
 	 */
-	@JsonAttribute(name = "hasUserRatedTheApplication")
+	@JvmField @JsonAttribute(name = "hasUserRatedTheApplication")
 	var hasUserRatedTheApplication: Boolean = false
 
 	/**
 	 * Counter for total successful download operations completed by the user.
 	 * Used for analytics, user engagement metrics, and feature unlocking.
 	 */
-	@JsonAttribute(name = "totalNumberOfSuccessfulDownloads")
+	@JvmField @JsonAttribute(name = "totalNumberOfSuccessfulDownloads")
 	var totalNumberOfSuccessfulDownloads: Int = 0
 
 	/**
 	 * Cumulative time spent in the application measured in milliseconds.
 	 * Tracked for user engagement analytics and session management.
 	 */
-	@JsonAttribute(name = "totalUsageTimeInMs")
+	@JvmField @JsonAttribute(name = "totalUsageTimeInMs")
 	var totalUsageTimeInMs: Float = 0.0f
 
 	/**
 	 * Formatted representation of total usage time for display purposes.
 	 * Automatically updated from totalUsageTimeInMs for UI presentation.
 	 */
-	@JsonAttribute(name = "totalUsageTimeInFormat")
+	@JvmField @JsonAttribute(name = "totalUsageTimeInFormat")
 	var totalUsageTimeInFormat: String = ""
 
 	/**
 	 * Last clipboard text processed by the application for URL detection.
 	 * Used to prevent duplicate processing of the same clipboard content.
 	 */
-	@JsonAttribute(name = "lastProcessedClipboardText")
+	@JvmField @JsonAttribute(name = "lastProcessedClipboardText")
 	var lastProcessedClipboardText: String = ""
 
 	// =============================================
@@ -137,7 +137,7 @@ class AIOSettings : Serializable {
 	 * @see PRIVATE_FOLDER
 	 * @see SYSTEM_GALLERY
 	 */
-	@JsonAttribute(name = "defaultDownloadLocation")
+	@JvmField @JsonAttribute(name = "defaultDownloadLocation")
 	var defaultDownloadLocation: Int = PRIVATE_FOLDER
 
 	// =============================================
@@ -150,7 +150,7 @@ class AIOSettings : Serializable {
 	 *
 	 * @see app.core.AIOLanguage for available language options
 	 */
-	@JsonAttribute(name = "userSelectedUILanguage")
+	@JvmField @JsonAttribute(name = "userSelectedUILanguage")
 	var userSelectedUILanguage: String = ENGLISH
 
 	/**
@@ -158,7 +158,7 @@ class AIOSettings : Serializable {
 	 * Uses ISO country codes (e.g., "IN", "US", "GB").
 	 * Affects content recommendations and regional services.
 	 */
-	@JsonAttribute(name = "userSelectedContentRegion")
+	@JvmField @JsonAttribute(name = "userSelectedContentRegion")
 	var userSelectedContentRegion: String = "IN"
 
 	// =============================================
@@ -173,14 +173,14 @@ class AIOSettings : Serializable {
 	 * - 1: Dark mode
 	 * - 2: Light mode
 	 */
-	@JsonAttribute(name = "themeAppearance")
+	@JvmField @JsonAttribute(name = "themeAppearance")
 	var themeAppearance: Int = -1
 
 	/**
 	 * Enables or disables daily content suggestions in the application.
 	 * When enabled, users receive personalized content recommendations.
 	 */
-	@JsonAttribute(name = "enableDailyContentSuggestion")
+	@JvmField @JsonAttribute(name = "enableDailyContentSuggestion")
 	var enableDailyContentSuggestion: Boolean = true
 
 	// =============================================
@@ -188,55 +188,55 @@ class AIOSettings : Serializable {
 	// =============================================
 
 	/** Counter for language change button clicks */
-	@JsonAttribute(name = "totalClickCountOnLanguageChange")
+	@JvmField @JsonAttribute(name = "totalClickCountOnLanguageChange")
 	var totalClickCountOnLanguageChange: Int = 0
 
 	/** Counter for media playback interactions */
-	@JsonAttribute(name = "totalClickCountOnMediaPlayback")
+	@JvmField @JsonAttribute(name = "totalClickCountOnMediaPlayback")
 	var totalClickCountOnMediaPlayback: Int = 0
 
 	/** Counter for how-to guide accesses */
-	@JsonAttribute(name = "totalClickCountOnHowToGuide")
+	@JvmField @JsonAttribute(name = "totalClickCountOnHowToGuide")
 	var totalClickCountOnHowToGuide: Int = 0
 
 	/** Counter for video URL editor usages */
-	@JsonAttribute(name = "totalClickCountOnVideoUrlEditor")
+	@JvmField @JsonAttribute(name = "totalClickCountOnVideoUrlEditor")
 	var totalClickCountOnVideoUrlEditor: Int = 0
 
 	/** Counter for home history section accesses */
-	@JsonAttribute(name = "totalClickCountOnHomeHistory")
+	@JvmField @JsonAttribute(name = "totalClickCountOnHomeHistory")
 	var totalClickCountOnHomeHistory: Int = 0
 
 	/** Counter for bookmark management interactions */
-	@JsonAttribute(name = "totalClickCountOnHomeBookmarks")
+	@JvmField @JsonAttribute(name = "totalClickCountOnHomeBookmarks")
 	var totalClickCountOnHomeBookmarks: Int = 0
 
 	/** Counter for recent downloads section accesses */
-	@JsonAttribute(name = "totalClickCountOnRecentDownloads")
+	@JvmField @JsonAttribute(name = "totalClickCountOnRecentDownloads")
 	var totalClickCountOnRecentDownloads: Int = 0
 
 	/** Counter for home screen favicon interactions */
-	@JsonAttribute(name = "totalClickCountOnHomeFavicon")
+	@JvmField @JsonAttribute(name = "totalClickCountOnHomeFavicon")
 	var totalClickCountOnHomeFavicon: Int = 0
 
 	/** Counter for version check operations */
-	@JsonAttribute(name = "totalClickCountOnVersionCheck")
+	@JvmField @JsonAttribute(name = "totalClickCountOnVersionCheck")
 	var totalClickCountOnVersionCheck: Int = 0
 
 	/** Tracks interstitial advertisement click interactions */
-	@JsonAttribute(name = "totalInterstitialAdClick")
+	@JvmField @JsonAttribute(name = "totalInterstitialAdClick")
 	var totalInterstitialAdClick: Int = 0
 
 	/** Tracks interstitial advertisement impression counts */
-	@JsonAttribute(name = "totalInterstitialImpression")
+	@JvmField @JsonAttribute(name = "totalInterstitialImpression")
 	var totalInterstitialImpression: Int = 0
 
 	/** Tracks rewarded advertisement click interactions */
-	@JsonAttribute(name = "totalRewardedAdClick")
+	@JvmField @JsonAttribute(name = "totalRewardedAdClick")
 	var totalRewardedAdClick: Int = 0
 
 	/** Tracks rewarded advertisement impression counts */
-	@JsonAttribute(name = "totalRewardedImpression")
+	@JvmField @JsonAttribute(name = "totalRewardedImpression")
 	var totalRewardedImpression: Int = 0
 
 	// =============================================
@@ -247,7 +247,7 @@ class AIOSettings : Serializable {
 	 * Full folder path for WhatsApp status storage.
 	 * Read-only value initialized from string resources.
 	 */
-	@JsonAttribute(name = "whatsAppStatusFullFolderPath")
+	@JvmField @JsonAttribute(name = "whatsAppStatusFullFolderPath")
 	val whatsAppStatusFullFolderPath: String = getText(string.text_whatsapp_status_file_dir)
 
 	// =============================================
@@ -255,35 +255,35 @@ class AIOSettings : Serializable {
 	// =============================================
 
 	/** Enables single progress UI for download operations */
-	@JsonAttribute(name = "downloadSingleUIProgress")
+	@JvmField @JsonAttribute(name = "downloadSingleUIProgress")
 	var downloadSingleUIProgress: Boolean = true
 
 	/** Hides video thumbnails in download lists for privacy */
-	@JsonAttribute(name = "downloadHideVideoThumbnail")
+	@JvmField @JsonAttribute(name = "downloadHideVideoThumbnail")
 	var downloadHideVideoThumbnail: Boolean = false
 
 	/** Plays notification sound on download completion */
-	@JsonAttribute(name = "downloadPlayNotificationSound")
+	@JvmField @JsonAttribute(name = "downloadPlayNotificationSound")
 	var downloadPlayNotificationSound: Boolean = true
 
 	/** Hides system notifications for download operations */
-	@JsonAttribute(name = "downloadHideNotification")
+	@JvmField @JsonAttribute(name = "downloadHideNotification")
 	var downloadHideNotification: Boolean = false
 
 	/** Hides download progress from main UI elements */
-	@JsonAttribute(name = "hideDownloadProgressFromUI")
+	@JvmField @JsonAttribute(name = "hideDownloadProgressFromUI")
 	var hideDownloadProgressFromUI: Boolean = false
 
 	/** Enables automatic removal of completed download tasks */
-	@JsonAttribute(name = "downloadAutoRemoveTasks")
+	@JvmField @JsonAttribute(name = "downloadAutoRemoveTasks")
 	var downloadAutoRemoveTasks: Boolean = false
 
 	/** Number of days after which completed tasks are automatically removed */
-	@JsonAttribute(name = "downloadAutoRemoveTaskAfterNDays")
+	@JvmField @JsonAttribute(name = "downloadAutoRemoveTaskAfterNDays")
 	var downloadAutoRemoveTaskAfterNDays: Int = 0
 
 	/** Opens downloaded files on single click instead of long press */
-	@JsonAttribute(name = "openDownloadedFileOnSingleClick")
+	@JvmField @JsonAttribute(name = "openDownloadedFileOnSingleClick")
 	var openDownloadedFileOnSingleClick: Boolean = true
 
 	// =============================================
@@ -291,31 +291,31 @@ class AIOSettings : Serializable {
 	// =============================================
 
 	/** Enables automatic resumption of interrupted downloads */
-	@JsonAttribute(name = "downloadAutoResume")
+	@JvmField @JsonAttribute(name = "downloadAutoResume")
 	var downloadAutoResume: Boolean = true
 
 	/** Maximum number of errors before stopping auto-resume attempts */
-	@JsonAttribute(name = "downloadAutoResumeMaxErrors")
+	@JvmField @JsonAttribute(name = "downloadAutoResumeMaxErrors")
 	var downloadAutoResumeMaxErrors: Int = 35
 
 	/** Enables automatic handling of URL redirections during downloads */
-	@JsonAttribute(name = "downloadAutoLinkRedirection")
+	@JvmField @JsonAttribute(name = "downloadAutoLinkRedirection")
 	var downloadAutoLinkRedirection: Boolean = true
 
 	/** Enables automatic cataloging of downloads into folders */
-	@JsonAttribute(name = "downloadAutoFolderCatalog")
+	@JvmField @JsonAttribute(name = "downloadAutoFolderCatalog")
 	var downloadAutoFolderCatalog: Boolean = true
 
 	/** Enables automatic thread selection for parallel downloads */
-	@JsonAttribute(name = "downloadAutoThreadSelection")
+	@JvmField @JsonAttribute(name = "downloadAutoThreadSelection")
 	var downloadAutoThreadSelection: Boolean = true
 
 	/** Automatically moves downloaded files to private storage */
-	@JsonAttribute(name = "downloadAutoFileMoveToPrivate")
+	@JvmField @JsonAttribute(name = "downloadAutoFileMoveToPrivate")
 	var downloadAutoFileMoveToPrivate: Boolean = false
 
 	/** Automatically converts downloaded videos to MP3 format */
-	@JsonAttribute(name = "downloadAutoConvertVideosToMp3")
+	@JvmField @JsonAttribute(name = "downloadAutoConvertVideosToMp3")
 	var downloadAutoConvertVideosToMp3: Boolean = false
 
 	// =============================================
@@ -323,39 +323,39 @@ class AIOSettings : Serializable {
 	// =============================================
 
 	/** Buffer size in bytes for download operations (default: 8KB) */
-	@JsonAttribute(name = "downloadBufferSize")
+	@JvmField @JsonAttribute(name = "downloadBufferSize")
 	var downloadBufferSize: Int = 1024 * 8
 
 	/** Maximum HTTP read timeout in milliseconds (default: 30 seconds) */
-	@JsonAttribute(name = "downloadMaxHttpReadingTimeout")
+	@JvmField @JsonAttribute(name = "downloadMaxHttpReadingTimeout")
 	var downloadMaxHttpReadingTimeout: Int = 1000 * 30
 
 	/** Default number of thread connections per download */
-	@JsonAttribute(name = "downloadDefaultThreadConnections")
+	@JvmField @JsonAttribute(name = "downloadDefaultThreadConnections")
 	var downloadDefaultThreadConnections: Int = 1
 
 	/** Default number of parallel download connections */
-	@JsonAttribute(name = "downloadDefaultParallelConnections")
+	@JvmField @JsonAttribute(name = "downloadDefaultParallelConnections")
 	var downloadDefaultParallelConnections: Int = 10
 
 	/** Enables checksum verification for downloaded files */
-	@JsonAttribute(name = "downloadVerifyChecksum")
+	@JvmField @JsonAttribute(name = "downloadVerifyChecksum")
 	var downloadVerifyChecksum: Boolean = false
 
 	/** Maximum network speed in bytes per second (0 = unlimited) */
-	@JsonAttribute(name = "downloadMaxNetworkSpeed")
+	@JvmField @JsonAttribute(name = "downloadMaxNetworkSpeed")
 	var downloadMaxNetworkSpeed: Long = 0
 
 	/** Restricts downloads to WiFi connections only */
-	@JsonAttribute(name = "downloadWifiOnly")
+	@JvmField @JsonAttribute(name = "downloadWifiOnly")
 	var downloadWifiOnly: Boolean = false
 
 	/** HTTP User-Agent string used for download requests */
-	@JsonAttribute(name = "downloadHttpUserAgent")
+	@JvmField @JsonAttribute(name = "downloadHttpUserAgent")
 	var downloadHttpUserAgent: String = getText(string.text_downloads_default_http_user_agent)
 
 	/** HTTP proxy server configuration for downloads */
-	@JsonAttribute(name = "downloadHttpProxyServer")
+	@JvmField @JsonAttribute(name = "downloadHttpProxyServer")
 	var downloadHttpProxyServer: String = ""
 
 	// =============================================
@@ -366,7 +366,7 @@ class AIOSettings : Serializable {
 	 * Flag indicating if the application crashed during the previous session.
 	 * Used for crash recovery and stability monitoring.
 	 */
-	@JsonAttribute(name = "hasAppCrashedRecently")
+	@JvmField @JsonAttribute(name = "hasAppCrashedRecently")
 	var hasAppCrashedRecently: Boolean = false
 
 	// =============================================
@@ -374,15 +374,15 @@ class AIOSettings : Serializable {
 	// =============================================
 
 	/** Password for accessing private folder (encrypted storage) */
-	@JsonAttribute(name = "privateFolderPassword")
+	@JvmField @JsonAttribute(name = "privateFolderPassword")
 	var privateFolderPassword: String = ""
 
 	/** Maximum number of downloads allowed (rate limiting) */
-	@JsonAttribute(name = "numberOfMaxDownloadThreshold")
+	@JvmField @JsonAttribute(name = "numberOfMaxDownloadThreshold")
 	var numberOfMaxDownloadThreshold: Int = 1
 
 	/** Counter for total downloads performed by user */
-	@JsonAttribute(name = "numberOfDownloadsUserDid")
+	@JvmField @JsonAttribute(name = "numberOfDownloadsUserDid")
 	var numberOfDownloadsUserDid: Int = 0
 
 	// =============================================
@@ -390,35 +390,35 @@ class AIOSettings : Serializable {
 	// =============================================
 
 	/** Default homepage URL for the in-app browser */
-	@JsonAttribute(name = "browserDefaultHomepage")
+	@JvmField @JsonAttribute(name = "browserDefaultHomepage")
 	var browserDefaultHomepage: String = getText(string.text_https_google_com)
 
 	/** Enables desktop-mode browsing instead of mobile view */
-	@JsonAttribute(name = "browserDesktopBrowsing")
+	@JvmField @JsonAttribute(name = "browserDesktopBrowsing")
 	var browserDesktopBrowsing: Boolean = false
 
 	/** Enables ad-blocking functionality in the browser */
-	@JsonAttribute(name = "browserEnableAdblocker")
+	@JvmField @JsonAttribute(name = "browserEnableAdblocker")
 	var browserEnableAdblocker: Boolean = true
 
 	/** Enables JavaScript execution in the browser */
-	@JsonAttribute(name = "browserEnableJavascript")
+	@JvmField @JsonAttribute(name = "browserEnableJavascript")
 	var browserEnableJavascript: Boolean = true
 
 	/** Enables image loading in the browser */
-	@JsonAttribute(name = "browserEnableImages")
+	@JvmField @JsonAttribute(name = "browserEnableImages")
 	var browserEnableImages: Boolean = true
 
 	/** Enables popup blocking in the browser */
-	@JsonAttribute(name = "browserEnablePopupBlocker")
+	@JvmField @JsonAttribute(name = "browserEnablePopupBlocker")
 	var browserEnablePopupBlocker: Boolean = true
 
 	/** Enables video grabber functionality in the browser */
-	@JsonAttribute(name = "browserEnableVideoGrabber")
+	@JvmField @JsonAttribute(name = "browserEnableVideoGrabber")
 	var browserEnableVideoGrabber: Boolean = true
 
 	/** HTTP User-Agent string used for browser requests */
-	@JsonAttribute(name = "browserHttpUserAgent")
+	@JvmField @JsonAttribute(name = "browserHttpUserAgent")
 	var browserHttpUserAgent: String = getText(string.text_browser_default_mobile_http_user_agent)
 
 	/**

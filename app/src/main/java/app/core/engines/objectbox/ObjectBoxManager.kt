@@ -1,6 +1,8 @@
 package app.core.engines.objectbox
 
 import android.content.Context
+import app.core.engines.MyObjectBox
+import app.core.engines.objectbox.ObjectBoxManager.initializeObjectBoxDB
 import io.objectbox.BoxStore
 import lib.process.LogHelperUtils
 
@@ -49,7 +51,8 @@ object ObjectBoxManager {
 	 *
 	 * @throws IllegalStateException if initialization fails due to an internal ObjectBox error.
 	 */
-	fun init(context: Context) {
+	@JvmStatic
+	fun initializeObjectBoxDB(context: Context) {
 		if (boxStore != null) return
 
 		synchronized(this) {
@@ -71,8 +74,9 @@ object ObjectBoxManager {
 	 * Returns the shared [BoxStore] instance.
 	 *
 	 * @return The globally shared [BoxStore] for all ObjectBox database access.
-	 * @throws IllegalStateException if [init] has not been called before.
+	 * @throws IllegalStateException if [initializeObjectBoxDB] has not been called before.
 	 */
+	@JvmStatic
 	fun getBoxStore(): BoxStore {
 		return boxStore ?: throw IllegalStateException(
 			"ObjectBox not initialized. Call ObjectBoxManager.init() first."
@@ -88,6 +92,7 @@ object ObjectBoxManager {
 	 * **Note:** Do not call this during normal runtime unless you explicitly intend
 	 * to stop all ObjectBox operations.
 	 */
+	@JvmStatic
 	fun closeObjectBoxDB() {
 		synchronized(this) {
 			try {

@@ -17,6 +17,7 @@ import app.core.engines.caches.AIORawFiles
 import app.core.engines.downloader.DownloadModelMerger
 import app.core.engines.downloader.DownloadSystem
 import app.core.engines.objectbox.ObjectBoxManager
+import app.core.engines.objectbox.ObjectBoxManager.initializeObjectBoxDB
 import app.core.engines.settings.AIOSettings
 import app.core.engines.settings.AIOSettingsDBManager
 import app.core.engines.video_parser.parsers.YoutubeVidParser
@@ -107,7 +108,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		super.onCreate()
 		logger.d("AIOApp onCreate() started")
 		INSTANCE = this
-		ObjectBoxManager.init(INSTANCE)
+		initializeObjectBoxDB(INSTANCE)
 
 		startupManager.apply {
 			// Load essential settings and raw resources
@@ -118,7 +119,6 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 				logger.d("[Startup] Initializing critical settings and core resources...")
 				try {
-					AIOSettingsDBManager.init(INSTANCE)
 					aioSettings = AIOSettingsDBManager.loadSettingsFromDB()
 					logger.d("[Startup] Settings database initialized and loaded successfully")
 				} catch (error: Exception) {
@@ -149,8 +149,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 
 				try {
 					logger.d("[Startup] Initializing Bookmarks database manager...")
-					AIOBookmarksDBManager.init(INSTANCE)
-					aioBookmark = AIOBookmarksDBManager.loadBookmarksFromDB()
+					aioBookmark = AIOBookmarksDBManager.loadAIOBookmarksFromDB()
 					logger.d("[Startup] Bookmarks database initialized and loaded successfully")
 				} catch (error: Exception) {
 					logger.e("[Startup] Failed to initialize or load bookmarks: ${error.message}", error)
@@ -265,7 +264,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 			downloadSystem.cleanUp()
 
 			aioTimer.cancel()
-			AIOSettingsDBManager.closeDB()
+			ObjectBoxManager.closeObjectBoxDB()
 			logger.d("Termination tasks completed")
 		})
 		super.onTerminate()
