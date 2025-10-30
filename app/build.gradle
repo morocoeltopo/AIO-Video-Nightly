@@ -1,27 +1,45 @@
+// ============================================================================
+// Module-level build.gradle (App Module)
+// Purpose: Configure the Android app module, compiler, plugins, and dependencies
+// ============================================================================
+
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
+    // ------------------------------------------------------------------------
+    // Plugin aliases defined in libs.versions.toml (centralized version control)
+    // These make it easier to update plugin versions across the project.
+    // ------------------------------------------------------------------------
+    alias(libs.plugins.android.application)  // Android application plugin
+    alias(libs.plugins.kotlin.android)       // Kotlin Android plugin
+    alias(libs.plugins.kotlin.kapt)          // Kotlin Annotation Processing Tool (for libraries like DslJson, Glide)
+    alias(libs.plugins.objectbox.db)         // ObjectBox Gradle plugin (for automatic DB code generation)
 }
 
 android {
-    namespace 'com.aio'
-    compileSdkVersion 36
-    ndkVersion '28.0.12916984 rc3'
+    // ------------------------------------------------------------------------
+    // Application metadata and build configuration
+    // ------------------------------------------------------------------------
+    namespace 'com.aio'                                // Package namespace for R and BuildConfig
+    compileSdkVersion 36                               // API level used to compile the app
+    ndkVersion '28.0.12916984 rc3'                     // NDK version for native builds
 
     defaultConfig {
-        applicationId "com.aio.video_downloader"
-        minSdk 28
-        targetSdk 36
-        versionCode 81
-        versionName '2025.10.03'
-        vectorDrawables.useSupportLibrary = true
-        multiDexEnabled true
+        applicationId "com.aio.video_downloader"       // Unique app ID for publishing
+        minSdk 28                                      // Minimum supported Android API
+        targetSdk 36                                   // Target Android API level
+        versionCode 81                                 // Internal version (for Play Store updates)
+        versionName '2025.10.03'                       // User-visible version
+        vectorDrawables.useSupportLibrary = true        // Enables vector drawable backward compatibility
+        multiDexEnabled true                            // Allow multiple DEX files for large apps
+
         ndk {
+            // Supported CPU architectures
             abiFilters "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Build type configurations (debug & release)
+    // ------------------------------------------------------------------------
     buildTypes {
         debug {
             debuggable true
@@ -30,44 +48,62 @@ android {
             buildConfigField "boolean", "IS_DEBUG_MODE_ON", "true"
         }
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled true                            // Enable code shrinking (R8)
+            shrinkResources true                          // Remove unused resources
             debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
-                    'proguard-rules.pro'
+                    'proguard-rules.pro'                  // ProGuard rules for code obfuscation
             buildConfigField "boolean", "IS_DEBUG_MODE_ON", "false"
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Include debug symbols for crash analysis (release builds)
+    // ------------------------------------------------------------------------
     buildTypes.release.ndk.debugSymbolLevel = "FULL"
+
+    // Generate BuildConfig.java for constants
     android.buildFeatures.buildConfig = true
 
+    // ------------------------------------------------------------------------
+    // Packaging configuration: exclude unnecessary files from APK
+    // ------------------------------------------------------------------------
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/*.kotlin_module'
-        jniLibs.useLegacyPackaging = true
+        jniLibs.useLegacyPackaging = true               // Ensures compatibility with native libs
     }
 
+    // ------------------------------------------------------------------------
+    // ABI splits: generates separate APKs per CPU architecture
+    // Helps reduce download size on Play Store
+    // ------------------------------------------------------------------------
     splits {
         abi {
             enable true
             reset()
             include 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-            universalApk true
+            universalApk true                           // Also build a universal APK
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Java & Kotlin compiler configuration
+    // ------------------------------------------------------------------------
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled true               // Enables Java 8+ APIs on older devices
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(17)                                // Aligns Kotlin to Java 17
     }
 
+    // ------------------------------------------------------------------------
+    // Prevents dependency metadata from being included in APK/Bundles
+    // ------------------------------------------------------------------------
     dependenciesInfo {
         includeInBundle false
         includeInApk false
@@ -75,41 +111,87 @@ android {
 }
 
 dependencies {
+    // ------------------------------------------------------------------------
+    // Local .jar dependencies
+    // ------------------------------------------------------------------------
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // ------------------------------------------------------------------------
+    // AndroidX core libraries
+    // ------------------------------------------------------------------------
     implementation libs.androidx.appcompat
     implementation libs.androidx.viewpager2
     implementation libs.androidx.cardview
-    implementation libs.circleimageview
-    implementation libs.androidx.webkit
-    implementation libs.constraint.layout
     implementation libs.androidx.core.ktx
+    implementation libs.constraint.layout
+    implementation libs.androidx.webkit
     implementation libs.androidx.biometric
     implementation libs.androidx.lifecycle.process
+
+    // ------------------------------------------------------------------------
+    // Kotlin & Coroutines
+    // ------------------------------------------------------------------------
     implementation libs.kotlin.coroutines.core
     implementation libs.kotlin.coroutines
+
+    // ------------------------------------------------------------------------
+    // ExoPlayer & Media3 (modern media playback framework)
+    // ------------------------------------------------------------------------
     implementation libs.media3.exoplayer
     implementation libs.media3.exoplayer.hls
     implementation libs.media3.exoplayer.dash
     implementation libs.media3.datasource
     implementation libs.media3.ui
     implementation libs.media3.session
-    implementation libs.fst
-    implementation libs.jsoup
-    implementation libs.gson
-    implementation(libs.dsljson)
-    kapt(libs.dsljson)
-    compileOnly(libs.jsonbind.api)
+
+    // ------------------------------------------------------------------------
+    // ObjectBox Database (Kotlin + Android)
+    // ObjectBox auto-generates the MyObjectBox class at build time.
+    // ------------------------------------------------------------------------
+    implementation libs.objectbox.android
+    implementation libs.objectbox.kotlin
+
+    // ------------------------------------------------------------------------
+    // Data & Serialization libraries
+    // ------------------------------------------------------------------------
+    implementation libs.fst                    // Fast Serialization
+    implementation libs.jsoup                  // HTML parsing
+    implementation libs.gson                   // JSON serialization
+    implementation(libs.dsljson)               // High-performance JSON library
+    kapt(libs.dsljson)                         // Annotation processor for DslJson
+    compileOnly(libs.jsonbind.api)             // Compile-time JSON Binding API (optional)
+
+    // ------------------------------------------------------------------------
+    // Networking libraries
+    // ------------------------------------------------------------------------
     implementation libs.retrofit
     implementation libs.retrofit.converter.gson
     implementation libs.okhttp
+
+    // ------------------------------------------------------------------------
+    // UI & Animation libraries
+    // ------------------------------------------------------------------------
     implementation libs.lottie
     implementation libs.glide
+    implementation libs.circleimageview
     implementation libs.permissionx
-    implementation libs.saf.storage
-    implementation libs.parse
+
+    // ------------------------------------------------------------------------
+    // Storage & File Management
+    // ------------------------------------------------------------------------
+    implementation libs.saf.storage            // SAF (Storage Access Framework)
+    implementation libs.parse                  // Parse SDK for backend data
+
+    // ------------------------------------------------------------------------
+    // Video & Media Processing Libraries
+    // ------------------------------------------------------------------------
     implementation libs.ytdlp.library
     implementation libs.ytdlp.ffmpeg
     implementation libs.newpipe.extractor
     implementation libs.mp4.iso.parser
+
+    // ------------------------------------------------------------------------
+    // Desugaring library for Java 8+ APIs (java.nio, streams, etc.)
+    // ------------------------------------------------------------------------
     coreLibraryDesugaring libs.desugar.jdk.libs.nio
 }

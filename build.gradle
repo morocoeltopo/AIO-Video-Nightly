@@ -1,4 +1,46 @@
+// ============================================================================
+// Root-level build.gradle
+// Purpose: Configure build-wide plugins, repositories, and dependency versions
+// ============================================================================
+
+buildscript {
+	// ------------------------------------------------------------------------
+	// Define the ObjectBox plugin version.
+	// You can update this number whenever a new version of ObjectBox is released.
+	// The 'ext' block creates a global variable accessible in subprojects.
+	// ------------------------------------------------------------------------
+	ext.objectboxVersion = "5.0.1"
+
+	// ------------------------------------------------------------------------
+	// Repositories for resolving build dependencies.
+	// These are required for the Android Gradle plugin, Kotlin plugin,
+	// and the ObjectBox Gradle plugin to be downloaded.
+	// ------------------------------------------------------------------------
+	repositories {
+		google()                // Google's Maven repository (Android tools)
+		mavenCentral()          // General-purpose repository for open-source libs
+		gradlePluginPortal()    // Required for the ObjectBox Gradle plugin
+	}
+
+	// ------------------------------------------------------------------------
+	// Dependencies used by the build system itself (not your app’s runtime).
+	// The ObjectBox Gradle plugin is applied here so it can be used in module builds.
+	// ------------------------------------------------------------------------
+	dependencies {
+		// Registers the ObjectBox Gradle plugin for all submodules
+		// This plugin automatically generates database code (MyObjectBox class)
+		// and manages schema updates at compile-time.
+		classpath "io.objectbox:objectbox-gradle-plugin:$objectboxVersion"
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Optional: Plugin alias management block
+// This section works with 'libs.versions.toml' to define shared plugin aliases.
+// The 'apply false' means these plugins are *not* applied here but can be used
+// by submodules (like your app module) without redefining them.
+// -----------------------------------------------------------------------------
 plugins {
-	alias(libs.plugins.android.application) apply false
-	alias(libs.plugins.kotlin.android) apply false
+	alias(libs.plugins.android.application) apply false  // Android app plugin alias
+	alias(libs.plugins.kotlin.android) apply false       // Kotlin Android plugin alias
 }
