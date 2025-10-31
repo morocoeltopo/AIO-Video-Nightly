@@ -15,14 +15,43 @@ import java.util.Locale
 /**
  * Utility class for processing video format information from yt-dlp output.
  *
- * Handles:
- * - Parsing yt-dlp format listings
- * - Formatting download progress information
- * - Calculating file sizes
- * - Managing video format metadata
- * - Processing cookies for authenticated downloads
+ * This singleton object provides comprehensive functionality for handling all aspects
+ * of video format processing, from parsing yt-dlp output to managing download operations.
+ * It serves as the central processing unit for video metadata extraction, format selection,
+ * and download progress management.
  *
- * All operations are designed to handle yt-dlp's specific output format.
+ * ## Usage Examples:
+ *
+ * ### Parsing Format Lists
+ * ```kotlin
+ * val formats = VideoFormatsUtils.getVideoFormatsList(ytdlpOutput)
+ * formats.forEach { format ->
+ *     println("${format.formatResolution} - ${format.formatExtension}")
+ * }
+ * ```
+ *
+ * ### Processing Download Progress
+ * ```kotlin
+ * val cleanProgress = VideoFormatsUtils.cleanYtdlpLoggingSting(rawLogLine)
+ * progressTextView.text = cleanProgress
+ * ```
+ *
+ * ### Calculating File Sizes
+ * ```kotlin
+ * val totalSize = VideoFormatsUtils.calculateTotalFileSize(videoSize, audioSize)
+ * println("Total download size: $totalSize")
+ * ```
+ *
+ * ## Error Handling:
+ * - Functions return empty collections instead of null for safe consumption
+ * - Invalid input strings are handled gracefully with default values
+ * - Logging is provided for debugging parsing and processing issues
+ * - Performance timing is included for optimization monitoring
+ *
+ * ## Thread Safety:
+ * - All operations are stateless and thread-safe
+ * - No shared mutable state between function calls
+ * - Suitable for use across multiple coroutines and threads
  */
 object VideoFormatsUtils {
 
@@ -32,6 +61,7 @@ object VideoFormatsUtils {
 	 * Data class representing a video format with all its metadata.
 	 *
 	 * @property id Unique database identifier
+	 * @property downloadDataModelId Unique identifier for the associated download model in the system
 	 * @property isFromSocialMedia Indicates if the format is from a social media platform
 	 * @property formatId Unique identifier for the format
 	 * @property formatExtension File extension (mp4, webm, etc.)
@@ -46,37 +76,40 @@ object VideoFormatsUtils {
 	@CompiledJson
 	@Entity
 	data class VideoFormat(
-		@Id @param:JsonAttribute(name = "id")
+		@Id @JvmField @param:JsonAttribute(name = "id")
 		val id: Long = 0L,
 
-		@param:JsonAttribute(name = "isFromSocialMedia")
+		@JvmField @param:JsonAttribute(name = "downloadDataModelId")
+		var downloadDataModelId: Long = -1L,
+
+		@JvmField @param:JsonAttribute(name = "isFromSocialMedia")
 		var isFromSocialMedia: Boolean = false,
 
-		@param:JsonAttribute(name = "formatId")
+		@JvmField @param:JsonAttribute(name = "formatId")
 		var formatId: String = "",
 
-		@param:JsonAttribute(name = "formatExtension")
+		@JvmField @param:JsonAttribute(name = "formatExtension")
 		var formatExtension: String = "",
 
-		@param:JsonAttribute(name = "formatResolution")
+		@JvmField @param:JsonAttribute(name = "formatResolution")
 		var formatResolution: String = "",
 
-		@param:JsonAttribute(name = "formatFileSize")
+		@JvmField @param:JsonAttribute(name = "formatFileSize")
 		var formatFileSize: String = "",
 
-		@param:JsonAttribute(name = "formatVcodec")
+		@JvmField @param:JsonAttribute(name = "formatVcodec")
 		var formatVcodec: String = "",
 
-		@param:JsonAttribute(name = "formatAcodec")
+		@JvmField @param:JsonAttribute(name = "formatAcodec")
 		var formatAcodec: String = "",
 
-		@param:JsonAttribute(name = "formatTBR")
+		@JvmField @param:JsonAttribute(name = "formatTBR")
 		var formatTBR: String = "",
 
-		@param:JsonAttribute(name = "formatProtocol")
+		@JvmField @param:JsonAttribute(name = "formatProtocol")
 		var formatProtocol: String = "",
 
-		@param:JsonAttribute(name = "formatStreamingUrl")
+		@JvmField @param:JsonAttribute(name = "formatStreamingUrl")
 		var formatStreamingUrl: String = ""
 	) : Serializable
 
@@ -84,6 +117,7 @@ object VideoFormatsUtils {
 	 * Data class representing complete video information and metadata.
 	 *
 	 * @property id Unique database identifier
+	 * @property downloadDataModelId Unique identifier for the associated download model in the system
 	 * @property videoTitle Title of the video
 	 * @property videoThumbnailUrl URL of the video thumbnail image
 	 * @property videoThumbnailByReferer Whether thumbnail requires referer header for access
@@ -98,58 +132,72 @@ object VideoFormatsUtils {
 	@CompiledJson
 	@Entity
 	data class VideoInfo(
-		@Id @param:JsonAttribute(name = "id")
+		@Id @JvmField @param:JsonAttribute(name = "id")
 		val id: Long = 0L,
 
-		@param:JsonAttribute(name = "videoTitle")
+		@JvmField @param:JsonAttribute(name = "downloadDataModelId")
+		var downloadDataModelId: Long = -1L,
+
+		@JvmField @param:JsonAttribute(name = "videoTitle")
 		var videoTitle: String? = null,
 
-		@param:JsonAttribute(name = "videoThumbnailUrl")
+		@JvmField @param:JsonAttribute(name = "videoThumbnailUrl")
 		var videoThumbnailUrl: String? = null,
 
-		@param:JsonAttribute(name = "videoThumbnailByReferer")
+		@JvmField @param:JsonAttribute(name = "videoThumbnailByReferer")
 		var videoThumbnailByReferer: Boolean = false,
 
-		@param:JsonAttribute(name = "videoDescription")
+		@JvmField @param:JsonAttribute(name = "videoDescription")
 		var videoDescription: String? = null,
 
-		@param:JsonAttribute(name = "videoUrlReferer")
+		@JvmField @param:JsonAttribute(name = "videoUrlReferer")
 		var videoUrlReferer: String? = null,
 
-		@param:JsonAttribute(name = "videoUrl")
+		@JvmField @param:JsonAttribute(name = "videoUrl")
 		var videoUrl: String = "",
 
-		@param:JsonAttribute(name = "videoFormats")
+		@JvmField @param:JsonAttribute(name = "videoFormats")
 		var videoFormats: List<VideoFormat> = emptyList(),
 
-		@param:JsonAttribute(name = "videoCookie")
+		@JvmField @param:JsonAttribute(name = "videoCookie")
 		var videoCookie: String? = "",
 
-		@param:JsonAttribute(name = "videoDuration")
+		@JvmField @param:JsonAttribute(name = "videoDuration")
 		var videoDuration: Long = 0L,
 
-		@param:JsonAttribute(name = "videoCookieTempPath")
+		@JvmField @param:JsonAttribute(name = "videoCookieTempPath")
 		var videoCookieTempPath: String = ""
 	) : Serializable
 
 	/**
-	 * Parses yt-dlp format listing and returns structured format information.
+	 * Parses yt-dlp format listing output and returns structured video format information.
 	 *
-	 * @param ytdlFormatsResponse Raw yt-dlp format listing output
-	 * @return List of parsed VideoFormat objects
+	 * This function processes the raw text output from yt-dlp's format listing command,
+	 * which displays available video formats in a columnar table. It performs OCR-style
+	 * column detection, text extraction, and parsing to convert the textual table into
+	 * structured VideoFormat objects. The function also filters formats to keep only the
+	 * highest quality version for each resolution.
+	 *
+	 * @param ytdlFormatsResponse Raw yt-dlp format listing output as multi-line string
+	 * @return List of parsed and filtered VideoFormat objects representing available video formats
+	 * @throws Exception If parsing fails, returns empty list and logs error details
+	 *
+	 * @example
+	 * val formats = getVideoFormatsList(ytdlOutput)
+	 * // Returns: List<VideoFormat> with id="137", extension="mp4", resolution="1080p", etc.
 	 */
 	fun getVideoFormatsList(ytdlFormatsResponse: String): List<VideoFormat> {
 		val startTime = System.currentTimeMillis()
 		val inputData = ytdlFormatsResponse.trimIndent()
 		logger.d("YT-DLP Response\n${inputData}")
 
-		// Extract and clean the formats table
+		// Extract and clean the formats table from yt-dlp output
 		val formatTable = extractFormatsFromInfoLine(inputData)
 		val cleanFormatTable = clearEmptyLines(formatTable)
 		val lines = cleanFormatTable.split("\n").map { it.trim() }
-			.filterIndexed { index, _ -> index != 1 }.toTypedArray()
+			.filterIndexed { index, _ -> index != 1 }.toTypedArray() // Remove separator line
 
-		// Find longest line for column alignment
+		// Find longest line for proper column alignment
 		var maxLength = 0
 		var longestLineIndex = -1
 
@@ -160,7 +208,7 @@ object VideoFormatsUtils {
 			}
 		}
 
-		// Ensure consistent line lengths for column parsing
+		// Ensure consistent line lengths for accurate column parsing
 		if (longestLineIndex != -1) {
 			lines[longestLineIndex] += " "
 		}
@@ -168,7 +216,7 @@ object VideoFormatsUtils {
 		maxLength = lines.maxOfOrNull { it.length } ?: 0
 		logger.d("YT-DLP formats list lines max length=$maxLength")
 
-		// Pad all lines to max length
+		// Pad all lines to max length to create uniform column structure
 		for (index in lines.indices) {
 			val line = lines[index]
 			if (line.length != maxLength) {
@@ -178,7 +226,7 @@ object VideoFormatsUtils {
 			}
 		}
 
-		// Detect column boundaries
+		// Detect column boundaries by finding vertical whitespace gaps
 		val columnPositionMap: MutableList<Pair<Int, Int>> = mutableListOf()
 		var startingIndex = 0
 
@@ -189,6 +237,7 @@ object VideoFormatsUtils {
 				if (line[currentLoopingIndex].isWhitespace())
 					whiteSpaceEncountered++
 
+			// Column boundary found when all lines have whitespace at this position
 			if (whiteSpaceEncountered == lines.size) {
 				columnPositionMap.add(Pair(startingIndex, currentLoopingIndex))
 				logger.d(
@@ -201,7 +250,7 @@ object VideoFormatsUtils {
 			currentLoopingIndex++
 		}
 
-		// Extract text from each column
+		// Extract text from each detected column
 		val extractedTexts: MutableList<String> = mutableListOf()
 		for ((start, end) in columnPositionMap) {
 			val extractedText = StringBuilder()
@@ -217,11 +266,12 @@ object VideoFormatsUtils {
 		}
 
 		logger.d("============================")
+		// Parse extracted column data into VideoFormat objects
 		val extractedVideoFormats = extractVideoFormats(extractedTexts)
 		logger.d("Total yt-dlp video formats found=${extractedVideoFormats.size}")
 		logger.d("============================")
 
-		// Filter formats to keep highest quality per resolution
+		// Filter formats to keep only highest quality (TBR) per resolution
 		val filteredVideoFormats: ArrayList<VideoFormat> = ArrayList()
 		val formatsByResolution = extractedVideoFormats.groupBy { it.formatResolution }
 		for ((resolution, formats) in formatsByResolution) {
@@ -229,6 +279,7 @@ object VideoFormatsUtils {
 			var maxTBRValue = 0.0
 
 			for (format in formats) {
+				// Extract numeric TBR value for comparison
 				val numericTBR = format.formatTBR
 					.replace(Regex("[^0-9.]"), "")
 					.toDoubleOrNull() ?: 0.0
@@ -248,18 +299,20 @@ object VideoFormatsUtils {
 			}
 		}
 
-		// Fallback if no filtered formats found
+		// Fallback if no filtered formats found - use all valid formats
 		if (filteredVideoFormats.isEmpty() && extractedVideoFormats.isNotEmpty()) {
 			filteredVideoFormats.addAll(extractedVideoFormats)
 			filteredVideoFormats.removeAll { it.formatId.isEmpty() }
 		}
 
-		// Post-process format information
+		// Post-process format information for consistency
 		for (format in filteredVideoFormats) {
+			// Handle unknown resolution by using format ID
 			if (format.formatResolution.lowercase() == "unknown") {
 				format.formatResolution = format.formatId
 			}
 
+			// Provide default value for missing file sizes
 			if (format.formatFileSize.isEmpty()) {
 				format.formatFileSize = getText(R.string.title_not_available)
 			}
@@ -275,9 +328,17 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Logs detailed video information for debugging purposes.
+	 * Logs detailed video information for debugging and analysis purposes.
 	 *
-	 * @param videoInfo VideoInfo object containing all video metadata
+	 * Creates a comprehensive log message containing all video metadata and
+	 * available formats with their technical specifications. Useful for
+	 * troubleshooting format selection and download issues.
+	 *
+	 * @param videoInfo VideoInfo object containing all video metadata and formats
+	 *
+	 * @example
+	 * logVideoInfo(videoInfo)
+	 * // Logs: "Video URL: https://youtube.com/watch?v=abc123\nAvailable Formats:\nFormat 1:\n  Format ID: 137\n  Extension: mp4\n  ..."
 	 */
 	fun logVideoInfo(videoInfo: VideoInfo) {
 		val logMessage = StringBuilder()
@@ -299,10 +360,20 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Checks if a speed string is in valid format (e.g., "100K", "10M").
+	 * Checks if a speed string is in valid format for yt-dlp command line arguments.
 	 *
-	 * @param speed Speed string to validate
-	 * @return true if valid format, false otherwise
+	 * Validates that speed strings follow the pattern of digits followed by unit
+	 * (G, M, K, B) without any other characters.
+	 *
+	 * @param speed Speed string to validate (e.g., "10M", "100K", "1G")
+	 * @return true if string matches valid speed format, false otherwise
+	 *
+	 * @example
+	 * isValidSpeedFormat("10M")  // Returns: true
+	 * isValidSpeedFormat("100K") // Returns: true
+	 * isValidSpeedFormat("1G")   // Returns: true
+	 * isValidSpeedFormat("10MB") // Returns: false (invalid unit)
+	 * isValidSpeedFormat("abc")  // Returns: false (non-numeric)
 	 */
 	fun isValidSpeedFormat(speed: String): Boolean {
 		val regex = Regex("^\\d+([GMKB])$")
@@ -310,10 +381,20 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Formats download speed for yt-dlp command line argument.
+	 * Formats download speed in bytes for yt-dlp command line argument.
 	 *
-	 * @param downloadMaxNetworkSpeed Speed in bytes
-	 * @return Formatted speed string (e.g., "10M" for 10,000,000 bytes)
+	 * Converts byte counts to human-readable speed units (G, M, K, B) that
+	 * yt-dlp accepts for rate limiting. Uses decimal units (1000-based) for
+	 * network speed representation.
+	 *
+	 * @param downloadMaxNetworkSpeed Speed in bytes per second as Long value
+	 * @return Formatted speed string suitable for yt-dlp --limit-rate option
+	 *
+	 * @example
+	 * formatDownloadSpeedForYtDlp(10_000_000) // Returns: "10M"
+	 * formatDownloadSpeedForYtDlp(256_000)    // Returns: "256K"
+	 * formatDownloadSpeedForYtDlp(1_000_000_000) // Returns: "1G"
+	 * formatDownloadSpeedForYtDlp(500)        // Returns: "500B"
 	 */
 	fun formatDownloadSpeedForYtDlp(downloadMaxNetworkSpeed: Long): String {
 		return when {
@@ -325,10 +406,20 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Parses size string (e.g., "10MiB") to bytes.
+	 * Parses human-readable size string to bytes.
 	 *
-	 * @param size Size string to parse
-	 * @return Size in bytes
+	 * Converts size strings with units (KiB, MiB, GiB, TiB) to their byte
+	 * equivalents. Uses binary units (1024-based) consistent with yt-dlp output.
+	 *
+	 * @param size Size string to parse (e.g., "10MiB", "1.5GiB", "100KiB")
+	 * @return Size in bytes as Long, returns 0L if parsing fails
+	 *
+	 * @example
+	 * parseSize("10MiB")    // Returns: 10485760
+	 * parseSize("1.5GiB")   // Returns: 1610612736
+	 * parseSize("100KiB")   // Returns: 102400
+	 * parseSize("500B")     // Returns: 500
+	 * parseSize("invalid")  // Returns: 0
 	 */
 	fun parseSize(size: String): Long {
 		val regex = """(\d+(\.\d+)?)([KMGT]?i?B)""".toRegex()
@@ -353,9 +444,17 @@ object VideoFormatsUtils {
 	/**
 	 * Calculates total file size by combining video and audio sizes.
 	 *
-	 * @param videoSize Video size string
-	 * @param audioSize Audio size string
-	 * @return Combined size string (e.g., "15.23 MiB")
+	 * This function parses individual video and audio size strings, converts them to bytes,
+	 * sums the total, and formats the result into a human-readable size string.
+	 *
+	 * @param videoSize Video size string in format like "15.23 MiB", "2.1 GiB", etc.
+	 * @param audioSize Audio size string in same format as videoSize
+	 * @return Combined size string formatted to appropriate unit (e.g., "15.23 MiB")
+	 * @throws NumberFormatException If size strings cannot be parsed
+	 *
+	 * @example
+	 * calculateTotalFileSize("10.5 MiB", "4.73 MiB") // Returns: "15.23 MiB"
+	 * calculateTotalFileSize("1.5 GiB", "256.0 MiB") // Returns: "1.73 GiB"
 	 */
 	fun calculateTotalFileSize(videoSize: String, audioSize: String): String {
 		val videoSizeBytes = parseSize(videoSize)
@@ -367,52 +466,95 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Checks if a video format has no audio track.
+	 * Checks if a video format has no audio track (video-only format).
 	 *
-	 * @param videoFormat VideoFormat to check
-	 * @return true if format has no audio, false otherwise
+	 * Determines whether a video format lacks audio by checking if the audio codec
+	 * is empty or explicitly marked as "video only". Useful for identifying formats
+	 * that need separate audio track merging.
+	 *
+	 * @param videoFormat VideoFormat object to check for audio presence
+	 * @return true if format has no audio track, false if audio is present
+	 *
+	 * @example
+	 * val format1 = VideoFormat(formatAcodec = "") // Returns: true
+	 * val format2 = VideoFormat(formatAcodec = "video only") // Returns: true
+	 * val format3 = VideoFormat(formatAcodec = "mp4a.40.2") // Returns: false
 	 */
 	fun isFormatHasNoAudio(videoFormat: VideoFormat) =
 		videoFormat.formatAcodec.isEmpty() ||
 				videoFormat.formatAcodec.lowercase().contains("video only")
 
 	/**
-	 * Cleans file size string by removing non-numeric prefixes.
+	 * Cleans file size string by removing non-numeric prefixes and extraneous characters.
 	 *
-	 * @param input Raw file size string
-	 * @return Cleaned numeric portion
+	 * Useful for processing yt-dlp size strings that may contain prefixes like "~" or "approx"
+	 * before the actual size value.
+	 *
+	 * @param input Raw file size string that may contain non-numeric prefixes
+	 * @return Cleaned numeric portion of the size string
+	 *
+	 * @example
+	 * cleanFileSize("~15.23 MiB") // Returns: "15.23 MiB"
+	 * cleanFileSize("approx 2.1 GiB") // Returns: "2.1 GiB"
+	 * cleanFileSize("1.5GiB") // Returns: "1.5GiB" (no change if no prefix)
 	 */
 	fun cleanFileSize(input: String): String {
 		return input.replace(Regex("^\\D+"), "")
 	}
 
 	/**
-	 * Cleans and formats yt-dlp progress output for UI display.
+	 * Cleans and formats yt-dlp progress output for user interface display.
 	 *
-	 * @param input Raw yt-dlp progress line
-	 * @return Formatted progress information
+	 * Applies a pipeline of transformations to raw yt-dlp log lines to create
+	 * user-friendly progress messages. Handles various log formats, error cases,
+	 * and applies localization where appropriate.
+	 *
+	 * @param input Raw yt-dlp progress line from standard output/error
+	 * @return Formatted and localized progress information suitable for UI display
+	 * @throws Exception Processing continues with original input if any transformation fails
+	 *
+	 * @example
+	 * cleanYtdlpLoggingSting("[download] 45.2% of ~15.23 MiB at 1.2 MiB/s ETA 00:25")
+	 * // Returns: "45.2% Of 15.23 MiB | 1.2 MiB/s | 00:25 Left"
+	 *
+	 * cleanYtdlpLoggingSting("[download] Destination: video.mp4")
+	 * // Returns: localized "Setting destination files"
 	 */
 	fun cleanYtdlpLoggingSting(input: String): String {
 		try {
+			// Remove yt-dlp log prefixes and clean unknown values
 			val a1 = input.replace(Regex("\\[.*?]"), "")
 				.replace("Unknown", "--:--").trim()
+			// Fix invalid speed values
 			val a2 = speedStringFromYtdlpLogs(a1)
+			// Handle file deletion messages
 			val a3 = processDeletionLine(a2)
+			// Handle format merging messages
 			val a4 = processMergerLine(a3)
+			// Process download-related messages
 			val a5 = processDownloadLine(a4)
+			// Handle multi-line download progress
 			val a6 = getSecondDownloadLineIfExists(a5)
+			// Apply final formatting pipeline
 			return formatDownloadLine(a6)
 		} catch (error: Exception) {
 			error.printStackTrace()
-			return input
+			return input // Fallback to original input on error
 		}
 	}
 
 	/**
-	 * Extracts the formats table from yt-dlp info output.
+	 * Extracts the formats table from yt-dlp info output for parsing available video formats.
 	 *
-	 * @param input Raw yt-dlp output
-	 * @return Extracted formats table as string
+	 * Locates the "[info] Available formats for" section in yt-dlp output and extracts
+	 * the subsequent formats table until the next [download] section or end of output.
+	 *
+	 * @param input Raw yt-dlp info command output containing format information
+	 * @return Extracted formats table as multi-line string, or empty string if not found
+	 *
+	 * @example
+	 * extractFormatsFromInfoLine("...\n[info] Available formats for xyz:\nID EXT RESOLUTION...\n...")
+	 * // Returns: "ID EXT RESOLUTION..." (the formats table content)
 	 */
 	private fun extractFormatsFromInfoLine(input: String): String {
 		val lines = input.split("\n")
@@ -430,10 +572,18 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Formats size in bytes to human-readable string.
+	 * Formats size in bytes to human-readable string with appropriate binary unit.
 	 *
-	 * @param sizeInBytes Size in bytes
-	 * @return Formatted size string
+	 * Converts byte counts to KiB, MiB, GiB, etc. with 2 decimal places precision.
+	 * Uses binary units (1024-based) consistent with yt-dlp output format.
+	 *
+	 * @param sizeInBytes Size in bytes as Long value
+	 * @return Formatted size string with unit (e.g., "15.23 MiB", "1.45 GiB")
+	 *
+	 * @example
+	 * formatSize(15978394) // Returns: "15.23 MiB"
+	 * formatSize(1024) // Returns: "1.00 KiB"
+	 * formatSize(15569256448) // Returns: "14.50 GiB"
 	 */
 	private fun formatSize(sizeInBytes: Long): String {
 		val units = arrayOf("B", "KiB", "MiB", "GiB", "TiB")
@@ -450,7 +600,16 @@ object VideoFormatsUtils {
 
 	/**
 	 * Replaces invalid speed string values in yt-dlp logs with a default readable value.
-	 * Example: "N/A/s" -> "0KiB/s"
+	 *
+	 * yt-dlp may output "N/A/s" when speed cannot be determined. This function
+	 * replaces such values with "0KiB/s" for consistent UI display.
+	 *
+	 * @param speed Raw speed string from yt-dlp logs
+	 * @return Speed string with "N/A/s" replaced by "0KiB/s", or original if valid
+	 *
+	 * @example
+	 * speedStringFromYtdlpLogs("45.2% at N/A/s") // Returns: "45.2% at 0KiB/s"
+	 * speedStringFromYtdlpLogs("45.2% at 1.2 MiB/s") // Returns: "45.2% at 1.2 MiB/s"
 	 */
 	private fun speedStringFromYtdlpLogs(speed: String): String {
 		return if (speed.contains("N/A/s")) speed.replace("N/A/s", "0KiB/s") else speed
@@ -458,7 +617,19 @@ object VideoFormatsUtils {
 
 	/**
 	 * Extracts the second "download" line from yt-dlp logs, if available.
-	 * Useful for progress tracking across fragmented downloads.
+	 *
+	 * Useful for progress tracking across fragmented downloads where multiple
+	 * download lines may be present. Falls back to original input if only one line exists.
+	 *
+	 * @param input Multi-line yt-dlp log output
+	 * @return Second download line if multiple exist, otherwise original input
+	 *
+	 * @example
+	 * getSecondDownloadLineIfExists("[download] Line1\n[download] Line2\n[info] Other")
+	 * // Returns: "[download] Line2"
+	 *
+	 * getSecondDownloadLineIfExists("[download] Single line")
+	 * // Returns: "[download] Single line"
 	 */
 	private fun getSecondDownloadLineIfExists(input: String): String {
 		val lines = input.lines()
@@ -467,8 +638,20 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Processes lines related to downloading, particularly M3U8 information.
-	 * Returns a localized string for specific download states.
+	 * Processes lines related to downloading, particularly M3U8 information extraction.
+	 *
+	 * Handles specific download states like M3U8 manifest downloading and extracts
+	 * relevant portions of download messages for cleaner display.
+	 *
+	 * @param input Raw log line to process
+	 * @return Localized M3U8 message or trimmed download message, or original input
+	 *
+	 * @example
+	 * processDownloadLine("Downloading m3u8 information")
+	 * // Returns: localized "Downloading m3U8 information"
+	 *
+	 * processDownloadLine("[download] Downloading fragment 5/10")
+	 * // Returns: "Downloading fragment 5/10"
 	 */
 	private fun processDownloadLine(input: String): String {
 		val stage1 = if (input.contains("Downloading m3u8 information")) {
@@ -483,7 +666,19 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Converts merge-related log lines to a localized message.
+	 * Converts merge-related log lines to a localized message for format merging operations.
+	 *
+	 * Identifies when yt-dlp is merging separate video and audio streams into a single file.
+	 *
+	 * @param line Raw log line to check for merge operations
+	 * @return Localized merging message if pattern matches, otherwise original line
+	 *
+	 * @example
+	 * processMergerLine("Merging formats into video.mp4")
+	 * // Returns: localized "Merging video and audio format"
+	 *
+	 * processMergerLine("Downloading video")
+	 * // Returns: "Downloading video"
 	 */
 	private fun processMergerLine(line: String): String {
 		return if (line.contains("Merging formats into"))
@@ -491,7 +686,20 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Converts file deletion-related log lines to a localized message.
+	 * Converts file deletion-related log lines to a localized finishing message.
+	 *
+	 * Identifies when yt-dlp is cleaning up temporary files after successful processing,
+	 * indicating the download is in its final stages.
+	 *
+	 * @param line Raw log line to check for deletion operations
+	 * @return Localized finishing message if pattern matches, otherwise original line
+	 *
+	 * @example
+	 * processDeletionLine("Deleting original file temp.part")
+	 * // Returns: localized "Finishing up the download"
+	 *
+	 * processDeletionLine("Downloading continues")
+	 * // Returns: "Downloading continues"
 	 */
 	private fun processDeletionLine(line: String): String {
 		return if (line.contains("Deleting original file"))
@@ -500,7 +708,16 @@ object VideoFormatsUtils {
 
 	/**
 	 * Formats download log line with detailed status including progress, total size, speed and ETA.
-	 * Tries the main format first, then fallback to Stage2 if not matched.
+	 *
+	 * Attempts to parse comprehensive progress information using regex pattern matching.
+	 * Falls back to simpler formatting stages if the main pattern doesn't match.
+	 *
+	 * @param input Raw download progress line to format
+	 * @return Formatted progress string with consistent structure, or result from fallback processing
+	 *
+	 * @example
+	 * formatDownloadLine("45.2% of ~15.23 MiB at 1.2 MiB/s ETA 00:25")
+	 * // Returns: "45.2% Of 15.23 MiB | 1.2 MiB/s | 00:25 Left"
 	 */
 	private fun formatDownloadLine(input: String): String {
 		val regex = Regex(
@@ -520,7 +737,20 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Detects and replaces session initialization message with localized string.
+	 * Detects and replaces download session initialization message with localized string.
+	 *
+	 * Identifies when yt-dlp is setting up a new download session and provides
+	 * user-friendly localized message for this initialization phase.
+	 *
+	 * @param input Raw log line to check for session setup
+	 * @return Localized session setup message if pattern matches, otherwise proceeds to next stage
+	 *
+	 * @example
+	 * formatDownloadLineStage4("Setting up download session...")
+	 * // Returns: localized "Setting up download session"
+	 *
+	 * formatDownloadLineStage4("Downloading video...")
+	 * // Returns: result from formatDownloadLineStage5("Downloading video...")
 	 */
 	private fun formatDownloadLineStage4(input: String): String {
 		val targetPhrase = getText(R.string.title_setting_up_download_session)
@@ -532,7 +762,20 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Detects and replaces destination message with localized string.
+	 * Detects and replaces destination file setup message with localized string.
+	 *
+	 * Identifies when yt-dlp is configuring output file paths and provides
+	 * localized message for this file setup phase.
+	 *
+	 * @param input Raw log line to check for destination configuration
+	 * @return Localized destination setup message if pattern matches, otherwise proceeds to next stage
+	 *
+	 * @example
+	 * formatDownloadLineStage5("Destination: /path/to/video.mp4")
+	 * // Returns: localized "Setting destination files"
+	 *
+	 * formatDownloadLineStage5("45.2% of 15.23 MiB")
+	 * // Returns: result from formatDownloadingLineStage6("45.2% of 15.23 MiB")
 	 */
 	private fun formatDownloadLineStage5(input: String): String {
 		return if (input.startsWith("Destination:")) {
@@ -543,7 +786,22 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Detects format-check messages and returns localized text for user interface.
+	 * Detects format-check messages in download logs and returns localized text for user interface.
+	 *
+	 * This function identifies when yt-dlp is checking available formats before downloading
+	 * and replaces the technical message with a user-friendly localized version.
+	 *
+	 * @param input The raw log line from yt-dlp download process
+	 * @return Localized "checking formats" message if pattern matches, otherwise proceeds to next processing stage
+	 *
+	 * @example
+	 * // Input with format check pattern:
+	 * formatDownloadingLineStage6("Downloading 3 format(s): 137+140, 248+251, 399")
+	 * // Returns: localized "Checking formats to download"
+	 *
+	 * // Input without format check pattern:
+	 * formatDownloadingLineStage6("[download] Destination: video.mp4")
+	 * // Returns: result from formatDownloadLineStage7("[download] Destination: video.mp4")
 	 */
 	private fun formatDownloadingLineStage6(input: String): String {
 		return if (input.startsWith("Downloading") && input.contains("format(s):")) {
@@ -554,7 +812,23 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Formats generic progress lines showing percentage, size, duration, and speed.
+	 * Formats generic progress lines showing percentage, size, duration, and speed information.
+	 *
+	 * This function parses yt-dlp progress updates that follow the pattern of percentage completed,
+	 * file size, elapsed time, and download speed. It reformats the information into a more
+	 * structured and consistent display format for the user interface.
+	 *
+	 * @param input The raw progress line from yt-dlp download process
+	 * @return Formatted progress string with consistent spacing and separators, or proceeds to next stage if no match
+	 *
+	 * @example
+	 * // Input with progress pattern:
+	 * formatDownloadLineStage7("45% of 15.2MiB in 00:25 at 625.5KiB/s")
+	 * // Returns: "45% Of 15.2MiB  |  00:25  |  625.5KiB/s"
+	 *
+	 * // Input without progress pattern:
+	 * formatDownloadLineStage7("[download] Resuming download at byte 1024")
+	 * // Returns: result from formatDownloadLineStage8("[download] Resuming download at byte 1024")
 	 */
 	private fun formatDownloadLineStage7(input: String): String {
 		val regex =
@@ -570,7 +844,22 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Detects already downloaded part message and replaces with localized message.
+	 * Detects already downloaded part messages and replaces with localized validation message.
+	 *
+	 * This function identifies when yt-dlp detects that a download fragment has already been
+	 * partially downloaded, indicating validation of existing download parts during resumption.
+	 *
+	 * @param input The raw log line from yt-dlp download process
+	 * @return Localized validation message if pattern matches, otherwise proceeds to next processing stage
+	 *
+	 * @example
+	 * // Input with already downloaded pattern:
+	 * formatDownloadLineStage8("[download] /path/to/video.part-Frag5 has already been downloaded")
+	 * // Returns: localized "Validating already downloaded part"
+	 *
+	 * // Input without pattern:
+	 * formatDownloadLineStage8("[download] Downloading fragment 6/10")
+	 * // Returns: result from formatDownloadLineStage9("[download] Downloading fragment 6/10")
 	 */
 	private fun formatDownloadLineStage8(input: String): String {
 		val regex = """.*/.*\.part-Frag\d+ has already been downloaded""".toRegex()
@@ -583,7 +872,23 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Parses and formats full download progress line including fragment info.
+	 * Parses and formats full download progress lines including fragment information.
+	 *
+	 * This function handles detailed progress updates that include fragment-based downloading
+	 * information commonly seen with HLS/m3u8 streams. It extracts percentage, total size,
+	 * download speed, ETA, and fragment counts, then formats them for consistent UI display.
+	 *
+	 * @param input The raw progress line with fragment information from yt-dlp
+	 * @return Formatted progress string with fragment info condensed, or proceeds to next stage if no match
+	 *
+	 * @example
+	 * // Input with fragment progress pattern:
+	 * formatDownloadLineStage9("23.5% of ~ 45.7MiB at 1.2MiB/s ETA 00:45 (frag 12/50)")
+	 * // Returns: "23.5% Of 45.7MiB  |  1.2MiB/s  |  00:45 Left"
+	 *
+	 * // Input without fragment pattern:
+	 * formatDownloadLineStage9("[info] Writing video metadata")
+	 * // Returns: result from formatDownloadLineStage10("[info] Writing video metadata")
 	 */
 	private fun formatDownloadLineStage9(input: String): String {
 		val regex =
@@ -599,27 +904,65 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Detects retrying log messages and formats them with localized retry count.
+	 * Processes download log lines to detect and localize retry attempt messages.
+	 *
+	 * This function identifies yt-dlp retry patterns in download logs and converts them
+	 * to localized strings with retry count information. If no retry pattern is found,
+	 * it delegates to the next stage of log processing.
+	 *
+	 * @param input The raw log line from yt-dlp download process
+	 * @return Localized retry message if retry pattern is detected, otherwise proceeds to next processing stage
+	 *
+	 * @example
+	 * // Input with retry pattern:
+	 * formatDownloadLineStage10("Retrying (3/5)...")
+	 * // Returns: localized string like "Connection failed, retrying (3 of 5)"
+	 *
+	 * // Input without retry pattern:
+	 * formatDownloadLineStage10("Downloading webpage...")
+	 * // Returns: result from formatDownloadLineStage11("Downloading webpage...")
 	 */
 	private fun formatDownloadLineStage10(input: String): String {
 		return if (input.contains("Retrying", ignoreCase = true)) {
+			// Regex pattern to extract current retry count and total retries
 			val regex = Regex("Retrying \\((\\d+)/(\\d+)\\)")
 			val matchResult = regex.find(input)
 			matchResult?.let {
+				// Format localized string with current and total retry counts
 				INSTANCE.getString(
 					R.string.title_connection_failed_retrying,
 					it.groups[1]?.value, it.groups[2]?.value
 				)
-			} ?: input
+			} ?: input // Return original input if regex match fails
 		} else {
+			// Proceed to next processing stage if no retry pattern found
 			formatDownloadLineStage11(input)
 		}
 	}
 
 	/**
-	 * Detects and converts YTDLP extraction message to a localized version.
+	 * Processes download log lines to detect and localize various yt-dlp extraction and download messages.
+	 *
+	 * This function maps common yt-dlp log messages to localized string resources for
+	 * better user experience. It handles messages related to URL extraction, manifest
+	 * downloading, JSON parsing, and other download pipeline steps.
+	 *
+	 * @param input The raw log line from yt-dlp download process
+	 * @return Localized version of the log message if a known pattern is found, otherwise original input
+	 *
+	 * @example
+	 * // Known patterns:
+	 * formatDownloadLineStage11("extracting url: https://example.com")
+	 * // Returns: localized "Extracting source URL"
+	 *
+	 * formatDownloadLineStage11("Downloading m3u8 manifest...")
+	 * // Returns: localized "Downloading m3u8 manifest"
+	 *
+	 * formatDownloadLineStage11("Unknown message")
+	 * // Returns: "Unknown message" (unchanged)
 	 */
 	private fun formatDownloadLineStage11(input: String): String {
+		// Mapping of yt-dlp log patterns to localized string resources
 		val map = mapOf(
 			"extracting url" to R.string.title_extracting_source_url,
 			"Checking m3u8 live status" to R.string.title_checking_m3u8_live_status,
@@ -633,37 +976,85 @@ object VideoFormatsUtils {
 			"video info" to R.string.title_downloading_video_info,
 			"json" to R.string.title_parsing_json_data
 		)
+
+		// Find first matching pattern and return corresponding localized string
 		return map.entries.firstOrNull { input.contains(it.key, ignoreCase = true) }
-			?.let { getText(it.value) }
-			?: input
+			?.let { getText(it.value) } // Get localized string from resources
+			?: input // Return original input if no pattern matches
 	}
 
 	/**
 	 * Removes all empty or blank lines from a given multi-line string.
 	 *
-	 * @param input The original string potentially containing empty lines.
-	 * @return A string with all non-blank lines joined with newline characters.
+	 * This utility function cleans up log output or multi-line text by filtering out
+	 * lines that contain only whitespace or are completely empty. Useful for
+	 * presenting cleaner output to users.
+	 *
+	 * @param input The original string potentially containing empty lines
+	 * @return A string with all non-blank lines joined with newline characters
+	 *
+	 * @example
+	 * // Input with empty lines:
+	 * clearEmptyLines("Line 1\n\nLine 2\n   \nLine 3")
+	 * // Returns: "Line 1\nLine 2\nLine 3"
+	 *
+	 * // Input with only empty lines:
+	 * clearEmptyLines("\n\n   \n\t\n")
+	 * // Returns: "" (empty string)
+	 *
+	 * // Input with no empty lines:
+	 * clearEmptyLines("Line 1\nLine 2\nLine 3")
+	 * // Returns: "Line 1\nLine 2\nLine 3"
 	 */
 	private fun clearEmptyLines(input: String): String {
 		return input.lines()
-			.filter { it.isNotBlank() }
-			.joinToString("\n")
+			.filter { it.isNotBlank() } // Remove blank and whitespace-only lines
+			.joinToString("\n") // Rebuild string with newline separators
 	}
 
 	/**
-	 * Extracts video format information from a list of column strings.
-	 * Each column represents a specific metadata type such as ID, EXT, RESOLUTION, etc.
+	 * Extracts video format information from a list of column strings representing tabular data.
+	 *
+	 * This function processes OCR-extracted column data where each column contains a header
+	 * followed by newline-separated values for specific video format metadata. It transforms
+	 * the columnar data into a list of structured VideoFormat objects, with each object
+	 * representing a row in the original tabular data.
 	 *
 	 * @param columns A mutable list of strings where each string contains newline-separated values for a column.
+	 *                Expected column headers: "ID", "EXT", "RESOLUTION", "FILESIZE", "TBR", "PROTO", "VCODEC", "ACODEC".
+	 *                Example: ["ID\n1\n2\n3", "EXT\nmp4\nwebm\nmkv", "RESOLUTION\n1080p\n720p\n480p"]
 	 * @return A list of [VideoFormat] objects, each representing a row in the tabular data.
+	 *         Returns an empty list if no valid data is found.
+	 *
+	 * @throws IndexOutOfBoundsException If the columns list is empty when trying to determine row count
+	 *
+	 * @example
+	 * // Sample input:
+	 * val columns = mutableListOf(
+	 *     "ID\n1\n2\n3",
+	 *     "EXT\nmp4\nwebm\nmkv",
+	 *     "RESOLUTION\n1080p\n720p\n480p",
+	 *     "FILESIZE\n10MB\n5MB\n2MB",
+	 *     "TBR\n2000\n1500\n800",
+	 *     "PROTO\nhttps\nhttps\nhttp",
+	 *     "VCODEC\nh264\nvp9\nh265",
+	 *     "ACODEC\nmp3\naac\nopus"
+	 * )
+	 *
+	 * // Usage:
+	 * val formats = extractVideoFormats(columns)
+	 * // Returns: List of 3 VideoFormat objects with:
+	 * // - Format 1: ID="1", EXT="mp4", RESOLUTION="1080p", FILESIZE="10MB", etc.
+	 * // - Format 2: ID="2", EXT="webm", RESOLUTION="720p", FILESIZE="5MB", etc.
+	 * // - Format 3: ID="3", EXT="mkv", RESOLUTION="480p", FILESIZE="2MB", etc.
 	 */
 	private fun extractVideoFormats(columns: MutableList<String>): List<VideoFormat> {
-		// Get the total number of rows based on the first column.
+		// Get the total number of rows based on the first column (including header)
 		val totalRows = columns[0].split("\n").map { it.trim() }
 
 		val videoFormats: ArrayList<VideoFormat> = ArrayList()
 
-		// Extract relevant data from each column.
+		// Extract data from each column using helper function
 		val idColumn = getColumnData("ID", columns, totalRows.size)
 		val extColumn = getColumnData("EXT", columns, totalRows.size)
 		val resolutionColumn = getColumnData("RESOLUTION", columns, totalRows.size)
@@ -673,8 +1064,9 @@ object VideoFormatsUtils {
 		val vcodecColumn = getColumnData("VCODEC", columns, totalRows.size)
 		val acodecColumn = getColumnData("ACODEC", columns, totalRows.size)
 
-		// Iterate through rows and create VideoFormat objects.
+		// Iterate through each row and create VideoFormat objects
 		for (index in totalRows.indices) {
+			// Safely extract each field with fallback to empty string if missing
 			val formatId = idColumn.getOrNull(index) ?: ""
 			val formatExtension = extColumn.getOrNull(index) ?: ""
 			val formatResolution = resolutionColumn.getOrNull(index) ?: ""
@@ -684,6 +1076,7 @@ object VideoFormatsUtils {
 			val formatVcodec = vcodecColumn.getOrNull(index) ?: ""
 			val formatAcodec = acodecColumn.getOrNull(index) ?: ""
 
+			// Create and add VideoFormat object for current row
 			videoFormats.add(
 				VideoFormat(
 					formatId = formatId,
@@ -702,35 +1095,53 @@ object VideoFormatsUtils {
 	}
 
 	/**
-	 * Retrieves column data by its header name.
+	 * Retrieves column data by its header name from extracted text data.
 	 *
-	 * @param header The header of the column (e.g., "ID", "EXT").
+	 * This function processes OCR-extracted column data where each column string starts with a header
+	 * followed by newline-separated values. It extracts the values for a specific header and ensures
+	 * the returned list matches the expected row count through padding when necessary.
+	 *
+	 * @param header The header name of the column to retrieve (e.g., "ID", "EXT", "RESOLUTION").
 	 * @param extractedTexts The list of all column strings where each entry starts with a header
-	 * followed by newline-separated values.
-	 * @param rowCount The expected number of rows for alignment.
+	 *                       followed by newline-separated values. Example: ["ID\n1\n2\n3", "EXT\nmp4\nwebm"]
+	 * @param rowCount The expected number of rows for data alignment across all columns.
 	 * @return A list of values under the given header, padded with empty strings if fewer values are found.
+	 *         Returns a list of empty strings if the header is not found.
+	 *
+	 * @example
+	 * // Sample input:
+	 * val extractedTexts = mutableListOf("ID\n1\n2\n3", "EXT\nmp4\nwebm", "RESOLUTION\n1080p\n720p")
+	 * val rowCount = 3
+	 *
+	 * // Usage:
+	 * getColumnData("EXT", extractedTexts, rowCount)
+	 * // Returns: ["mp4", "webm", ""]
+	 *
+	 * getColumnData("ID", extractedTexts, rowCount)
+	 * // Returns: ["1", "2", "3"]
+	 *
+	 * getColumnData("SIZE", extractedTexts, rowCount)
+	 * // Returns: ["", "", ""] (header not found)
 	 */
-	private fun getColumnData(
-		header: String,
-		extractedTexts: MutableList<String>,
-		rowCount: Int
-	): List<String> {
+	private fun getColumnData(header: String, extractedTexts: MutableList<String>, rowCount: Int): List<String> {
+		// Find the index of the column that starts with the specified header
 		val headerIndex = extractedTexts.indexOfFirst { it.startsWith(header) }
 
 		return if (headerIndex != -1) {
+			// Column found - process the data
 			val columnData = extractedTexts[headerIndex]
 				.split("\n")
-				.drop(1) // Remove header line
-				.map { it.trim() }
+				.drop(1) // Remove header line to get only the values
+				.map { it.trim() } // Clean up whitespace from each value
 
-			// Pad with empty strings if rows are missing
+			// Pad with empty strings if rows are missing to maintain consistent row count
 			if (columnData.size < rowCount) {
 				columnData + List(rowCount - columnData.size) { "" }
 			} else {
 				columnData
 			}
 		} else {
-			// Return a list of empty strings if column is not found
+			// Return a list of empty strings if column header is not found
 			List(rowCount) { "" }
 		}
 	}
