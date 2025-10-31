@@ -524,6 +524,7 @@ class AIOSettings : Serializable {
 	 * - All operations are wrapped in a try-catch block.
 	 * - Logs both success and failure through the [logger].
 	 */
+	@Synchronized
 	fun updateInStorage() {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			try {

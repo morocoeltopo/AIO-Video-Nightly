@@ -152,6 +152,7 @@ object AIOSettingsDBManager {
 	 * @see Box.put for ObjectBox persistence operation
 	 */
 	@JvmStatic
+	@Synchronized
 	fun saveSettingsInDB(settings: AIOSettings) {
 		try {
 			settings.downloadDataModelDBId = APP_SETTINGS_DB_ID

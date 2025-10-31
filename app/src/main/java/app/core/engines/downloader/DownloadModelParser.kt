@@ -60,15 +60,18 @@ object DownloadModelParser {
 	suspend fun getDownloadDataModels(): List<DownloadDataModel> {
 		logger.d("getDownloadDataModels() called. Cache size=${modelCache.size}")
 		return withContext(Dispatchers.IO) {
-			if (modelCache.isEmpty()) {
-				logger.d("Cache empty, loading models with recovery.")
-				loadAllModelsWithRecovery()
-			} else {
-				logger.d("Validating cache against files.")
-				validateCacheAgainstFiles()
+			val downloadModelsFromDB = DownloadModelsDBManager.getAllDownloadsWithRelations()
+			downloadModelsFromDB.ifEmpty {
+				if (modelCache.isEmpty()) {
+					logger.d("Cache empty, loading models with recovery.")
+					loadAllModelsWithRecovery()
+				} else {
+					logger.d("Validating cache against files.")
+					validateCacheAgainstFiles()
+				}
+				logger.d("Returning ${modelCache.size} models.")
+				modelCache.values.toList()
 			}
-			logger.d("Returning ${modelCache.size} models.")
-			modelCache.values.toList()
 		}
 	}
 
