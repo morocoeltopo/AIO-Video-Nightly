@@ -238,7 +238,8 @@ object DownloadModelsDBManager {
 				logger.d("Using global AIOSettings as fallback for download ID: $downloadId")
 			}
 			aioSettingsQuery.close()
-			logger.d("AIOSettings configured for download ID: $downloadId")
+			logger.d("AIOSettings (db-id=${downloadDataModel.globalSettings.id}) " +
+					"configured for download ID: $downloadId")
 
 			logger.d("Successfully assembled all relations for download ID: $downloadId")
 		} catch (error: Exception) {

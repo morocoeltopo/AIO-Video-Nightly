@@ -349,7 +349,7 @@ class DownloadDataModel : Serializable {
 	/** Snapshot of global application settings at the time download was initiated */
 	@io.objectbox.annotation.Transient
 	@JvmField @JsonAttribute(name = "globalSettings")
-	var globalSettings: AIOSettings = deepCopy(aioSettings) ?: aioSettings
+	var globalSettings: AIOSettings = (deepCopy(aioSettings) ?: aioSettings).apply { id = 0L }
 
 	companion object {
 		@Transient
