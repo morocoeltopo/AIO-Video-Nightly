@@ -6,8 +6,6 @@ import app.core.AIOApp.Companion.internalDataFolder
 import app.core.AIOApp.Companion.ytdlpInstance
 import app.core.engines.video_parser.parsers.SupportedURLs.filterYoutubeUrlWithoutPlaylist
 import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
 import com.aio.R
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.yausername.youtubedl_android.YoutubeDL.version

@@ -7,8 +7,8 @@ import app.core.bases.BaseActivity
 import app.core.engines.video_parser.parsers.SupportedURLs.filterYoutubeUrlWithoutPlaylist
 import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrl
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.video_parser.parsers.VideoFormat
+import app.core.engines.video_parser.parsers.VideoInfo
 import app.core.engines.video_parser.parsers.VideoParserUtility.getYtdlpVideoFormatsListWithRetry
 import app.ui.main.MotherActivity
 import app.ui.others.information.IntentInterceptActivity
@@ -289,8 +289,7 @@ class SharedVideoURLIntercept(
 				videoThumbnailByReferer = videoThumbnailByReferer,
 				videoCookie = videoCookie,
 				videoFormats = videoFormats,
-				videoDuration = videoDurationFromYtStream ?:
-				userGivenVideoInfo?.videoDuration ?: 0L
+				videoDuration = videoDurationFromYtStream ?: userGivenVideoInfo?.videoDuration ?: 0L
 			)
 
 			// Step 5: Switch to main thread to update UI

@@ -18,7 +18,7 @@ import app.core.engines.downloader.DownloadStatus.DOWNLOADING
 import app.core.engines.video_parser.parsers.SupportedURLs.filterYoutubeUrlWithoutPlaylist
 import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
+import app.core.engines.video_parser.parsers.VideoFormat
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.cleanYtdlpLoggingSting
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.formatDownloadSpeedForYtDlp
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.isValidSpeedFormat

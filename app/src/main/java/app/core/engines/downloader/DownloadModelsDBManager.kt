@@ -3,8 +3,11 @@ package app.core.engines.downloader
 import app.core.AIOApp
 import app.core.engines.objectbox.ObjectBoxManager
 import app.core.engines.settings.AIOSettings
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.settings.AIOSettings_
+import app.core.engines.video_parser.parsers.VideoFormat
+import app.core.engines.video_parser.parsers.VideoFormat_
+import app.core.engines.video_parser.parsers.VideoInfo
+import app.core.engines.video_parser.parsers.VideoInfo_
 import io.objectbox.Box
 import io.objectbox.BoxStore
 import lib.process.LogHelperUtils
@@ -127,7 +130,7 @@ object DownloadModelsDBManager {
 			remoteFileInfoQuery.close()
 
 			val settingsQuery = settingsBox.query()
-				.equal(GlobalSettings_.downloadDataModelId, downloadId)
+				.equal(AIOSettings_.downloadDataModelId, downloadId)
 				.build()
 			settingsQuery.findIds().forEach { settingsBox.remove(it) }
 			settingsQuery.close()

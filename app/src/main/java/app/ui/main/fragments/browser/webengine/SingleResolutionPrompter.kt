@@ -15,8 +15,8 @@ import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
 import app.core.engines.video_parser.parsers.SupportedURLs.isFacebookUrl
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.video_parser.parsers.VideoFormat
+import app.core.engines.video_parser.parsers.VideoInfo
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
 import app.ui.others.information.IntentInterceptActivity
 import com.aio.R

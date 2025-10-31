@@ -252,7 +252,7 @@ class AIOSettings : Serializable {
 	 * Read-only value initialized from string resources.
 	 */
 	@JvmField @JsonAttribute(name = "whatsAppStatusFullFolderPath")
-	val whatsAppStatusFullFolderPath: String = getText(string.text_whatsapp_status_file_dir)
+	var whatsAppStatusFullFolderPath: String = getText(string.text_whatsapp_status_file_dir)
 
 	// =============================================
 	// DOWNLOAD PREFERENCES & BEHAVIOR

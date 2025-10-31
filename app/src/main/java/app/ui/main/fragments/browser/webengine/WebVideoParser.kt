@@ -9,7 +9,7 @@ import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrlPattern
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.video_parser.parsers.VideoInfo
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
 import app.ui.main.fragments.downloads.intercepter.SharedVideoURLIntercept
 import com.aio.R

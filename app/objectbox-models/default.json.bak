@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:5859520049495032366",
-      "lastPropertyId": "63:8272900143591826724",
+      "lastPropertyId": "64:6998681376410707544",
       "name": "AIOSettings",
       "properties": [
         {
@@ -323,6 +323,11 @@
           "id": "63:8272900143591826724",
           "name": "browserHttpUserAgent",
           "type": 9
+        },
+        {
+          "id": "64:6998681376410707544",
+          "name": "downloadId",
+          "type": 5
         }
       ],
       "relations": []
@@ -775,9 +780,363 @@
           "targetId": "7:4731141476551157893"
         }
       ]
+    },
+    {
+      "id": "9:4808231721176100847",
+      "lastPropertyId": "69:5719833993768012258",
+      "name": "DownloadDataModel",
+      "properties": [
+        {
+          "id": "1:7616137412114891120",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3842218249226122726",
+          "name": "downloadId",
+          "type": 5
+        },
+        {
+          "id": "3:4108480979182910509",
+          "name": "status",
+          "type": 5
+        },
+        {
+          "id": "4:7238542411610556820",
+          "name": "isRunning",
+          "type": 1
+        },
+        {
+          "id": "5:4861363914424350251",
+          "name": "isComplete",
+          "type": 1
+        },
+        {
+          "id": "6:3019217439540617782",
+          "name": "isDeleted",
+          "type": 1
+        },
+        {
+          "id": "7:5200391487977460270",
+          "name": "isRemoved",
+          "type": 1
+        },
+        {
+          "id": "8:4142427084282206786",
+          "name": "isWentToPrivateFolder",
+          "type": 1
+        },
+        {
+          "id": "9:7723018875252462266",
+          "name": "isFileUrlExpired",
+          "type": 1
+        },
+        {
+          "id": "10:3326339356896902899",
+          "name": "isYtdlpHavingProblem",
+          "type": 1
+        },
+        {
+          "id": "11:3787738380298211205",
+          "name": "ytdlpProblemMsg",
+          "type": 9
+        },
+        {
+          "id": "12:1730630732749654196",
+          "name": "isDestinationFileNotExisted",
+          "type": 1
+        },
+        {
+          "id": "13:3351124240103915237",
+          "name": "isFileChecksumValidationFailed",
+          "type": 1
+        },
+        {
+          "id": "14:5897070297726344154",
+          "name": "isWaitingForNetwork",
+          "type": 1
+        },
+        {
+          "id": "15:2295259144552972616",
+          "name": "isFailedToAccessFile",
+          "type": 1
+        },
+        {
+          "id": "16:833878411408845997",
+          "name": "isExpiredURLDialogShown",
+          "type": 1
+        },
+        {
+          "id": "17:3463133419154777496",
+          "name": "isSmartCategoryDirProcessed",
+          "type": 1
+        },
+        {
+          "id": "18:7853767615267797664",
+          "name": "msgToShowUserViaDialog",
+          "type": 9
+        },
+        {
+          "id": "19:527319740558199788",
+          "name": "isDownloadFromBrowser",
+          "type": 1
+        },
+        {
+          "id": "20:3424889830863932283",
+          "name": "isBasicYtdlpModelInitialized",
+          "type": 1
+        },
+        {
+          "id": "21:2271194318698275532",
+          "name": "additionalWebHeaders",
+          "type": 13
+        },
+        {
+          "id": "22:8752427224835782218",
+          "name": "fileName",
+          "type": 9
+        },
+        {
+          "id": "23:4062479265477053243",
+          "name": "fileURL",
+          "type": 9
+        },
+        {
+          "id": "24:3003494433607022794",
+          "name": "siteReferrer",
+          "type": 9
+        },
+        {
+          "id": "25:3711253303404429854",
+          "name": "fileDirectory",
+          "type": 9
+        },
+        {
+          "id": "26:1635338574080906502",
+          "name": "fileMimeType",
+          "type": 9
+        },
+        {
+          "id": "27:3426572233040174270",
+          "name": "fileContentDisposition",
+          "type": 9
+        },
+        {
+          "id": "28:4463896904894325823",
+          "name": "siteCookieString",
+          "type": 9
+        },
+        {
+          "id": "29:7291187656221272818",
+          "name": "thumbPath",
+          "type": 9
+        },
+        {
+          "id": "30:2515048392958965346",
+          "name": "thumbnailUrl",
+          "type": 9
+        },
+        {
+          "id": "31:2815129779601003157",
+          "name": "tempYtdlpDestinationFilePath",
+          "type": 9
+        },
+        {
+          "id": "32:7472766029810480080",
+          "name": "tempYtdlpStatusInfo",
+          "type": 9
+        },
+        {
+          "id": "33:17287100883619742",
+          "name": "fileDirectoryURI",
+          "type": 9
+        },
+        {
+          "id": "34:8474426087120474726",
+          "name": "fileCategoryName",
+          "type": 9
+        },
+        {
+          "id": "35:8633548774740376738",
+          "name": "startTimeDateInFormat",
+          "type": 9
+        },
+        {
+          "id": "36:1923041189589442916",
+          "name": "startTimeDate",
+          "type": 6
+        },
+        {
+          "id": "37:1899669087813619567",
+          "name": "lastModifiedTimeDateInFormat",
+          "type": 9
+        },
+        {
+          "id": "38:7907944546696291105",
+          "name": "lastModifiedTimeDate",
+          "type": 6
+        },
+        {
+          "id": "39:1748941301851325759",
+          "name": "isUnknownFileSize",
+          "type": 1
+        },
+        {
+          "id": "40:439983927016667686",
+          "name": "fileSize",
+          "type": 6
+        },
+        {
+          "id": "41:457631141857290652",
+          "name": "fileChecksum",
+          "type": 9
+        },
+        {
+          "id": "42:8405028193263504813",
+          "name": "fileSizeInFormat",
+          "type": 9
+        },
+        {
+          "id": "43:5653187564051013684",
+          "name": "averageSpeed",
+          "type": 6
+        },
+        {
+          "id": "44:2549882648331281806",
+          "name": "maxSpeed",
+          "type": 6
+        },
+        {
+          "id": "45:8181739388741773607",
+          "name": "realtimeSpeed",
+          "type": 6
+        },
+        {
+          "id": "46:8274866615861329521",
+          "name": "averageSpeedInFormat",
+          "type": 9
+        },
+        {
+          "id": "47:4949991279616611319",
+          "name": "maxSpeedInFormat",
+          "type": 9
+        },
+        {
+          "id": "48:3747897805913533541",
+          "name": "realtimeSpeedInFormat",
+          "type": 9
+        },
+        {
+          "id": "49:3620960329374392596",
+          "name": "isResumeSupported",
+          "type": 1
+        },
+        {
+          "id": "50:5338302917238090581",
+          "name": "isMultiThreadSupported",
+          "type": 1
+        },
+        {
+          "id": "51:5328335211906371337",
+          "name": "resumeSessionRetryCount",
+          "type": 5
+        },
+        {
+          "id": "52:2567710730507199068",
+          "name": "totalTrackedConnectionRetries",
+          "type": 5
+        },
+        {
+          "id": "53:8651908477126997148",
+          "name": "progressPercentage",
+          "type": 6
+        },
+        {
+          "id": "54:3577127931689145629",
+          "name": "progressPercentageInFormat",
+          "type": 9
+        },
+        {
+          "id": "55:2831831047711370591",
+          "name": "downloadedByte",
+          "type": 6
+        },
+        {
+          "id": "56:8292587088375231952",
+          "name": "downloadedByteInFormat",
+          "type": 9
+        },
+        {
+          "id": "57:6774181292959676687",
+          "name": "partStartingPoint",
+          "type": 27
+        },
+        {
+          "id": "58:5934039683412992609",
+          "name": "partEndingPoint",
+          "type": 27
+        },
+        {
+          "id": "59:2221361922895237168",
+          "name": "partChunkSizes",
+          "type": 27
+        },
+        {
+          "id": "60:1758719773411529940",
+          "name": "partsDownloadedByte",
+          "type": 27
+        },
+        {
+          "id": "61:7617764230928114262",
+          "name": "partProgressPercentage",
+          "type": 26
+        },
+        {
+          "id": "62:483971624174733117",
+          "name": "timeSpentInMilliSec",
+          "type": 6
+        },
+        {
+          "id": "63:8779733591989532956",
+          "name": "remainingTimeInSec",
+          "type": 6
+        },
+        {
+          "id": "64:1489154457695345515",
+          "name": "timeSpentInFormat",
+          "type": 9
+        },
+        {
+          "id": "65:8756218968049166053",
+          "name": "remainingTimeInFormat",
+          "type": 9
+        },
+        {
+          "id": "66:7660478435419886693",
+          "name": "statusInfo",
+          "type": 9
+        },
+        {
+          "id": "67:8425131320062225290",
+          "name": "executionCommand",
+          "type": 9
+        },
+        {
+          "id": "68:6757481410342018012",
+          "name": "mediaFilePlaybackDuration",
+          "type": 9
+        },
+        {
+          "id": "69:5719833993768012258",
+          "name": "isSyncToCloudBackup",
+          "type": 1
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "8:5804091465831558502",
+  "lastEntityId": "9:4808231721176100847",
   "lastIndexId": "0:0",
   "lastRelationId": "1:8496475234812365537",
   "lastSequenceId": "0:0",

@@ -18,8 +18,8 @@ import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.THUMB_EXTENSION
 import app.core.engines.downloader.DownloadStatus.DOWNLOADING
 import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.video_parser.parsers.VideoFormat
+import app.core.engines.video_parser.parsers.VideoInfo
 import app.ui.main.MotherActivity
 import app.ui.main.fragments.downloads.dialogs.DownloadFileRenamer
 import app.ui.main.fragments.downloads.dialogs.DownloadInfoTracker

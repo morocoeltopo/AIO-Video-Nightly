@@ -13,8 +13,8 @@ import app.core.engines.downloader.DownloadModelMerger.Companion.MERGRED_DATA_MO
 import app.core.engines.settings.AIOSettings
 import app.core.engines.settings.AIOSettings.Companion.PRIVATE_FOLDER
 import app.core.engines.settings.AIOSettings.Companion.SYSTEM_GALLERY
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.video_parser.parsers.VideoFormat
+import app.core.engines.video_parser.parsers.VideoInfo
 import com.aio.R.drawable
 import com.aio.R.string
 import com.anggrayudi.storage.file.getAbsolutePath
@@ -56,11 +56,11 @@ import java.io.Serializable
 class DownloadDataModel : Serializable {
 
 	/** Unique identifier for the objectbox database */
-	@Id @JvmField @JsonAttribute(name = "id")
+	@Id @JvmField @JsonAttribute(name = "objectboxID")
 	var id: Long = 0L
 
 	/** Unique identifier for the download task */
-	@JvmField @JsonAttribute(name = "downloadId")
+	@JvmField @JsonAttribute(name = "id")
 	var downloadId: Int = 0
 
 	/** Current operational status (see DownloadStatus constants) */
@@ -320,14 +320,17 @@ class DownloadDataModel : Serializable {
 	var statusInfo: String = "--"
 
 	/** Video-specific metadata for media downloads */
+	@io.objectbox.annotation.Transient
 	@JvmField @JsonAttribute(name = "videoInfo")
 	var videoInfo: VideoInfo? = null
 
 	/** Video format and codec information */
+	@io.objectbox.annotation.Transient
 	@JvmField @JsonAttribute(name = "videoFormat")
 	var videoFormat: VideoFormat? = null
 
 	/** Remote file metadata obtained from server or yt-dlp */
+	@io.objectbox.annotation.Transient
 	@JvmField @JsonAttribute(name = "remoteFileInfo")
 	var remoteFileInfo: RemoteFileInfo? = null
 
@@ -344,6 +347,7 @@ class DownloadDataModel : Serializable {
 	var isSyncToCloudBackup: Boolean = false
 
 	/** Snapshot of global application settings at the time download was initiated */
+	@io.objectbox.annotation.Transient
 	@JvmField @JsonAttribute(name = "globalSettings")
 	var globalSettings: AIOSettings = deepCopy(aioSettings) ?: aioSettings
 

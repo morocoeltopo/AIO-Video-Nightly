@@ -2,8 +2,8 @@ package app.core
 
 import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.settings.AIOSettings
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.video_parser.parsers.VideoFormat
+import app.core.engines.video_parser.parsers.VideoInfo
 import org.nustaq.serialization.FSTConfiguration
 
 /**

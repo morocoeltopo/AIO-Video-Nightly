@@ -9,9 +9,9 @@ import android.widget.TextView
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
 import app.core.bases.BaseActivity
 import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoFormat
-import app.core.engines.video_parser.parsers.VideoFormatsUtils.VideoInfo
+import app.core.engines.video_parser.parsers.VideoFormat
 import app.core.engines.video_parser.parsers.VideoFormatsUtils.cleanFileSize
+import app.core.engines.video_parser.parsers.VideoInfo
 import com.aio.R
 import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.capitalizeWords

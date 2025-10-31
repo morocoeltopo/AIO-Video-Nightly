@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import app.core.engines.video_parser.parsers.SupportedURLs.isM3U8Url
-import app.core.engines.video_parser.parsers.VideoFormatsUtils
+import app.core.engines.video_parser.parsers.VideoInfo
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.getCurrentOgImage
 import app.ui.main.MotherActivity
 import app.ui.main.fragments.browser.webengine.M3U8InfoExtractor.InfoCallback
@@ -377,7 +377,7 @@ class ExtractedLinksAdapter(
 						executeOnMainThread {
 							SharedVideoURLIntercept(
 								baseActivity = safeMotherActivity,
-								userGivenVideoInfo = VideoFormatsUtils.VideoInfo(
+								userGivenVideoInfo = VideoInfo(
 									videoTitle = videoTitle,
 									videoUrlReferer = currentWebUrl,
 									videoThumbnailUrl = currentWebpageVideoThumb.ifEmpty { null },
