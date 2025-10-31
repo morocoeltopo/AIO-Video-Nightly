@@ -4,6 +4,8 @@ import app.core.AIOApp.Companion.INSTANCE
 import com.aio.R
 import com.dslplatform.json.CompiledJson
 import com.dslplatform.json.JsonAttribute
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import lib.device.DateTimeUtils.calculateTime
 import lib.process.LogHelperUtils
 import lib.texts.CommonTextUtils.getText
@@ -24,25 +26,29 @@ import java.util.Locale
  */
 object VideoFormatsUtils {
 
-	// Logger instance for debugging
 	private val logger: LogHelperUtils = LogHelperUtils.from(javaClass)
 
 	/**
 	 * Data class representing a video format with all its metadata.
 	 *
-	 * @property isFromSocialMedia Whether the format is from a social media platform
+	 * @property id Unique database identifier
+	 * @property isFromSocialMedia Indicates if the format is from a social media platform
 	 * @property formatId Unique identifier for the format
 	 * @property formatExtension File extension (mp4, webm, etc.)
 	 * @property formatResolution Video resolution (1080p, 720p, etc.)
-	 * @property formatFileSize Size of the format file
+	 * @property formatFileSize Size of the format file as string representation
 	 * @property formatVcodec Video codec information
 	 * @property formatAcodec Audio codec information
 	 * @property formatTBR Total bitrate
-	 * @property formatProtocol Protocol used (http, https, etc.)
+	 * @property formatProtocol Protocol used for streaming (http, https, etc.)
 	 * @property formatStreamingUrl Direct streaming URL if available
 	 */
 	@CompiledJson
+	@Entity
 	data class VideoFormat(
+		@Id @param:JsonAttribute(name = "id")
+		val id: Long = 0L,
+
 		@param:JsonAttribute(name = "isFromSocialMedia")
 		var isFromSocialMedia: Boolean = false,
 
@@ -75,21 +81,26 @@ object VideoFormatsUtils {
 	) : Serializable
 
 	/**
-	 * Data class representing complete video information.
+	 * Data class representing complete video information and metadata.
 	 *
+	 * @property id Unique database identifier
 	 * @property videoTitle Title of the video
-	 * @property videoThumbnailUrl URL of the video thumbnail
-	 * @property videoThumbnailByReferer Whether thumbnail requires referer header
+	 * @property videoThumbnailUrl URL of the video thumbnail image
+	 * @property videoThumbnailByReferer Whether thumbnail requires referer header for access
 	 * @property videoDescription Video description text
-	 * @property videoUrlReferer Referer URL if needed
-	 * @property videoUrl Original video URL
-	 * @property videoFormats List of available formats
+	 * @property videoUrlReferer Referer URL required for video access
+	 * @property videoUrl Original source video URL
+	 * @property videoFormats List of available video formats and qualities
 	 * @property videoCookie Cookie string for authenticated requests
-	 * @property videoDuration Media playback duration of the video
+	 * @property videoDuration Media playback duration in milliseconds/long format
 	 * @property videoCookieTempPath Temporary file path for cookie storage
 	 */
 	@CompiledJson
+	@Entity
 	data class VideoInfo(
+		@Id @param:JsonAttribute(name = "id")
+		val id: Long = 0L,
+
 		@param:JsonAttribute(name = "videoTitle")
 		var videoTitle: String? = null,
 
