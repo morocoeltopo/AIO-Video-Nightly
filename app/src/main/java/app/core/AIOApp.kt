@@ -11,6 +11,7 @@ import app.core.engines.backend.AppUsageTimer
 import app.core.engines.browser.bookmarks.AIOBookmarks
 import app.core.engines.browser.bookmarks.AIOBookmarksDBManager
 import app.core.engines.browser.history.AIOHistory
+import app.core.engines.browser.history.AIOHistoryDBManager
 import app.core.engines.caches.AIOAdBlocker
 import app.core.engines.caches.AIOFavicons
 import app.core.engines.caches.AIORawFiles
@@ -153,16 +154,16 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 					logger.d("[Startup] Bookmarks database initialized and loaded successfully")
 				} catch (error: Exception) {
 					logger.e("[Startup] Failed to initialize or load bookmarks: ${error.message}", error)
-					aioBookmark = AIOBookmarks().apply(AIOBookmarks::readObjectFromStorage)
+					aioBookmark = AIOBookmarks().apply(AIOBookmarks::readObjectFromStorage) //fallback
 				}
 
 				try {
 					logger.d("[Startup] Loading browsing history from storage...")
-					aioHistory = AIOHistory().apply(AIOHistory::readObjectFromStorage)
+					aioHistory = AIOHistoryDBManager.loadAIOHistoryFromDB()
 					logger.d("[Startup] Browsing history loaded successfully")
 				} catch (error: Exception) {
 					logger.e("[Startup] Failed to load browsing history: ${error.message}", error)
-					aioHistory = AIOHistory() // fallback
+					aioHistory = AIOHistory().apply(AIOHistory::readObjectFromStorage) //fallback
 				}
 
 				try {
