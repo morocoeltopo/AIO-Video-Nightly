@@ -8,9 +8,12 @@ import android.view.View
 import android.webkit.CookieManager
 import app.core.AIOApp.Companion.aioBookmark
 import app.core.AIOApp.Companion.aioHistory
+import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.browser.bookmarks.BookmarkModel
 import app.core.engines.browser.history.HistoryModel
 import com.aio.R
+import lib.networks.URLUtility.ensureHttps
+import lib.networks.URLUtility.isValidURL
 import lib.networks.URLUtilityKT.normalizeEncodedUrl
 import lib.process.LogHelperUtils
 import lib.texts.ClipboardUtils.copyTextToClipboard
@@ -49,6 +52,7 @@ class HistoryOptionPopup(
 							R.id.btn_edit_history to { close(); editHistoryInfo() },
 							R.id.btn_open_history to { close(); openHistoryInBrowser() },
 							R.id.btn_share_history to { close(); shareHistoryLink() },
+							R.id.btn_browser_homepage to {close(); makeDefaultHomepage()},
 							R.id.btn_copy_history to { close(); copyHistoryToClipboard() },
 							R.id.btn_add_to_bookmark to { close(); addHistoryToBookmark() },
 							R.id.btn_delete_history to { close(); deleteHistoryFromLibrary() }
@@ -73,6 +77,26 @@ class HistoryOptionPopup(
 		popupBuilder?.close()
 	}
 
+	/**
+	 * Make the current web address as the default browser homepage.
+	 */
+	private fun makeDefaultHomepage() {
+		safeHistoryActivityRef?.let { activity ->
+			logger.d("User entered homepage: $historyUrl")
+			if (isValidURL(historyUrl)) {
+				val finalNormalizedURL = ensureHttps(historyUrl) ?: historyUrl
+				aioSettings.browserDefaultHomepage = finalNormalizedURL
+				aioSettings.updateInStorage()
+				logger.d("Homepage updated: $finalNormalizedURL")
+				showToast(activity, msgId = R.string.title_updated_successfully)
+			} else {
+				logger.d("Invalid homepage URL entered")
+				activity.doSomeVibration(50)
+				showToast(activity, msgId = R.string.title_invalid_url)
+			}
+		}
+	}
+
 	private fun copyHistoryToClipboard() {
 		logger.d("Copying history URL to clipboard: $historyUrl")
 		copyTextToClipboard(safeHistoryActivityRef, historyUrl)
@@ -92,7 +116,7 @@ class HistoryOptionPopup(
 					onApply = { result ->
 						if (result) {
 							activityRef.updateHistoryListAdapter()
-							showToast(activityRef, msgId = R.string.title_successful)
+							showToast(activityRef, msgId = R.string.title_updated_successfully)
 							logger.d("History updated successfully: $historyUrl")
 						} else {
 							activityRef.doSomeVibration(50)
@@ -119,7 +143,7 @@ class HistoryOptionPopup(
 			cookieManager.removeAllCookies(null)
 			cookieManager.flush()
 
-			showToast(safeHistoryActivityRef, msgId = R.string.title_successful)
+			showToast(safeHistoryActivityRef, msgId = R.string.title_successfully_deleted)
 		} catch (error: Exception) {
 			logger.e("Error deleting history: ${error.message}", error)
 			safeHistoryActivityRef?.doSomeVibration(20)

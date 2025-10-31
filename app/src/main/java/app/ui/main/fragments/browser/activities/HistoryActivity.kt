@@ -50,7 +50,7 @@ class HistoryActivity : BaseActivity(),
 	private var historyOptionPopup: HistoryOptionPopup? = null
 
 	private val arg = safeHistoryActivityRef
-	open val historyAdapter by lazy { HistoryAdapter(arg, arg, arg) }
+	val historyAdapter by lazy { HistoryAdapter(arg, arg, arg) }
 
 	/** Defines which layout to render for this activity. */
 	override fun onRenderingLayout(): Int = R.layout.activity_browser_history_1
@@ -122,6 +122,7 @@ class HistoryActivity : BaseActivity(),
 					historyModel = historyModel,
 					listView = listView
 				)
+				safeActivityRef.doSomeVibration(50)
 				historyOptionPopup?.show()
 			} catch (error: Exception) {
 				error.printStackTrace()
