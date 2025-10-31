@@ -56,11 +56,11 @@ import java.io.Serializable
 class DownloadDataModel : Serializable {
 
 	/** Unique identifier for the objectbox database */
-	@Id @JvmField @JsonAttribute(name = "objectboxID")
+	@Id @JvmField @JsonAttribute(name = "id")
 	var id: Long = 0L
 
 	/** Unique identifier for the download task */
-	@JvmField @JsonAttribute(name = "id")
+	@JvmField @JsonAttribute(name = "downloadID")
 	var downloadId: Int = 0
 
 	/** Current operational status (see DownloadStatus constants) */
