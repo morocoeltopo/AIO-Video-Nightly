@@ -233,7 +233,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		fileTypeIndicator: ImageView,
 		downloadDataModel: DownloadDataModel
 	) {
-		logger.d("Updating file type indicator for download ID: ${downloadDataModel.id}")
+		logger.d("Updating file type indicator for download ID: ${downloadDataModel.downloadId}")
 
 		// Determine the correct icon by checking file type via file name
 		fileTypeIndicator.setImageResource(
@@ -290,7 +290,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 	 * @param downloadDataModel The [DownloadDataModel] containing the site referrer used for favicon lookup.
 	 */
 	private fun updateFaviconInfo(favicon: ImageView, downloadDataModel: DownloadDataModel) {
-		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
+		logger.d("Updating favicon for download ID: ${downloadDataModel.downloadId}")
 		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 
@@ -410,7 +410,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				} else bitmap
 
 				// Save thumbnail to persistent storage
-				val thumbnailName = "${downloadModel.id}$THUMB_EXTENSION"
+				val thumbnailName = "${downloadModel.downloadId}$THUMB_EXTENSION"
 				saveBitmapToFile(rotatedBitmap, thumbnailName)?.let { filePath ->
 					logger.d("updateThumbnail() -> Thumbnail saved at: $filePath")
 					downloadModel.thumbPath = filePath
@@ -672,12 +672,12 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		close()
 
 		downloadDataModel?.let { model ->
-			logger.d("Processing resume request for download ID: ${model.id}")
+			logger.d("Processing resume request for download ID: ${model.downloadId}")
 
 			ThreadsUtility.executeInBackground(codeBlock = {
 				// If already active, pause first then resume after delay
 				if (downloadSystem.searchActiveDownloadTaskWith(model) != null) {
-					logger.d("Download ID: ${model.id} is already active, pausing before resume")
+					logger.d("Download ID: ${model.downloadId} is already active, pausing before resume")
 					ThreadsUtility.executeOnMain { pauseDownloadTask() }
 					delay(1000)
 				}
@@ -690,7 +690,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					val isLoginIssue = model.ytdlpProblemMsg.contains("login", true)
 
 					if (hasProblem && isLoginIssue) {
-						logger.d("Download ID: ${model.id} requires login (yt-dlp issue detected), prompting user")
+						logger.d("Download ID: ${model.downloadId} requires login (yt-dlp issue detected), prompting user")
 
 						// Show login-required dialog
 						showMessageDialog(
@@ -710,7 +710,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 							}
 						)?.apply {
 							setOnClickForPositiveButton {
-								logger.d("User chose to login for download ID: ${model.id}")
+								logger.d("User chose to login for download ID: ${model.downloadId}")
 								close()
 
 								// Open browser for login process
@@ -719,7 +719,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 									val webviewEngine = browserFragment?.getBrowserWebEngine()
 										?: return@setOnClickForPositiveButton
 
-									logger.d("Opening browser for login (ID: ${model.id})")
+									logger.d("Opening browser for login (ID: ${model.downloadId})")
 									val sideNavigation = safeMotherActivityRef.sideNavigation
 									sideNavigation?.addNewBrowsingTab(model.siteReferrer, webviewEngine)
 									safeMotherActivityRef.openBrowserFragment()
@@ -727,13 +727,13 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 									// Clear error state
 									model.isYtdlpHavingProblem = false
 									model.ytdlpProblemMsg = ""
-									logger.d("Cleared yt-dlp error state for download ID: ${model.id}")
+									logger.d("Cleared yt-dlp error state for download ID: ${model.downloadId}")
 								}
 							}
 						}?.show()
 					} else {
 						// Normal resume
-						logger.d("Resuming download normally for ID: ${model.id}")
+						logger.d("Resuming download normally for ID: ${model.downloadId}")
 						downloadSystem.resumeDownload(
 							downloadModel = model,
 							coroutineScope = CoroutineScope(Dispatchers.IO),
@@ -744,7 +744,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 								)
 							}
 						)
-						logger.d("Download ID: ${model.id} resumed successfully")
+						logger.d("Download ID: ${model.downloadId} resumed successfully")
 					}
 				}
 			})
@@ -771,11 +771,11 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 			close()
 
 			downloadDataModel?.let { downloadModel ->
-				logger.d("Processing pause request for download ID: ${downloadModel.id}")
+				logger.d("Processing pause request for download ID: ${downloadModel.downloadId}")
 
 				// Check if already paused
 				if (downloadSystem.searchActiveDownloadTaskWith(downloadModel) == null) {
-					logger.d("Download ID: ${downloadModel.id} is already paused")
+					logger.d("Download ID: ${downloadModel.downloadId} is already paused")
 					showToast(
 						activityInf = safeMotherActivityRef,
 						msgId = string.title_download_task_already_paused
@@ -785,7 +785,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 
 				// Show warning if resume is not supported
 				if (!downloadModel.isResumeSupported) {
-					logger.d("Download ID: ${downloadModel.id} does not support resume; showing warning dialog")
+					logger.d("Download ID: ${downloadModel.downloadId} does not support resume; showing warning dialog")
 
 					getMessageDialog(
 						baseActivityInf = safeMotherActivityRef,
@@ -802,19 +802,19 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 						}
 					)?.apply {
 						setOnClickForPositiveButton {
-							logger.d("User confirmed pause despite resume not being supported for ID: ${downloadModel.id}")
+							logger.d("User confirmed pause despite resume not being supported for ID: ${downloadModel.downloadId}")
 							this.close()
 							dialogBuilder.close()
 							downloadSystem.pauseDownload(downloadModel = downloadModel)
-							logger.d("Download ID: ${downloadModel.id} paused successfully (resume not supported)")
+							logger.d("Download ID: ${downloadModel.downloadId} paused successfully (resume not supported)")
 						}
 						this.show()
 					}
 				} else {
 					// Normal pause operation
-					logger.d("Download ID: ${downloadModel.id} supports resume; pausing normally")
+					logger.d("Download ID: ${downloadModel.downloadId} supports resume; pausing normally")
 					downloadSystem.pauseDownload(downloadModel = downloadModel)
-					logger.d("Download ID: ${downloadModel.id} paused successfully")
+					logger.d("Download ID: ${downloadModel.downloadId} paused successfully")
 				}
 			} ?: run {
 				logger.d("pauseDownloadTask() failed: downloadDataModel is null")
@@ -842,7 +842,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				ThreadsUtility.executeInBackground(codeBlock = {
 					// Pause task first if active
 					if (downloadSystem.searchActiveDownloadTaskWith(downloadDataModel) != null) {
-						logger.d("Download ID: ${downloadDataModel.id} is active; pausing before remove")
+						logger.d("Download ID: ${downloadDataModel.downloadId} is active; pausing before remove")
 						ThreadsUtility.executeOnMain { pauseDownloadTask() }
 						delay(1500) // Ensure pause is applied before proceeding
 					}
@@ -851,7 +851,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 						// Prevent removal of still-active downloads
 						val taskInf = downloadSystem.searchActiveDownloadTaskWith(downloadDataModel)
 						if (taskInf != null) {
-							logger.d("Download ID: ${downloadDataModel.id} is still active; cannot remove")
+							logger.d("Download ID: ${downloadDataModel.downloadId} is still active; cannot remove")
 
 							showMessageDialog(
 								baseActivityInf = safeMotherActivityRef,
@@ -887,7 +887,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				}
 			)?.apply {
 				setOnClickForPositiveButton {
-					logger.d("User confirmed removal for download ID: ${downloadDataModel?.id}")
+					logger.d("User confirmed removal for download ID: ${downloadDataModel?.downloadId}")
 					close()
 					this@ActiveTasksOptions.close()
 
@@ -895,7 +895,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					downloadDataModel?.let {
 						downloadSystem.clearDownload(it) {
 							executeOnMainThread {
-								logger.d("Download ID: ${it.id} cleared successfully (file retained)")
+								logger.d("Download ID: ${it.downloadId} cleared successfully (file retained)")
 								showToast(
 									activityInf = safeMotherActivityRef,
 									msgId = string.title_successfully_cleared
@@ -928,7 +928,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				ThreadsUtility.executeInBackground(codeBlock = {
 					// If task is active, pause it before deletion attempt
 					if (downloadSystem.searchActiveDownloadTaskWith(downloadDataModel) != null) {
-						logger.d("Download ID: ${downloadDataModel.id} is active; pausing before delete")
+						logger.d("Download ID: ${downloadDataModel.downloadId} is active; pausing before delete")
 						ThreadsUtility.executeOnMain { pauseDownloadTask() }
 						delay(1500) // Small delay to ensure pause takes effect
 					}
@@ -937,7 +937,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 						// Re-check if still active before deletion
 						val taskInf = downloadSystem.searchActiveDownloadTaskWith(downloadDataModel)
 						if (taskInf != null) {
-							logger.d("Download ID: ${downloadDataModel.id} is still active; cannot delete")
+							logger.d("Download ID: ${downloadDataModel.downloadId} is still active; cannot delete")
 
 							showMessageDialog(
 								baseActivityInf = safeMotherActivityRef,
@@ -973,7 +973,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				}
 			)?.apply {
 				setOnClickForPositiveButton {
-					logger.d("User confirmed deletion for download ID: ${downloadDataModel?.id}")
+					logger.d("User confirmed deletion for download ID: ${downloadDataModel?.downloadId}")
 					close()
 					this@ActiveTasksOptions.close()
 
@@ -981,7 +981,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 					downloadDataModel?.let {
 						downloadSystem.deleteDownload(it) {
 							executeOnMainThread {
-								logger.d("Download ID: ${it.id} deleted successfully")
+								logger.d("Download ID: ${it.downloadId} deleted successfully")
 								showToast(
 									activityInf = safeMotherActivityRef,
 									msgId = string.title_successfully_deleted
@@ -1017,12 +1017,12 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 			}
 
 			downloadDataModel?.let { downloadDataModel ->
-				logger.d("Checking if download ID: ${downloadDataModel.id} is active before renaming")
+				logger.d("Checking if download ID: ${downloadDataModel.downloadId} is active before renaming")
 
 				// Prevent renaming of active downloads
 				val taskInf = downloadSystem.searchActiveDownloadTaskWith(downloadDataModel)
 				if (taskInf != null) {
-					logger.d("Download ID: ${downloadDataModel.id} is active; rename not allowed")
+					logger.d("Download ID: ${downloadDataModel.downloadId} is active; rename not allowed")
 
 					showMessageDialog(
 						baseActivityInf = safeMotherActivityRef,
@@ -1038,7 +1038,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				}
 
 				// Show rename dialog for eligible downloads
-				logger.d("Download ID: ${downloadDataModel.id} is eligible for rename; opening renamer")
+				logger.d("Download ID: ${downloadDataModel.downloadId} is eligible for rename; opening renamer")
 				downloadFileRenamer.show(downloadDataModel)
 			} ?: run {
 				logger.d("No valid DownloadDataModel found; cannot rename task")

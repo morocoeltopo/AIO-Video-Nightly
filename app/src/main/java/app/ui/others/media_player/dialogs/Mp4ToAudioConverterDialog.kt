@@ -195,7 +195,7 @@ object Mp4ToAudioConverterDialog {
 		// Create a deep copy of the original model with new file details
 		val copiedDataModel = deepCopy(downloadDataModel)
 		if (copiedDataModel == null) return
-		copiedDataModel.id = getUniqueNumberForDownloadModels()
+		copiedDataModel.downloadId = getUniqueNumberForDownloadModels()
 		copiedDataModel.fileName = outputMediaFile.name
 		copiedDataModel.fileDirectory = outputMediaFile.parentFile?.absolutePath.toString()
 		copiedDataModel.fileSize = outputMediaFile.length()

@@ -174,7 +174,7 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 			val activeDownloadsListContainer = activeTasksFragment?.activeTasksListContainer
 
 			// Try to find the existing row corresponding to this download
-			val resultedRow = activeDownloadsListContainer?.findViewById<View>(downloadModel.id)
+			val resultedRow = activeDownloadsListContainer?.findViewById<View>(downloadModel.downloadId)
 
 			if (resultedRow != null) {
 				// Row exists: configure it with updated download data
@@ -215,7 +215,7 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 
 		rowUI.apply {
 			// Assign unique ID to the row for easy reference later
-			id = downloadModel.id
+			id = downloadModel.downloadId
 			isClickable = true
 
 			// Click listener to handle normal clicks
@@ -265,7 +265,7 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 
 		activeDownloadListContainer?.let {
 			// Attempt to find the row corresponding to this download
-			val resultedRow = activeDownloadListContainer.findViewById<View>(downloadModel.id)
+			val resultedRow = activeDownloadListContainer.findViewById<View>(downloadModel.downloadId)
 
 			if (resultedRow != null) {
 				logger.d("Found row to remove for: ${downloadModel.fileName}")
@@ -284,7 +284,7 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 				// Background task to ensure no leftover views remain
 				ThreadsUtility.executeInBackground(codeBlock = {
 					ThreadsUtility.executeOnMain {
-						val view = activeDownloadListContainer.findViewById<View>(downloadModel.id)
+						val view = activeDownloadListContainer.findViewById<View>(downloadModel.downloadId)
 						if (view != null) {
 							logger.d("Cleaning up remaining view for: ${downloadModel.fileName}")
 							if (view.parent != null) {

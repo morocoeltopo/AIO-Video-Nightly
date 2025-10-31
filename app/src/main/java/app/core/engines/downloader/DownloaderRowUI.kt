@@ -60,7 +60,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 	private val privateFolderIconView: ImageView by lazy { downloadRowView.findViewById(R.id.img_private_folder_indicator) }
 
 	fun updateView(downloadModel: DownloadDataModel) {
-		logger.d("UI update: id=${downloadModel.id}, status=${downloadModel.status}")
+		logger.d("UI update: id=${downloadModel.downloadId}, status=${downloadModel.status}")
 		rowViewRef.get()?.let {
 			updateRowVisibility(downloadModel)
 			updateFileNameLabel(downloadModel)
@@ -77,7 +77,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 
 	private fun updateRowVisibility(downloadModel: DownloadDataModel) {
 		rowViewRef.get()?.let {
-			logger.d("Visibility: id=${downloadModel.id}, " +
+			logger.d("Visibility: id=${downloadModel.downloadId}, " +
 					"removed=${downloadModel.isRemoved}, " +
 					"complete=${downloadModel.isComplete}")
 			if (downloadModel.isRemoved ||
@@ -85,7 +85,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 				downloadModel.isWentToPrivateFolder ||
 				downloadModel.globalSettings.hideDownloadProgressFromUI) {
 				if (it.visibility != GONE) {
-					logger.d("Hiding row: id=${downloadModel.id}")
+					logger.d("Hiding row: id=${downloadModel.downloadId}")
 					it.visibility = GONE
 				}
 			}
@@ -94,13 +94,13 @@ class DownloaderRowUI(private val downloadRowView: View) {
 
 	private fun updateFileNameLabel(downloadModel: DownloadDataModel) {
 		fileNameView.text = downloadModel.fileName.ifEmpty {
-			logger.d("No filename for id=${downloadModel.id}, showing placeholder")
+			logger.d("No filename for id=${downloadModel.downloadId}, showing placeholder")
 			getText(R.string.title_getting_name_from_server)
 		}
 	}
 
 	private fun refreshProgressState(downloadModel: DownloadDataModel) {
-		logger.d("Progress: id=${downloadModel.id}, " +
+		logger.d("Progress: id=${downloadModel.downloadId}, " +
 				"${downloadModel.progressPercentage}% ${downloadModel.status}")
 		renderProgressDetails(downloadModel)
 	}
@@ -134,7 +134,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 	private fun renderProgressDetails(downloadModel: DownloadDataModel) {
 		val context = statusTextView.context
 		if (downloadModel.status != DOWNLOADING && downloadModel.ytdlpProblemMsg.isNotEmpty()) {
-			logger.d("yt-dlp error for id=${downloadModel.id}: ${downloadModel.ytdlpProblemMsg}")
+			logger.d("yt-dlp error for id=${downloadModel.downloadId}: ${downloadModel.ytdlpProblemMsg}")
 			statusTextView.text = downloadModel.ytdlpProblemMsg
 			statusTextView.setTextColor(context.getColor(R.color.color_error))
 		} else {
@@ -147,26 +147,26 @@ class DownloaderRowUI(private val downloadRowView: View) {
 	private fun refreshThumbnail(downloadModel: DownloadDataModel) {
 		val settings = downloadModel.globalSettings
 		val shouldHideThumbnail = settings.downloadHideVideoThumbnail
-		logger.d("updateFileThumbnail: id=${downloadModel.id}, hideThumb=$shouldHideThumbnail")
+		logger.d("updateFileThumbnail: id=${downloadModel.downloadId}, hideThumb=$shouldHideThumbnail")
 
 		if (shouldHideThumbnail != isThumbnailSettingsChanged) {
 			isThumbnailSettingsChanged = true
 		}
 		if (thumbnailView.tag == null || isThumbnailSettingsChanged) {
 			if (shouldHideThumbnail) {
-				logger.d("Setting actual thumbnail URI for id=${downloadModel.id}")
+				logger.d("Setting actual thumbnail URI for id=${downloadModel.downloadId}")
 				thumbnailView.setImageURI(downloadModel.getThumbnailURI())
 				thumbnailView.tag = true
 				isThumbnailSettingsChanged = shouldHideThumbnail
 			} else {
-				logger.d("Using default thumbnail logic for id=${downloadModel.id}")
+				logger.d("Using default thumbnail logic for id=${downloadModel.downloadId}")
 				loadDefaultThumbnail(downloadModel)
 			}
 		}
 	}
 
 	private fun refreshFileTypeIcon(downloadDataModel: DownloadDataModel) {
-		logger.d("Updating file type indicator for download ID: ${downloadDataModel.id}")
+		logger.d("Updating file type indicator for download ID: ${downloadDataModel.downloadId}")
 		fileTypeIconView.setImageResource(
 			when {
 				isImageByName(downloadDataModel.fileName) -> R.drawable.ic_button_images
@@ -204,7 +204,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 	}
 
 	private fun refreshFavicon(downloadDataModel: DownloadDataModel) {
-		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
+		logger.d("Updating favicon for download ID: ${downloadDataModel.downloadId}")
 		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = ResourcesCompat.getDrawable(
 			rowViewRef.get()?.context?.resources ?: INSTANCE.resources, defaultFaviconResId, null
@@ -306,7 +306,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 							rotateBitmap(bitmap, 270f)
 						} else bitmap
 
-						val thumbnailName = "${downloadModel.id}$THUMB_EXTENSION"
+						val thumbnailName = "${downloadModel.downloadId}$THUMB_EXTENSION"
 						saveBitmapToFile(bitmapToSave = rotatedBitmap,
 							fileName = thumbnailName)?.let { filePath ->
 							if (!isBlackThumbnail(File(filePath))) {
@@ -338,7 +338,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 	}
 
 	private fun displayDefaultThumbnailIcon(downloadModel: DownloadDataModel) {
-		logger.d("Showing default thumb for id=${downloadModel.id}")
+		logger.d("Showing default thumb for id=${downloadModel.downloadId}")
 		val context = rowViewRef.get()?.context ?: INSTANCE
 		val drawableID = downloadModel.getThumbnailDrawableID()
 		val drawable = getDrawable(context, drawableID)
@@ -359,7 +359,7 @@ class DownloaderRowUI(private val downloadRowView: View) {
 
 	private fun showDownloadErrorDialog(downloadDataModel: DownloadDataModel) {
 		if (downloadDataModel.msgToShowUserViaDialog.isNotEmpty()) {
-			logger.d("Showing error dialog for id=${downloadDataModel.id}")
+			logger.d("Showing error dialog for id=${downloadDataModel.downloadId}")
 			downloadSystem.downloadsUIManager.activeTasksFragment?.let {
 				if (!isShowingAnyDialog) {
 					MsgDialogUtils.showMessageDialog(

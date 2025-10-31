@@ -95,7 +95,7 @@ class DownloadModelMerger {
 		val allDownloadModels = (
 				downloadSystem.activeDownloadDataModels +
 						downloadSystem.finishedDownloadDataModels)
-			.distinctBy { it.id }
+			.distinctBy { it.downloadId }
 			.toMutableList()
 
 		if (allDownloadModels.isEmpty()) return // Nothing to save

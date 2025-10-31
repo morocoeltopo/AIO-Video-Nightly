@@ -75,14 +75,14 @@ class DownloadNotification {
 	 * @param downloadDataModel The download model containing current state
 	 */
 	fun updateNotification(downloadDataModel: DownloadDataModel) {
-		logger.d("updateNotification() called for id=${downloadDataModel.id}, file=${downloadDataModel.fileName}")
+		logger.d("updateNotification() called for id=${downloadDataModel.downloadId}, file=${downloadDataModel.fileName}")
 		if (shouldStopNotifying(downloadDataModel)) {
-			logger.d("Notification suppressed for id=${downloadDataModel.id}")
+			logger.d("Notification suppressed for id=${downloadDataModel.downloadId}")
 			return
 		}
 		if (shouldCancelNotification(downloadDataModel)) {
-			logger.d("Cancelling notification for id=${downloadDataModel.id}")
-			notificationManager.cancel(downloadDataModel.id)
+			logger.d("Cancelling notification for id=${downloadDataModel.downloadId}")
+			notificationManager.cancel(downloadDataModel.downloadId)
 			return
 		}
 		updateDownloadProgress(downloadDataModel)
@@ -94,8 +94,8 @@ class DownloadNotification {
 	 * @param downloadDataModel The download model containing current progress
 	 */
 	private fun updateDownloadProgress(downloadDataModel: DownloadDataModel) {
-		logger.d("Updating progress notification for id=${downloadDataModel.id}, complete=${downloadDataModel.isComplete}")
-		val notificationId = downloadDataModel.id
+		logger.d("Updating progress notification for id=${downloadDataModel.downloadId}, complete=${downloadDataModel.isComplete}")
+		val notificationId = downloadDataModel.downloadId
 		val notificationBuilder = Builder(INSTANCE, CHANNEL_ID)
 
 		notificationBuilder
@@ -134,7 +134,7 @@ class DownloadNotification {
 			) pausedText
 			else downloadDataModel.statusInfo
 		}
-		logger.d("Generated notification text for id=${downloadDataModel.id}: $result")
+		logger.d("Generated notification text for id=${downloadDataModel.downloadId}: $result")
 		return result
 	}
 
@@ -146,7 +146,7 @@ class DownloadNotification {
 	 */
 	private fun shouldStopNotifying(downloadModel: DownloadDataModel): Boolean {
 		val result = downloadModel.globalSettings.downloadHideNotification
-		logger.d("shouldStopNotifying() → $result for id=${downloadModel.id}")
+		logger.d("shouldStopNotifying() → $result for id=${downloadModel.downloadId}")
 		return result
 	}
 
@@ -158,7 +158,7 @@ class DownloadNotification {
 	 */
 	private fun shouldCancelNotification(downloadModel: DownloadDataModel): Boolean {
 		val result = downloadModel.isRemoved || downloadModel.isDeleted
-		logger.d("shouldCancelNotification() → $result for id=${downloadModel.id}")
+		logger.d("shouldCancelNotification() → $result for id=${downloadModel.downloadId}")
 		return result
 	}
 
@@ -174,7 +174,7 @@ class DownloadNotification {
 		isDownloadCompleted: Boolean = false,
 		downloadModel: DownloadDataModel
 	): PendingIntent {
-		logger.d("Creating PendingIntent for id=${downloadModel.id}, isComplete=$isDownloadCompleted")
+		logger.d("Creating PendingIntent for id=${downloadModel.downloadId}, isComplete=$isDownloadCompleted")
 		return if (isDownloadCompleted) {
 			getActivity(
 				INSTANCE, 0, generatePendingIntent(downloadModel),
@@ -202,7 +202,7 @@ class DownloadNotification {
 		logger.d("Generating PendingIntent → file=${destFile.path}")
 		return Intent(INSTANCE, getCorrespondingActivity(downloadFile)).apply {
 			flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
-			putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.id)
+			putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.downloadId)
 			putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
 			putExtra(WHERE_DID_YOU_COME_FROM, FROM_DOWNLOAD_NOTIFICATION)
 		}

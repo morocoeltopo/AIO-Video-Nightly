@@ -895,8 +895,8 @@ class M3U8VideoDownloader(
 	 * related to the current download task.
 	 */
 	private fun closeYTDLProgress() {
-		getInstance().destroyProcessById(downloadDataModel.id.toString())
-		logger.e("YTDL progress closed for download task ID: ${downloadDataModel.id}")
+		getInstance().destroyProcessById(downloadDataModel.downloadId.toString())
+		logger.e("YTDL progress closed for download task ID: ${downloadDataModel.downloadId}")
 	}
 
 	/**
@@ -1290,7 +1290,7 @@ class M3U8VideoDownloader(
 			// Execute yt-dlp request with progress callback
 			val response = getInstance().execute(
 				request = request,
-				processId = downloadDataModel.id.toString()
+				processId = downloadDataModel.downloadId.toString()
 			) { progress, _, status ->
 				if (progress > 0) downloadDataModel.progressPercentage = progress.toLong()
 				downloadDataModel.tempYtdlpStatusInfo = cleanYtdlpLoggingSting(status)

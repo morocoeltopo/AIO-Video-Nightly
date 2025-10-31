@@ -133,7 +133,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param dataModel The [DownloadDataModel] to show options for.
 	 */
 	fun show(dataModel: DownloadDataModel) {
-		logger.d("Showing options dialog for download ID: ${dataModel.id}")
+		logger.d("Showing options dialog for download ID: ${dataModel.downloadId}")
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { _ ->
 				dialogBuilder?.let { dialogBuilder ->
@@ -159,7 +159,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param model The [DownloadDataModel] to set as current.
 	 */
 	fun setDownloadModel(model: DownloadDataModel) {
-		logger.d("Setting download model for ID: ${model.id}")
+		logger.d("Setting download model for ID: ${model.downloadId}")
 		this.downloadDataModel = model
 	}
 
@@ -229,7 +229,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param downloadModel The [DownloadDataModel] containing the download's metadata and settings.
 	 */
 	private fun updateDialogViewsWith(downloadModel: DownloadDataModel) {
-		logger.d("Updating title and thumbnails for download ID: ${downloadModel.id}")
+		logger.d("Updating title and thumbnails for download ID: ${downloadModel.downloadId}")
 
 		dialogBuilder?.let { dialogBuilder ->
 			dialogBuilder.view.apply {
@@ -342,7 +342,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param downloadDataModel The download data model containing the site referrer
 	 */
 	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel, imgFavicon: ImageView) {
-		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
+		logger.d("Updating favicon for download ID: ${downloadDataModel.downloadId}")
 		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 
@@ -428,7 +428,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 	 * @param downloadModel The [DownloadDataModel] containing file and metadata for thumbnail handling.
 	 */
 	private fun updateThumbnail(thumbImageView: ImageView, downloadModel: DownloadDataModel) {
-		logger.d("Updating thumbnail for download ID: ${downloadModel.id}")
+		logger.d("Updating thumbnail for download ID: ${downloadModel.downloadId}")
 
 		val destinationFile = downloadModel.getDestinationFile()
 		val defaultThumb = downloadModel.getThumbnailDrawableID()
@@ -468,7 +468,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				} else bitmap
 
 				// 🔹 Step 5: Save thumbnail to cache and update the model
-				val thumbnailName = "${downloadModel.id}$THUMB_EXTENSION"
+				val thumbnailName = "${downloadModel.downloadId}$THUMB_EXTENSION"
 				saveBitmapToFile(rotatedBitmap, thumbnailName)?.let { filePath ->
 					logger.d("Saved thumbnail to cache: $filePath")
 					downloadModel.thumbPath = filePath
@@ -579,7 +579,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 		imageViewHolder: ImageView,
 		defaultThumbDrawable: Drawable?
 	): Boolean {
-		logger.d("Attempting to load APK thumbnail for download ID: ${downloadModel.id}")
+		logger.d("Attempting to load APK thumbnail for download ID: ${downloadModel.downloadId}")
 
 		safeFinishedTasksFragmentRef?.let { _ ->
 			safeMotherActivityRef?.let { safeMotherActivityRef ->
@@ -670,7 +670,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 									MediaPlayerActivity::class.java
 								).apply {
 									flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
-									putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.id)
+									putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.downloadId)
 									putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
 								}
 							)
@@ -932,7 +932,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				}
 
 				// Always update the model before showing rename dialog
-				logger.d("Showing rename dialog for download ID: ${downloadDataModel?.id}")
+				logger.d("Showing rename dialog for download ID: ${downloadDataModel?.downloadId}")
 				downloadFileRenamer.downloadDataModel = downloadDataModel!!
 				downloadFileRenamer.show(downloadDataModel!!)
 			}
@@ -1191,7 +1191,7 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 				}
 
 				// Show detailed info about the current download
-				logger.d("Showing download info for ID: ${downloadDataModel?.id}")
+				logger.d("Showing download info for ID: ${downloadDataModel?.downloadId}")
 				downloadInfoTracker.show(downloadDataModel!!)
 			}
 		}

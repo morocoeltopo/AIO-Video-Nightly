@@ -984,7 +984,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 						safeMotherActivityRef.startActivity(
 							Intent(safeMotherActivityRef, MediaPlayerActivity::class.java).apply {
 								flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
-								putExtra(DOWNLOAD_MODEL_ID_KEY, downloadDataModel.id)
+								putExtra(DOWNLOAD_MODEL_ID_KEY, downloadDataModel.downloadId)
 								putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
 							})
 						animActivityFade(safeMotherActivityRef)
@@ -1140,7 +1140,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 			bitmap: Bitmap,
 			defaultThumb: Int
 		) {
-			val thumbnailName = "${downloadDataModel.id}$THUMB_EXTENSION"
+			val thumbnailName = "${downloadDataModel.downloadId}$THUMB_EXTENSION"
 			saveBitmapToFile(bitmap, thumbnailName)?.let { filePath ->
 				downloadDataModel.thumbPath = filePath
 				downloadDataModel.updateInStorage()

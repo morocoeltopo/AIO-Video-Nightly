@@ -42,21 +42,6 @@ import java.util.Locale
  * - **Archive Functionality**: Long-term storage of important browsing sessions
  * - **ObjectBox Integration**: Seamless database synchronization for reliable persistence
  *
- * ## Storage Strategy:
- * - **Primary**: Binary format using FST for maximum performance
- * - **Secondary**: JSON format for human readability and external tool compatibility
- * - **Fallback**: Automatic format switching with corruption detection
- * - **File Size Optimization**:
- *   - Small files (<0.5MB): Direct file read operations
- *   - Medium files (0.5-5MB): Buffered reader for balanced performance
- *   - Large files (>5MB): Memory-mapped I/O with line-by-line fallback
- *
- * ## Architecture:
- * - Uses @Transient fields for ObjectBox compatibility while maintaining legacy serialization
- * - Implements comprehensive error handling with graceful degradation
- * - Provides detailed logging for debugging and performance monitoring
- * - Supports both in-memory operations and persistent storage synchronization
- *
  * @see HistoryModel for individual history entry structure
  * @see AIOHistoryDBManager for ObjectBox database operations
  * @see Serializable for Java serialization support

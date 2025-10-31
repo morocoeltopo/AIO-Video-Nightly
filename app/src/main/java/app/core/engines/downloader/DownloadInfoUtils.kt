@@ -25,7 +25,7 @@ object DownloadInfoUtils {
 		// Check if this is a video download with special video info
 		if (ddm.videoInfo != null && ddm.videoFormat != null) {
 			stringBuilder.append("<html><body>")
-				.append(context.getString(R.string.title_b_download_id_b_br, "${ddm.id}"))
+				.append(context.getString(R.string.title_b_download_id_b_br, "${ddm.downloadId}"))
 				.append(context.getString(R.string.title_b_file_name_b_br, ddm.fileName))
 				.append(context.getString(R.string.title_b_progress_percentage_b_br, "${ddm.progressPercentage}%"))
 			
@@ -74,7 +74,7 @@ object DownloadInfoUtils {
 		} else {
 			// Standard file download information
 			stringBuilder.append("<html><body>")
-				.append(context.getString(R.string.title_b_download_id_b_br, "${ddm.id}"))
+				.append(context.getString(R.string.title_b_download_id_b_br, "${ddm.downloadId}"))
 				.append(context.getString(R.string.title_b_file_name_b_br, ddm.fileName))
 				.append(context.getString(R.string.title_b_file_size_b_br, ddm.fileSizeInFormat))
 				.append(context.getString(R.string.title_b_downloaded_bytes_b_bytes_br, "${ddm.downloadedByte}"))

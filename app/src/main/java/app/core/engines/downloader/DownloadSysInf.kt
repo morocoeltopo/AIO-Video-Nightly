@@ -204,7 +204,7 @@ interface DownloadSysInf {
 	 * @return true if the download is currently running
 	 */
 	fun existsInRunningTasksList(downloadModel: DownloadDataModel): Boolean {
-		return runningDownloadTasks.any { it.downloadDataModel.id == downloadModel.id }
+		return runningDownloadTasks.any { it.downloadDataModel.downloadId == downloadModel.downloadId }
 	}
 
 	/**
@@ -213,7 +213,7 @@ interface DownloadSysInf {
 	 * @return true if the download is queued but not yet running
 	 */
 	fun existsInWaitingTasksList(downloadModel: DownloadDataModel): Boolean {
-		return waitingDownloadTasks.any { it.downloadDataModel.id == downloadModel.id }
+		return waitingDownloadTasks.any { it.downloadDataModel.downloadId == downloadModel.downloadId }
 	}
 
 	/**
@@ -231,8 +231,8 @@ interface DownloadSysInf {
 	 * @return The matching task if found (either running or waiting), null otherwise
 	 */
 	fun searchActiveDownloadTaskWith(downloadModel: DownloadDataModel): DownloadTaskInf? {
-		return runningDownloadTasks.toList().find { it.downloadDataModel.id == downloadModel.id }
-			?: waitingDownloadTasks.toList().find { it.downloadDataModel.id == downloadModel.id }
+		return runningDownloadTasks.toList().find { it.downloadDataModel.downloadId == downloadModel.downloadId }
+			?: waitingDownloadTasks.toList().find { it.downloadDataModel.downloadId == downloadModel.downloadId }
 	}
 
 	/**
@@ -344,6 +344,6 @@ interface DownloadSysInf {
 	 * @param downloadModel The download to log
 	 */
 	fun logDownloadTaskStatus(downloadModel: DownloadDataModel) {
-		from(javaClass).d("Download ${downloadModel.id} status: ${downloadModel.status}")
+		from(javaClass).d("Download ${downloadModel.downloadId} status: ${downloadModel.status}")
 	}
 }

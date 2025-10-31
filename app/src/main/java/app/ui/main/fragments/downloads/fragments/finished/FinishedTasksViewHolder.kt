@@ -79,7 +79,7 @@ class FinishedTasksViewHolder(val layout: View) {
 		downloadDataModel: DownloadDataModel,
 		onClickItemEvent: FinishedTasksClickEvents
 	) {
-		logger.d("Updating view for download ID: ${downloadDataModel.id}")
+		logger.d("Updating view for download ID: ${downloadDataModel.downloadId}")
 		showDownloadedFileInfo(downloadDataModel)
 		setupItemClickEvents(onClickItemEvent, downloadDataModel)
 	}
@@ -91,7 +91,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	 * @param downloadDataModel The download data model containing file information
 	 */
 	private fun showDownloadedFileInfo(downloadDataModel: DownloadDataModel) {
-		logger.d("Showing file info for download ID: ${downloadDataModel.id}")
+		logger.d("Showing file info for download ID: ${downloadDataModel.downloadId}")
 		title.apply { text = downloadDataModel.fileName }
 		updateFilesInfo(downloadDataModel)
 		updateFaviconInfo(downloadDataModel)
@@ -110,7 +110,7 @@ class FinishedTasksViewHolder(val layout: View) {
 		onClick: FinishedTasksClickEvents,
 		downloadDataModel: DownloadDataModel
 	) {
-		logger.d("Setting up click events for download ID: ${downloadDataModel.id}")
+		logger.d("Setting up click events for download ID: ${downloadDataModel.downloadId}")
 		container.apply {
 			isClickable = true
 			setOnClickListener { onClick.onFinishedDownloadClick(downloadDataModel) }
@@ -130,9 +130,9 @@ class FinishedTasksViewHolder(val layout: View) {
 	private fun updateFilesInfo(downloadDataModel: DownloadDataModel) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			// Check if we have cached details for this download
-			val cacheDetails = detailsCache[downloadDataModel.id.toString()]
+			val cacheDetails = detailsCache[downloadDataModel.downloadId.toString()]
 			if (cacheDetails != null) {
-				logger.d("Using cached details for download ID: ${downloadDataModel.id}")
+				logger.d("Using cached details for download ID: ${downloadDataModel.downloadId}")
 				ThreadsUtility.executeOnMain {
 					fileInfo.text = cacheDetails
 					updatePlaybackTime(downloadDataModel)
@@ -144,13 +144,13 @@ class FinishedTasksViewHolder(val layout: View) {
 			val category = downloadDataModel.getUpdatedCategoryName(shouldRemoveAIOPrefix = true)
 			val fileSize = humanReadableSizeOf(downloadDataModel.fileSize.toDouble())
 			val playbackTime = downloadDataModel.mediaFilePlaybackDuration.ifEmpty {
-				logger.d("Getting audio playback time for download ID: ${downloadDataModel.id}")
+				logger.d("Getting audio playback time for download ID: ${downloadDataModel.downloadId}")
 				getAudioPlaybackTimeIfAvailable(downloadDataModel)
 			}
 
 			// Save playback time if newly fetched
 			if (downloadDataModel.mediaFilePlaybackDuration.isEmpty() && playbackTime.isNotEmpty()) {
-				logger.d("Saving new playback time for download ID: ${downloadDataModel.id}")
+				logger.d("Saving new playback time for download ID: ${downloadDataModel.downloadId}")
 				downloadDataModel.mediaFilePlaybackDuration = playbackTime
 				downloadDataModel.updateInStorage()
 			}
@@ -168,7 +168,7 @@ class FinishedTasksViewHolder(val layout: View) {
 						)
 					)
 					// Cache the formatted details for future use
-					detailsCache[downloadDataModel.id.toString()] = detail
+					detailsCache[downloadDataModel.downloadId.toString()] = detail
 					fileInfo.text = detail
 					updatePlaybackTime(downloadDataModel)
 				}
@@ -219,7 +219,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	 * @param downloadDataModel The download data model containing the site referrer
 	 */
 	private fun updateFaviconInfo(downloadDataModel: DownloadDataModel) {
-		logger.d("Updating favicon for download ID: ${downloadDataModel.id}")
+		logger.d("Updating favicon for download ID: ${downloadDataModel.downloadId}")
 		val defaultFaviconResId = R.drawable.ic_image_default_favicon
 		val defaultFaviconDrawable = getDrawable(INSTANCE.resources, defaultFaviconResId, null)
 
@@ -279,7 +279,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	 * @param downloadDataModel The download data model containing file information
 	 */
 	private fun updateThumbnailInfo(downloadDataModel: DownloadDataModel) {
-		logger.d("Updating thumbnail for download ID: ${downloadDataModel.id}")
+		logger.d("Updating thumbnail for download ID: ${downloadDataModel.downloadId}")
 		val destinationFile = downloadDataModel.getDestinationFile()
 		val defaultThumb = downloadDataModel.getThumbnailDrawableID()
 		val defaultThumbDrawable = getDrawable(INSTANCE.resources, defaultThumb, null)
@@ -333,7 +333,7 @@ class FinishedTasksViewHolder(val layout: View) {
 					bitmap
 				}
 
-				val thumbnailName = "${downloadDataModel.id}$THUMB_EXTENSION"
+				val thumbnailName = "${downloadDataModel.downloadId}$THUMB_EXTENSION"
 				saveBitmapToFile(rotatedBitmap, thumbnailName)?.let { filePath ->
 					logger.d("Saved new thumbnail to: $filePath")
 					downloadDataModel.thumbPath = filePath
@@ -358,7 +358,7 @@ class FinishedTasksViewHolder(val layout: View) {
 	 * @param downloadDataModel The model containing information about the downloaded file
 	 */
 	private fun updateFileTypeIndicator(downloadDataModel: DownloadDataModel) {
-		logger.d("Updating file type indicator for download ID: ${downloadDataModel.id}")
+		logger.d("Updating file type indicator for download ID: ${downloadDataModel.downloadId}")
 
 		// Determine the correct icon by checking file type via file name
 		fileTypeIndicator.setImageResource(
@@ -470,7 +470,7 @@ class FinishedTasksViewHolder(val layout: View) {
 				ThreadsUtility.executeInBackground(codeBlock = {
 					ViewUtility.drawableToBitmap(appIconDrawable)?.let {
 						val appIconBitmap = it
-						val thumbnailName = "${downloadDataModel.id}$THUMB_EXTENSION"
+						val thumbnailName = "${downloadDataModel.downloadId}$THUMB_EXTENSION"
 						saveBitmapToFile(appIconBitmap, thumbnailName)?.let { filePath ->
 							logger.d("Saved new thumbnail to: $filePath")
 							downloadDataModel.thumbPath = filePath

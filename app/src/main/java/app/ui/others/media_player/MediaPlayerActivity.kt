@@ -924,7 +924,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		intent?.let { incomingIntent ->
 			val downloadModelID = incomingIntent.getIntExtra(DOWNLOAD_MODEL_ID_KEY, -1)
 			if (downloadModelID > -1) downloadSystem.finishedDownloadDataModels
-				.find { it.id == downloadModelID }?.let { return it }
+				.find { it.downloadId == downloadModelID }?.let { return it }
 		}; return null
 	}
 
@@ -1003,7 +1003,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	private fun updateVideoTitleFromUrl(fileUrl: String) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			val downloadId = intent.getIntExtra(INTENT_EXTRA_DOWNLOAD_ID, -1)
-			downloadSystem.activeDownloadDataModels.firstOrNull { it.id == downloadId }?.let {
+			downloadSystem.activeDownloadDataModels.firstOrNull { it.downloadId == downloadId }?.let {
 				executeOnMainThread { videoTitleText.text = it.fileName }
 			} ?: run {
 				getFileInfoFromSever(URL(fileUrl)).let { fileInfo ->
