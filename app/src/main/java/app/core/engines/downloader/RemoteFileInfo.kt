@@ -2,6 +2,8 @@ package app.core.engines.downloader
 
 import com.dslplatform.json.CompiledJson
 import com.dslplatform.json.JsonAttribute
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import java.io.Serializable
 
 /**
@@ -29,33 +31,37 @@ import java.io.Serializable
  * only the metadata required for managing downloads, progress tracking, and integrity checks.
  */
 @CompiledJson
+@Entity
 class RemoteFileInfo() : Serializable {
 
+	@Id
+	var id: Long = 0L
+
 	/** True if the server forbids access to the file. */
-	@JsonAttribute(name = "isFileForbidden")
+	@JvmField @JsonAttribute(name = "isFileForbidden")
 	var isFileForbidden: Boolean = false
 
 	/** Error message explaining why the file info could not be retrieved, if any. */
-	@JsonAttribute(name = "errorMessage")
+	@JvmField @JsonAttribute(name = "errorMessage")
 	var errorMessage: String = ""
 
 	/** Name of the file, either extracted from headers or URL path. */
-	@JsonAttribute(name = "fileName")
+	@JvmField @JsonAttribute(name = "fileName")
 	var fileName: String = ""
 
 	/** Size of the file in bytes; -1 indicates unknown size. */
-	@JsonAttribute(name = "fileSize")
+	@JvmField @JsonAttribute(name = "fileSize")
 	var fileSize: Long = 0L
 
 	/** Optional cryptographic checksum of the file for integrity verification. */
-	@JsonAttribute(name = "fileChecksum")
+	@JvmField @JsonAttribute(name = "fileChecksum")
 	var fileChecksum: String = ""
 
 	/** True if the server allows partial downloads (multipart support). */
-	@JsonAttribute(name = "isSupportsMultipart")
+	@JvmField @JsonAttribute(name = "isSupportsMultipart")
 	var isSupportsMultipart: Boolean = false
 
 	/** True if the download can be resumed after interruption. */
-	@JsonAttribute(name = "isSupportsResume")
+	@JvmField @JsonAttribute(name = "isSupportsResume")
 	var isSupportsResume: Boolean = false
 }

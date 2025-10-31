@@ -326,9 +326,280 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "2:3767404968214686921",
+      "lastPropertyId": "1:403002537298811762",
+      "name": "AIOBookmarks",
+      "properties": [
+        {
+          "id": "1:403002537298811762",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:2307488981260415545",
+      "lastPropertyId": "19:8389972517642319067",
+      "name": "BookmarkModel",
+      "properties": [
+        {
+          "id": "1:7455450476392514125",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:6043250443886865076",
+          "name": "bookmarkUrl",
+          "type": 9
+        },
+        {
+          "id": "3:9188066751481366719",
+          "name": "bookmarkName",
+          "type": 9
+        },
+        {
+          "id": "4:8257638487089056512",
+          "name": "bookmarkCreationDate",
+          "type": 10
+        },
+        {
+          "id": "5:2823363919739107904",
+          "name": "bookmarkModifiedDate",
+          "type": 10
+        },
+        {
+          "id": "6:4505051398448937021",
+          "name": "bookmarkThumbFilePath",
+          "type": 9
+        },
+        {
+          "id": "7:8011003905271057020",
+          "name": "bookmarkDescription",
+          "type": 9
+        },
+        {
+          "id": "8:41292766099215195",
+          "name": "bookmarkTags",
+          "type": 9
+        },
+        {
+          "id": "9:6003071519641374005",
+          "name": "bookmarkFavorite",
+          "type": 1
+        },
+        {
+          "id": "10:5875801932174093591",
+          "name": "bookmarkFolder",
+          "type": 9
+        },
+        {
+          "id": "11:2029431802147771606",
+          "name": "bookmarkAccessCount",
+          "type": 5
+        },
+        {
+          "id": "12:7818002935312673621",
+          "name": "bookmarkLastAccessed",
+          "type": 9
+        },
+        {
+          "id": "13:4611904477687830307",
+          "name": "bookmarkRating",
+          "type": 7
+        },
+        {
+          "id": "14:7470355060441313380",
+          "name": "bookmarkPriority",
+          "type": 5
+        },
+        {
+          "id": "15:392693607117375286",
+          "name": "bookmarkArchived",
+          "type": 1
+        },
+        {
+          "id": "16:2265801733946678920",
+          "name": "bookmarkIcon",
+          "type": 9
+        },
+        {
+          "id": "17:1679472400112124240",
+          "name": "bookmarkNotes",
+          "type": 9
+        },
+        {
+          "id": "18:839378594421356036",
+          "name": "bookmarkOwner",
+          "type": 9
+        },
+        {
+          "id": "19:8389972517642319067",
+          "name": "bookmarkSharedWith",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:5029330056376301026",
+      "lastPropertyId": "1:2521194207320409760",
+      "name": "AIOHistory",
+      "properties": [
+        {
+          "id": "1:2521194207320409760",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:7403477038855140073",
+      "lastPropertyId": "26:3625279620909251778",
+      "name": "HistoryModel",
+      "properties": [
+        {
+          "id": "1:2921240377271752255",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3880231891924291368",
+          "name": "historyUrl",
+          "type": 9
+        },
+        {
+          "id": "3:5732275793460016009",
+          "name": "historyTitle",
+          "type": 9
+        },
+        {
+          "id": "4:4667288199519500735",
+          "name": "historyVisitDateTime",
+          "type": 10
+        },
+        {
+          "id": "5:4379762311414936218",
+          "name": "historyFaviconFilePath",
+          "type": 9
+        },
+        {
+          "id": "6:7803478157902954803",
+          "name": "historyDescription",
+          "type": 9
+        },
+        {
+          "id": "7:1707833443124584038",
+          "name": "historyImportant",
+          "type": 1
+        },
+        {
+          "id": "8:5636164955573121092",
+          "name": "historyFolder",
+          "type": 9
+        },
+        {
+          "id": "9:8259028069721346990",
+          "name": "historyAccessCount",
+          "type": 5
+        },
+        {
+          "id": "10:568566525434914957",
+          "name": "historyLastAccessed",
+          "type": 10
+        },
+        {
+          "id": "11:4904547255356139053",
+          "name": "historyDuration",
+          "type": 6
+        },
+        {
+          "id": "12:4109086647883428630",
+          "name": "historyRating",
+          "type": 7
+        },
+        {
+          "id": "13:5002677692318431605",
+          "name": "historyPriority",
+          "type": 5
+        },
+        {
+          "id": "14:8691680513065540241",
+          "name": "historyArchived",
+          "type": 1
+        },
+        {
+          "id": "15:1079359745201580135",
+          "name": "historyIcon",
+          "type": 9
+        },
+        {
+          "id": "16:8966217588691762926",
+          "name": "historyNotes",
+          "type": 9
+        },
+        {
+          "id": "17:2682316753981959692",
+          "name": "historyOwner",
+          "type": 9
+        },
+        {
+          "id": "18:5890606131626001733",
+          "name": "historySharedWith",
+          "type": 9
+        },
+        {
+          "id": "19:5771654032101474595",
+          "name": "historySessionId",
+          "type": 9
+        },
+        {
+          "id": "20:4621810374460115663",
+          "name": "historyUserAgent",
+          "type": 9
+        },
+        {
+          "id": "21:5349362192426370584",
+          "name": "historyReferrer",
+          "type": 9
+        },
+        {
+          "id": "22:2142424454481117558",
+          "name": "historyTags",
+          "type": 9
+        },
+        {
+          "id": "23:6874279781964394488",
+          "name": "historySearchTerms",
+          "type": 9
+        },
+        {
+          "id": "24:6498643772008514399",
+          "name": "historyContentType",
+          "type": 9
+        },
+        {
+          "id": "25:2107459999209269288",
+          "name": "historyDeviceType",
+          "type": 9
+        },
+        {
+          "id": "26:3625279620909251778",
+          "name": "historyLocation",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "1:5859520049495032366",
+  "lastEntityId": "5:7403477038855140073",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

@@ -1,7 +1,7 @@
 package app.core.engines.objectbox
 
 import android.content.Context
-import app.core.engines.MyObjectBox
+import app.core.engines.browser.MyObjectBox
 import app.core.engines.objectbox.ObjectBoxManager.initializeObjectBoxDB
 import io.objectbox.BoxStore
 import lib.process.LogHelperUtils

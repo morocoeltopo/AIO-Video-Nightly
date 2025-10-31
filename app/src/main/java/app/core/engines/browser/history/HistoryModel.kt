@@ -1,6 +1,10 @@
 package app.core.engines.browser.history
 
+import app.core.engines.objectbox.StringListConverter
 import com.google.gson.annotations.SerializedName
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import java.io.Serializable
 import java.util.Calendar
 import java.util.Date
@@ -15,7 +19,17 @@ import java.util.Date
  * It implements Serializable to allow the object to be saved and restored,
  * for example during session management or persistent storage.
  */
+@Entity
 class HistoryModel : Serializable {
+
+	/**
+	 * Unique identifier for the bookmarks record in ObjectBox database.
+	 * Auto-assigned by ObjectBox when entity is first persisted.
+	 *
+	 * @see io.objectbox.annotation.Id for primary key configuration
+	 */
+	@Id
+	var id: Long = 0
 
 	/** The URL of the visited web page. */
 	@SerializedName("historyUrl")
@@ -83,6 +97,7 @@ class HistoryModel : Serializable {
 
 	/** List of other users the history entry is shared with. */
 	@SerializedName("historySharedWith")
+	@Convert(converter = StringListConverter::class, dbType = String::class)
 	var historySharedWith: ArrayList<String> = ArrayList()
 
 	/** Session identifier that this visit is part of. */
@@ -99,10 +114,12 @@ class HistoryModel : Serializable {
 
 	/** Tags associated with this history entry. */
 	@SerializedName("historyTags")
+	@Convert(converter = StringListConverter::class, dbType = String::class)
 	var historyTags: ArrayList<String> = ArrayList()
 
 	/** Search terms used to find or navigate to this page. */
 	@SerializedName("historySearchTerms")
+	@Convert(converter = StringListConverter::class, dbType = String::class)
 	var historySearchTerms: ArrayList<String> = ArrayList()
 
 	/** Content type of the visited page (e.g., "text/html", "application/pdf"). */
