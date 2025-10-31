@@ -9,6 +9,8 @@ import app.core.FSTBuilder.fstConfig
 import com.anggrayudi.storage.file.getAbsolutePath
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import lib.files.FileSystemUtility.saveStringToInternalStorage
 import lib.process.LogHelperUtils
 import lib.process.ThreadsUtility
@@ -43,27 +45,23 @@ import java.util.Locale
  *   - Medium (0.5-5MB): Buffered read
  *   - Large (>5MB): Memory-mapped I/O with fallback
  */
+@Entity
 class AIOHistory : Serializable {
 
 	@Transient
 	private val logger = LogHelperUtils.from(javaClass)
 
-	companion object {
-
-		/**
-		 * Default filename for JSON formatted history storage
-		 */
-		const val AIO_HISTORY_FILE_NAME_JSON: String = "browsing_history.json"
-
-		/**
-		 * Default filename for binary formatted history storage
-		 */
-		const val AIO_HISTORY_FILE_NAME_BINARY: String = "browsing_history.dat"
-	}
+	/**
+	 * Unique identifier for the bookmarks record in ObjectBox database.
+	 * @see io.objectbox.annotation.Id for primary key configuration
+	 */
+	@Id
+	var id: Long = 0
 
 	/** List containing all recorded history entries. */
-	@SerializedName("historyLibrary")
-	private var historyLibrary: ArrayList<HistoryModel> = ArrayList()
+	@SerializedName("historyModels")
+	@Transient
+	var historyModels: ArrayList<HistoryModel> = ArrayList()
 
 	/**
 	 * Loads history data from internal storage and deserializes it into this class.
@@ -115,7 +113,7 @@ class AIOHistory : Serializable {
 
 					if (!configFile.exists()) {
 						// No JSON file either → start with empty library
-						aioHistory.historyLibrary = ArrayList()
+						aioHistory.historyModels = ArrayList()
 						logger.d("No history file found, starting with empty library")
 						return@executeInBackground
 					}
@@ -134,7 +132,7 @@ class AIOHistory : Serializable {
 						val historyClass = convertJSONStringToClass(json)
 
 						// Keep the loaded history in memory & resync storage
-						logger.d("Successfully loaded ${historyClass.historyLibrary.size} history entries")
+						logger.d("Successfully loaded ${historyClass.historyModels.size} history entries")
 						aioHistory = historyClass
 						aioHistory.updateInStorage()
 					} else {
@@ -263,7 +261,7 @@ class AIOHistory : Serializable {
 		val historyLibraryJSON = JSONObject(data).getString("historyLibrary")
 		val parsedList: ArrayList<HistoryModel> = aioGSONInstance.fromJson(historyLibraryJSON, type)
 
-		history.historyLibrary = parsedList
+		history.historyModels = parsedList
 		return history
 	}
 
@@ -280,6 +278,7 @@ class AIOHistory : Serializable {
 					fileName = AIO_HISTORY_FILE_NAME_JSON,
 					data = convertClassToJSON()
 				)
+				AIOHistoryDBManager.updateAllHistoryInDB(historyModels = getHistoryLibrary())
 				logger.d("history successfully updated in storage")
 			} catch (error: Exception) {
 				logger.d("Error updating history: ${error.message}")
@@ -291,7 +290,7 @@ class AIOHistory : Serializable {
 	/** @return Current history collection */
 	fun getHistoryLibrary(): ArrayList<HistoryModel> {
 		logger.d("Retrieving history library")
-		return historyLibrary
+		return historyModels
 	}
 
 	/**
@@ -300,7 +299,7 @@ class AIOHistory : Serializable {
 	 */
 	fun insertNewHistory(historyModel: HistoryModel) {
 		logger.d("Adding new history entry")
-		historyLibrary.add(historyModel)
+		historyModels.add(historyModel)
 	}
 
 	/**
@@ -310,9 +309,9 @@ class AIOHistory : Serializable {
 	 */
 	fun updateHistory(oldHistory: HistoryModel, newHistory: HistoryModel) {
 		logger.d("Updating history entry")
-		val index = historyLibrary.indexOf(oldHistory)
+		val index = historyModels.indexOf(oldHistory)
 		if (index != -1) {
-			historyLibrary[index] = newHistory
+			historyModels[index] = newHistory
 		}
 	}
 
@@ -323,7 +322,7 @@ class AIOHistory : Serializable {
 	 */
 	fun searchHistory(query: String): List<HistoryModel> {
 		logger.d("Searching history for: $query")
-		return historyLibrary.filter {
+		return historyModels.filter {
 			it.historyTitle.contains(query, ignoreCase = true) ||
 					it.historyUrl.contains(query, ignoreCase = true)
 		}
@@ -332,7 +331,7 @@ class AIOHistory : Serializable {
 	/** @return List of duplicate history entries */
 	fun findDuplicateHistory(): List<HistoryModel> {
 		logger.d("Finding duplicate history entries")
-		return historyLibrary
+		return historyModels
 			.groupBy { it.historyUrl }
 			.filter { it.value.size > 1 }
 			.flatMap { it.value }
@@ -344,7 +343,7 @@ class AIOHistory : Serializable {
 	 */
 	fun removeHistory(historyModel: HistoryModel) {
 		logger.d("Removing history entry")
-		historyLibrary.remove(historyModel)
+		historyModels.remove(historyModel)
 	}
 
 	/**
@@ -355,22 +354,22 @@ class AIOHistory : Serializable {
 	fun getHistorySortedBy(attribute: String): List<HistoryModel> {
 		logger.d("Sorting history by: $attribute")
 		return when (attribute.lowercase(Locale.ROOT)) {
-			"title" -> historyLibrary.sortedBy { it.historyTitle }
-			"date" -> historyLibrary.sortedBy { it.historyVisitDateTime }
-			else -> historyLibrary
+			"title" -> historyModels.sortedBy { it.historyTitle }
+			"date" -> historyModels.sortedBy { it.historyVisitDateTime }
+			else -> historyModels
 		}
 	}
 
 	/** Clears all history entries */
 	fun clearAllHistory() {
 		logger.d("Clearing all history")
-		historyLibrary.clear()
+		historyModels.clear()
 	}
 
 	/** @return Total history entries count */
 	fun countHistory(): Int {
 		logger.d("Counting history entries")
-		return historyLibrary.size
+		return historyModels.size
 	}
 
 	/**
@@ -388,7 +387,7 @@ class AIOHistory : Serializable {
 		val cutoffDateString = dateFormat.format(cutoffDate)
 		val cutoffDateParsed = dateFormat.parse(cutoffDateString) ?: return emptyList()
 
-		return historyLibrary.filter {
+		return historyModels.filter {
 			val visitDate = dateFormat.parse(it.historyVisitDateTime.toString())
 			val lastAccessedDate = dateFormat.parse(it.historyLastAccessed.toString())
 			visitDate != null && visitDate.after(cutoffDateParsed) ||
@@ -403,13 +402,13 @@ class AIOHistory : Serializable {
 	 */
 	fun filterHistoryByDuration(minDuration: Long): List<HistoryModel> {
 		logger.d("Filtering history by duration >= $minDuration ms")
-		return historyLibrary.filter { it.historyDuration >= minDuration }
+		return historyModels.filter { it.historyDuration >= minDuration }
 	}
 
 	/** @return Important history entries */
 	fun getImportantHistory(): List<HistoryModel> {
 		logger.d("Getting important history entries")
-		return historyLibrary.filter { it.historyImportant }
+		return historyModels.filter { it.historyImportant }
 	}
 
 	/**
@@ -419,7 +418,7 @@ class AIOHistory : Serializable {
 	 */
 	fun filterHistoryByTag(tag: String): List<HistoryModel> {
 		logger.d("Filtering history by tag: $tag")
-		return historyLibrary.filter { it.historyTags.contains(tag) }
+		return historyModels.filter { it.historyTags.contains(tag) }
 	}
 
 	/**
@@ -428,15 +427,28 @@ class AIOHistory : Serializable {
 	 */
 	fun archiveHistory(historyModel: HistoryModel) {
 		logger.d("Archiving history entry")
-		val index = historyLibrary.indexOf(historyModel)
+		val index = historyModels.indexOf(historyModel)
 		if (index != -1) {
-			historyLibrary[index].historyArchived = true
+			historyModels[index].historyArchived = true
 		}
 	}
 
 	/** @return Archived history entries */
 	fun getArchivedHistory(): List<HistoryModel> {
 		logger.d("Getting archived history entries")
-		return historyLibrary.filter { it.historyArchived }
+		return historyModels.filter { it.historyArchived }
+	}
+
+	companion object {
+
+		/**
+		 * Default filename for JSON formatted history storage
+		 */
+		const val AIO_HISTORY_FILE_NAME_JSON: String = "browsing_history.json"
+
+		/**
+		 * Default filename for binary formatted history storage
+		 */
+		const val AIO_HISTORY_FILE_NAME_BINARY: String = "browsing_history.dat"
 	}
 }
