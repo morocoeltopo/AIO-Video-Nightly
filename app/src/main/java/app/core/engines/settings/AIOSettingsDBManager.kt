@@ -49,7 +49,7 @@ object AIOSettingsDBManager {
 	 * Since the application maintains only one settings instance throughout its lifecycle,
 	 * we use a constant ID to ensure consistent access and updates to the same record.
 	 */
-	private const val SETTINGS_ID = 121212121L
+	const val APP_SETTINGS_DB_ID = -1L
 
 	/**
 	 * Retrieves the initialized BoxStore instance.
@@ -103,17 +103,20 @@ object AIOSettingsDBManager {
 	fun loadSettingsFromDB(): AIOSettings {
 		return try {
 			val settingsBox = getSettingsBox()
-			var settings = settingsBox.get(SETTINGS_ID)
+			var appSettings = settingsBox.query()
+				.equal(AIOSettings_.downloadDataModelId, APP_SETTINGS_DB_ID)
+				.build()
+				.findFirst()
 
-			if (settings == null) {
+			if (appSettings == null) {
 				logger.d("No settings found in database, creating default settings")
-				settings = createDefaultSettings()
-				saveSettingsInDB(settings)
+				appSettings = createDefaultSettings()
+				saveSettingsInDB(appSettings)
 			} else {
-				logger.d("Settings loaded successfully from ObjectBox database")
+				logger.d("Settings loaded successfully from ObjectBox database, id: ${appSettings.id}")
 			}
 
-			settings
+			appSettings
 		} catch (error: Exception) {
 			logger.e("Error loading settings from ObjectBox: ${error.message}", error)
 			try {
@@ -151,9 +154,9 @@ object AIOSettingsDBManager {
 	@JvmStatic
 	fun saveSettingsInDB(settings: AIOSettings) {
 		try {
-			settings.id = SETTINGS_ID
+			settings.downloadDataModelId = APP_SETTINGS_DB_ID
 			getSettingsBox().put(settings)
-			logger.d("Settings saved successfully to ObjectBox database")
+			logger.d("Settings saved successfully to ObjectBox database id:${settings.id}")
 		} catch (error: Exception) {
 			logger.e("Error saving settings to ObjectBox: ${error.message}", error)
 		}
@@ -192,7 +195,12 @@ object AIOSettingsDBManager {
 	@JvmStatic
 	fun hasSettingsInDB(): Boolean {
 		return try {
-			getSettingsBox().get(SETTINGS_ID) != null
+			val appSettings = getSettingsBox().query()
+				.equal(AIOSettings_.downloadDataModelId, APP_SETTINGS_DB_ID)
+				.build()
+				.findFirst()
+
+			appSettings != null
 		} catch (error: Exception) {
 			logger.e("Error checking settings existence: ${error.message}", error)
 			false
@@ -213,7 +221,12 @@ object AIOSettingsDBManager {
 	@JvmStatic
 	fun clearSettingsFromDB() {
 		try {
-			getSettingsBox().remove(SETTINGS_ID)
+			val appSettings = getSettingsBox().query()
+				.equal(AIOSettings_.downloadDataModelId, APP_SETTINGS_DB_ID)
+				.build()
+				.findFirst()
+			if (appSettings == null) return
+			getSettingsBox().remove(appSettings.id)
 			logger.d("Settings cleared from ObjectBox database")
 		} catch (error: Exception) {
 			logger.e("Error clearing settings: ${error.message}", error)

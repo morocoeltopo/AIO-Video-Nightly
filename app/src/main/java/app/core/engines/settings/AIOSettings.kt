@@ -67,7 +67,7 @@ class AIOSettings : Serializable {
 	 *
 	 * @see io.objectbox.annotation.Id for primary key configuration
 	 */
-	@Id
+	@Id @JvmField @JsonAttribute(name = "id")
 	var id: Long = 0L
 
 	// =============================================
@@ -76,7 +76,7 @@ class AIOSettings : Serializable {
 
 	/** Unique identifier for the associate download model */
 	@JvmField @JsonAttribute(name = "downloadDataModelId")
-	var downloadDataModelId: Long = -1L
+	var downloadDataModelId: Long = AIOSettingsDBManager.APP_SETTINGS_DB_ID
 
 	/**
 	 * Unique installation identifier for analytics and user tracking.
