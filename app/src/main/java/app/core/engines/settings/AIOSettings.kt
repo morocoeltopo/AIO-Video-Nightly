@@ -76,7 +76,7 @@ class AIOSettings : Serializable {
 
 	/** Unique identifier for the associate download model */
 	@JvmField @JsonAttribute(name = "downloadDataModelId")
-	var downloadDataModelId: Long = AIOSettingsDBManager.APP_SETTINGS_DB_ID
+	var downloadDataModelDBId: Long = AIOSettingsDBManager.APP_SETTINGS_DB_ID
 
 	/**
 	 * Unique installation identifier for analytics and user tracking.

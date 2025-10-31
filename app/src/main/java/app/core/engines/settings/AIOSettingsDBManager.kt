@@ -104,7 +104,7 @@ object AIOSettingsDBManager {
 		return try {
 			val settingsBox = getSettingsBox()
 			var appSettings = settingsBox.query()
-				.equal(AIOSettings_.downloadDataModelId, APP_SETTINGS_DB_ID)
+				.equal(AIOSettings_.downloadDataModelDBId, APP_SETTINGS_DB_ID)
 				.build()
 				.findFirst()
 
@@ -154,7 +154,7 @@ object AIOSettingsDBManager {
 	@JvmStatic
 	fun saveSettingsInDB(settings: AIOSettings) {
 		try {
-			settings.downloadDataModelId = APP_SETTINGS_DB_ID
+			settings.downloadDataModelDBId = APP_SETTINGS_DB_ID
 			getSettingsBox().put(settings)
 			logger.d("Settings saved successfully to ObjectBox database id:${settings.id}")
 		} catch (error: Exception) {
@@ -196,7 +196,7 @@ object AIOSettingsDBManager {
 	fun hasSettingsInDB(): Boolean {
 		return try {
 			val appSettings = getSettingsBox().query()
-				.equal(AIOSettings_.downloadDataModelId, APP_SETTINGS_DB_ID)
+				.equal(AIOSettings_.downloadDataModelDBId, APP_SETTINGS_DB_ID)
 				.build()
 				.findFirst()
 
@@ -222,7 +222,7 @@ object AIOSettingsDBManager {
 	fun clearSettingsFromDB() {
 		try {
 			val appSettings = getSettingsBox().query()
-				.equal(AIOSettings_.downloadDataModelId, APP_SETTINGS_DB_ID)
+				.equal(AIOSettings_.downloadDataModelDBId, APP_SETTINGS_DB_ID)
 				.build()
 				.findFirst()
 			if (appSettings == null) return

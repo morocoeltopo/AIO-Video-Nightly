@@ -578,6 +578,8 @@ class DownloadDataModel : Serializable {
 					}
 				}
 			}
+
+			DownloadModelsDBManager.deleteDownloadWithRelations(this)
 			logger.d("Model deletion completed for download ID: $downloadId")
 		}, errorHandler = { error ->
 			logger.e("Deletion error for download ID: $downloadId", error)

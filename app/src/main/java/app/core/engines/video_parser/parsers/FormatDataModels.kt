@@ -10,7 +10,7 @@ import java.io.Serializable
  * Data class representing a video format with all its metadata.
  *
  * @property id Unique database identifier
- * @property downloadDataModelId Unique identifier for the associated download model in the system
+ * @property downloadDataModelDBId Unique identifier for the associated download model in the system
  * @property isFromSocialMedia Indicates if the format is from a social media platform
  * @property formatId Unique identifier for the format
  * @property formatExtension File extension (mp4, webm, etc.)
@@ -29,7 +29,7 @@ data class VideoFormat(
 	var id: Long = 0L,
 
 	@JvmField @param:JsonAttribute(name = "downloadDataModelId")
-	var downloadDataModelId: Long = -1L,
+	var downloadDataModelDBId: Long = -1L,
 
 	@JvmField @param:JsonAttribute(name = "isFromSocialMedia")
 	var isFromSocialMedia: Boolean = false,
@@ -66,7 +66,7 @@ data class VideoFormat(
  * Data class representing complete video information and metadata.
  *
  * @property id Unique database identifier
- * @property downloadDataModelId Unique identifier for the associated download model in the system
+ * @property downloadDataModelDBId Unique identifier for the associated download model in the system
  * @property videoTitle Title of the video
  * @property videoThumbnailUrl URL of the video thumbnail image
  * @property videoThumbnailByReferer Whether thumbnail requires referer header for access
@@ -85,7 +85,7 @@ data class VideoInfo(
 	var id: Long = 0L,
 
 	@JvmField @param:JsonAttribute(name = "downloadDataModelId")
-	var downloadDataModelId: Long = -1L,
+	var downloadDataModelDBId: Long = -1L,
 
 	@JvmField @param:JsonAttribute(name = "videoTitle")
 	var videoTitle: String? = null,

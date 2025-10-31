@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:5859520049495032366",
-      "lastPropertyId": "65:720351275970656264",
+      "lastPropertyId": "66:2046752512379718317",
       "name": "AIOSettings",
       "properties": [
         {
@@ -325,8 +325,8 @@
           "type": 9
         },
         {
-          "id": "65:720351275970656264",
-          "name": "downloadDataModelId",
+          "id": "66:2046752512379718317",
+          "name": "downloadDataModelDBId",
           "type": 6
         }
       ],
@@ -605,7 +605,7 @@
     },
     {
       "id": "6:8161844310512022224",
-      "lastPropertyId": "9:2995981621749460171",
+      "lastPropertyId": "10:1787382685343138234",
       "name": "RemoteFileInfo",
       "properties": [
         {
@@ -650,8 +650,8 @@
           "type": 1
         },
         {
-          "id": "9:2995981621749460171",
-          "name": "downloadDataModelId",
+          "id": "10:1787382685343138234",
+          "name": "downloadDataModelDBId",
           "type": 6
         }
       ],
@@ -659,7 +659,7 @@
     },
     {
       "id": "7:4731141476551157893",
-      "lastPropertyId": "12:2878173129867797327",
+      "lastPropertyId": "13:2855976916647726564",
       "name": "VideoFormat",
       "properties": [
         {
@@ -719,8 +719,8 @@
           "type": 9
         },
         {
-          "id": "12:2878173129867797327",
-          "name": "downloadDataModelId",
+          "id": "13:2855976916647726564",
+          "name": "downloadDataModelDBId",
           "type": 6
         }
       ],
@@ -728,7 +728,7 @@
     },
     {
       "id": "8:5804091465831558502",
-      "lastPropertyId": "11:2728132546519396816",
+      "lastPropertyId": "12:2452018272927001079",
       "name": "VideoInfo",
       "properties": [
         {
@@ -783,8 +783,8 @@
           "type": 9
         },
         {
-          "id": "11:2728132546519396816",
-          "name": "downloadDataModelId",
+          "id": "12:2452018272927001079",
+          "name": "downloadDataModelDBId",
           "type": 6
         }
       ],
@@ -1160,7 +1160,11 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    6998681376410707544
+    6998681376410707544,
+    2995981621749460171,
+    720351275970656264,
+    2728132546519396816,
+    2878173129867797327
   ],
   "retiredRelationUids": [],
   "version": 1

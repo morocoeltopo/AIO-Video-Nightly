@@ -35,7 +35,7 @@ import java.io.Serializable
  * and performing integrity checks.
  *
  * @property id Unique identifier for ObjectBox database (fixed to 1 for singleton pattern)
- * @property downloadDataModelId Unique identifier linking to the associated download model
+ * @property downloadDataModelDBId Unique identifier linking to the associated download model
  * @property isFileForbidden True if server returned 403 Forbidden or similar access denial
  * @property errorMessage Descriptive error message when file info retrieval fails
  * @property fileName Name of the remote file with extension
@@ -63,7 +63,7 @@ class RemoteFileInfo() : Serializable {
 	/** Unique identifier for the associated download model in the system */
 	@JvmField
 	@JsonAttribute(name = "downloadDataModelId")
-	var downloadDataModelId: Long = -1L
+	var downloadDataModelDBId: Long = -1L
 
 	/** True if the server forbids access to the file (HTTP 403, 401, etc.) */
 	@JvmField

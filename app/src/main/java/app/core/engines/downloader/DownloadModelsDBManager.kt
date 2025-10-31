@@ -30,41 +30,30 @@ object DownloadModelsDBManager {
 	fun saveDownloadWithRelationsInDB(downloadDataModel: DownloadDataModel): Long {
 		boxStore.runInTx {
 			// Save main entity first to get ID
-			downloadBox.put(downloadDataModel)
-			val downloadId = downloadDataModel.id
+			val downloadId = downloadBox.put(downloadDataModel)
 
 			// Save related entities with foreign key
 			downloadDataModel.videoInfo?.let { videoInfo ->
-				videoInfo.id = downloadId
-				videoInfo.downloadDataModelId = downloadId
+				videoInfo.downloadDataModelDBId = downloadId
 				videoInfoBox.put(videoInfo)
 			}
 
 			downloadDataModel.videoFormat?.let { videoFormat ->
-				videoFormat.id = downloadId
-				videoFormat.downloadDataModelId = downloadId
+				videoFormat.downloadDataModelDBId = downloadId
 				videoFormatBox.put(videoFormat)
 			}
 
 			downloadDataModel.remoteFileInfo?.let { remoteFileInfo ->
-				remoteFileInfo.id = downloadId
-				remoteFileInfo.downloadDataModelId = downloadId
+				remoteFileInfo.downloadDataModelDBId = downloadId
 				remoteFileInfoBox.put(remoteFileInfo)
 			}
 
 			downloadDataModel.globalSettings.let { settings ->
-				settings.id = downloadId
-				settings.downloadDataModelId = downloadId
+				settings.downloadDataModelDBId = downloadId
 				settingsBox.put(settings)
 			}
 		}
 		return downloadDataModel.id
-	}
-
-	@JvmStatic
-	fun getDownloadWithRelations(downloadId: Long): DownloadDataModel? {
-		val downloadDataModel = downloadBox[downloadId] ?: return null
-		return assembleDownloadWithRelations(downloadDataModel)
 	}
 
 	@JvmStatic
@@ -79,28 +68,28 @@ object DownloadModelsDBManager {
 
 		// Query VideoInfo by downloadId
 		val videoInfoQuery = videoInfoBox.query()
-			.equal(VideoInfo_.downloadDataModelId, downloadId)
+			.equal(VideoInfo_.downloadDataModelDBId, downloadId)
 			.build()
 		downloadDataModel.videoInfo = videoInfoQuery.findFirst()
 		videoInfoQuery.close()
 
 		// Query VideoFormat by downloadId
 		val videoFormatQuery = videoFormatBox.query()
-			.equal(VideoFormat_.downloadDataModelId, downloadId)
+			.equal(VideoFormat_.downloadDataModelDBId, downloadId)
 			.build()
 		downloadDataModel.videoFormat = videoFormatQuery.findFirst()
 		videoFormatQuery.close()
 
 		// Query VideoFormat by downloadId
 		val remoteFileInfoQuery = remoteFileInfoBox.query()
-			.equal(RemoteFileInfo_.downloadDataModelId, downloadId)
+			.equal(RemoteFileInfo_.downloadDataModelDBId, downloadId)
 			.build()
 		downloadDataModel.remoteFileInfo = remoteFileInfoQuery.findFirst()
 		remoteFileInfoQuery.close()
 
 		// Query GlobalSettings by downloadId
 		val aioSettingsQuery = settingsBox.query()
-			.equal(AIOSettings_.downloadDataModelId, downloadId)
+			.equal(AIOSettings_.downloadDataModelDBId, downloadId)
 			.build()
 		downloadDataModel.globalSettings = aioSettingsQuery.findFirst() ?: AIOApp.aioSettings
 		aioSettingsQuery.close()
@@ -108,35 +97,37 @@ object DownloadModelsDBManager {
 		return downloadDataModel
 	}
 
-	fun deleteDownloadWithRelations(downloadId: Long) {
+	fun deleteDownloadWithRelations(downloadDataModel: DownloadDataModel) {
 		boxStore.runInTx {
+			val downloadModelDBID = downloadDataModel.id
+
 			// Delete related entities first
 			val videoInfoQuery = videoInfoBox.query()
-				.equal(VideoInfo_.downloadDataModelId, downloadId)
+				.equal(VideoInfo_.downloadDataModelDBId, downloadModelDBID)
 				.build()
 			videoInfoQuery.findIds().forEach { videoInfoBox.remove(it) }
 			videoInfoQuery.close()
 
 			val videoFormatQuery = videoFormatBox.query()
-				.equal(VideoFormat_.downloadDataModelId, downloadId)
+				.equal(VideoFormat_.downloadDataModelDBId, downloadModelDBID)
 				.build()
 			videoFormatQuery.findIds().forEach { videoFormatBox.remove(it) }
 			videoFormatQuery.close()
 
 			val remoteFileInfoQuery = remoteFileInfoBox.query()
-				.equal(RemoteFileInfo_.downloadDataModelId, downloadId)
+				.equal(RemoteFileInfo_.downloadDataModelDBId, downloadModelDBID)
 				.build()
 			remoteFileInfoQuery.findIds().forEach { remoteFileInfoBox.remove(it) }
 			remoteFileInfoQuery.close()
 
 			val settingsQuery = settingsBox.query()
-				.equal(AIOSettings_.downloadDataModelId, downloadId)
+				.equal(AIOSettings_.downloadDataModelDBId, downloadModelDBID)
 				.build()
 			settingsQuery.findIds().forEach { settingsBox.remove(it) }
 			settingsQuery.close()
 
 			// Delete main entity
-			downloadBox.remove(downloadId)
+			downloadBox.remove(downloadModelDBID)
 		}
 	}
 
