@@ -21,6 +21,7 @@ import com.anggrayudi.storage.file.getAbsolutePath
 import com.dslplatform.json.CompiledJson
 import com.dslplatform.json.JsonAttribute
 import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
 import lib.files.FileExtensions.ARCHIVE_EXTENSIONS
 import lib.files.FileExtensions.DOCUMENT_EXTENSIONS
 import lib.files.FileExtensions.IMAGE_EXTENSIONS
@@ -55,8 +56,8 @@ import java.io.Serializable
 class DownloadDataModel : Serializable {
 
 	/** Unique identifier for the objectbox database */
-	@JvmField @JsonAttribute(name = "id")
-	var id: Int = 0
+	@Id @JvmField @JsonAttribute(name = "id")
+	var id: Long = 0L
 
 	/** Unique identifier for the download task */
 	@JvmField @JsonAttribute(name = "downloadId")
@@ -343,8 +344,8 @@ class DownloadDataModel : Serializable {
 	var isSyncToCloudBackup: Boolean = false
 
 	/** Snapshot of global application settings at the time download was initiated */
-	@JsonAttribute(name = "globalSettings")
-	lateinit var globalSettings: AIOSettings
+	@JvmField @JsonAttribute(name = "globalSettings")
+	var globalSettings: AIOSettings = deepCopy(aioSettings) ?: aioSettings
 
 	companion object {
 		@Transient
@@ -483,6 +484,8 @@ class DownloadDataModel : Serializable {
 			logger.d("JSON content length: ${json.length} chars")
 
 			saveStringToInternalStorage("$downloadId$DOWNLOAD_MODEL_FILE_JSON_EXTENSION", json)
+
+			DownloadModelsDBManager.saveDownloadWithRelationsInDB(this)
 			logger.d("Storage update completed for download ID: $downloadId")
 		}, errorHandler = { error ->
 			logger.e("Storage update failed for download ID: $downloadId", error)
@@ -982,8 +985,6 @@ class DownloadDataModel : Serializable {
 			fileDirectory = externalDataFolderPath
 			logger.d("Set file directory to system gallery: $externalDataFolderPath")
 		}
-
-		globalSettings = deepCopy(aioSettings) ?: aioSettings
 		logger.d("Reset completed for download ID: $downloadId with settings: ${globalSettings.defaultDownloadLocation}")
 	}
 

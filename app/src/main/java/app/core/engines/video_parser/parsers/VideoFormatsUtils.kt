@@ -77,7 +77,7 @@ object VideoFormatsUtils {
 	@Entity
 	data class VideoFormat(
 		@Id @JvmField @param:JsonAttribute(name = "id")
-		val id: Long = 0L,
+		var id: Long = 0L,
 
 		@JvmField @param:JsonAttribute(name = "downloadDataModelId")
 		var downloadDataModelId: Long = -1L,
@@ -133,7 +133,7 @@ object VideoFormatsUtils {
 	@Entity
 	data class VideoInfo(
 		@Id @JvmField @param:JsonAttribute(name = "id")
-		val id: Long = 0L,
+		var id: Long = 0L,
 
 		@JvmField @param:JsonAttribute(name = "downloadDataModelId")
 		var downloadDataModelId: Long = -1L,

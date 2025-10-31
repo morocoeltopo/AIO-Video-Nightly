@@ -597,11 +597,189 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "6:8161844310512022224",
+      "lastPropertyId": "8:3731541173510125556",
+      "name": "RemoteFileInfo",
+      "properties": [
+        {
+          "id": "1:6771642486107937440",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7632833671107402987",
+          "name": "isFileForbidden",
+          "type": 1
+        },
+        {
+          "id": "3:7152208448347784918",
+          "name": "errorMessage",
+          "type": 9
+        },
+        {
+          "id": "4:6246656849426985437",
+          "name": "fileName",
+          "type": 9
+        },
+        {
+          "id": "5:5871834240394081123",
+          "name": "fileSize",
+          "type": 6
+        },
+        {
+          "id": "6:7979223330535356420",
+          "name": "fileChecksum",
+          "type": 9
+        },
+        {
+          "id": "7:141160228647688712",
+          "name": "isSupportsMultipart",
+          "type": 1
+        },
+        {
+          "id": "8:3731541173510125556",
+          "name": "isSupportsResume",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "7:4731141476551157893",
+      "lastPropertyId": "11:3170303839480699888",
+      "name": "VideoFormat",
+      "properties": [
+        {
+          "id": "1:2169597765780774463",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7587224227383010860",
+          "name": "isFromSocialMedia",
+          "type": 1
+        },
+        {
+          "id": "3:6807651644945994259",
+          "name": "formatId",
+          "type": 9
+        },
+        {
+          "id": "4:8260179859463978249",
+          "name": "formatExtension",
+          "type": 9
+        },
+        {
+          "id": "5:6336639809416177884",
+          "name": "formatResolution",
+          "type": 9
+        },
+        {
+          "id": "6:6363344158893076946",
+          "name": "formatFileSize",
+          "type": 9
+        },
+        {
+          "id": "7:169471700049573394",
+          "name": "formatVcodec",
+          "type": 9
+        },
+        {
+          "id": "8:2675930095528449893",
+          "name": "formatAcodec",
+          "type": 9
+        },
+        {
+          "id": "9:2835446283277357260",
+          "name": "formatTBR",
+          "type": 9
+        },
+        {
+          "id": "10:539222671309682395",
+          "name": "formatProtocol",
+          "type": 9
+        },
+        {
+          "id": "11:3170303839480699888",
+          "name": "formatStreamingUrl",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:5804091465831558502",
+      "lastPropertyId": "10:2217520220478222731",
+      "name": "VideoInfo",
+      "properties": [
+        {
+          "id": "1:918970822017709105",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2476229169724575952",
+          "name": "videoTitle",
+          "type": 9
+        },
+        {
+          "id": "3:5003933081891959624",
+          "name": "videoThumbnailUrl",
+          "type": 9
+        },
+        {
+          "id": "4:6983605977580220167",
+          "name": "videoThumbnailByReferer",
+          "type": 1
+        },
+        {
+          "id": "5:1889772363621956149",
+          "name": "videoDescription",
+          "type": 9
+        },
+        {
+          "id": "6:7819759913030063491",
+          "name": "videoUrlReferer",
+          "type": 9
+        },
+        {
+          "id": "7:3380106292892113917",
+          "name": "videoUrl",
+          "type": 9
+        },
+        {
+          "id": "8:3991572238309884093",
+          "name": "videoCookie",
+          "type": 9
+        },
+        {
+          "id": "9:3788877724798945455",
+          "name": "videoDuration",
+          "type": 6
+        },
+        {
+          "id": "10:2217520220478222731",
+          "name": "videoCookieTempPath",
+          "type": 9
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:8496475234812365537",
+          "name": "videoFormats",
+          "targetId": "7:4731141476551157893"
+        }
+      ]
     }
   ],
-  "lastEntityId": "5:7403477038855140073",
+  "lastEntityId": "8:5804091465831558502",
   "lastIndexId": "0:0",
-  "lastRelationId": "0:0",
+  "lastRelationId": "1:8496475234812365537",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,

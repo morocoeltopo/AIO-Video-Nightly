@@ -49,7 +49,7 @@ object AIOSettingsDBManager {
 	 * Since the application maintains only one settings instance throughout its lifecycle,
 	 * we use a constant ID to ensure consistent access and updates to the same record.
 	 */
-	private const val SETTINGS_ID = 1L
+	private const val SETTINGS_ID = 121212121L
 
 	/**
 	 * Retrieves the initialized BoxStore instance.
