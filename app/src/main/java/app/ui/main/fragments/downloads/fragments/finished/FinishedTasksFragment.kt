@@ -233,11 +233,11 @@ open class FinishedTasksFragment : BaseFragment(), FinishedTasksClickEvents, AIO
 		openActiveTasksAnim.apply {
 			clipToCompositionBounds = false
 			setScaleType(ImageView.ScaleType.FIT_XY)
-			aioRawFiles.getOpenActiveTasksAnimationComposition()?.let {
+			aioRawFiles.getDownloadFoundAnimationComposition()?.let {
 				setComposition(it)
 				playAnimation()
 			} ?: run {
-				setAnimation(R.raw.animation_active_tasks)
+				setAnimation(R.raw.animation_videos_found)
 			}; showView(this, true, 100)
 		}
 	}
