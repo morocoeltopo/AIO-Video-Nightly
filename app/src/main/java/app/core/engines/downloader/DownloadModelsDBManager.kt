@@ -111,6 +111,7 @@ object DownloadModelsDBManager {
 	 * @throws Exception if database operations fail within the transaction
 	 */
 	@JvmStatic
+	@Synchronized
 	fun saveDownloadWithRelationsInDB(downloadDataModel: DownloadDataModel): Long {
 		logger.d("Starting saveDownloadWithRelationsInDB for download: ${downloadDataModel.fileName}")
 		try {
