@@ -2,7 +2,7 @@ package app.core.engines.downloader
 
 import app.core.AIOApp
 import app.core.AIOApp.Companion.aioSettings
-import app.core.engines.downloader.DownloadModelParser.getDownloadDataModels
+import app.core.engines.downloader.DownloadModelFilesParser.getDownloadDataModels
 import app.core.engines.downloader.DownloadStatus.COMPLETE
 import com.aio.R
 import kotlinx.coroutines.CoroutineScope

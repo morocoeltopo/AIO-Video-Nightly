@@ -15,7 +15,7 @@ import app.core.engines.browser.history.AIOHistoryDBManager
 import app.core.engines.caches.AIOAdBlocker
 import app.core.engines.caches.AIOFavicons
 import app.core.engines.caches.AIORawFiles
-import app.core.engines.downloader.DownloadModelMerger
+import app.core.engines.downloader.DownloadModelBinaryMerger
 import app.core.engines.downloader.DownloadSystem
 import app.core.engines.objectbox.ObjectBoxManager
 import app.core.engines.objectbox.ObjectBoxManager.initializeObjectBoxDB
@@ -229,7 +229,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		 * Download model consolidation and data merging utility.
 		 * Provides capabilities for combining and organizing download metadata.
 		 */
-		val downloadModelMerger: DownloadModelMerger by lazy { DownloadModelMerger() }
+		val downloadModelBinaryMerger: DownloadModelBinaryMerger by lazy { DownloadModelBinaryMerger() }
 
 		/**
 		 * YouTube-specific video parsing and metadata extraction engine.

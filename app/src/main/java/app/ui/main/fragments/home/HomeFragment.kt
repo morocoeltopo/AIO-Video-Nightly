@@ -945,7 +945,7 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 				val downloadedFileName = downloadDataModel.fileName
 				if (isVideoByName(downloadedFileName) || isAudioByName(downloadedFileName)) {
 					repeat(5) { attempt ->
-						Thread.sleep(2000) // wait 2 sec between retries
+						Thread.sleep(300) // wait 300 millisecond between retries
 						val cleaned = downloadDataModel.mediaFilePlaybackDuration
 							.replace("(", "")
 							.replace(")", "")

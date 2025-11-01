@@ -194,8 +194,33 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 				updateMediaPlayIndicator(this, downloadModel)
 				logger.d("updateDialogFileInfo() -> Media play indicator updated")
 			}
+
+			if (isMediaFile(downloadModel)) {
+				// Show playback duration if available
+				findViewById<View>(R.id.container_media_duration).apply {
+					val txtMediaPlaybackDuration = findViewById<TextView>(R.id.txt_media_duration)
+					val mediaFilePlaybackDuration = downloadModel.mediaFilePlaybackDuration
+					val playbackTimeString = mediaFilePlaybackDuration.replace("(", "").replace(")", "")
+					if (playbackTimeString.isNotEmpty()) {
+						showView(this, true)
+						showView(txtMediaPlaybackDuration, true)
+						txtMediaPlaybackDuration.text = playbackTimeString
+					}
+				}
+			} else {
+				findViewById<View>(R.id.container_media_duration).visibility = View.GONE
+			}
 		}
 	}
+
+	/**
+	 * Determines if a downloaded file is a supported media file.
+	 *
+	 * @param downloadModel The [DownloadDataModel] representing the downloaded file.
+	 * @return `true` if the file is audio or video based on its name; otherwise `false`.
+	 */
+	private fun isMediaFile(downloadModel: DownloadDataModel): Boolean =
+		isAudioByName(downloadModel.fileName) || isVideoByName(downloadModel.fileName)
 
 	/**
 	 * Updates the visibility of the media play indicator based on the file type.
@@ -211,9 +236,7 @@ class ActiveTasksOptions(private val motherActivity: MotherActivity?) {
 		downloadDataModel: DownloadDataModel
 	) {
 		val fileName = downloadDataModel.fileName
-		val isMedia = isVideoByName(fileName) || isAudioByName(fileName)
-
-		mediaPlayIndicator.visibility = if (isMedia) {
+		mediaPlayIndicator.visibility = if (isMediaFile(downloadDataModel)) {
 			logger.d("updateMediaPlayIndicator() -> Media file detected ($fileName), indicator VISIBLE")
 			View.VISIBLE
 		} else {

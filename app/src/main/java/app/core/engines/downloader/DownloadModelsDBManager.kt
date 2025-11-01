@@ -45,34 +45,56 @@ import lib.process.LogHelperUtils
  */
 object DownloadModelsDBManager {
 
+	/** Logger instance for tracking database operations and debugging */
 	private val logger = LogHelperUtils.from(javaClass)
+
+	/** ObjectBox database store instance for all database operations */
 	private val boxStore: BoxStore = getBoxStore()
 
-	// Lazy-initialized Box instances for different entity types
+	/**
+	 * Lazy-initialized Box for DownloadDataModel entities.
+	 * Initialized on first access to defer database setup until actually needed.
+	 */
 	private val downloadBox: Box<DownloadDataModel> by lazy {
 		boxStore.boxFor(DownloadDataModel::class.java).also {
 			logger.d("DownloadDataModel box initialized")
 		}
 	}
 
+	/**
+	 * Lazy-initialized Box for VideoInfo entities.
+	 * Stores metadata specific to video downloads from yt-dlp and other sources.
+	 */
 	private val videoInfoBox: Box<VideoInfo> by lazy {
 		boxStore.boxFor(VideoInfo::class.java).also {
 			logger.d("VideoInfo box initialized")
 		}
 	}
 
+	/**
+	 * Lazy-initialized Box for VideoFormat entities.
+	 * Contains video format and codec information for media downloads.
+	 */
 	private val videoFormatBox: Box<VideoFormat> by lazy {
 		boxStore.boxFor(VideoFormat::class.java).also {
 			logger.d("VideoFormat box initialized")
 		}
 	}
 
+	/**
+	 * Lazy-initialized Box for RemoteFileInfo entities.
+	 * Stores metadata obtained from remote servers during download initialization.
+	 */
 	private val remoteFileInfoBox: Box<RemoteFileInfo> by lazy {
 		boxStore.boxFor(RemoteFileInfo::class.java).also {
 			logger.d("RemoteFileInfo box initialized")
 		}
 	}
 
+	/**
+	 * Lazy-initialized Box for AIOSettings entities.
+	 * Manages application settings and configuration snapshots.
+	 */
 	private val settingsBox: Box<AIOSettings> by lazy {
 		boxStore.boxFor(AIOSettings::class.java).also {
 			logger.d("AIOSettings box initialized")
@@ -210,8 +232,10 @@ object DownloadModelsDBManager {
 				.build()
 			downloadDataModel.videoInfo = videoInfoQuery.findFirst()
 			videoInfoQuery.close()
-			logger.d("VideoInfo ${if (downloadDataModel.videoInfo != null)
-				"found" else "not found"} for download ID: $downloadId")
+			logger.d("VideoInfo ${
+				if (downloadDataModel.videoInfo != null)
+					"found" else "not found"
+			} for download ID: $downloadId")
 
 			// Query VideoFormat by downloadId
 			val videoFormatQuery = videoFormatBox.query()
@@ -219,8 +243,10 @@ object DownloadModelsDBManager {
 				.build()
 			downloadDataModel.videoFormat = videoFormatQuery.findFirst()
 			videoFormatQuery.close()
-			logger.d("VideoFormat ${if (downloadDataModel.videoFormat != null)
-				"found" else "not found"} for download ID: $downloadId")
+			logger.d("VideoFormat ${
+				if (downloadDataModel.videoFormat != null)
+					"found" else "not found"
+			} for download ID: $downloadId")
 
 			// Query RemoteFileInfo by downloadId
 			val remoteFileInfoQuery = remoteFileInfoBox.query()
@@ -228,8 +254,10 @@ object DownloadModelsDBManager {
 				.build()
 			downloadDataModel.remoteFileInfo = remoteFileInfoQuery.findFirst()
 			remoteFileInfoQuery.close()
-			logger.d("RemoteFileInfo ${if (downloadDataModel.remoteFileInfo != null) 
-				"found" else "not found"} for download ID: $downloadId")
+			logger.d("RemoteFileInfo ${
+				if (downloadDataModel.remoteFileInfo != null)
+					"found" else "not found"
+			} for download ID: $downloadId")
 
 			// Query AIOSettings by downloadId with fallback to global settings
 			val aioSettingsQuery = settingsBox.query()

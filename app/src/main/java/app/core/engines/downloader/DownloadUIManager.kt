@@ -326,11 +326,11 @@ class DownloadUIManager(private val downloadSystem: DownloadSystem) {
 		AsyncJobUtils.executeOnMainThread {
 			if (rowUI.tag == null) {
 				logger.d("Creating new DownloaderRowUI for: ${downloadModel.fileName}")
-				rowUI.tag = DownloaderRowUI(rowUI) // Initialize row UI manager
+				rowUI.tag = DownloaderRowUIManager(rowUI) // Initialize row UI manager
 			}
 
 			// Update the row UI with the latest download data
-			(rowUI.tag as DownloaderRowUI).apply {
+			(rowUI.tag as DownloaderRowUIManager).apply {
 				logger.d("Updating DownloaderRowUI for: ${downloadModel.fileName}")
 				updateView(downloadModel)
 			}

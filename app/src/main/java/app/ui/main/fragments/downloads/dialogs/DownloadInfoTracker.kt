@@ -5,7 +5,7 @@ import android.text.Html.FROM_HTML_MODE_COMPACT
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import app.core.engines.downloader.DownloadDataModel
-import app.core.engines.downloader.DownloadInfoUtils.buildDownloadInfoHtmlString
+import app.core.engines.downloader.DownloadInfoHTMLUtils.buildDownloadInfoHtmlString
 import app.ui.main.MotherActivity
 import com.aio.R
 import lib.process.SimpleTimerUtils
