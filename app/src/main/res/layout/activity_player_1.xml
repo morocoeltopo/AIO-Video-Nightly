@@ -278,10 +278,28 @@
 				android:layout_marginBottom="@dimen/_8"
 				android:orientation="vertical">
 
-				<!-- Player control components (included layouts) -->
-				<include layout="@layout/activity_player_2_con_01" />
+				<LinearLayout
+					android:id="@+id/controller_portrait_v2"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:orientation="vertical"
+					android:visibility="visible">
 
-				<include layout="@layout/activity_player_2_con_02" />
+					<!-- Player control components (included layouts) -->
+					<include layout="@layout/activity_player_2_con_01" />
+
+					<include layout="@layout/activity_player_2_con_02" />
+				</LinearLayout>
+
+				<LinearLayout
+					android:id="@+id/controller_landscape_v2"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:orientation="vertical">
+
+					<include layout="@layout/activity_player_2_con_02_land" />
+
+				</LinearLayout>
 			</LinearLayout>
 		</androidx.cardview.widget.CardView>
 	</RelativeLayout>

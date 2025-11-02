@@ -12,17 +12,23 @@
 	tools:ignore="UseAppTint">
 
 	<!-- ============================================================
-		 MAIN PLAYBACK CONTROLS CONTAINER
-         Horizontal container that evenly distributes five control
-         buttons using weight sum for proportional sizing. Provides
-         consistent margins and centered vertical alignment.
-		 ============================================================ -->
+	     MAIN PLAYBACK CONTROLS CONTAINER
+	     Horizontal container that evenly distributes control buttons
+	     and progress bar using weight sum for proportional sizing.
+	     Provides consistent margins and centered vertical alignment.
+	     ============================================================ -->
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:baselineAligned="false"
 		android:orientation="horizontal">
 
+		<!-- ======================================================
+		     TRANSPORT CONTROLS CONTAINER
+		     Houses the five main playback control buttons (lock,
+		     previous, play/pause, next, config) with equal weight
+		     distribution for consistent sizing across devices.
+		     ====================================================== -->
 		<LinearLayout
 			android:id="@+id/btn_container_main_playback"
 			android:layout_width="0dp"
@@ -37,12 +43,12 @@
 			android:orientation="horizontal"
 			android:weightSum="5">
 
-			<!-- ======================================================
-				 LOCK CONTROLS BUTTON
-				 Toggles UI lock mode to prevent accidental touches
-				 during playback. First in the control sequence for
-				 easy access to immersion mode.
-				 ====================================================== -->
+			<!-- ==================================================
+			     LOCK CONTROLS BUTTON
+			     Toggles UI lock mode to prevent accidental touches
+			     during playback. First in the control sequence for
+			     easy access to immersion mode.
+			     ================================================== -->
 			<RelativeLayout
 				android:id="@+id/btn_video_controllers_lock"
 				android:layout_width="wrap_content"
@@ -66,12 +72,12 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
-			<!-- ======================================================
-				 PREVIOUS TRACK BUTTON
-				 Navigates to the previous media item in the playlist
-				 or restarts current track if pressed near beginning.
-				 Second position in the control sequence.
-				 ====================================================== -->
+			<!-- ==================================================
+			     PREVIOUS TRACK BUTTON
+			     Navigates to the previous media item in the playlist
+			     or restarts current track if pressed near beginning.
+			     Second position in the control sequence.
+			     ================================================== -->
 			<RelativeLayout
 				android:id="@+id/btn_video_previous"
 				android:layout_width="wrap_content"
@@ -95,12 +101,12 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
-			<!-- ======================================================
-				 PLAY/PAUSE TOGGLE BUTTON
-				 Primary playback control that toggles between play
-				 and pause states. Centered position with larger icon
-				 for emphasis and easy access.
-				 ====================================================== -->
+			<!-- ==================================================
+			     PLAY/PAUSE TOGGLE BUTTON
+			     Primary playback control that toggles between play
+			     and pause states. Centered position with larger icon
+			     for emphasis and easy access.
+			     ================================================== -->
 			<LinearLayout
 				android:id="@+id/btn_video_play_pause_toggle"
 				android:layout_width="wrap_content"
@@ -124,12 +130,12 @@
 					tools:ignore="ImageContrastCheck" />
 			</LinearLayout>
 
-			<!-- ======================================================
-				 NEXT TRACK BUTTON
-				 Advances to the next media item in the playlist.
-				 Fourth position in the control sequence, symmetrical
-				 to previous button.
-				 ====================================================== -->
+			<!-- ==================================================
+			     NEXT TRACK BUTTON
+			     Advances to the next media item in the playlist.
+			     Fourth position in the control sequence, symmetrical
+			     to previous button.
+			     ================================================== -->
 			<RelativeLayout
 				android:id="@+id/btn_video_next"
 				android:layout_width="wrap_content"
@@ -153,12 +159,12 @@
 					tools:ignore="ImageContrastCheck" />
 			</RelativeLayout>
 
-			<!-- ======================================================
-				 PLAYER CONFIGURATIONS BUTTON
-				 Access point for additional player settings like
-				 playback speed, audio track selection, and subtitle
-				 options. Final position in the control sequence.
-				 ====================================================== -->
+			<!-- ==================================================
+			     PLAYER CONFIGURATIONS BUTTON
+			     Access point for additional player settings like
+			     playback speed, audio track selection, and subtitle
+			     options. Final position in the control sequence.
+			     ================================================== -->
 			<RelativeLayout
 				android:id="@+id/btn_player_configs"
 				android:layout_width="wrap_content"
@@ -184,6 +190,12 @@
 
 		</LinearLayout>
 
+		<!-- ======================================================
+		     PROGRESS BAR CONTAINER
+		     Houses the playback progress bar with time displays
+		     on both ends. Uses relative layout for precise positioning
+		     of elapsed time, progress bar, and total duration.
+		     ====================================================== -->
 		<RelativeLayout
 			android:id="@+id/progress_container"
 			android:layout_width="0dp"
@@ -198,12 +210,12 @@
 			android:orientation="horizontal"
 			android:weightSum="5">
 
-			<!-- ======================================================
-				 ELAPSED TIME CONTAINER (LEFT)
-				 Displays the current playback position in minutes:seconds.
-				 Features a rounded background for visual distinction and
-				 consistent styling with the duration display.
-				 ====================================================== -->
+			<!-- ==================================================
+			     ELAPSED TIME CONTAINER (LEFT)
+			     Displays the current playback position in minutes:seconds.
+			     Features a rounded background for visual distinction and
+			     consistent styling with the duration display.
+			     ================================================== -->
 			<LinearLayout
 				android:id="@+id/txt_video_progress_timer_container_left"
 				android:layout_width="wrap_content"
@@ -228,12 +240,12 @@
 					android:textStyle="bold" />
 			</LinearLayout>
 
-			<!-- ======================================================
-				 CUSTOM PROGRESS BAR
-				 Enhanced progress bar with buffering indicators,
-				 scrubber handle, and customizable colors. Supports
-				 seeking and displays both played and buffered ranges.
-				 ====================================================== -->
+			<!-- ==================================================
+			     CUSTOM PROGRESS BAR
+			     Enhanced progress bar with buffering indicators,
+			     scrubber handle, and customizable colors. Supports
+			     seeking and displays both played and buffered ranges.
+			     ================================================== -->
 			<lib.ui.RoundedTimeBar
 				android:id="@+id/video_progress_bar"
 				android:layout_width="match_parent"
@@ -248,12 +260,12 @@
 				app:show_buffering="always"
 				app:unplayed_color="@color/color_secondary" />
 
-			<!-- ======================================================
-				 TOTAL DURATION CONTAINER (RIGHT)
-				 Displays the total length of the media file in
-				 minutes:seconds. Mirrors the elapsed time container
-				 design for visual consistency and balance.
-				 ====================================================== -->
+			<!-- ==================================================
+			     TOTAL DURATION CONTAINER (RIGHT)
+			     Displays the total length of the media file in
+			     minutes:seconds. Mirrors the elapsed time container
+			     design for visual consistency and balance.
+			     ================================================== -->
 			<LinearLayout
 				android:id="@+id/txt_video_duration_container_right"
 				android:layout_width="wrap_content"
