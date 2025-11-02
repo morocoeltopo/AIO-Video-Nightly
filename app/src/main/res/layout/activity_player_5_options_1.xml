@@ -12,11 +12,12 @@
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
 	tools:ignore="UseAppTint,UseCompatTextViewDrawableXml">
+
 	<!-- ============================================================
-		 CARD CONTAINER
-		 Provides elevation, rounded corners, and consistent dialog
-		 background for all media action items.
-		 ============================================================ -->
+	     CARD CONTAINER
+	     Provides elevation, rounded corners, and consistent dialog
+	     background for all media action items.
+	     ============================================================ -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
@@ -27,19 +28,20 @@
 		app:cardBackgroundColor="@color/color_cardview_bg"
 		app:cardCornerRadius="@dimen/_10"
 		app:cardElevation="@dimen/_2">
+
 		<!-- ======================================================
-			 ROOT LAYOUT
-			 Holds all media option buttons stacked vertically.
-			 ====================================================== -->
+		     ROOT LAYOUT
+		     Holds all media option buttons stacked vertically.
+		     ====================================================== -->
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
 			<!-- ==================================================
-				 TITLE BAR
-				 Displays dialog title on a colored background.
-				 ================================================== -->
+			     TITLE BAR
+			     Displays dialog title on a colored background.
+			     ================================================== -->
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/_35"
@@ -59,30 +61,30 @@
 			</LinearLayout>
 
 			<!-- ============================================================
-	 SCROLL VIEW CONTAINER
-	 Wraps the entire dialog content to enable scrolling when
-	 settings options exceed available screen height. Ensures
-	 all options remain accessible on smaller displays.
-	 ============================================================ -->
+			     SCROLL VIEW CONTAINER
+			     Wraps the entire dialog content to enable scrolling when
+			     media options exceed available screen height. Ensures
+			     all options remain accessible on smaller displays.
+			     ============================================================ -->
 			<ScrollView
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content">
 
 				<!-- ======================================================
-					 SCROLL CONTENT CONTAINER
-					 LinearLayout container for scrollable content that
-					 maintains vertical orientation and proper spacing
-					 for all settings sections.
-					 ====================================================== -->
+				     SCROLL CONTENT CONTAINER
+				     LinearLayout container for scrollable content that
+				     maintains vertical orientation and proper spacing
+				     for all media action sections.
+				     ====================================================== -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 
 					<!-- ==================================================
-						 DELETE FILE OPTION
-						 Deletes the current media file from storage.
-						 ================================================== -->
+					     DELETE FILE OPTION
+					     Deletes the current media file from storage.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_delete_file"
 						android:layout_width="match_parent"
@@ -110,9 +112,9 @@
 					</LinearLayout>
 
 					<!-- ==================================================
-						 CONVERT TO AUDIO OPTION
-						 Converts the current video file into an audio file.
-						 ================================================== -->
+					     CONVERT TO AUDIO OPTION
+					     Converts the current video file into an audio file.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_convert_to_audio"
 						android:layout_width="match_parent"
@@ -138,9 +140,9 @@
 					</LinearLayout>
 
 					<!-- ==================================================
-						 OPEN EXTERNALLY OPTION
-						 Opens the media file using an external application.
-						 ================================================== -->
+					     OPEN EXTERNALLY OPTION
+					     Opens the media file using an external application.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_open_in_another"
 						android:layout_width="match_parent"
@@ -166,9 +168,9 @@
 					</LinearLayout>
 
 					<!-- ==================================================
-						 DISCOVER VIDEO OPTION
-						 Opens the video source or related website.
-						 ================================================== -->
+					     DISCOVER VIDEO OPTION
+					     Opens the video source or related website.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_discover_video"
 						android:layout_width="match_parent"
@@ -195,9 +197,9 @@
 					</LinearLayout>
 
 					<!-- ==================================================
-						 PRIVATE VIDEOS OPTION
-						 Toggles visibility of private video playback.
-						 ================================================== -->
+					     PRIVATE VIDEOS OPTION
+					     Toggles visibility of private video playback.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_private_videos"
 						android:layout_width="match_parent"
@@ -232,9 +234,9 @@
 					</LinearLayout>
 
 					<!-- ==================================================
-						 SNAPSHOT OPTION
-						 Captures a video frame as an image snapshot.
-						 ================================================== -->
+					     SNAPSHOT OPTION
+					     Captures a video frame as an image snapshot.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_snapshot"
 						android:layout_width="match_parent"
@@ -261,9 +263,9 @@
 					</LinearLayout>
 
 					<!-- ==================================================
-						 SHARE MEDIA OPTION
-						 Shares the current media file via other apps.
-						 ================================================== -->
+					     SHARE MEDIA OPTION
+					     Shares the current media file via other apps.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_share_media"
 						android:layout_width="match_parent"
@@ -289,9 +291,9 @@
 					</LinearLayout>
 
 					<!-- ==================================================
-						 MEDIA INFO OPTION
-						 Displays metadata and technical info of the file.
-						 ================================================== -->
+					     MEDIA INFO OPTION
+					     Displays metadata and technical info of the file.
+					     ================================================== -->
 					<LinearLayout
 						android:id="@+id/btn_media_info"
 						android:layout_width="match_parent"
