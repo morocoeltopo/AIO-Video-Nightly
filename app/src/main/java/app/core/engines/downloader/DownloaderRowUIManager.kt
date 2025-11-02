@@ -1,5 +1,6 @@
 package app.core.engines.downloader
 
+import android.graphics.Paint
 import android.view.View
 import android.view.View.GONE
 import android.widget.ImageView
@@ -224,34 +225,43 @@ class DownloaderRowUIManager(private val downloadRowView: View) {
 	 * Usage example: Shrinking "very_long_filename.mp4" to fit, preserving ".mp4" extension
 	 */
 	private fun shrinkTextToFitView(textView: TextView, text: String, endMatch: String) {
-		var newText = text
-		val paint = textView.paint
+		// Calculate available width accounting for padding
 		val availableWidth = textView.width - textView.paddingStart - textView.paddingEnd
 		logger.d("Fit text: \"$text\" endMatch=\"$endMatch\"")
 
 		// If view width isn't available yet, retry after layout pass
 		if (availableWidth <= 0) {
-			logger.d("Width not ready, retrying")
 			textView.post { shrinkTextToFitView(textView, text, endMatch) }
 			return
 		}
 
-		// Only attempt to trim if the text ends with the specified pattern
-		if (newText.endsWith(endMatch, ignoreCase = true)) {
-			logger.d("Trimming text end \"$endMatch\" if needed")
+		var newText = text
+		// Create a copy of the TextView's paint for text measurement
+		val paint = Paint(textView.paint)
 
-			// Gradually remove characters until text fits or becomes too short
-			while (paint.measureText(newText) > availableWidth && newText.length > 4) {
-				if (newText.endsWith(endMatch, ignoreCase = true)) {
-					newText = newText.dropLast(endMatch.length)
+		try {
+			// Only attempt to trim if the text ends with the specified pattern
+			if (newText.endsWith(endMatch, ignoreCase = true)) {
+				logger.d("Trimming text end \"$endMatch\" if needed")
+				// Gradually remove characters until text fits or becomes too short
+				while (paint.measureText(newText) > availableWidth && newText.length > 4) {
+					newText = if (newText.endsWith(endMatch, ignoreCase = true)) {
+						// Preferentially remove the endMatch pattern first
+						newText.dropLast(endMatch.length)
+					} else {
+						// Fall back to removing single characters
+						newText.dropLast(1)
+					}
 				}
+				logger.d("Trimmed text: \"$newText\"")
 			}
-			logger.d("Trimmed text: \"$newText\"")
-		} else logger.d("No trim needed")
-
-		// Apply the potentially modified text to the TextView
-		textView.text = newText
-		logger.d("Text set")
+			// Apply the potentially modified text to the TextView
+			textView.text = newText
+		} catch (error: Exception) {
+			// Fall back to original text if measurement fails
+			logger.e("ShrinkText : Font measurement failed for text=$text", error)
+			textView.text = text
+		}
 	}
 
 	/**
