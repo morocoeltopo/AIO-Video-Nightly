@@ -1,4 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Media player activity layout with ExoPlayer integration -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- =========================================================================
+     Media Player Activity Layout
+     Defines a full-featured media player interface with ExoPlayer integration,
+     supporting both video playback and audio-only content with visualizations.
+     Includes volume/brightness controls, player controls, and adaptive UI for
+     different media types and device configurations.
+     ========================================================================= -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
@@ -9,7 +16,12 @@
 	tools:context="app.ui.others.media_player.MediaPlayerActivity"
 	tools:ignore="UseAppTint">
 
-	<!-- ExoPlayer video surface -->
+	<!-- ============================================================
+		 EXOPLAYER VIDEO SURFACE
+         Primary video playback surface using AndroidX Media3 ExoPlayer.
+         Configured for fullscreen display with black background and
+         automatic resize mode to fit content.
+		 ============================================================ -->
 	<androidx.media3.ui.PlayerView
 		android:id="@+id/video_player_view"
 		android:layout_width="match_parent"
@@ -24,7 +36,12 @@
 		app:surface_type="surface_view"
 		app:use_controller="false" />
 
-	<!-- Audio album art (visible for audio-only playback) -->
+	<!-- ============================================================
+		 AUDIO ALBUM ART
+         Displays album artwork for audio-only playback when video
+         surface is not visible. Uses centerCrop scaling and black
+         background for consistent appearance.
+		 ============================================================ -->
 	<ImageView
 		android:id="@+id/img_audio_album_art"
 		android:layout_width="match_parent"
@@ -35,7 +52,12 @@
 		android:scaleType="centerCrop"
 		android:visibility="gone" />
 
-	<!-- Lottie animation for audio visualizing -->
+	<!-- ============================================================
+		 AUDIO VISUALIZATION ANIMATION
+         Lottie animation that provides visual feedback during audio
+         playback. Centered on screen with hardware acceleration
+         for smooth performance.
+		 ============================================================ -->
 	<com.airbnb.lottie.LottieAnimationView
 		android:id="@+id/anim_audio_visualizing"
 		android:layout_width="match_parent"
@@ -54,22 +76,37 @@
 		app:lottie_loop="true"
 		tools:ignore="ImageContrastCheck,VisualLintBounds" />
 
-	<!-- Dark overlay for night mode -->
+	<!-- ============================================================
+		 NIGHT MODE OVERLAY
+         Semi-transparent dark overlay applied in night mode to
+         reduce brightness and improve viewing comfort in low light.
+		 ============================================================ -->
 	<View
 		android:id="@+id/night_mode_invisible_area"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:background="@color/transparent_dark" />
 
-	<!-- Invisible touch area for detecting user interactions -->
+	<!-- ============================================================
+		 INVISIBLE TOUCH AREA
+         Transparent overlay for detecting user interactions like
+         taps and gestures without visible UI elements. Includes
+         vertical margins to avoid edge conflicts.
+		 ============================================================ -->
 	<View
 		android:id="@+id/invisible_touch_area"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:layout_marginVertical="@dimen/_80"
 		android:clickable="true"
 		tools:ignore="SpeakableTextPresentCheck" />
 
-	<!-- Quick info toast (e.g., zoom status) -->
+	<!-- ============================================================
+		 QUICK INFO TOAST
+         Temporary notification display for status updates like
+         zoom mode changes, playback speed, or other quick messages.
+         Centered with rounded transparent background.
+		 ============================================================ -->
 	<RelativeLayout
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -93,7 +130,12 @@
 			android:visibility="gone" />
 	</RelativeLayout>
 
-	<!-- Volume slider container -->
+	<!-- ============================================================
+		 VOLUME SLIDER CONTAINER
+         Vertical volume control positioned on the right side of
+         the screen. Appears on demand during user interactions
+         and provides visual feedback with icon and progress bar.
+		 ============================================================ -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/container_volume_slider"
 		android:layout_width="wrap_content"
@@ -112,7 +154,8 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
-			<!-- Volume icon at top -->
+
+			<!-- Volume icon rotated for vertical orientation -->
 			<ImageView
 				android:id="@+id/img_volume"
 				android:layout_width="wrap_content"
@@ -126,7 +169,7 @@
 				android:tint="@color/color_text_primary"
 				tools:ignore="ImageContrastCheck" />
 
-			<!-- Vertical ProgressBar -->
+			<!-- Vertical progress bar for precise volume adjustment -->
 			<lib.ui.VerticalProgressBar
 				android:id="@+id/progress_volume"
 				android:layout_width="wrap_content"
@@ -137,7 +180,12 @@
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>
 
-	<!-- Brightness slider container -->
+	<!-- ============================================================
+		 BRIGHTNESS SLIDER CONTAINER
+         Vertical brightness control positioned on the left side
+         of the screen. Mirrors the volume control design for
+         consistent user experience.
+		 ============================================================ -->
 	<androidx.cardview.widget.CardView
 		android:id="@+id/container_brightness_slider"
 		android:layout_width="wrap_content"
@@ -157,7 +205,7 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
-			<!-- Brightness icon at top -->
+			<!-- Brightness icon rotated for vertical orientation -->
 			<ImageView
 				android:id="@+id/img_brightness"
 				android:layout_width="wrap_content"
@@ -171,7 +219,7 @@
 				android:tint="@color/color_text_primary"
 				tools:ignore="ImageContrastCheck" />
 
-			<!-- Vertical ProgressBar -->
+			<!-- Vertical progress bar for screen brightness adjustment -->
 			<lib.ui.VerticalProgressBar
 				android:id="@+id/progress_brightness"
 				android:layout_width="wrap_content"
@@ -182,13 +230,18 @@
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>
 
-	<!-- Player controls container -->
+	<!-- ============================================================
+		 PLAYER CONTROLS CONTAINER
+         Main container for all player control elements including
+         action bar, transport controls, and progress indicators.
+         Handles device cutout areas for modern screen designs.
+		 ============================================================ -->
 	<RelativeLayout
 		android:id="@+id/container_player_controller"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
 
-		<!-- Padding for device cutout (notch) area -->
+		<!-- Device cutout/notch padding area -->
 		<View
 			android:id="@+id/device_cutout_padding_view"
 			android:layout_width="match_parent"
@@ -196,7 +249,7 @@
 			android:layout_alignParentTop="true"
 			android:background="@color/transparent" />
 
-		<!-- Action bar at the top -->
+		<!-- Top action bar with media info and navigation -->
 		<include
 			android:id="@+id/action_bar"
 			layout="@layout/activity_player_1_ab"
@@ -204,7 +257,7 @@
 			android:layout_height="@dimen/actionbar_height_size"
 			android:layout_below="@id/device_cutout_padding_view" />
 
-		<!-- Bottom player controls card -->
+		<!-- Bottom player controls card with rounded corners -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/player_controller_container"
 			android:layout_width="match_parent"
@@ -225,7 +278,7 @@
 				android:layout_marginBottom="@dimen/_8"
 				android:orientation="vertical">
 
-				<!-- Player control components -->
+				<!-- Player control components (included layouts) -->
 				<include layout="@layout/activity_player_2_con_01" />
 
 				<include layout="@layout/activity_player_2_con_02" />
@@ -233,7 +286,12 @@
 		</androidx.cardview.widget.CardView>
 	</RelativeLayout>
 
-	<!-- Unlock overlay button (fullscreen/lock toggle) -->
+	<!-- ============================================================
+		 UNLOCK OVERLAY BUTTON
+         Toggle button for switching between fullscreen and locked
+         modes. Positioned at bottom center with positive selector
+         background for clear visual feedback.
+		 ============================================================ -->
 	<ImageView
 		android:id="@+id/btn_video_unlock_overlay"
 		android:layout_width="@dimen/_50"

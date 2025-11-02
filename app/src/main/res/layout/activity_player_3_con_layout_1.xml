@@ -1,23 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Merge layout for ExoPlayer video player surface and overlay components -->
+<!-- =========================================================================
+     ExoPlayer Video Player Surface and Overlay Components (Merge Layout)
+     Defines the core video playback surface with aspect ratio management,
+     subtitle display, buffering indicators, and error handling. Serves as
+     the foundation for ExoPlayer's visual presentation layer.
+     ========================================================================= -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto">
 
-	<!-- Container for maintaining video aspect ratio -->
+	<!-- ============================================================
+		 ASPECT RATIO FRAME LAYOUT
+         Maintains correct video proportions by automatically adjusting
+         dimensions to match the media's native aspect ratio. Centers
+         content to prevent distortion and ensure optimal viewing.
+		 ============================================================ -->
 	<androidx.media3.ui.AspectRatioFrameLayout
 		android:id="@id/exo_content_frame"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:layout_gravity="center">
 
-		<!-- Shutter view (background when video not playing) -->
+		<!-- ======================================================
+			 SHUTTER VIEW
+             Solid color background displayed when video is not
+             actively playing (loading, buffering, or between tracks).
+             Provides visual consistency during state transitions.
+			 ====================================================== -->
 		<View
 			android:id="@id/exo_shutter"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:background="@color/color_primary" />
 
-		<!-- Album art/thumbnail image (for audio tracks) -->
+		<!-- ======================================================
+			 ALBUM ART/THUMBNAIL DISPLAY
+             Shows cover art for audio content or preview images
+             for video. Uses fitXY scaling to fill the entire
+             container while maintaining aspect ratio.
+			 ====================================================== -->
 		<ImageView
 			android:id="@id/exo_artwork"
 			android:layout_width="match_parent"
@@ -25,13 +45,23 @@
 			android:importantForAccessibility="no"
 			android:scaleType="fitXY" />
 
-		<!-- Subtitle/caption display area -->
+		<!-- ======================================================
+			 SUBTITLE AND CAPTION DISPLAY
+             Renders closed captions, subtitles, and other text
+             tracks synchronized with media playback. Supports
+             styling and positioning of text overlays.
+			 ====================================================== -->
 		<androidx.media3.ui.SubtitleView
 			android:id="@+id/exo_subtitles"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent" />
 
-		<!-- Buffering progress indicator -->
+		<!-- ======================================================
+			 BUFFERING PROGRESS INDICATOR
+             Spinning progress animation displayed during media
+             loading and network buffering. Centered overlay that
+             provides user feedback during playback interruptions.
+			 ====================================================== -->
 		<ProgressBar
 			android:id="@id/exo_buffering"
 			android:layout_width="wrap_content"
@@ -40,7 +70,12 @@
 			android:indeterminate="true"
 			app:buffered_color="@color/color_yellow_accent" />
 
-		<!-- Error message display -->
+		<!-- ======================================================
+			 ERROR MESSAGE DISPLAY
+             Shows playback error messages with semi-transparent
+             background for readability. Centered text display
+             for critical playback failures and user notifications.
+			 ====================================================== -->
 		<TextView
 			android:id="@id/exo_error_message"
 			android:layout_width="match_parent"
