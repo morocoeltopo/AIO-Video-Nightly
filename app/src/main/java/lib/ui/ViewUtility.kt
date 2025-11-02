@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Context.WINDOW_SERVICE
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Bitmap.CompressFormat
@@ -1564,4 +1565,23 @@ object ViewUtility {
 		}
 	}
 
+	/**
+	 * Returns the current orientation of the given Activity as a string.
+	 *
+	 * Possible return values:
+	 * - "landscape" when the device is in landscape orientation
+	 * - "portrait" when the device is in portrait orientation
+	 * - "undefined" when the orientation cannot be determined
+	 *
+	 * @param activity The Activity whose current orientation is to be checked.
+	 * @return A string representing the current orientation state.
+	 */
+	@JvmStatic
+	fun getCurrentOrientation(activity: Activity): String {
+		return when (activity.resources.configuration.orientation) {
+			Configuration.ORIENTATION_LANDSCAPE -> "landscape"
+			Configuration.ORIENTATION_PORTRAIT -> "portrait"
+			else -> "undefined"
+		}
+	}
 }

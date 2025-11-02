@@ -146,13 +146,22 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	lateinit var albumArtView: ImageView
 	lateinit var audioVisualizerView: LottieAnimationView
 	lateinit var playbackController: View
+
+	lateinit var playbackControllerBottomPortrait: View
+	lateinit var playbackControllerBottomLandscape: View
+
 	lateinit var backButton: View
 	lateinit var videoTitleText: TextView
 	lateinit var optionsButton: View
 
 	lateinit var currentTimeText: TextView
+	lateinit var currentTimeTextLand: TextView
+
 	lateinit var durationText: TextView
+	lateinit var durationTextLand: TextView
+
 	lateinit var mediaProgressBar: RoundedTimeBar
+	lateinit var mediaProgressBarLand: RoundedTimeBar
 
 	lateinit var brightnessSlider: VerticalProgressBar
 	lateinit var volumeSlider: VerticalProgressBar
@@ -160,10 +169,20 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	lateinit var brightnessSliderContainer: View
 
 	lateinit var lockButton: View
+	lateinit var lockButtonLand: View
+
 	lateinit var prevButton: View
+	lateinit var prevButtonLand: View
+
 	lateinit var playPauseButton: View
+	lateinit var playPauseButtonLand: View
+
 	lateinit var nextButton: View
+	lateinit var nextButtonLand: View
+
 	lateinit var configButton: View
+	lateinit var configButtonLand: View
+
 	lateinit var unlockButton: View
 
 	var areControllersLocked = false
@@ -339,6 +358,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	fun handleLandscapeMode() {
 		cutoutPaddingView.visibility = GONE
+		playbackControllerBottomPortrait.visibility = GONE
+		playbackControllerBottomLandscape.visibility = VISIBLE
 		delay(timeInMile = 400, listener = object : OnTaskFinishListener {
 			override fun afterDelay() = hidePlaybackControls()
 		})
@@ -346,6 +367,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	fun handlePortraitMode() {
 		cutoutPaddingView.visibility = VISIBLE
+		playbackControllerBottomLandscape.visibility = GONE
+		playbackControllerBottomPortrait.visibility = VISIBLE
 		delay(timeInMile = 400, listener = object : OnTaskFinishListener {
 			override fun afterDelay() = hidePlaybackControls()
 		})
@@ -581,6 +604,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			playbackController = findViewById(id.container_player_controller)
 			playbackController.visibility = GONE
 
+			playbackControllerBottomPortrait = findViewById(id.controller_portrait_v2)
+			playbackControllerBottomLandscape = findViewById(id.controller_landscape_v2)
+
 			// Audio album art & visualizer
 			albumArtView = findViewById(id.img_audio_album_art)
 			audioVisualizerView = findViewById(id.anim_audio_visualizing)
@@ -602,8 +628,13 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 			// Media progress display
 			currentTimeText = findViewById(id.txt_video_progress_timer)
+			currentTimeTextLand = findViewById(id.txt_video_progress_timer_land)
+
 			mediaProgressBar = findViewById(id.video_progress_bar)
 			mediaProgressBar.addListener(createScrubberSeekListener())
+
+			mediaProgressBarLand = findViewById(id.video_progress_bar_land)
+			mediaProgressBarLand.addListener(createScrubberSeekListener())
 
 			// Brightness slider & container
 			brightnessSlider = findViewById(id.progress_brightness)
@@ -616,22 +647,38 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			volumeSliderContainer = findViewById(id.container_volume_slider)
 
 			durationText = findViewById(id.txt_video_duration)
+			durationTextLand = findViewById(id.txt_video_duration_land)
 
 			// Playback control buttons
 			lockButton = findViewById(id.btn_video_controllers_lock)
+			lockButtonLand = findViewById(id.btn_video_controllers_lock_land)
+
 			lockButton.setOnClickListener { lockPlaybackControls() }
+			lockButtonLand.setOnClickListener { lockPlaybackControls() }
 
 			prevButton = findViewById(id.btn_video_previous)
+			prevButtonLand = findViewById(id.btn_video_previous_land)
+
 			prevButton.setOnClickListener { playPreviousVideoItem() }
+			prevButtonLand.setOnClickListener { playPreviousVideoItem() }
 
 			playPauseButton = findViewById(id.btn_video_play_pause_toggle)
+			playPauseButtonLand = findViewById(id.btn_video_play_pause_toggle_land)
+
 			playPauseButton.setOnClickListener { togglePlaybackState() }
+			playPauseButtonLand.setOnClickListener { togglePlaybackState() }
 
 			nextButton = findViewById(id.btn_video_next)
+			nextButtonLand = findViewById(id.btn_video_next_land)
+
 			nextButton.setOnClickListener { playNextVideoItem() }
+			nextButtonLand.setOnClickListener { playNextVideoItem() }
 
 			configButton = findViewById(id.btn_player_configs)
+			configButtonLand = findViewById(id.btn_player_configs_land)
+
 			configButton.setOnClickListener { openPlayerConfiguration() }
+			configButtonLand.setOnClickListener { openPlayerConfiguration() }
 
 			unlockButton = findViewById(id.btn_video_unlock_overlay)
 			unlockButton.setOnClickListener { unlockPlaybackControls() }
@@ -833,6 +880,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 								val newSeekPosition =
 									(startSeekPosition + seekOffset).coerceIn(0, getVideoDuration())
 								mediaProgressBar.setPosition(newSeekPosition)
+								mediaProgressBarLand.setPosition(newSeekPosition)
 								player.seekTo(newSeekPosition)
 								showQuickPlayerInfo(formatPlaybackTime(newSeekPosition))
 								return true
@@ -1339,9 +1387,15 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	private fun refreshPlaybackProgressUI() {
 		currentTimeText.text = formatPlaybackTime(player.currentPosition)
+		currentTimeTextLand.text = formatPlaybackTime(player.currentPosition)
 		val formattedDuration = formatPlaybackTime(player.duration)
-		if (!formattedDuration.startsWith("-")) durationText.text = formattedDuration
-		else durationText.text = getString(string.title_00_00)
+		if (!formattedDuration.startsWith("-")) {
+			durationText.text = formattedDuration
+			durationTextLand.text = formattedDuration
+		} else {
+			durationText.text = getString(string.title_00_00)
+			durationTextLand.text = getString(string.title_00_00)
+		}
 
 		val totalDuration = player.duration
 		val currentPos = player.currentPosition
@@ -1349,8 +1403,13 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		currentPlaybackPosition = currentPos
 
 		mediaProgressBar.setDuration(totalDuration)
+		mediaProgressBarLand.setDuration(totalDuration)
+
 		mediaProgressBar.setPosition(currentPos)
+		mediaProgressBarLand.setPosition(currentPos)
+
 		mediaProgressBar.setBufferedPosition(bufferedPos)
+		mediaProgressBarLand.setBufferedPosition(bufferedPos)
 	}
 
 	private fun handlePlaybackControllerVisibility(shouldTogglePlayback: Boolean = true) {

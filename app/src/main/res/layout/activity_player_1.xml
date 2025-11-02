@@ -155,7 +155,11 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
-			<!-- Volume icon rotated for vertical orientation -->
+			<!-- ==================================================
+				 VOLUME ICON
+                 Rotated volume icon indicating audio control function.
+                 Uses vertical orientation to match slider direction.
+				 ================================================== -->
 			<ImageView
 				android:id="@+id/img_volume"
 				android:layout_width="wrap_content"
@@ -169,7 +173,11 @@
 				android:tint="@color/color_text_primary"
 				tools:ignore="ImageContrastCheck" />
 
-			<!-- Vertical progress bar for precise volume adjustment -->
+			<!-- ==================================================
+				 VERTICAL VOLUME PROGRESS BAR
+                 Custom vertical progress bar for precise volume
+                 adjustment. Positioned below the volume icon.
+				 ================================================== -->
 			<lib.ui.VerticalProgressBar
 				android:id="@+id/progress_volume"
 				android:layout_width="wrap_content"
@@ -205,7 +213,11 @@
 			android:layout_height="wrap_content"
 			android:orientation="vertical">
 
-			<!-- Brightness icon rotated for vertical orientation -->
+			<!-- ==================================================
+				 BRIGHTNESS ICON
+                 Rotated brightness icon indicating screen brightness
+                 control function. Matches volume icon styling.
+				 ================================================== -->
 			<ImageView
 				android:id="@+id/img_brightness"
 				android:layout_width="wrap_content"
@@ -219,7 +231,11 @@
 				android:tint="@color/color_text_primary"
 				tools:ignore="ImageContrastCheck" />
 
-			<!-- Vertical progress bar for screen brightness adjustment -->
+			<!-- ==================================================
+				 VERTICAL BRIGHTNESS PROGRESS BAR
+                 Custom vertical progress bar for screen brightness
+                 adjustment. Positioned below the brightness icon.
+				 ================================================== -->
 			<lib.ui.VerticalProgressBar
 				android:id="@+id/progress_brightness"
 				android:layout_width="wrap_content"
@@ -241,7 +257,12 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
 
-		<!-- Device cutout/notch padding area -->
+		<!-- ======================================================
+			 DEVICE CUTOUT PADDING VIEW
+             Provides safe area padding for device notches and
+             cutouts. Ensures UI elements don't overlap with
+             hardware features on modern displays.
+			 ====================================================== -->
 		<View
 			android:id="@+id/device_cutout_padding_view"
 			android:layout_width="match_parent"
@@ -249,7 +270,11 @@
 			android:layout_alignParentTop="true"
 			android:background="@color/transparent" />
 
-		<!-- Top action bar with media info and navigation -->
+		<!-- ======================================================
+			 TOP ACTION BAR
+             Included layout containing media title, back button,
+             and options menu. Positioned below cutout padding.
+			 ====================================================== -->
 		<include
 			android:id="@+id/action_bar"
 			layout="@layout/activity_player_1_ab"
@@ -257,7 +282,12 @@
 			android:layout_height="@dimen/actionbar_height_size"
 			android:layout_below="@id/device_cutout_padding_view" />
 
-		<!-- Bottom player controls card with rounded corners -->
+		<!-- ======================================================
+			 BOTTOM PLAYER CONTROLS CARD
+             Card container for transport controls, progress bars,
+             and media actions. Features rounded corners and
+             elevation for visual hierarchy.
+			 ====================================================== -->
 		<androidx.cardview.widget.CardView
 			android:id="@+id/player_controller_container"
 			android:layout_width="match_parent"
@@ -266,18 +296,23 @@
 			android:layout_marginStart="@dimen/_10"
 			android:layout_marginTop="@dimen/_10"
 			android:layout_marginEnd="@dimen/_10"
-			android:layout_marginBottom="@dimen/_20"
+			android:layout_marginBottom="@dimen/_10"
 			app:cardBackgroundColor="@color/color_actionbar_title_bg"
 			app:cardCornerRadius="@dimen/_10"
-			app:cardElevation="@dimen/_5">
+			app:cardElevation="@dimen/_2">
 
 			<LinearLayout
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_marginTop="@dimen/_5"
-				android:layout_marginBottom="@dimen/_8"
+				android:layout_marginBottom="@dimen/_5"
 				android:orientation="vertical">
 
+				<!-- ==================================================
+					 PORTRAIT MODE CONTROLLER
+                     Vertical layout optimized for portrait orientation.
+                     Contains playback controls and progress indicators.
+					 ================================================== -->
 				<LinearLayout
 					android:id="@+id/controller_portrait_v2"
 					android:layout_width="wrap_content"
@@ -285,18 +320,25 @@
 					android:orientation="vertical"
 					android:visibility="visible">
 
-					<!-- Player control components (included layouts) -->
+					<!-- Included portrait mode control components -->
 					<include layout="@layout/activity_player_2_con_01" />
 
 					<include layout="@layout/activity_player_2_con_02" />
 				</LinearLayout>
 
+				<!-- ==================================================
+					 LANDSCAPE MODE CONTROLLER
+                     Horizontal layout optimized for landscape orientation.
+                     Provides expanded controls for widescreen displays.
+					 ================================================== -->
 				<LinearLayout
 					android:id="@+id/controller_landscape_v2"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:orientation="vertical">
+					android:orientation="vertical"
+					android:visibility="gone">
 
+					<!-- Included landscape mode control components -->
 					<include layout="@layout/activity_player_2_con_02_land" />
 
 				</LinearLayout>

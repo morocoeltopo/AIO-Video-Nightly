@@ -6,6 +6,7 @@ import app.ui.others.media_player.MediaPlayerActivity
 import com.aio.R
 import com.aio.R.layout
 import lib.process.LogHelperUtils
+import lib.ui.ViewUtility.getCurrentOrientation
 import lib.ui.builders.PopupBuilder
 import java.lang.ref.WeakReference
 
@@ -74,10 +75,12 @@ class MediaConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 	private fun setupPopupBuilder() {
 		safePlayerActivityRef?.let { safeActivityRef ->
 			logger.d("Setting up PopupBuilder for MediaConfigsPopup...")
+			val currentOrientation = getCurrentOrientation(safeActivityRef)
 			popupBuilder = PopupBuilder(
 				activityInf = safeActivityRef,
 				popupLayoutId = layout.activity_player_5_options_2,
-				popupAnchorView = safeActivityRef.configButton
+				popupAnchorView = if (currentOrientation.contains("landscape", true))
+					safeActivityRef.configButtonLand else safeActivityRef.configButton
 			)
 			logger.d("PopupBuilder setup completed successfully.")
 		} ?: logger.e("Failed to setup PopupBuilder: Activity reference is null.")

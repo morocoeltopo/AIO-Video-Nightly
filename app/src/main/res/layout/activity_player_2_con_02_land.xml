@@ -24,173 +24,6 @@
 		android:orientation="horizontal">
 
 		<!-- ======================================================
-		     TRANSPORT CONTROLS CONTAINER
-		     Houses the five main playback control buttons (lock,
-		     previous, play/pause, next, config) with equal weight
-		     distribution for consistent sizing across devices.
-		     ====================================================== -->
-		<LinearLayout
-			android:id="@+id/btn_container_main_playback"
-			android:layout_width="0dp"
-			android:layout_height="@dimen/_50"
-			android:layout_marginStart="@dimen/_10"
-			android:layout_marginTop="@dimen/_0"
-			android:layout_marginEnd="@dimen/_5"
-			android:layout_marginBottom="@dimen/_0"
-			android:layout_weight="1"
-			android:baselineAligned="false"
-			android:gravity="center_vertical"
-			android:orientation="horizontal"
-			android:weightSum="5">
-
-			<!-- ==================================================
-			     LOCK CONTROLS BUTTON
-			     Toggles UI lock mode to prevent accidental touches
-			     during playback. First in the control sequence for
-			     easy access to immersion mode.
-			     ================================================== -->
-			<RelativeLayout
-				android:id="@+id/btn_video_controllers_lock"
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:background="@drawable/ic_button_negative_selector"
-				android:clickable="true"
-				android:orientation="vertical"
-				tools:ignore="NestedWeights,SpeakableTextPresentCheck">
-
-				<!-- Lock icon with secondary color tint -->
-				<ImageView
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_centerInParent="true"
-					android:layout_gravity="center"
-					android:adjustViewBounds="true"
-					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_lock"
-					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
-			</RelativeLayout>
-
-			<!-- ==================================================
-			     PREVIOUS TRACK BUTTON
-			     Navigates to the previous media item in the playlist
-			     or restarts current track if pressed near beginning.
-			     Second position in the control sequence.
-			     ================================================== -->
-			<RelativeLayout
-				android:id="@+id/btn_video_previous"
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:background="@drawable/ic_button_negative_selector"
-				android:clickable="true"
-				android:orientation="vertical"
-				tools:ignore="SpeakableTextPresentCheck">
-
-				<!-- Previous track icon with secondary color tint -->
-				<ImageView
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_centerInParent="true"
-					android:layout_gravity="center"
-					android:adjustViewBounds="true"
-					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_media_previous"
-					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
-			</RelativeLayout>
-
-			<!-- ==================================================
-			     PLAY/PAUSE TOGGLE BUTTON
-			     Primary playback control that toggles between play
-			     and pause states. Centered position with larger icon
-			     for emphasis and easy access.
-			     ================================================== -->
-			<LinearLayout
-				android:id="@+id/btn_video_play_pause_toggle"
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:background="@drawable/ic_button_negative_selector"
-				android:clickable="true"
-				android:orientation="vertical"
-				tools:ignore="SpeakableTextPresentCheck">
-
-				<!-- Dynamic play/pause icon that changes state -->
-				<ImageView
-					android:id="@+id/btn_img_video_play_pause_toggle"
-					android:layout_width="@dimen/_40"
-					android:layout_height="match_parent"
-					android:layout_gravity="center"
-					android:adjustViewBounds="true"
-					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_media_play"
-					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
-			</LinearLayout>
-
-			<!-- ==================================================
-			     NEXT TRACK BUTTON
-			     Advances to the next media item in the playlist.
-			     Fourth position in the control sequence, symmetrical
-			     to previous button.
-			     ================================================== -->
-			<RelativeLayout
-				android:id="@+id/btn_video_next"
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:background="@drawable/ic_button_negative_selector"
-				android:clickable="true"
-				android:orientation="vertical"
-				tools:ignore="SpeakableTextPresentCheck">
-
-				<!-- Next track icon with secondary color tint -->
-				<ImageView
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_centerInParent="true"
-					android:layout_gravity="center"
-					android:adjustViewBounds="true"
-					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_media_next"
-					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
-			</RelativeLayout>
-
-			<!-- ==================================================
-			     PLAYER CONFIGURATIONS BUTTON
-			     Access point for additional player settings like
-			     playback speed, audio track selection, and subtitle
-			     options. Final position in the control sequence.
-			     ================================================== -->
-			<RelativeLayout
-				android:id="@+id/btn_player_configs"
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:background="@drawable/ic_button_negative_selector"
-				android:clickable="true"
-				android:orientation="vertical"
-				tools:ignore="SpeakableTextPresentCheck">
-
-				<!-- Settings/options icon with secondary color tint -->
-				<ImageView
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:layout_centerInParent="true"
-					android:layout_gravity="center"
-					android:adjustViewBounds="true"
-					android:importantForAccessibility="no"
-					android:src="@drawable/ic_button_options"
-					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
-			</RelativeLayout>
-
-		</LinearLayout>
-
-		<!-- ======================================================
 		     PROGRESS BAR CONTAINER
 		     Houses the playback progress bar with time displays
 		     on both ends. Uses relative layout for precise positioning
@@ -199,10 +32,10 @@
 		<RelativeLayout
 			android:id="@+id/progress_container"
 			android:layout_width="0dp"
-			android:layout_height="@dimen/_50"
-			android:layout_marginStart="@dimen/_5"
+			android:layout_height="@dimen/_45"
+			android:layout_marginStart="@dimen/_10"
 			android:layout_marginTop="@dimen/_0"
-			android:layout_marginEnd="@dimen/_10"
+			android:layout_marginEnd="@dimen/_5"
 			android:layout_marginBottom="@dimen/_0"
 			android:layout_weight="1"
 			android:baselineAligned="false"
@@ -226,7 +59,7 @@
 
 				<!-- Current playback time text with bold styling -->
 				<TextView
-					android:id="@+id/txt_video_progress_timer"
+					android:id="@+id/txt_video_progress_timer_land"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_marginStart="@dimen/_10"
@@ -247,7 +80,7 @@
 			     seeking and displays both played and buffered ranges.
 			     ================================================== -->
 			<lib.ui.RoundedTimeBar
-				android:id="@+id/video_progress_bar"
+				android:id="@+id/video_progress_bar_land"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_centerVertical="true"
@@ -276,7 +109,7 @@
 
 				<!-- Total duration text with bold styling -->
 				<TextView
-					android:id="@+id/txt_video_duration"
+					android:id="@+id/txt_video_duration_land"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_marginStart="@dimen/_10"
@@ -290,5 +123,173 @@
 					android:textStyle="bold" />
 			</LinearLayout>
 		</RelativeLayout>
+
+		<!-- ======================================================
+		     TRANSPORT CONTROLS CONTAINER
+		     Houses the five main playback control buttons (lock,
+		     previous, play/pause, next, config) with equal weight
+		     distribution for consistent sizing across devices.
+		     ====================================================== -->
+		<LinearLayout
+			android:id="@+id/btn_container_main_playback"
+			android:layout_width="0dp"
+			android:layout_height="@dimen/_45"
+			android:layout_gravity="center_vertical"
+			android:layout_marginStart="@dimen/_5"
+			android:layout_marginTop="@dimen/_0"
+			android:layout_marginEnd="@dimen/_10"
+			android:layout_marginBottom="@dimen/_0"
+			android:layout_weight="1"
+			android:baselineAligned="false"
+			android:gravity="center_vertical"
+			android:orientation="horizontal"
+			android:weightSum="5">
+
+			<!-- ==================================================
+			     LOCK CONTROLS BUTTON
+			     Toggles UI lock mode to prevent accidental touches
+			     during playback. First in the control sequence for
+			     easy access to immersion mode.
+			     ================================================== -->
+			<RelativeLayout
+				android:id="@+id/btn_video_controllers_lock_land"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:background="@drawable/ic_button_negative_selector"
+				android:clickable="true"
+				android:orientation="vertical"
+				tools:ignore="NestedWeights,SpeakableTextPresentCheck,TouchTargetSizeCheck">
+
+				<!-- Lock icon with secondary color tint -->
+				<ImageView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_centerInParent="true"
+					android:layout_gravity="center"
+					android:adjustViewBounds="true"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_lock"
+					android:tint="@color/color_secondary"
+					tools:ignore="ImageContrastCheck" />
+			</RelativeLayout>
+
+			<!-- ==================================================
+			     PREVIOUS TRACK BUTTON
+			     Navigates to the previous media item in the playlist
+			     or restarts current track if pressed near beginning.
+			     Second position in the control sequence.
+			     ================================================== -->
+			<RelativeLayout
+				android:id="@+id/btn_video_previous_land"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:background="@drawable/ic_button_negative_selector"
+				android:clickable="true"
+				android:orientation="vertical"
+				tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck">
+
+				<!-- Previous track icon with secondary color tint -->
+				<ImageView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_centerInParent="true"
+					android:layout_gravity="center"
+					android:adjustViewBounds="true"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_media_previous"
+					android:tint="@color/color_secondary"
+					tools:ignore="ImageContrastCheck" />
+			</RelativeLayout>
+
+			<!-- ==================================================
+			     PLAY/PAUSE TOGGLE BUTTON
+			     Primary playback control that toggles between play
+			     and pause states. Centered position with larger icon
+			     for emphasis and easy access.
+			     ================================================== -->
+			<LinearLayout
+				android:id="@+id/btn_video_play_pause_toggle_land"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:background="@drawable/ic_button_negative_selector"
+				android:clickable="true"
+				android:orientation="vertical"
+				tools:ignore="SpeakableTextPresentCheck">
+
+				<!-- Dynamic play/pause icon that changes state -->
+				<ImageView
+					android:id="@+id/btn_img_video_play_pause_toggle"
+					android:layout_width="@dimen/_40"
+					android:layout_height="match_parent"
+					android:layout_gravity="center"
+					android:adjustViewBounds="true"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_media_play"
+					android:tint="@color/color_secondary"
+					tools:ignore="ImageContrastCheck" />
+			</LinearLayout>
+
+			<!-- ==================================================
+			     NEXT TRACK BUTTON
+			     Advances to the next media item in the playlist.
+			     Fourth position in the control sequence, symmetrical
+			     to previous button.
+			     ================================================== -->
+			<RelativeLayout
+				android:id="@+id/btn_video_next_land"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:background="@drawable/ic_button_negative_selector"
+				android:clickable="true"
+				android:orientation="vertical"
+				tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck">
+
+				<!-- Next track icon with secondary color tint -->
+				<ImageView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_centerInParent="true"
+					android:layout_gravity="center"
+					android:adjustViewBounds="true"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_media_next"
+					android:tint="@color/color_secondary"
+					tools:ignore="ImageContrastCheck" />
+			</RelativeLayout>
+
+			<!-- ==================================================
+			     PLAYER CONFIGURATIONS BUTTON
+			     Access point for additional player settings like
+			     playback speed, audio track selection, and subtitle
+			     options. Final position in the control sequence.
+			     ================================================== -->
+			<RelativeLayout
+				android:id="@+id/btn_player_configs_land"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:background="@drawable/ic_button_negative_selector"
+				android:clickable="true"
+				android:orientation="vertical"
+				tools:ignore="SpeakableTextPresentCheck,TouchTargetSizeCheck">
+
+				<!-- Settings/options icon with secondary color tint -->
+				<ImageView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_centerInParent="true"
+					android:layout_gravity="center"
+					android:adjustViewBounds="true"
+					android:importantForAccessibility="no"
+					android:src="@drawable/ic_button_options"
+					android:tint="@color/color_secondary"
+					tools:ignore="ImageContrastCheck" />
+			</RelativeLayout>
+
+		</LinearLayout>
 	</LinearLayout>
 </merge>
