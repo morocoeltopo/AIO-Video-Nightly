@@ -99,13 +99,13 @@ class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivi
 
 			with(popupView) {
 				mapOf(
-					R.id.btn_playback_speed to { handlePlaybackSpeedOption() },
-					R.id.btn_video_screen_mode to { handlePlaybackVideoScaleType() },
-					R.id.btn_playback_repeat_mode to { handlePlaybackModeOption() },
-					R.id.btn_player_rotation to { handlePlaybackOrientation() },
-					R.id.btn_subtitle_tracks to { handleSubtitleTracksOption() },
-					R.id.btn_audio_tracks to { handleAudioTracksOption() },
-					R.id.btn_play_in_background to { handleBackgroundPlayOption() }
+					R.id.btn_playback_speed to { openPlaybackSpeedSettings() },
+					R.id.btn_video_screen_mode to { openVideoScaleTypeSettings() },
+					R.id.btn_playback_repeat_mode to { openPlaybackModeSettings() },
+					R.id.btn_player_rotation to { openOrientationSettings() },
+					R.id.btn_subtitle_tracks to { openSubtitleTracksSettings() },
+					R.id.btn_audio_tracks to { openAudioTracksSettings() },
+					R.id.btn_play_in_background to { toggleBackgroundPlayback() }
 				).forEach { (id, action) -> setClickListener(id) { action() } }
 			}
 
@@ -128,48 +128,52 @@ class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivi
 		} ?: logger.d("Attempted to assign click listener to missing view ID: $id")
 	}
 
-	/** Handles user interaction for playback speed configuration. */
-	private fun handlePlaybackSpeedOption() {
-		logger.d("Playback Speed option selected.")
+	/** Opens playback speed configuration dialog for speed multiplier selection */
+	private fun openPlaybackSpeedSettings() {
+		logger.d("Opening Playback Speed settings...")
 		close()
-
+		// TODO: Implement playback speed dialog logic
 	}
 
-	private fun handlePlaybackVideoScaleType() {
-		logger.d("Playback video scale type option selected.")
+	/** Opens video scale type configuration for aspect ratio and display mode selection */
+	private fun openVideoScaleTypeSettings() {
+		logger.d("Opening Video Scale Type settings...")
 		close()
+		// TODO: Implement video scale type dialog logic
 	}
 
-	/** Handles user interaction for playback mode configuration. */
-	private fun handlePlaybackModeOption() {
-		logger.d("Playback Mode option selected.")
+	/** Opens playback mode configuration for repeat and shuffle settings */
+	private fun openPlaybackModeSettings() {
+		logger.d("Opening Playback Mode settings...")
 		close()
-
+		// TODO: Implement playback mode dialog logic
 	}
 
-	private fun handlePlaybackOrientation() {
-		logger.d("Player orientation option selected.")
+	/** Opens screen orientation settings for rotation lock and auto-rotation configuration */
+	private fun openOrientationSettings() {
+		logger.d("Opening Orientation settings...")
 		close()
+		// TODO: Implement orientation dialog logic
 	}
 
-	/** Handles user interaction for subtitle track selection. */
-	private fun handleSubtitleTracksOption() {
-		logger.d("Subtitle Tracks option selected.")
+	/** Opens subtitle track selection and styling configuration */
+	private fun openSubtitleTracksSettings() {
+		logger.d("Opening Subtitle Tracks settings...")
 		close()
-
+		// TODO: Implement subtitle tracks dialog logic
 	}
 
-	/** Handles user interaction for audio track selection. */
-	private fun handleAudioTracksOption() {
-		logger.d("Audio Tracks option selected.")
+	/** Opens audio track selection for language and audio stream configuration */
+	private fun openAudioTracksSettings() {
+		logger.d("Opening Audio Tracks settings...")
 		close()
-
+		// TODO: Implement audio tracks dialog logic
 	}
 
-	/** Handles user interaction for enabling background playback. */
-	private fun handleBackgroundPlayOption() {
-		logger.d("Background Play option selected.")
+	/** Toggles background playback capability for audio continuation when minimized */
+	private fun toggleBackgroundPlayback() {
+		logger.d("Toggling Background Playback setting...")
 		close()
-
+		// TODO: Implement background playback toggle logic
 	}
 }

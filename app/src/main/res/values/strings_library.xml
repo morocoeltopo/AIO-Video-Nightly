@@ -581,5 +581,13 @@
 	<string name="title_playback_repeat">Playback Repeat</string>
 	<string name="title_video_scale_type">Video Scale Type</string>
 	<string name="title_player_orientation">Player Orientation</string>
+	<string name="title_0_25_slowest">0.25X : Slowest Speed</string>
+	<string name="title_0_5_slower">0.5X : Slower Speed</string>
+	<string name="title_0_75_slow">0.75X : Slow Speed</string>
+	<string name="title_01_normal">1X : Normal Speed</string>
+	<string name="title_1_25_fast">1.25X : Fast Speed</string>
+	<string name="title_1_5_faster">1.5X : Faster Speed</string>
+	<string name="title_1_75_fastest">1.75X : Fastest Speed</string>
+	<string name="title_2_lighting">2X : Lightning Speed</string>
 
 </resources>
