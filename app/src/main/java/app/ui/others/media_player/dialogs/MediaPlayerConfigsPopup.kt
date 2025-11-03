@@ -100,13 +100,13 @@ class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivi
 			with(popupView) {
 				mapOf(
 					R.id.btn_playback_speed to { handlePlaybackSpeedOption() },
-					R.id.btn_playback_mode to { handlePlaybackModeOption() },
+					R.id.btn_video_screen_mode to { handlePlaybackVideoScaleType() },
+					R.id.btn_playback_repeat_mode to { handlePlaybackModeOption() },
+					R.id.btn_player_rotation to { handlePlaybackOrientation() },
 					R.id.btn_subtitle_tracks to { handleSubtitleTracksOption() },
 					R.id.btn_audio_tracks to { handleAudioTracksOption() },
 					R.id.btn_play_in_background to { handleBackgroundPlayOption() }
-				).forEach { (id, action) ->
-					setClickListener(id) { action() }
-				}
+				).forEach { (id, action) -> setClickListener(id) { action() } }
 			}
 
 			logger.d("Click events successfully bound for MediaConfigsPopup.")
@@ -135,11 +135,21 @@ class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivi
 
 	}
 
+	private fun handlePlaybackVideoScaleType() {
+		logger.d("Playback video scale type option selected.")
+		close()
+	}
+
 	/** Handles user interaction for playback mode configuration. */
 	private fun handlePlaybackModeOption() {
 		logger.d("Playback Mode option selected.")
 		close()
 
+	}
+
+	private fun handlePlaybackOrientation() {
+		logger.d("Player orientation option selected.")
+		close()
 	}
 
 	/** Handles user interaction for subtitle track selection. */

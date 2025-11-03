@@ -155,7 +155,7 @@
 						 (none, one, all) and shuffle functionality.
 						 ============================================== -->
 					<LinearLayout
-						android:id="@+id/btn_playback_mode"
+						android:id="@+id/btn_playback_repeat_mode"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:layout_marginStart="@dimen/_10"
