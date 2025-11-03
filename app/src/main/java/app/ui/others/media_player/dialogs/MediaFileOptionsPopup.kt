@@ -58,7 +58,7 @@ import java.util.Locale
  * - Log all major lifecycle and UI interactions for debugging.
  */
 @UnstableApi
-class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
+class MediaFileOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 
 	/** Logger instance scoped to this class for consistent debug and error output. */
 	private val logger = LogHelperUtils.from(javaClass)
@@ -209,7 +209,7 @@ class MediaOptionsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 
 			dialogBuilder?.setOnClickForPositiveButton {
 				dialogBuilder.close()
-				this@MediaOptionsPopup.close()
+				this@MediaFileOptionsPopup.close()
 				logger.d("Confirmed deletion of current media file.")
 				safeActivityRef.deleteCurrentMediaFile()
 			}

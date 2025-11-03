@@ -580,5 +580,6 @@
 	<string name="title_web_history_options">Web History Options</string>
 	<string name="title_playback_repeat">Playback Repeat</string>
 	<string name="title_video_scale_type">Video Scale Type</string>
+	<string name="title_player_orientation">Player Orientation</string>
 
 </resources>

@@ -28,7 +28,7 @@ import java.util.Locale.getDefault
  * for display in the app's UI. Extracts metadata from media files and formats
  * it into a readable HTML structure.
  */
-object MediaInfoHtmlBuilder {
+object MediaMetadataHtmlBuilder {
 
 	/** Logger instance scoped to this class for consistent debug and error output. */
 	private val logger = LogHelperUtils.from(javaClass)

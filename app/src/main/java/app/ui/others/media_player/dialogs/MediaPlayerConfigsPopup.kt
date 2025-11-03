@@ -23,7 +23,7 @@ import java.lang.ref.WeakReference
  * @property mediaPlayerActivity Optional instance of the parent [MediaPlayerActivity].
  */
 @UnstableApi
-class MediaConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
+class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivity?) {
 
 	/** Logger instance scoped to this class for consistent debug and error output. */
 	private val logger = LogHelperUtils.from(javaClass)

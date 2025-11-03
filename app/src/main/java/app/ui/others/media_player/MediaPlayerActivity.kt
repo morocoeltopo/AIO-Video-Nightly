@@ -65,9 +65,9 @@ import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
 import app.core.engines.downloader.DownloadURLHelper.getFileInfoFromSever
 import app.core.engines.settings.AIOSettings
-import app.ui.others.media_player.dialogs.MediaConfigsPopup
-import app.ui.others.media_player.dialogs.MediaInfoHtmlBuilder.buildMediaInfoHtmlString
-import app.ui.others.media_player.dialogs.MediaOptionsPopup
+import app.ui.others.media_player.dialogs.MediaPlayerConfigsPopup
+import app.ui.others.media_player.dialogs.MediaMetadataHtmlBuilder.buildMediaInfoHtmlString
+import app.ui.others.media_player.dialogs.MediaFileOptionsPopup
 import com.aio.R
 import com.aio.R.color
 import com.aio.R.drawable
@@ -136,8 +136,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	lateinit var playerView: PlayerView
 	lateinit var trackSelector: DefaultTrackSelector
 
-	lateinit var mediaOptionsPopup: MediaOptionsPopup
-	lateinit var playerConfigPopup: MediaConfigsPopup
+	lateinit var mediaFileOptionsPopup: MediaFileOptionsPopup
+	lateinit var playerConfigPopup: MediaPlayerConfigsPopup
 	lateinit var quickInfoText: TextView
 	lateinit var overlayTouchArea: View
 	lateinit var nightModeOverlay: View
@@ -463,7 +463,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	fun openPlayerConfiguration() {
 		if (!::playerConfigPopup.isInitialized) {
-			playerConfigPopup = MediaConfigsPopup(selfActivityRef)
+			playerConfigPopup = MediaPlayerConfigsPopup(selfActivityRef)
 			playerConfigPopup.show()
 		} else {
 			playerConfigPopup.show()
@@ -1560,8 +1560,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	}
 
 	private fun showMediaOptionsMenu() {
-		if (!::mediaOptionsPopup.isInitialized)
-			mediaOptionsPopup = MediaOptionsPopup(selfActivityRef); mediaOptionsPopup.show()
+		if (!::mediaFileOptionsPopup.isInitialized)
+			mediaFileOptionsPopup = MediaFileOptionsPopup(selfActivityRef); mediaFileOptionsPopup.show()
 	}
 
 	@Suppress("DEPRECATION")
