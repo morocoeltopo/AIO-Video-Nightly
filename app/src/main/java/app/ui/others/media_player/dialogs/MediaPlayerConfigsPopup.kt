@@ -75,12 +75,10 @@ class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivi
 	private fun setupPopupBuilder() {
 		safePlayerActivityRef?.let { safeActivityRef ->
 			logger.d("Setting up PopupBuilder for MediaConfigsPopup...")
-			val currentOrientation = getCurrentOrientation(safeActivityRef)
 			popupBuilder = PopupBuilder(
 				activityInf = safeActivityRef,
 				popupLayoutId = layout.activity_player_5_options_2,
-				popupAnchorView = if (currentOrientation.contains("landscape", true))
-					safeActivityRef.configButtonLand else safeActivityRef.configButton
+				popupAnchorView = getPopupAnchorView(safeActivityRef)
 			)
 			logger.d("PopupBuilder setup completed successfully.")
 		} ?: logger.e("Failed to setup PopupBuilder: Activity reference is null.")
@@ -114,6 +112,21 @@ class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivi
 	}
 
 	/**
+	 * Determines the appropriate anchor view for the popup based on screen orientation.
+	 *
+	 * In landscape mode, uses the landscape configuration button; otherwise uses the
+	 * portrait configuration button.
+	 *
+	 * @param playerActivity The media player activity instance
+	 * @return The appropriate View to anchor the popup to
+	 */
+	private fun getPopupAnchorView(playerActivity: MediaPlayerActivity): View {
+		val currentOrientation = getCurrentOrientation(playerActivity)
+		return if (currentOrientation.contains("landscape", true))
+			playerActivity.configButtonLand else playerActivity.configButton
+	}
+
+	/**
 	 * Safely assigns a click listener to a child view.
 	 *
 	 * Includes click logging for debugging and avoids null pointer exceptions.
@@ -128,49 +141,89 @@ class MediaPlayerConfigsPopup(private val mediaPlayerActivity: MediaPlayerActivi
 		} ?: logger.d("Attempted to assign click listener to missing view ID: $id")
 	}
 
-	/** Opens playback speed configuration dialog for speed multiplier selection */
+	/**
+	 * Opens playback speed configuration dialog for speed multiplier selection.
+	 *
+	 * Displays a popup allowing users to adjust playback speed (0.5x, 1x, 1.5x, 2x, etc.).
+	 * The current popup is closed before showing the playback speed dialog.
+	 */
 	private fun openPlaybackSpeedSettings() {
-		logger.d("Opening Playback Speed settings...")
-		close()
-		// TODO: Implement playback speed dialog logic
+		safePlayerActivityRef?.let { playerActivity ->
+			logger.d("Opening Playback Speed settings...")
+			close()
+			val playbackSpeedPopup = PlaybackSpeedPopup(
+				mediaPlayerActivity = mediaPlayerActivity,
+				anchorView = getPopupAnchorView(playerActivity)
+			)
+			playbackSpeedPopup.show()
+		}
 	}
 
-	/** Opens video scale type configuration for aspect ratio and display mode selection */
+	/**
+	 * Opens video scale type configuration for aspect ratio and display mode selection.
+	 *
+	 * Allows users to choose how video content is scaled within the player view
+	 * (fit, fill, stretch, zoom, etc.).
+	 */
 	private fun openVideoScaleTypeSettings() {
 		logger.d("Opening Video Scale Type settings...")
 		close()
 		// TODO: Implement video scale type dialog logic
 	}
 
-	/** Opens playback mode configuration for repeat and shuffle settings */
+	/**
+	 * Opens playback mode configuration for repeat and shuffle settings.
+	 *
+	 * Configures repeat modes (none, one, all) and shuffle functionality for playlists.
+	 */
 	private fun openPlaybackModeSettings() {
 		logger.d("Opening Playback Mode settings...")
 		close()
 		// TODO: Implement playback mode dialog logic
 	}
 
-	/** Opens screen orientation settings for rotation lock and auto-rotation configuration */
+	/**
+	 * Opens screen orientation settings for rotation lock and auto-rotation configuration.
+	 *
+	 * Allows users to control whether the screen rotates with device orientation
+	 * or remains locked in current orientation.
+	 */
 	private fun openOrientationSettings() {
 		logger.d("Opening Orientation settings...")
 		close()
 		// TODO: Implement orientation dialog logic
 	}
 
-	/** Opens subtitle track selection and styling configuration */
+	/**
+	 * Opens subtitle track selection and styling configuration.
+	 *
+	 * Provides interface for selecting available subtitle tracks and customizing
+	 * subtitle appearance (font, size, color, background).
+	 */
 	private fun openSubtitleTracksSettings() {
 		logger.d("Opening Subtitle Tracks settings...")
 		close()
 		// TODO: Implement subtitle tracks dialog logic
 	}
 
-	/** Opens audio track selection for language and audio stream configuration */
+	/**
+	 * Opens audio track selection for language and audio stream configuration.
+	 *
+	 * Allows users to switch between available audio tracks/languages and configure
+	 * audio output settings.
+	 */
 	private fun openAudioTracksSettings() {
 		logger.d("Opening Audio Tracks settings...")
 		close()
 		// TODO: Implement audio tracks dialog logic
 	}
 
-	/** Toggles background playback capability for audio continuation when minimized */
+	/**
+	 * Toggles background playback capability for audio continuation when minimized.
+	 *
+	 * Enables/disables the ability for media to continue playing when the app is
+	 * in the background or the screen is turned off.
+	 */
 	private fun toggleBackgroundPlayback() {
 		logger.d("Toggling Background Playback setting...")
 		close()
