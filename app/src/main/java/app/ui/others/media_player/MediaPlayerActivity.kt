@@ -42,6 +42,7 @@ import androidx.media3.common.MediaItem.Builder
 import androidx.media3.common.MediaItem.SubtitleConfiguration
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Player.Listener
 import androidx.media3.common.Player.STATE_BUFFERING
@@ -65,9 +66,9 @@ import app.core.engines.downloader.DownloadDataModel
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_ID_KEY
 import app.core.engines.downloader.DownloadURLHelper.getFileInfoFromSever
 import app.core.engines.settings.AIOSettings
-import app.ui.others.media_player.dialogs.MediaPlayerConfigsPopup
-import app.ui.others.media_player.dialogs.MediaMetadataHtmlBuilder.buildMediaInfoHtmlString
 import app.ui.others.media_player.dialogs.MediaFileOptionsPopup
+import app.ui.others.media_player.dialogs.MediaMetadataHtmlBuilder.buildMediaInfoHtmlString
+import app.ui.others.media_player.dialogs.MediaPlayerConfigsPopup
 import com.aio.R
 import com.aio.R.color
 import com.aio.R.drawable
@@ -185,6 +186,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 	lateinit var unlockButton: View
 
+	var lastPlaybackSpeed: Float = 1.0f
 	var areControllersLocked = false
 	var currentPlaybackPosition: Long = 0L
 	var isNightModeEnabled = false
@@ -714,6 +716,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 			// Attach player to PlayerView
 			playerView.player = player
+			player.playbackParameters = PlaybackParameters(lastPlaybackSpeed)
 
 			// Configure subtitles
 			playerView.subtitleView?.apply {
