@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- =========================================================================
-     Player Settings Dialog Layout
-     This layout defines a settings dialog for controlling player behavior
-     (playback speed, mode, subtitle/audio tracks, background playback, etc.)
-     Wrapped in a CardView with styled sections for better visual grouping.
-     Includes ScrollView for content that may exceed screen height.
+     Playback Speed Selection Dialog Layout
+     This layout defines a dialog for selecting media playback speed multipliers
+     ranging from 0.25x (slowest) to 2.0x (lightning speed). Uses radio button
+     style selection with visual feedback for the currently selected speed.
+     Wrapped in a CardView with consistent styling matching other player dialogs.
      ========================================================================= -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -19,7 +19,7 @@
 		 CARD CONTAINER
 		 Provides rounded corners, elevation, and background
 		 tint for dialog content. Acts as the main wrapper
-		 for all settings within the scrollable area.
+		 for all speed options within the scrollable area.
 		 ================================================== -->
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
@@ -36,7 +36,7 @@
 			 ROOT LAYOUT
 			 Holds all dialog elements vertically stacked
 			 within the card container. Maintains consistent
-			 spacing and alignment for settings options.
+			 spacing and alignment for speed option buttons.
 			 ================================================== -->
 		<LinearLayout
 			android:layout_width="match_parent"
@@ -46,8 +46,8 @@
 			<!-- ==============================================
 				 TITLE BAR
 				 Displays dialog title on a colored background
-				 with centered text and appropriate styling
-				 for dialog headers.
+				 with centered text indicating playback speed
+				 selection functionality.
 				 ============================================== -->
 			<LinearLayout
 				android:layout_width="match_parent"
@@ -57,11 +57,16 @@
 				android:visibility="visible"
 				tools:ignore="TextSizeCheck">
 
+				<!-- ==========================================
+					 DIALOG TITLE
+                     Centered text view displaying "Playback Speed"
+                     with application font and primary text color.
+					 ========================================== -->
 				<TextView
 					style="@style/style_dialog.title"
 					android:layout_gravity="center"
 					android:fontFamily="@font/application_font_family"
-					android:text="@string/title_player_settings"
+					android:text="@string/title_playback_speed"
 					android:textColor="@color/color_text_primary"
 					android:textFontWeight="600"
 					android:textSize="@dimen/normal_text_size" />
@@ -69,9 +74,9 @@
 
 			<!-- ============================================================
 				 SCROLL VIEW CONTAINER
-				 Wraps the entire dialog content to enable scrolling when
-				 media options exceed available screen height. Ensures
-				 all options remain accessible on smaller displays.
+				 Wraps the speed option content to enable scrolling when
+				 all options exceed available screen height. Ensures
+				 all speed selections remain accessible on smaller displays.
 				 ============================================================ -->
 			<ScrollView
 				android:layout_width="match_parent"
@@ -81,15 +86,20 @@
 					 SCROLL CONTENT CONTAINER
 					 LinearLayout container for scrollable content that
 					 maintains vertical orientation and proper spacing
-					 for all media action sections.
+					 for all playback speed option sections.
 					 ====================================================== -->
 				<LinearLayout
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:orientation="vertical">
 
+					<!-- ==============================================
+						 0.75X PLAYBACK SPEED OPTION
+                         Slightly slowed playback for comfortable
+                         viewing while maintaining natural pacing.
+						 ============================================== -->
 					<LinearLayout
-						android:id="@+id/bnt_playback_speed_0_25x"
+						android:id="@+id/bnt_playback_speed_0_75x"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:layout_marginHorizontal="@dimen/_10"
@@ -100,8 +110,13 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 0.75X SPEED CHECKBOX
+                             Radio-style checkbox for "0.75x (Slow)"
+                             playback speed selection.
+							 ========================================== -->
 						<CheckBox
-							android:id="@+id/checkbox_playback_speed_0_25x"
+							android:id="@+id/checkbox_playback_speed_0_75x"
 							android:layout_width="match_parent"
 							android:layout_height="wrap_content"
 							android:layout_margin="@dimen/_8"
@@ -116,12 +131,17 @@
 							android:fontFamily="@font/application_font_family"
 							android:gravity="center_vertical"
 							android:maxLines="1"
-							android:text="@string/title_0_25_slowest"
+							android:text="@string/title_0_75_slowest"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size"
 							tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 					</LinearLayout>
 
+					<!-- ==============================================
+						 0.5X PLAYBACK SPEED OPTION
+                         Slower playback speed for better comprehension
+                         of complex or fast-paced content.
+						 ============================================== -->
 					<LinearLayout
 						android:id="@+id/bnt_playback_speed_0_5x"
 						android:layout_width="match_parent"
@@ -133,6 +153,11 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 0.5X SPEED CHECKBOX
+                             Radio-style checkbox for "0.5x (Slower)"
+                             playback speed selection.
+							 ========================================== -->
 						<CheckBox
 							android:id="@+id/checkbox_playback_speed_0_5x"
 							android:layout_width="match_parent"
@@ -155,8 +180,14 @@
 							tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 					</LinearLayout>
 
+					<!-- ==============================================
+						0.25X PLAYBACK SPEED OPTION
+						Slowest playback speed option for detailed
+						analysis or difficult-to-follow content.
+						Uses radio button selection pattern.
+						============================================== -->
 					<LinearLayout
-						android:id="@+id/bnt_playback_speed_0_75x"
+						android:id="@+id/bnt_playback_speed_0_25x"
 						android:layout_width="match_parent"
 						android:layout_height="match_parent"
 						android:layout_marginHorizontal="@dimen/_10"
@@ -166,8 +197,14 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 0.25X SPEED CHECKBOX
+                             Custom-styled checkbox using radio selector
+                             drawable for single selection behavior.
+                             Displays "0.25x (Slowest)" label.
+							 ========================================== -->
 						<CheckBox
-							android:id="@+id/checkbox_playback_speed_0_75x"
+							android:id="@+id/checkbox_playback_speed_0_25x"
 							android:layout_width="match_parent"
 							android:layout_height="wrap_content"
 							android:layout_margin="@dimen/_8"
@@ -182,12 +219,17 @@
 							android:fontFamily="@font/application_font_family"
 							android:gravity="center_vertical"
 							android:maxLines="1"
-							android:text="@string/title_0_75_slow"
+							android:text="@string/title_0_25_slowest"
 							android:textColor="@color/color_text_primary"
 							android:textSize="@dimen/normal_text_size"
 							tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 					</LinearLayout>
 
+					<!-- ==============================================
+						 1.0X PLAYBACK SPEED OPTION
+                         Normal playback speed - the default setting
+                         for content as originally recorded.
+						 ============================================== -->
 					<LinearLayout
 						android:id="@+id/bnt_playback_speed_1x"
 						android:layout_width="match_parent"
@@ -199,6 +241,12 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 1.0X SPEED CHECKBOX
+                             Radio-style checkbox for "1.0x (Normal)"
+                             playback speed - typically the default
+                             selection.
+							 ========================================== -->
 						<CheckBox
 							android:id="@+id/checkbox_playback_speed_1x"
 							android:layout_width="match_parent"
@@ -221,6 +269,11 @@
 							tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 					</LinearLayout>
 
+					<!-- ==============================================
+						 1.25X PLAYBACK SPEED OPTION
+                         Slightly accelerated playback for efficient
+                         viewing without significant audio distortion.
+						 ============================================== -->
 					<LinearLayout
 						android:id="@+id/bnt_playback_speed_1_25x"
 						android:layout_width="match_parent"
@@ -232,6 +285,11 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 1.25X SPEED CHECKBOX
+                             Radio-style checkbox for "1.25x (Fast)"
+                             accelerated playback speed.
+							 ========================================== -->
 						<CheckBox
 							android:id="@+id/checkbox_playback_speed_1_25x"
 							android:layout_width="match_parent"
@@ -254,6 +312,11 @@
 							tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 					</LinearLayout>
 
+					<!-- ==============================================
+						 1.5X PLAYBACK SPEED OPTION
+                         Faster playback speed for quickly consuming
+                         familiar content or lengthy media.
+						 ============================================== -->
 					<LinearLayout
 						android:id="@+id/bnt_playback_speed_1_5x"
 						android:layout_width="match_parent"
@@ -265,6 +328,11 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 1.5X SPEED CHECKBOX
+                             Radio-style checkbox for "1.5x (Faster)"
+                             high-speed playback option.
+							 ========================================== -->
 						<CheckBox
 							android:id="@+id/checkbox_playback_speed_1_5x"
 							android:layout_width="match_parent"
@@ -287,6 +355,11 @@
 							tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 					</LinearLayout>
 
+					<!-- ==============================================
+						 1.75X PLAYBACK SPEED OPTION
+                         Very fast playback for experienced users
+                         who can comprehend rapidly delivered content.
+						 ============================================== -->
 					<LinearLayout
 						android:id="@+id/bnt_playback_speed_1_75x"
 						android:layout_width="match_parent"
@@ -298,6 +371,11 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 1.75X SPEED CHECKBOX
+                             Radio-style checkbox for "1.75x (Fastest)"
+                             near-maximum playback speed.
+							 ========================================== -->
 						<CheckBox
 							android:id="@+id/checkbox_playback_speed_1_75x"
 							android:layout_width="match_parent"
@@ -320,6 +398,12 @@
 							tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
 					</LinearLayout>
 
+					<!-- ==============================================
+						 2.0X PLAYBACK SPEED OPTION
+                         Maximum playback speed for lightning-fast
+                         content consumption with potential audio
+                         artifacts. Use for rapid review or skimming.
+						 ============================================== -->
 					<LinearLayout
 						android:id="@+id/bnt_playback_speed_2x"
 						android:layout_width="match_parent"
@@ -332,6 +416,11 @@
 						android:visibility="visible"
 						tools:ignore="TouchTargetSizeCheck">
 
+						<!-- ==========================================
+							 2.0X SPEED CHECKBOX
+                             Radio-style checkbox for "2.0x (Lightning)"
+                             maximum accelerated playback speed.
+							 ========================================== -->
 						<CheckBox
 							android:id="@+id/check_playback_speed_2x"
 							android:layout_width="match_parent"
