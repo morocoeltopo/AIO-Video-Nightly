@@ -68,7 +68,7 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 * Sets up core components, registers the system with the global timer for
 	 * periodic monitoring, and logs initialization details.
 	 */
-	init {
+	fun initializeSystem() {
 		// Initialize system and register with timer for periodic operations
 		initSystem()
 		aioTimer.register(this)

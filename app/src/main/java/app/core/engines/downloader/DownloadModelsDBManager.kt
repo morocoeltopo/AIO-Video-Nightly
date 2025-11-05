@@ -176,6 +176,70 @@ object DownloadModelsDBManager {
 		}
 	}
 
+	@JvmStatic
+	fun getAllDownloadsWithRelationsOptimized(): List<DownloadDataModel> {
+		logger.d("Retrieving all downloads (optimized bulk assembly)")
+
+		return try {
+			val downloads = downloadBox.all
+			if (downloads.isEmpty()) {
+				logger.d("No downloads found in DB")
+				return emptyList()
+			}
+
+			// Load all related entities in single queries
+			val allVideoInfos = videoInfoBox.all.associateBy { it.downloadDataModelDBId }
+			val allVideoFormats = videoFormatBox.all.associateBy { it.downloadDataModelDBId }
+			val allRemoteFileInfos = remoteFileInfoBox.all.associateBy { it.downloadDataModelDBId }
+			val allSettings = settingsBox.all.associateBy { it.downloadDataModelDBId }
+
+			logger.d("Bulk loaded ${allVideoInfos.size} VideoInfo, ${allVideoFormats.size} VideoFormat, " +
+					"${allRemoteFileInfos.size} RemoteFileInfo, ${allSettings.size} AIOSettings")
+
+			val assembledDownloads = downloads.map { download ->
+				assembleDownloadFromCache(
+					downloadDataModel = download,
+					videoInfos = allVideoInfos,
+					videoFormats = allVideoFormats,
+					remoteFileInfos = allRemoteFileInfos,
+					settings = allSettings
+				)
+			}
+
+			logger.d("Successfully assembled ${assembledDownloads.size} downloads (optimized)")
+			assembledDownloads
+		} catch (error: Exception) {
+			logger.e("Error during optimized download assembly", error)
+			emptyList()
+		}
+	}
+
+	/**
+	 * Assembles a DownloadDataModel from pre-fetched entity maps.
+	 *
+	 * This avoids per-download queries by looking up relationships in memory.
+	 */
+	@JvmStatic
+	private fun assembleDownloadFromCache(
+		downloadDataModel: DownloadDataModel,
+		videoInfos: Map<Long, VideoInfo>,
+		videoFormats: Map<Long, VideoFormat>,
+		remoteFileInfos: Map<Long, RemoteFileInfo>,
+		settings: Map<Long, AIOSettings>
+	): DownloadDataModel {
+		val id = downloadDataModel.id
+		try {
+			downloadDataModel.videoInfo = videoInfos[id]
+			downloadDataModel.videoFormat = videoFormats[id]
+			downloadDataModel.remoteFileInfo = remoteFileInfos[id]
+			downloadDataModel.globalSettings = settings[id] ?: AIOApp.aioSettings
+		} catch (error: Exception) {
+			logger.e("Error assembling cached relations for download ID: $id", error)
+			downloadDataModel.globalSettings = AIOApp.aioSettings
+		}
+		return downloadDataModel
+	}
+
 	/**
 	 * Retrieves all DownloadDataModel instances from the database with all their related entities assembled.
 	 *

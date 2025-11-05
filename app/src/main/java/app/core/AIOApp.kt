@@ -287,6 +287,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		// Step 1: Foundation Setup
 		INSTANCE = this
 		initializeObjectBoxDB(INSTANCE)
+		downloadSystem.initializeSystem() // start initializing the download system
 
 		// Step 2-4: Configure and execute multi-stage startup sequence
 		startupManager.apply {

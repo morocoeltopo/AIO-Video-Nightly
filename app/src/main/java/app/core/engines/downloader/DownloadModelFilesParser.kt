@@ -4,6 +4,7 @@ import app.core.AIOApp.Companion.INSTANCE
 import app.core.AIOApp.Companion.downloadSystem
 import app.core.engines.downloader.DownloadDataModel.Companion.DOWNLOAD_MODEL_FILE_JSON_EXTENSION
 import app.core.engines.downloader.DownloadDataModel.Companion.convertJSONStringToClass
+import app.core.engines.downloader.DownloadModelsDBManager.getAllDownloadsWithRelationsOptimized
 import com.aio.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -105,7 +106,7 @@ object DownloadModelFilesParser {
 		logger.d("getDownloadDataModels() called. Cache size=${downloadModelsCache.size}")
 		return withContext(Dispatchers.IO) {
 			// Primary attempt: Load from database as source of truth
-			val downloadModelsFromDB = DownloadModelsDBManager.getAllDownloadsWithRelations()
+			val downloadModelsFromDB = getAllDownloadsWithRelationsOptimized()
 			downloadModelsFromDB.ifEmpty {
 				// Secondary approach: Use cache when database is empty
 				if (downloadModelsCache.isEmpty()) {
