@@ -122,6 +122,8 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		 */
 		const val IS_PREMIUM_USER = true
 
+		var HAS_APP_LOADED_FULLY = false
+
 		// =============================================
 		// STORAGE AND FILE SYSTEM PATHS
 		// =============================================
@@ -321,6 +323,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 						logger.d("[Startup] Added ${it.size} models to prefetch cache")
 						downloadSystem.initializeSystem()
 						logger.d("[Startup] Download system initialized successfully")
+						HAS_APP_LOADED_FULLY = true
 					}
 				} catch (error: Exception) {
 					logger.e("[Startup] Failed to initialize download system: ${error.message}", error)

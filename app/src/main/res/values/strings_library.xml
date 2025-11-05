@@ -262,6 +262,7 @@
 	<string name="title_successful">Successful</string>
 	<string name="title_no_app_found_to_open_this_file">No App Found To Open This File</string>
 	<string name="title_analyzing_url_please_wait">Analyzing URL, Please Wait…</string>
+	<string name="title_wait_till_apps_loads_up">Loading AIO Into Memory, Please Wait…</string>
 	<string name="title_download_now">Download Now</string>
 	<string name="title_failed_open_the_video">Failed To Open The Video</string>
 	<string name="title_allow_now">Allow Now</string>
