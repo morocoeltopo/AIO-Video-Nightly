@@ -4,9 +4,9 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
 import androidx.lifecycle.lifecycleScope
-import app.core.AIOApp
 import app.core.AIOApp.Companion.IS_PREMIUM_USER
 import app.core.AIOApp.Companion.IS_ULTIMATE_VERSION_UNLOCKED
+import app.core.AIOApp.Companion.downloadSystem
 import app.core.AIOKeyStrings.DONT_PARSE_URL_ANYMORE
 import app.core.bases.BaseActivity
 import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
@@ -30,42 +30,78 @@ import lib.ui.builders.WaitingDialog
 import java.lang.ref.WeakReference
 
 /**
- * This activity intercepts external video URLs (usually from Share actions or browser) and attempts
- * to extract video metadata or redirect it properly based on user's premium status and URL type.
+ * Activity that intercepts and processes external video URLs shared from other applications.
  *
- * For social media URLs, it attempts to grab the title and thumbnail to prompt the user for download.
- * For other URLs, it passes them through a shared video URL interceptor.
- * If user is not premium, it forwards the intent to MotherActivity.
+ * This activity serves as an entry point for handling "Share" actions from browsers,
+ * social media apps, and other applications. It performs intelligent URL processing
+ * based on the URL type and user's premium status.
+ *
+ * ## Primary Responsibilities:
+ * - Intercept shared video URLs from external applications
+ * - Differentiate between social media and generic video URLs
+ * - Extract video metadata (title, thumbnail) for social media URLs
+ * - Handle premium vs non-premium user flows appropriately
+ * - Provide seamless redirection to main application components
+ *
+ * ## URL Processing Flow:
+ * 1. **Validation**: Check if the URL is valid and non-empty
+ * 2. **Premium Check**: Verify user's premium status for advanced features
+ * 3. **URL Classification**: Determine if URL is from social media or generic source
+ * 4. **Metadata Extraction**: For social media URLs, fetch title and thumbnail
+ * 5. **User Prompting**: Show download resolution dialog for social media content
+ * 6. **Fallback Handling**: Redirect to browser for unsupported or generic URLs
+ *
+ * ## Memory Management:
+ * Uses WeakReference pattern to prevent memory leaks and ensure proper
+ * garbage collection when the activity is destroyed.
+ *
+ * @see MotherActivity for the main application entry point
+ * @see SharedVideoURLIntercept for generic URL processing
+ * @see SingleResolutionPrompter for social media download dialogs
  */
 class IntentInterceptActivity : BaseActivity() {
 
 	/**
-	 * Logger instance for debugging and error reporting.
+	 * Logger instance for tracking activity lifecycle and debugging operations.
+	 * Provides structured logging for monitoring URL interception and processing.
 	 */
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
-	 * Weak reference to avoid potential memory leaks by not holding a strong reference to the activity.
+	 * Weak reference to the activity instance to prevent memory leaks.
+	 *
+	 * Using WeakReference allows the garbage collector to reclaim the activity
+	 * when it's no longer needed, while still providing access when the activity
+	 * is alive. This is crucial for background operations that might outlive
+	 * the activity's lifecycle.
 	 */
 	private val weakSelfReference = WeakReference(this)
 
 	/**
-	 * Safe reference to the activity obtained from the weak reference.
-	 * Used to prevent crashes if the activity is destroyed or unavailable.
+	 * Safe reference to the activity retrieved from the weak reference.
+	 *
+	 * This pattern ensures that background tasks can safely access the activity
+	 * without causing memory leaks or null pointer exceptions. Always check
+	 * for null before using this reference.
 	 */
 	private val safeIntentInterceptActivityRef = weakSelfReference.get()
 
 	/**
-	 * Flag to signal cancellation of title parsing if the user exits or the activity finishes.
+	 * Flag indicating whether title parsing from URL has been aborted by the user.
+	 *
+	 * This flag is set to true when the user cancels the parsing operation,
+	 * allowing background tasks to exit gracefully and avoid unnecessary processing.
 	 */
 	private var isParsingTitleFromUrlAborted = false
 
 	/**
-	 * Provides the layout resource to render.
-	 * In this case, the activity uses a transparent placeholder layout
-	 * and applies a fade animation for a smooth appearance.
+	 * Provides the layout resource for this transparent activity.
 	 *
-	 * @return The layout resource ID for this transparent activity.
+	 * This activity uses a transparent layout to provide a seamless user experience
+	 * while processing URLs in the background. The fade animation ensures smooth
+	 * visual transitions.
+	 *
+	 * @return The layout resource ID for the transparent activity layout
 	 */
 	override fun onRenderingLayout(): Int {
 		logger.d("onRenderingLayout: Applying fade animation to activity.")
@@ -74,8 +110,10 @@ class IntentInterceptActivity : BaseActivity() {
 	}
 
 	/**
-	 * Handles back button press.
-	 * Ensures the activity closes with a fade-out animation for a better user experience.
+	 * Handles back button press with proper animation and cleanup.
+	 *
+	 * Ensures the activity closes with a smooth fade-out animation and
+	 * performs necessary cleanup operations to maintain system stability.
 	 */
 	override fun onBackPressActivity() {
 		logger.d("onBackPressActivity: User pressed back, closing with fade animation.")
@@ -83,12 +121,17 @@ class IntentInterceptActivity : BaseActivity() {
 	}
 
 	/**
-	 * Called after the layout is set.
-	 * This function drives the core logic of:
-	 * - Validating the incoming shared URL
-	 * - Handling premium/non-premium user flows
-	 * - Parsing and analyzing social media URLs
-	 * - Displaying prompts or forwarding intent as needed
+	 * Core method that drives the URL interception and processing logic.
+	 *
+	 * This method is called after the layout is rendered and performs the following steps:
+	 * 1. Extracts the URL from the incoming intent
+	 * 2. Validates the URL format and content
+	 * 3. Checks user's premium status for feature access
+	 * 4. Waits for full app initialization if necessary
+	 * 5. Routes the URL to appropriate processing based on type
+	 *
+	 * The method handles both social media URLs (with advanced parsing) and
+	 * generic URLs (with basic interception).
 	 */
 	override fun onAfterLayoutRender() {
 		// Handle premium user flow
@@ -99,7 +142,7 @@ class IntentInterceptActivity : BaseActivity() {
 			val intentUrl = getIntentDataURI(safeActivityRef)
 			logger.d("onAfterLayoutRender: Retrieved intent URL = $intentUrl")
 
-			// Handle invalid URLs
+			// Handle invalid URLs with user feedback
 			if (isValidURL(intentUrl) == false) {
 				logger.d("onAfterLayoutRender: Invalid URL detected.")
 				doSomeVibration(50)
@@ -108,7 +151,7 @@ class IntentInterceptActivity : BaseActivity() {
 				return
 			}
 
-			// If no URL is provided, exit the activity
+			// If no URL is provided, exit the activity gracefully
 			if (intentUrl.isNullOrEmpty()) {
 				logger.d("onAfterLayoutRender: No URL found in the intent.")
 				onBackPressActivity()
@@ -122,6 +165,7 @@ class IntentInterceptActivity : BaseActivity() {
 				return
 			}
 
+			// Wait for full app initialization before processing URLs
 			lifecycleScope.launch {
 				val checkingDialog = WaitingDialog(
 					isCancelable = false,
@@ -129,15 +173,16 @@ class IntentInterceptActivity : BaseActivity() {
 					loadingMessage = getString(R.string.title_wait_till_apps_loads_up),
 				)
 
+				// Setup dialog cancellation handler
 				checkingDialog.dialogBuilder?.setOnClickForPositiveButton {
 					checkingDialog.close()
 					closeActivityWithFadeAnimation(shouldAnimate = true)
 				}
 
-				// Wait loop with delay
-				while (AIOApp.HAS_APP_LOADED_FULLY == false) {
+				// Wait loop until app is fully loaded
+				while (downloadSystem.isInitializing) {
 					checkingDialog.show()
-					delay(200)
+					delay(200) // Small delay to prevent tight loop
 				}
 
 				checkingDialog.close()
@@ -147,24 +192,37 @@ class IntentInterceptActivity : BaseActivity() {
 		}
 	}
 
+	/**
+	 * Initiates the URL parsing process based on URL type classification.
+	 *
+	 * This method determines whether the URL is from a social media platform
+	 * and routes it to the appropriate processing pipeline:
+	 * - Social media URLs: Advanced parsing with metadata extraction
+	 * - Generic URLs: Basic interception with fallback to browser
+	 *
+	 * @param intentUrl The URL to be processed and analyzed
+	 * @param activityRef Reference to the current activity for UI operations
+	 */
 	private fun startParsingTheIntentURL(intentUrl: String, activityRef: IntentInterceptActivity) {
-		logger.d("onAfterLayoutRender: Premium user detected. Processing URL.")
+		logger.d("startParsingTheIntentURL: Premium user detected. Processing URL.")
 
+		// Route to appropriate processor based on URL type
 		if (isSocialMediaUrl(intentUrl) == false) {
-			logger.d("onAfterLayoutRender: Non-social media URL detected. Using generic interceptor.")
+			logger.d("startParsingTheIntentURL: Non-social media URL detected. Using generic interceptor.")
 			interceptNonSocialMediaUrl(activityRef, intentUrl)
 			return
 		}
 
-		logger.d("onAfterLayoutRender: Social media URL detected. Starting advanced parsing.")
+		logger.d("startParsingTheIntentURL: Social media URL detected. Starting advanced parsing.")
 
-		// Show "analyzing URL" waiting dialog
+		// Show "analyzing URL" waiting dialog for social media processing
 		val waitingDialog = WaitingDialog(
 			isCancelable = false,
 			baseActivityInf = activityRef,
 			loadingMessage = getString(R.string.title_analyzing_url_please_wait),
 		)
-		// Setup waiting dialog "Okay" button click
+
+		// Setup waiting dialog "Okay" button click handler
 		waitingDialog.dialogBuilder?.setOnClickForPositiveButton {
 			logger.d("WaitingDialog: User cancelled analyzing process.")
 			waitingDialog.close()
@@ -175,7 +233,7 @@ class IntentInterceptActivity : BaseActivity() {
 		waitingDialog.show()
 		logger.d("WaitingDialog: Displayed analyzing message.")
 
-		// Perform parsing in the background
+		// Perform background parsing for social media URLs
 		ThreadsUtility.executeInBackground(codeBlock = {
 			logger.d("Background Task: Fetching HTML content for URL.")
 			val htmlBody = fetchWebPageContent(url = intentUrl, retry = true, numOfRetry = 3)
@@ -198,8 +256,8 @@ class IntentInterceptActivity : BaseActivity() {
 							"validTitle=$validIntentUrl, cancelled=$isParsingTitleFromUrlAborted"
 				)
 
+				// Show download prompt if parsing was successful and not cancelled
 				if (validIntentUrl && isParsingTitleFromUrlAborted == false) {
-					// Show resolution prompter dialog in UI thread
 					logger.d("Background Task: Showing SingleResolutionPrompter dialog.")
 					executeOnMainThread {
 						val resolutionName = getText(R.string.title_high_quality).toString()
@@ -222,7 +280,6 @@ class IntentInterceptActivity : BaseActivity() {
 					// Fallback for busy server or cancelled execution
 					logger.d("Background Task: Invalid result or cancelled. Forwarding to browser.")
 					executeOnMainThread {
-						val activityRef = activityRef
 						activityRef.doSomeVibration(50)
 
 						val stringResId = R.string.title_server_busy_opening_browser
@@ -235,11 +292,14 @@ class IntentInterceptActivity : BaseActivity() {
 	}
 
 	/**
-	 * Handles interception of non-social media URLs.
-	 * Uses a shared video URL interceptor to process the link.
+	 * Handles interception and processing of non-social media URLs.
 	 *
-	 * @param safeActivityRef Reference to the current activity.
-	 * @param intentUrl The URL received from the intent.
+	 * For generic video URLs that don't belong to social media platforms,
+	 * this method uses the SharedVideoURLIntercept utility to process the URL.
+	 * This includes basic validation and fallback to browser if needed.
+	 *
+	 * @param safeActivityRef Reference to the current activity for UI operations
+	 * @param intentUrl The URL to be processed (non-social media)
 	 */
 	private fun interceptNonSocialMediaUrl(
 		safeActivityRef: IntentInterceptActivity,
@@ -257,7 +317,7 @@ class IntentInterceptActivity : BaseActivity() {
 			}
 		)
 
-		// Process the given URL
+		// Process the given URL through the interceptor
 		logger.d("interceptNonSocialMediaUrl: Passing URL to interceptor.")
 		interceptor.interceptIntentURI(
 			targetUrl = intentUrl, shouldOpenBrowserAsFallback = true
@@ -266,8 +326,11 @@ class IntentInterceptActivity : BaseActivity() {
 	}
 
 	/**
-	 * Clears the weak reference to this activity.
-	 * Prevents memory leaks by allowing the garbage collector to reclaim the activity instance.
+	 * Clears the weak reference to this activity to prevent memory leaks.
+	 *
+	 * This method is called as part of the activity cleanup process and ensures
+	 * that the WeakReference doesn't prevent the activity from being garbage collected.
+	 * It's an important step in the memory management lifecycle.
 	 */
 	override fun clearWeakActivityReference() {
 		logger.d("clearWeakActivityReference: Clearing weak reference to activity.")
@@ -277,10 +340,18 @@ class IntentInterceptActivity : BaseActivity() {
 	}
 
 	/**
-	 * Forwards the intercepted intent to the [MotherActivity].
-	 * Preserves original intent data and action, ensuring seamless redirection.
+	 * Forwards the intercepted intent to the MotherActivity with proper flags and extras.
 	 *
-	 * @param dontParseURLAnymore Flag to signal that no further parsing is required.
+	 * This method is used when:
+	 * - The user is not premium (limited functionality)
+	 * - URL processing fails or is cancelled
+	 * - Fallback to browser is required
+	 *
+	 * It preserves the original intent data and adds appropriate flags for
+	 * proper activity stack management.
+	 *
+	 * @param dontParseURLAnymore Flag indicating that no further URL parsing
+	 *                           should be attempted by the receiving activity
 	 */
 	private fun forwardIntentToMotherActivity(dontParseURLAnymore: Boolean = false) {
 		logger.d(
@@ -304,7 +375,7 @@ class IntentInterceptActivity : BaseActivity() {
 				flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 			}
 
-			// Launch MotherActivity
+			// Launch MotherActivity with the processed intent
 			logger.d("forwardIntentToMotherActivity: Launching MotherActivity with preserved intent.")
 			startActivity(targetIntent)
 
