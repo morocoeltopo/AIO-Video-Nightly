@@ -21,54 +21,116 @@ import lib.process.ThreadsUtility
 /**
  * Core implementation of the download management system.
  *
- * This class handles:
- * - Download task lifecycle (add/start/pause/resume/delete)
- * - Parallel download management
- * - Task queue management
- * - Status updates and notifications
- * - UI coordination
- * - Automatic cleanup of completed downloads
+ * This class serves as the central coordinator for all download operations, providing:
+ * - Complete download task lifecycle management (add/start/pause/resume/delete)
+ * - Parallel download execution with configurable limits
+ * - Intelligent task queue management with priority handling
+ * - Real-time status updates and system notifications
+ * - UI coordination across multiple fragments and activities
+ * - Automatic cleanup and maintenance of completed downloads
+ * - Error handling and recovery mechanisms for failed downloads
  *
- * Implements both DownloadSysInf interface for system operations and
- * DownloadTaskListener for task status updates.
+ * The system implements a producer-consumer pattern where tasks are added to a waiting queue
+ * and processed based on available parallel slots. It maintains strict synchronization
+ * to ensure thread safety across all operations.
+ *
+ * @see DownloadSysInf for system-level interface definitions
+ * @see DownloadTaskListener for task status update callbacks
+ * @see AIOTimerListener for periodic system maintenance
  */
 class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 
 	// Logger instance for tracking events
 	private val logger = LogHelperUtils.from(javaClass)
 
-	/** Indicates whether the download system is currently initializing. */
+	/**
+	 * Indicates whether the download system is currently initializing.
+	 *
+	 * This flag is used to prevent operations during system startup and ensure
+	 * proper initialization sequence. Volatile modifier ensures visibility across threads.
+	 */
 	@Volatile
 	override var isInitializing: Boolean = false
 
-	/** Handles download-related notifications to the user. */
+	/**
+	 * Handles download-related notifications to the user.
+	 *
+	 * Manages system notifications, progress updates, and status alerts
+	 * for both foreground and background download operations.
+	 */
 	override val downloadNotification: DownloadNotification = DownloadNotification()
 
-	override val allDownloadModels: ArrayList<DownloadDataModel> = ArrayList()
+	/**
+	 * Comprehensive list of all download models pre-fetched from database.
+	 *
+	 * Includes active, paused, completed, and queued downloads. This serves as the
+	 * master reference for all download operations and UI updates.
+	 */
+	override val prefetchedEntireDownloadModels: ArrayList<DownloadDataModel> = ArrayList()
 
-	/** List of downloads currently being processed or queued for processing. */
+	/**
+	 * List of downloads currently being processed or queued for processing.
+	 *
+	 * This list contains downloads that are either:
+	 * - Actively downloading
+	 * - Paused but not completed
+	 * - Waiting in the queue for available slots
+	 * - Recently added but not yet started
+	 */
 	override val activeDownloadDataModels: ArrayList<DownloadDataModel> = ArrayList()
 
-	/** List of downloads that have completed processing. */
+	/**
+	 * List of downloads that have completed processing successfully.
+	 *
+	 * Completed downloads remain in this list based on user configuration for
+	 * auto-removal settings. Each entry represents a successfully downloaded file.
+	 */
 	override val finishedDownloadDataModels: ArrayList<DownloadDataModel> = ArrayList()
 
-	/** List of currently running download tasks. */
+	/**
+	 * List of currently running download tasks.
+	 *
+	 * These tasks are actively transferring data and consuming system resources.
+	 * The size of this list is limited by the parallel download configuration.
+	 */
 	override val runningDownloadTasks: ArrayList<DownloadTaskInf> = ArrayList()
 
-	/** List of download tasks waiting to be started. */
+	/**
+	 * List of download tasks waiting to be started.
+	 *
+	 * Tasks in this queue are ready to execute but waiting for available slots
+	 * in the running tasks list. They are processed in FIFO order.
+	 */
 	override val waitingDownloadTasks: ArrayList<DownloadTaskInf> = ArrayList()
 
-	/** Manages UI updates related to downloads. */
+	/**
+	 * Manages UI updates related to downloads across the application.
+	 *
+	 * Coordinates updates between active downloads fragment, finished downloads fragment,
+	 * and other UI components that display download progress and status.
+	 */
 	override val downloadsUIManager: DownloadUIManager = DownloadUIManager(this)
 
-	/** Listeners that are notified when a download finishes. */
+	/**
+	 * Listeners that are notified when a download finishes.
+	 *
+	 * Multiple components can register to receive completion notifications
+	 * for updating UI, triggering post-processing, or logging activities.
+	 */
 	override var downloadOnFinishListeners: ArrayList<DownloadFinishUIListener> = ArrayList()
 
 	/**
 	 * Initializes the download system upon creation.
 	 *
 	 * Sets up core components, registers the system with the global timer for
-	 * periodic monitoring, and logs initialization details.
+	 * periodic monitoring, and logs initialization details. This method should
+	 * be called immediately after instance creation to ensure proper system state.
+	 *
+	 * Initialization sequence:
+	 * 1. Sets up internal data structures and managers
+	 * 2. Registers with global timer for periodic maintenance
+	 * 3. Prepares notification system for user alerts
+	 * 4. Logs successful initialization for debugging
 	 */
 	fun initializeSystem() {
 		// Initialize system and register with timer for periodic operations
@@ -82,9 +144,16 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 *
 	 * This callback is triggered automatically at fixed intervals to perform
 	 * recurring tasks such as monitoring pending downloads and refreshing
-	 * foreground service updates.
+	 * foreground service updates. The frequency is determined by the global
+	 * timer configuration.
+	 *
+	 * Key periodic operations:
+	 * - Processes waiting download tasks when slots become available
+	 * - Updates foreground service status for user visibility
+	 * - Performs system health checks and cleanup
 	 *
 	 * @param loopCount The number of times this callback has been triggered since registration.
+	 *                  Used for conditional operations that don't need to run every tick.
 	 */
 	override fun onAIOTimerTick(loopCount: Double) {
 		monitorPendingWaitingDownloadTask(loopCount)
@@ -98,7 +167,14 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	 * Additionally, it refreshes the foreground service every fifth tick to
 	 * keep the UI updated with the latest download states.
 	 *
-	 * @param loopCount Current tick count from the timer, used for periodic operations.
+	 * Operation flow:
+	 * 1. Verifies current system capacity for new downloads
+	 * 2. Starts eligible tasks from the waiting queue
+	 * 3. Updates foreground service status periodically
+	 * 4. Logs operations for debugging and monitoring
+	 *
+	 * @param loopCount Current tick count from the timer, used for periodic operations
+	 *                  like service updates that don't need to run every cycle.
 	 */
 	@Synchronized
 	private fun monitorPendingWaitingDownloadTask(loopCount: Double) {

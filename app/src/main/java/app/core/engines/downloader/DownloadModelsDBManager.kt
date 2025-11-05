@@ -117,16 +117,6 @@ object DownloadModelsDBManager {
 		return ObjectBoxManager.getBoxStore()
 	}
 
-	@JvmStatic
-	fun hotLoadsAllDBBoxes(){
-		// Load all related entities in single queries
-		downloadBox
-		videoFormatBox
-		videoInfoBox
-		remoteFileInfoBox
-		settingsBox
-	}
-
 	/**
 	 * Saves a DownloadDataModel with all its related entities to the database in a single transaction.
 	 *

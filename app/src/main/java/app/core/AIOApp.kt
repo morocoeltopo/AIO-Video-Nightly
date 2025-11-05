@@ -312,9 +312,20 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 					logger.d("[Startup] Using legacy settings storage as fallback")
 				}
 
-				DownloadModelsDBManager.getAllDownloadsWithRelationsOptimized().let {
-					downloadSystem.allDownloadModels.addAll(it)
-					downloadSystem.initializeSystem()
+				// Download System Initialization
+				logger.d("[Startup] Preloading download models from database...")
+				try {
+					DownloadModelsDBManager.getAllDownloadsWithRelationsOptimized().let {
+						logger.d("[Startup] Loaded ${it.size} download models from database")
+						downloadSystem.prefetchedEntireDownloadModels.addAll(it)
+						logger.d("[Startup] Added ${it.size} models to prefetch cache")
+						downloadSystem.initializeSystem()
+						logger.d("[Startup] Download system initialized successfully")
+					}
+				} catch (error: Exception) {
+					logger.e("[Startup] Failed to initialize download system: ${error.message}", error)
+					// Continue with empty download system to allow app to function
+					logger.d("[Startup] Continuing with empty download system")
 				}
 
 				// Resource Preloading
