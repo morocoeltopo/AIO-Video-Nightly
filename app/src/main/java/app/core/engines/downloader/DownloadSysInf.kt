@@ -59,6 +59,8 @@ interface DownloadSysInf {
 	 */
 	val downloadNotification: DownloadNotification
 
+	val allDownloadModels: ArrayList<DownloadDataModel>
+
 	/**
 	 * Collection of all currently active downloads.
 	 *
@@ -251,7 +253,8 @@ interface DownloadSysInf {
 	fun parseDownloadDataModelsAndSync() {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			isInitializing = true
-			getDownloadDataModels().forEach {
+			val prefetchedDownloadModels = allDownloadModels.ifEmpty { getDownloadDataModels() }
+			prefetchedDownloadModels.forEach {
 				if (isValidCompletedDownloadModel(it)) {
 					if (it.globalSettings.downloadAutoRemoveTasks) {
 						if (it.globalSettings.downloadAutoRemoveTaskAfterNDays == 0) {

@@ -16,6 +16,7 @@ import app.core.engines.caches.AIOAdBlocker
 import app.core.engines.caches.AIOFavicons
 import app.core.engines.caches.AIORawFiles
 import app.core.engines.downloader.DownloadModelBinaryMerger
+import app.core.engines.downloader.DownloadModelsDBManager
 import app.core.engines.downloader.DownloadSystem
 import app.core.engines.objectbox.ObjectBoxManager
 import app.core.engines.objectbox.ObjectBoxManager.initializeObjectBoxDB
@@ -287,7 +288,6 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		// Step 1: Foundation Setup
 		INSTANCE = this
 		initializeObjectBoxDB(INSTANCE)
-		downloadSystem.initializeSystem() // start initializing the download system
 
 		// Step 2-4: Configure and execute multi-stage startup sequence
 		startupManager.apply {
@@ -310,6 +310,11 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 					// Fallback to legacy file-based storage
 					aioSettings = AIOSettings().apply(AIOSettings::readObjectFromStorage)
 					logger.d("[Startup] Using legacy settings storage as fallback")
+				}
+
+				DownloadModelsDBManager.getAllDownloadsWithRelationsOptimized().let {
+					downloadSystem.allDownloadModels.addAll(it)
+					downloadSystem.initializeSystem()
 				}
 
 				// Resource Preloading

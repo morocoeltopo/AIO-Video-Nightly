@@ -44,6 +44,8 @@ class DownloadSystem : AIOTimerListener, DownloadSysInf, DownloadTaskListener {
 	/** Handles download-related notifications to the user. */
 	override val downloadNotification: DownloadNotification = DownloadNotification()
 
+	override val allDownloadModels: ArrayList<DownloadDataModel> = ArrayList()
+
 	/** List of downloads currently being processed or queued for processing. */
 	override val activeDownloadDataModels: ArrayList<DownloadDataModel> = ArrayList()
 

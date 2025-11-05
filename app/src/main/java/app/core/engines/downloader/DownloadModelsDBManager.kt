@@ -1,7 +1,9 @@
 package app.core.engines.downloader
 
 import app.core.AIOApp
+import app.core.engines.downloader.DownloadModelsDBManager.assembleDownloadFromCache
 import app.core.engines.downloader.DownloadModelsDBManager.assembleDownloadWithRelations
+import app.core.engines.downloader.DownloadModelsDBManager.getAllDownloadsWithRelations
 import app.core.engines.objectbox.ObjectBoxManager
 import app.core.engines.settings.AIOSettings
 import app.core.engines.settings.AIOSettings_
@@ -115,6 +117,16 @@ object DownloadModelsDBManager {
 		return ObjectBoxManager.getBoxStore()
 	}
 
+	@JvmStatic
+	fun hotLoadsAllDBBoxes(){
+		// Load all related entities in single queries
+		downloadBox
+		videoFormatBox
+		videoInfoBox
+		remoteFileInfoBox
+		settingsBox
+	}
+
 	/**
 	 * Saves a DownloadDataModel with all its related entities to the database in a single transaction.
 	 *
@@ -176,10 +188,35 @@ object DownloadModelsDBManager {
 		}
 	}
 
+	/**
+	 * Retrieves all DownloadDataModel instances from the database with all their related entities assembled
+	 * using an optimized bulk loading approach.
+	 *
+	 * This method significantly improves performance by loading all related entities in single bulk queries
+	 * rather than individual queries per download model. The optimization becomes more substantial as the
+	 * number of download models increases.
+	 *
+	 * Operation flow:
+	 * 1. Loads all DownloadDataModel entities
+	 * 2. Loads all related entities (VideoInfo, VideoFormat, RemoteFileInfo, AIOSettings) in single queries
+	 * 3. Creates lookup maps for efficient O(1) access during assembly
+	 * 4. Assembles each download model using cached entity maps
+	 *
+	 * Performance characteristics:
+	 * - Database queries: 5 total (1 for downloads + 4 for related entities)
+	 * - Time complexity: O(N) for assembly vs O(N*4) with individual queries
+	 * - Memory usage: Higher initial allocation but better overall performance
+	 *
+	 * @return List of fully assembled DownloadDataModel instances, or empty list if none found or error occurs
+	 *
+	 * @see getAllDownloadsWithRelations for the original individual query approach
+	 * @see assembleDownloadFromCache for the assembly implementation
+	 */
 	@JvmStatic
+	@Synchronized
 	fun getAllDownloadsWithRelationsOptimized(): List<DownloadDataModel> {
 		logger.d("Retrieving all downloads (optimized bulk assembly)")
-
+		val startTime = System.currentTimeMillis()
 		return try {
 			val downloads = downloadBox.all
 			if (downloads.isEmpty()) {
@@ -196,7 +233,7 @@ object DownloadModelsDBManager {
 			logger.d("Bulk loaded ${allVideoInfos.size} VideoInfo, ${allVideoFormats.size} VideoFormat, " +
 					"${allRemoteFileInfos.size} RemoteFileInfo, ${allSettings.size} AIOSettings")
 
-			val assembledDownloads = downloads.map { download ->
+			val assembledDownloads = downloads.parallelStream().map { download ->
 				assembleDownloadFromCache(
 					downloadDataModel = download,
 					videoInfos = allVideoInfos,
@@ -204,20 +241,40 @@ object DownloadModelsDBManager {
 					remoteFileInfos = allRemoteFileInfos,
 					settings = allSettings
 				)
-			}
+			}.toList()
 
-			logger.d("Successfully assembled ${assembledDownloads.size} downloads (optimized)")
+			val totalTime = System.currentTimeMillis() - startTime
+			logger.d("Successfully assembled ${assembledDownloads.size} downloads (optimized) in ${totalTime}ms")
 			assembledDownloads
 		} catch (error: Exception) {
-			logger.e("Error during optimized download assembly", error)
+			val totalTime = System.currentTimeMillis() - startTime
+			logger.e("Error during optimized download assembly after ${totalTime}ms", error)
 			emptyList()
 		}
 	}
 
 	/**
-	 * Assembles a DownloadDataModel from pre-fetched entity maps.
+	 * Assembles a DownloadDataModel using pre-loaded entity maps for optimal performance.
 	 *
-	 * This avoids per-download queries by looking up relationships in memory.
+	 * This method performs the assembly without any database queries by looking up related entities
+	 * in pre-populated maps. It serves as the core assembly logic for bulk operations.
+	 *
+	 * Key features:
+	 * - Zero database queries during assembly
+	 * - O(1) lookup time for each related entity
+	 * - Automatic fallback to global AIOSettings if download-specific settings not found
+	 * - Comprehensive error handling to ensure partial failures don't break entire assembly
+	 *
+	 * @param downloadDataModel The base DownloadDataModel without related entities
+	 * @param videoInfos Map of VideoInfo entities keyed by downloadDataModelDBId
+	 * @param videoFormats Map of VideoFormat entities keyed by downloadDataModelDBId
+	 * @param remoteFileInfos Map of RemoteFileInfo entities keyed by downloadDataModelDBId
+	 * @param settings Map of AIOSettings entities keyed by downloadDataModelDBId
+	 * @return The fully assembled DownloadDataModel with all related entities attached
+	 *
+	 * @throws Exception if entity assignment fails, but errors are caught and logged with fallback settings
+	 *
+	 * @see AIOApp.aioSettings for the fallback global settings implementation
 	 */
 	@JvmStatic
 	private fun assembleDownloadFromCache(
