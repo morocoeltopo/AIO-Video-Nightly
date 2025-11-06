@@ -205,8 +205,8 @@ class PlaybackSpeedPopup(
 			refreshCheckboxes()
 			logger.d("Checkboxes refreshed after speed change")
 
-		} catch (e: Exception) {
-			logger.e("Failed to change playback speed to ${speed}x", e)
+		} catch (error: Exception) {
+			logger.e("Failed to change playback speed to ${speed}x", error)
 		}
 	}
 
