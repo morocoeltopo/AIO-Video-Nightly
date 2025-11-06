@@ -793,6 +793,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		// Track gesture state
 		var gestureDirection: String? = null
 		var activeGesture: String? = null // Tracks which gesture is currently active
+		var initialTouchX = 0f
+		var initialTouchY = 0f
+		var isTwoFingerTouch = false
 
 		// Initialize scale gesture detector
 		scaleGestureDetector = ScaleGestureDetector(targetView.context,
@@ -800,11 +803,9 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
 					if (areControllersLocked) return false
 
-					// Only begin zooming if no other gesture is active
-					if (activeGesture != null && activeGesture != "zoom") return false
-
 					isZooming = true
 					activeGesture = "zoom"
+					gestureDirection = null // Reset direction when zoom starts
 					return true
 				}
 
@@ -836,12 +837,17 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				override fun onDown(e: MotionEvent): Boolean {
 					if (areControllersLocked) return true
 
+					// Don't start new gesture if zooming or two-finger touch
+					if (isZooming || isTwoFingerTouch) return false
+
 					// If a gesture is already active, don't start new one
-					if (activeGesture != null) return false
+					if (activeGesture != null && activeGesture != "scroll") return false
 
 					isFingerScrolling = false
 					isLongPressTriggered = false
 					gestureDirection = null
+					initialTouchX = e.x
+					initialTouchY = e.y
 
 					// Store initial values for volume and brightness
 					initialVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
@@ -850,7 +856,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 					// Detect long press: pause video if holding without moving
 					longPressHandler.postDelayed({
-						if (activeGesture == null && !isFingerScrolling && !isUserSeeking) {
+						if (activeGesture == null && !isFingerScrolling && !isUserSeeking && !isZooming && !isTwoFingerTouch) {
 							wasPlayingBeforeSeek = player.isPlaying
 							if (wasPlayingBeforeSeek) {
 								player.pause()
@@ -869,48 +875,59 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 				): Boolean {
 					if (areControllersLocked || e1 == null) return true
 
-					// If zooming is active, don't process scroll
-					if (isZooming) return false
+					// Don't process scroll if zooming or two-finger touch
+					if (isZooming || isTwoFingerTouch) return false
 
 					// If another gesture is active and it's not scroll, don't process
 					if (activeGesture != null && activeGesture != "scroll") return false
 
 					longPressHandler.removeCallbacksAndMessages(null)
 
-					// Compute movement delta
-					val deltaX = e2.x - e1.x
-					val deltaY = e1.y - e2.y
+					// Compute movement delta from initial touch
+					val totalDeltaX = e2.x - initialTouchX
+					val totalDeltaY = e2.y - initialTouchY
 					val screenWidth = targetView.width
 					val screenHeight = targetView.height
-					val movementThreshold = 20 // Minimum movement to consider as intentional scroll
 
-					// Determine gesture direction only once
+					val movementThreshold = 15 // Reduced threshold for better responsiveness
+					val directionConfidenceThreshold = 1.8f // Higher = more confident direction detection
+
+					// Determine gesture direction only once with better logic
 					if (gestureDirection == null) {
-						val absDeltaX = abs(deltaX)
-						val absDeltaY = abs(deltaY)
+						val absDeltaX = abs(totalDeltaX)
+						val absDeltaY = abs(totalDeltaY)
 
 						// Require minimum movement before deciding direction
 						if (absDeltaX < movementThreshold && absDeltaY < movementThreshold) {
 							return false
 						}
 
-						// Set direction with a bias toward horizontal for videos
-						gestureDirection = if (absDeltaY > absDeltaX * 1.5) "vertical" else "horizontal"
+						// Improved direction detection with confidence
+						val isClearlyVertical = absDeltaY > absDeltaX * directionConfidenceThreshold
+						val isClearlyHorizontal = absDeltaX > absDeltaY * directionConfidenceThreshold
+
+						gestureDirection = when {
+							isClearlyVertical -> "vertical"
+							isClearlyHorizontal -> "horizontal"
+							else -> {
+								// If ambiguous, prefer horizontal for video content
+								if (absDeltaX > absDeltaY) "horizontal" else "vertical"
+							}
+						}
 						activeGesture = "scroll"
 					}
 
 					when (gestureDirection) {
 						"vertical" -> {
-							// Handle volume or brightness change
-							val brightnessAdjustmentFactor = 5f // higher = faster brightness change per swipe
-							val brightnessDelta = (deltaY / screenHeight) * brightnessAdjustmentFactor
-
-							val volumeAdjustmentFactor = 6f // higher = faster volume change per swipe
-							val volumeDelta = (deltaY / screenHeight) * volumeAdjustmentFactor
+							// Use total movement for consistent control
+							// Swipe from top to bottom decreases volume/brightness (negative deltaY)
+							// Swipe from bottom to top increases volume/brightness (positive deltaY)
+							val adjustmentFactor = 2f // Adjust this for sensitivity
+							val totalDeltaPercent = (totalDeltaY / screenHeight) * adjustmentFactor
 
 							if (e1.x < screenWidth / 2) {
 								// Left side → brightness control
-								val newBrightness = (initialBrightness + brightnessDelta).coerceIn(0.0f, 1.0f)
+								val newBrightness = (initialBrightness - totalDeltaPercent).coerceIn(0.0f, 1.0f)
 								val params = window.attributes
 								params.screenBrightness = newBrightness
 								window.attributes = params
@@ -918,8 +935,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 								setBrightness(process = progress)
 							} else {
 								// Right side → volume control
-								val change = (volumeDelta * maxVolume).toInt()
-								val newVolume = (initialVolume + change).coerceIn(0, maxVolume)
+								val volumeChange = (totalDeltaPercent * maxVolume).toInt()
+								val newVolume = (initialVolume - volumeChange).coerceIn(0, maxVolume)
 								audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
 								val progress = (newVolume * 100) / maxVolume
 								setVolume(process = progress)
@@ -929,7 +946,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 						"horizontal" -> {
 							// Handle video seeking (scrubbing)
-							val seekThreshold = 80 // min distance before horizontal seek activates
+							val seekThreshold = 50 // Reduced threshold for quicker seeking
 
 							if (!isFingerScrolling) {
 								isFingerScrolling = true
@@ -940,9 +957,10 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 							}
 
 							val duration = getVideoDuration()
-							if (isUserSeeking && duration > 0 && abs(deltaX) > seekThreshold) {
-								// Each full swipe across screen = 25 seconds seek
-								val seekOffset = ((deltaX / screenWidth) * 25000).toLong()
+							if (isUserSeeking && duration > 0) {
+								// Use total movement for more precise seeking
+								val seekSensitivity = 40000f // Adjust this value to change seek speed
+								val seekOffset = ((totalDeltaX / screenWidth) * seekSensitivity).toLong()
 								val newSeekPosition =
 									(startSeekPosition + seekOffset).coerceIn(0, getVideoDuration())
 								mediaProgressBar.setPosition(newSeekPosition)
@@ -958,8 +976,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 				// Single tap toggles controller visibility
 				override fun onSingleTapUp(e: MotionEvent): Boolean {
-					// Only process if no other gesture is active
-					if (activeGesture == null) {
+					// Only process if no other gesture is active and not from scroll
+					if (activeGesture == null && !isFingerScrolling && !isZooming && !isTwoFingerTouch) {
 						handlePlaybackControllerVisibility(shouldTogglePlayback = false)
 						return true
 					}
@@ -968,8 +986,8 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 				// Double tap toggles play/pause
 				override fun onDoubleTap(e: MotionEvent): Boolean {
-					// Only process if no other gesture is active
-					if (activeGesture == null) {
+					// Only process if no other gesture is active and not from scroll
+					if (activeGesture == null && !isFingerScrolling && !isZooming && !isTwoFingerTouch) {
 						togglePlaybackState()
 						return true
 					}
@@ -979,15 +997,46 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 		// Attach gesture listener to the target view
 		targetView.setOnTouchListener { touchedView, event ->
-			// First handle scale gestures (pinch zoom)
+			when (event.action and MotionEvent.ACTION_MASK) {
+				MotionEvent.ACTION_DOWN -> {
+					// Store initial touch position
+					initialTouchX = event.x
+					initialTouchY = event.y
+					isTwoFingerTouch = false
+				}
+				MotionEvent.ACTION_POINTER_DOWN -> {
+					// Second finger detected - this is likely a zoom gesture
+					isTwoFingerTouch = true
+					longPressHandler.removeCallbacksAndMessages(null)
+					// Cancel any active scroll gesture
+					if (activeGesture == "scroll") {
+						activeGesture = null
+						gestureDirection = null
+					}
+				}
+				MotionEvent.ACTION_MOVE -> {
+					// Check if we should cancel long press when movement is detected
+					if (activeGesture == null && (abs(event.x - initialTouchX) > 10 || abs(event.y - initialTouchY) > 10)) {
+						longPressHandler.removeCallbacksAndMessages(null)
+					}
+				}
+				MotionEvent.ACTION_POINTER_UP -> {
+					// When one finger is lifted but others remain
+					if (event.pointerCount == 2) { // Still two fingers (3rd finger case)
+						isTwoFingerTouch = true
+					}
+				}
+			}
+
+			// Always pass events to scale gesture detector first
 			scaleGestureDetector.onTouchEvent(event)
 
-			// Then handle other gestures (only if not zooming)
-			if (!isZooming) {
+			// Only handle other gestures if not zooming and not two-finger touch
+			if (!isZooming && !isTwoFingerTouch) {
 				gestureDetector.onTouchEvent(event)
 			}
 
-			when (event.action) {
+			when (event.action and MotionEvent.ACTION_MASK) {
 				MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
 					// Reset states when user lifts finger
 					longPressHandler.removeCallbacksAndMessages(null)
@@ -1005,6 +1054,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					gestureDirection = null
 					activeGesture = null
 					isFingerScrolling = false
+					isTwoFingerTouch = false
 
 					touchedView.performClick()
 				}
