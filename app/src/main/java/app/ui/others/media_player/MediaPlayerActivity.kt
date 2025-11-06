@@ -1445,7 +1445,10 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val iconResId = if (isCurrentlyPlaying) drawable.ic_button_media_pause
 		else drawable.ic_button_media_play
 		val buttonViewId = id.btn_img_video_play_pause_toggle
+		val buttonViewIdLand = id.btn_img_video_play_pause_toggle_land
+
 		(findViewById<ImageView>(buttonViewId)).setImageResource(iconResId)
+		(findViewById<ImageView>(buttonViewIdLand)).setImageResource(iconResId)
 		if (isCurrentlyPlaying) audioVisualizerView.resumeAnimation()
 		else audioVisualizerView.pauseAnimation()
 	}

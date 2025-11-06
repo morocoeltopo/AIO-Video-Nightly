@@ -221,7 +221,7 @@
 
 				<!-- Dynamic play/pause icon that changes state -->
 				<ImageView
-					android:id="@+id/btn_img_video_play_pause_toggle"
+					android:id="@+id/btn_img_video_play_pause_toggle_land"
 					android:layout_width="@dimen/_40"
 					android:layout_height="match_parent"
 					android:layout_gravity="center"
