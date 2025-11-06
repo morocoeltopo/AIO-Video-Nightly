@@ -108,7 +108,7 @@ class PlaybackSpeedPopup(
 			// Create popup builder with speed selection layout
 			popupBuilder = PopupBuilder(
 				activityInf = act,
-				popupLayoutId = layout.activity_player_6_speed_1,
+				popupLayoutId = layout.activity_player_6_speed_popup_1,
 				popupAnchorView = anchorView
 			)
 			logger.d("PopupBuilder created with layout: activity_player_6_speed_1")
