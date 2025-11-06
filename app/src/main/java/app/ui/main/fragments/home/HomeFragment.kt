@@ -985,7 +985,9 @@ class HomeFragment : BaseFragment(), AIOTimer.AIOTimerListener {
 							Intent(safeMotherActivityRef, MediaPlayerActivity::class.java).apply {
 								flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 								putExtra(DOWNLOAD_MODEL_ID_KEY, downloadDataModel.downloadId)
-								putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
+								putExtra(
+									/* name = */ INTENT_EXTRA_MEDIA_FILE_PATH,
+									/* value = */ downloadDataModel.getDestinationFile().path)
 							})
 						animActivityFade(safeMotherActivityRef)
 					} else {

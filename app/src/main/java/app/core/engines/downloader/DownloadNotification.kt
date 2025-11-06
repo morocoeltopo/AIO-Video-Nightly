@@ -233,7 +233,9 @@ class DownloadNotification {
 
 			// Add relevant extras for the target activity
 			putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.downloadId)
-			putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
+			putExtra(
+				/* name = */ INTENT_EXTRA_MEDIA_FILE_PATH, /*
+				value = */ downloadModel.getDestinationFile().path)
 			putExtra(WHERE_DID_YOU_COME_FROM, FROM_DOWNLOAD_NOTIFICATION)
 		}
 	}

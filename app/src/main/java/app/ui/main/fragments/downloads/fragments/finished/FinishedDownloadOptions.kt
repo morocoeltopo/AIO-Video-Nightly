@@ -671,7 +671,9 @@ class FinishedDownloadOptions(finishedTasksFragment: FinishedTasksFragment?) : O
 								).apply {
 									flags = FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_SINGLE_TOP
 									putExtra(DOWNLOAD_MODEL_ID_KEY, downloadModel.downloadId)
-									putExtra(INTENT_EXTRA_MEDIA_FILE_PATH, true)
+									putExtra(
+										/* name = */ INTENT_EXTRA_MEDIA_FILE_PATH,
+										/* value = */ downloadModel.getDestinationFile().path)
 								}
 							)
 
