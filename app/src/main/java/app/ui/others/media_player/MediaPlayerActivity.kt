@@ -23,6 +23,8 @@ import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
+import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.view.View
 import android.view.View.GONE
 import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -777,6 +779,11 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 		val longPressDelay = 200L
 		val longPressHandler = Handler(Looper.getMainLooper())
 
+		// Zoom-related variables
+		var scaleGestureDetector: ScaleGestureDetector?
+		var currentScaleFactor = 1.0f
+		var isZooming = false
+
 		// System services for volume and screen brightness
 		val audioManager = targetView.context.getSystemService(AUDIO_SERVICE) as AudioManager
 		val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
@@ -787,6 +794,31 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 		// Track gesture direction: "vertical" for volume/brightness, "horizontal" for seeking
 		var gestureDirection: String? = null
+
+		// Initialize scale gesture detector
+		scaleGestureDetector = ScaleGestureDetector(targetView.context,
+			object : SimpleOnScaleGestureListener() {
+				override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+					isZooming = true
+					return true
+				}
+
+				override fun onScale(detector: ScaleGestureDetector): Boolean {
+					if (areControllersLocked) return true
+
+					currentScaleFactor *= detector.scaleFactor
+					// Limit the scale factor between 1.0f (no zoom) and 3.0f (3x zoom)
+					currentScaleFactor = currentScaleFactor.coerceIn(1.0f, 3.0f)
+
+					applyZoomToPlayerView(currentScaleFactor)
+					showZoomLevel(currentScaleFactor)
+					return true
+				}
+
+				override fun onScaleEnd(detector: ScaleGestureDetector) {
+					isZooming = false
+				}
+			})
 
 		val gestureDetector = GestureDetector(
 			targetView.context,
@@ -823,7 +855,7 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 					e1: MotionEvent?, e2: MotionEvent,
 					distanceX: Float, distanceY: Float
 				): Boolean {
-					if (areControllersLocked || e1 == null) return true
+					if (areControllersLocked || e1 == null || isZooming) return true
 					longPressHandler.removeCallbacksAndMessages(null)
 
 					// Compute movement delta
@@ -908,6 +940,20 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 
 		// Attach gesture listener to the target view
 		targetView.setOnTouchListener { touchedView, event ->
+			// First handle scale gestures (pinch zoom)
+			scaleGestureDetector.onTouchEvent(event)
+
+			// If we're currently zooming, don't process other gestures
+			if (isZooming) {
+				when (event.action) {
+					MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+						isZooming = false
+					}
+				}
+				return@setOnTouchListener true
+			}
+
+			// Then handle other gestures
 			gestureDetector.onTouchEvent(event)
 
 			when (event.action) {
@@ -929,6 +975,26 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 			}
 			true
 		}
+	}
+
+	private fun applyZoomToPlayerView(scaleFactor: Float) {
+		playerView.scaleX = scaleFactor
+		playerView.scaleY = scaleFactor
+
+		// Optional: Add pivot point for more natural zooming
+		playerView.pivotX = playerView.width / 2f
+		playerView.pivotY = playerView.height / 2f
+	}
+
+	private fun showZoomLevel(scaleFactor: Float) {
+		val zoomPercent = (scaleFactor * 100).toInt().toString()
+		showQuickPlayerInfo("Zoom: $zoomPercent%")
+	}
+
+	private fun getVideoSize(): Pair<Int, Int>? {
+		val videoFormat = player.videoFormat
+		return if (videoFormat != null)
+			Pair(videoFormat.width, videoFormat.height) else null
 	}
 
 	private fun handlePlaybackCompletion() {

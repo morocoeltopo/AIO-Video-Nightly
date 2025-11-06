@@ -590,5 +590,6 @@
 	<string name="title_1_5_faster">Faster</string>
 	<string name="title_1_75_fastest">Fastest</string>
 	<string name="title_2_lighting">Lightning</string>
+	<string name="title_zoom_d">Zoom: %1$d%</string>
 
 </resources>
