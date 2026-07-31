@@ -1,54 +1,63 @@
 package lib.networks
 
-import app.core.AIOApp.Companion.youtubeVidParser
-import lib.process.LogHelperUtils
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.HttpURLConnection.HTTP_OK
-import java.net.URI
-import java.net.URL
-import java.net.URLDecoder
-import java.net.URLEncoder
-import java.util.concurrent.TimeUnit
+import app.core.engines.youtube.*
+import lib.process.*
+import okhttp3.*
+import org.jsoup.*
+import org.jsoup.nodes.*
+import java.io.*
+import java.net.*
+import java.net.HttpURLConnection.*
+import java.util.concurrent.*
 
 /**
  * A collection of helper methods for working with URLs and web content.
  *
- * This object centralizes common networking tasks such as:
- * - Extracting hosts and base domains.
- * - Checking resource availability (favicon, URL expiration, internet connectivity).
- * - Fetching HTML content (desktop and mobile-optimized versions).
- * - Parsing webpage titles and metadata.
- * - Normalizing encoded URLs.
+ * This utility object centralizes common networking and URL-related tasks, including:
+ * - Extracting hosts, base domains, and other URL components.
+ * - Checking resource availability (e.g., favicon, URL expiration, internet connectivity).
+ * - Fetching HTML content using various strategies (e.g., mobile user agents).
+ * - Parsing webpage metadata like titles and OpenGraph tags.
+ * - Normalizing and encoding URLs for safe use.
  *
- * **Thread Safety:** All methods are stateless and thread-safe.
+ * All methods in this object are exposed as static Java methods via `@JvmStatic`,
+ * making them easily accessible from both Kotlin and Java code.
  *
- * **Note:** Many methods in this utility make synchronous HTTP requests.
- * For performance, consider running them on a background thread when called from UI contexts.
+ * ### Threading
+ * Most methods perform network I/O and are synchronous (blocking).
+ * To prevent blocking the main thread, it is crucial to call these methods
+ * from a background thread (e.g., using coroutines, RxJava, or an `ExecutorService`).
+ * Methods that operate asynchronously (e.g., `getTitleByParsingHTML`) accept a callback
+ * to handle the result.
+ *
+ * @see OkHttpClient For the underlying HTTP client used in many methods.
+ * @see Jsoup For HTML parsing.
  */
 object URLUtilityKT {
 
-	/** Logger for debugging and error tracking. */
+	/**
+	 * A private logger instance for this object.
+	 * Used for logging debugging information, warnings, and errors related to network operations.
+	 */
 	private val logger = LogHelperUtils.from(javaClass)
 
 	/**
-	 * Extracts only the scheme and host from a given URL string.
+	 * Extracts the scheme and host from a URL string, constructing the base URL.
+	 *
+	 * This function isolates the `scheme://host` part of a URL. For example, given
+	 * `https://user:pass@example.com:8080/path?query=1#fragment`, it returns
+	 * `https://example.com`. It correctly handles URLs with ports and user info,
+	 * stripping them to return only the essential host identifier.
 	 *
 	 * Example:
-	 * ```
-	 * extractHostUrl("https://example.com/path/page.html")
-	 * // returns "https://example.com"
+	 * ```kotlin
+	 * extractHostUrl("https://example.com/path/page.html") // returns "https://example.com"
+	 * extractHostUrl("http://www.test.co.uk:8080/index")  // returns "http://www.test.co.uk"
 	 * ```
 	 *
-	 * @param urlString Full URL (must include scheme).
-	 * @return The scheme + host portion of the URL, or an empty string if parsing fails.
+	 * @param urlString The full URL string to parse. It must include a scheme (e.g., "https://").
+	 * @return The scheme and host portion of the URL (e.g., "https://example.com"),
+	 *         or an empty string if the URL is malformed or cannot be parsed.
 	 */
 	@JvmStatic
 	fun extractHostUrl(urlString: String): String {
@@ -62,17 +71,25 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Checks if a URL contains no path beyond the root.
+	 * Checks if a URL points to the root of a host, with no additional path segments.
+	 *
+	 * This is useful for determining if a URL refers to a domain's homepage.
+	 * A URL is considered "host-only" if its path is either empty (`""`) or consists of a single
+	 * forward slash (`"/"`). Any other path, such as `/page`, is not considered host-only.
+	 *
+	 * Malformed URLs will be treated as not host-only.
 	 *
 	 * Example:
 	 * ```
 	 * isHostOnly("https://example.com")      // true
 	 * isHostOnly("https://example.com/")     // true
 	 * isHostOnly("https://example.com/page") // false
+	 * isHostOnly("https://example.com?q=1")  // true (query parameters are ignored)
+	 * isHostOnly("ftp://files.server.net/")  // true
 	 * ```
 	 *
-	 * @param url The URL to check.
-	 * @return `true` if URL has no path or only "/", otherwise `false`.
+	 * @param url The URL string to check.
+	 * @return `true` if the URL's path is empty or just "/", otherwise `false`.
 	 */
 	@JvmStatic
 	fun isHostOnly(url: String): Boolean {
@@ -85,14 +102,68 @@ object URLUtilityKT {
 			false
 		}
 	}
-
+	
 	/**
-	 * Asynchronously retrieves the `<title>` content from a webpage.
+	 * Validates whether a given string is a well-formed email address.
 	 *
-	 * This method performs a GET request and parses the returned HTML with Jsoup.
+	 * This function uses a regular expression to check if the input string conforms to
+	 * a standard email address format (e.g., `user@example.com`). It is a simple
+	 * syntactic check and does not verify the actual existence or deliverability of the
+	 * email address.
 	 *
-	 * @param url Webpage URL.
-	 * @param callback Receives the extracted title, or `null` if unavailable or an error occurs.
+	 * The validation checks for:
+	 * - A non-empty local part (before the `@`).
+	 * - A single `@` symbol.
+	 * - A non-empty domain part (after the `@`).
+	 * - A domain containing at least one dot (`.`).
+	 *
+	 * @param email The string to validate.
+	 * @return `true` if the string matches the email pattern, `false` otherwise.
+	 */
+	@JvmStatic
+	fun isValidEmail(email: String): Boolean {
+		if (!email.contains("@")) return false
+		
+		val parts = email.split("@")
+		if (parts.size != 2) return false
+		val (local, domain) = parts
+		
+		if (local.isEmpty() || domain.isEmpty()) return false
+		if (!domain.contains(".")) return false
+		
+		// small regex just for sanity
+		val simple = "^[A-Za-z0-9._%+-]+$".toRegex()
+		return simple.matches(local)
+	}
+	
+	
+	/**
+	 * Asynchronously retrieves the content of the `<title>` tag from a webpage.
+	 *
+	 * This method performs a GET request in the background using `OkHttpClient` and
+	 * parses the resulting HTML with Jsoup to extract the title. The operation
+	 * is non-blocking.
+	 *
+	 * Errors during the network request (e.g., connectivity issues, invalid URL) or
+	 * HTML parsing will result in a `null` value being passed to the callback.
+	 *
+	 * Example Usage:
+	 * ```kotlin
+	 * URLUtilityKT.getTitleByParsingHTML("https://example.com") { title ->
+	 *     // This block executes on a background thread.
+	 *     // Switch to the main thread if updating UI.
+	 *     if (title != null) {
+	 *         println("Webpage title: $title")
+	 *     } else {
+	 *         println("Failed to retrieve title.")
+	 *     }
+	 * }
+	 * ```
+	 *
+	 * @param url The URL of the webpage to fetch.
+	 * @param callback A lambda that receives the extracted title as a `String`, or `null` if the
+	 *                 title could not be retrieved or an error occurred. The callback is executed
+	 *                 on a background thread provided by OkHttp's dispatcher.
 	 */
 	@JvmStatic
 	fun getTitleByParsingHTML(url: String, callback: (String?) -> Unit) {
@@ -127,16 +198,27 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Retrieves the OpenGraph title or description from a webpage.
+	 * Retrieves the OpenGraph title (`og:title`) or description (`og:description`) from a webpage.
 	 *
-	 * Special Case:
-	 * - If the URL belongs to YouTube Music, attempts to get the title using
-	 *   the `youtubeVidParser` before fetching HTML.
+	 * This function first checks if a pre-fetched HTML body is provided. If not, it fetches
+	 * the webpage content. It then parses the HTML to find the relevant OpenGraph meta tag.
 	 *
-	 * @param websiteUrl Webpage URL.
-	 * @param returnDescriptionL If `true`, fetches `og:description`; otherwise `og:title`.
-	 * @param userGivenHtmlBody Optional pre-fetched HTML to avoid another network request.
-	 * @param callback Receives the title/description, or `null` if unavailable.
+	 * This function is synchronous and performs network I/O. It is recommended to call it
+	 * from a background thread to avoid blocking the main thread.
+	 *
+	 * ### Special Handling:
+	 * - **YouTube Music:** If the URL is identified as a YouTube Music link, it first attempts to
+	 *   extract the title using `YouTubeVideoStreamParser`. If successful, it returns the
+	 *   title with a `_Youtube_Music_Audio` suffix and skips HTML fetching. This is an
+	 *   optimization to avoid parsing heavy web pages.
+	 *
+	 * @param websiteUrl The URL of the webpage to parse.
+	 * @param returnDescriptionL If `true`, the function will look for the `og:description` meta tag.
+	 *                           If `false` (default), it will look for the `og:title` meta tag.
+	 * @param userGivenHtmlBody An optional, pre-fetched HTML string of the webpage. Providing this
+	 *                          avoids an additional network request.
+	 * @param callback A lambda function that will be invoked with the extracted title/description
+	 *                 as a `String`, or `null` if it could not be found or an error occurred.
 	 */
 	@JvmStatic
 	fun getWebpageTitleOrDescription(
@@ -148,7 +230,7 @@ object URLUtilityKT {
 		try {
 			val isYoutubeMusicPage = extractHostUrl(websiteUrl).contains("music.youtube", true)
 			if (isYoutubeMusicPage) {
-				val title = youtubeVidParser.getTitle(websiteUrl)
+				val title = YouTubeVideoStreamParser.getTitle(websiteUrl)
 				if (title.isNullOrEmpty() == false) {
 					return callback.invoke("${title}_Youtube_Music_Audio")
 				}
@@ -174,14 +256,22 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Finds the favicon URL for a site.
+	 * Attempts to find the favicon URL for a given website.
 	 *
-	 * Search order:
-	 * 1. Checks `<site>/favicon.ico`.
-	 * 2. Parses HTML for `<link rel="icon">` or `<link rel="shortcut icon">`.
+	 * This function employs a multi-step process to locate the favicon:
+	 * 1.  It first checks for a standard `favicon.ico` file at the root of the website
+	 *     (e.g., `https://example.com/favicon.ico`). This is a quick check for a common convention.
+	 * 2.  If the standard path fails, it fetches the website's HTML content and parses it to find
+	 *     `<link>` tags with `rel="icon"` or `rel="shortcut icon"`.
+	 * 3.  It then validates each potential favicon URL found in the HTML to ensure it is accessible
+	 *     before returning the first valid one.
 	 *
-	 * @param websiteUrl The site’s base URL.
-	 * @return The favicon URL if found, or `null` if unavailable.
+	 * Relative favicon paths (e.g., `/images/favicon.png`) are resolved against the base `websiteUrl`.
+	 *
+	 * @param websiteUrl The base URL of the website (e.g., "https://example.com").
+	 * @return The absolute URL of an accessible favicon as a `String`, or `null` if no favicon
+	 *         can be found or an error occurs during the process (like a network issue or
+	 *         parsing failure).
 	 */
 	@JvmStatic
 	fun getFaviconUrl(websiteUrl: String): String? {
@@ -202,10 +292,15 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Determines whether a favicon resource exists.
+	 * Checks if a resource is available at the given URL by sending an HTTP HEAD request.
 	 *
-	 * @param faviconUrl Direct favicon URL.
-	 * @return `true` if HTTP HEAD request returns 200 OK, otherwise `false`.
+	 * This is a lightweight way to verify that a URL is accessible and points to a valid
+	 * resource without downloading its content. It is primarily used to check for the
+	 * existence of a favicon before attempting to display it.
+	 *
+	 * @param faviconUrl The direct URL of the resource to check (e.g., a favicon).
+	 * @return `true` if the server responds with HTTP 200 OK, `false` otherwise (including
+	 *         for network errors, timeouts, or non-200 status codes).
 	 */
 	@JvmStatic
 	fun isFaviconAvailable(faviconUrl: String): Boolean {
@@ -222,11 +317,16 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Performs a HEAD request to determine file size from HTTP headers.
+	 * Performs a HEAD request to determine the size of a remote file from its `Content-Length` header.
 	 *
-	 * @param httpClient OkHttpClient instance (can be reused for multiple calls).
-	 * @param url File URL.
-	 * @return Size in bytes, or `-1` if not available.
+	 * This method is efficient for checking file size without downloading the entire file. It makes a
+	 * synchronous network call, so it should be executed on a background thread to avoid blocking the UI.
+	 *
+	 * @param httpClient An `OkHttpClient` instance. Reusing a single instance is recommended for
+	 * performance, as it allows connection pooling.
+	 * @param url The direct URL of the file to check.
+	 * @return The size of the file in bytes. Returns `-1L` if the `Content-Length` header is not
+	 * present, cannot be parsed, or if a network error occurs.
 	 */
 	@JvmStatic
 	fun fetchFileSize(httpClient: OkHttpClient, url: String): Long {
@@ -243,9 +343,20 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Checks internet connectivity by sending a short request to Google.
+	 * Checks for an active internet connection by attempting to reach a reliable public endpoint.
 	 *
-	 * @return `true` if Google responds with HTTP 200, otherwise `false`.
+	 * This function sends a lightweight GET request to `https://www.google.com`. A successful
+	 * connection is determined by receiving an HTTP 200 (OK) response code within a short
+	 * timeout period.
+	 *
+	 * The timeouts are set low (1 second) to ensure the check fails quickly if the network is
+	 * unresponsive, preventing long waits in the calling code.
+	 *
+	 * This method is synchronous and performs a network operation. It should be called from
+	 * a background thread to avoid blocking the UI.
+	 *
+	 * @return `true` if a connection to the target is successfully established (HTTP 200),
+	 *         `false` otherwise (e.g., due to timeouts, DNS issues, or no network).
 	 */
 	@JvmStatic
 	fun isInternetConnected(): Boolean {
@@ -266,26 +377,48 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Replaces spaces with `%20` for safe URL encoding.
+	 * Encodes a string for safe use in a URL query or path segment by replacing
+	 * specific unsafe characters. This function provides a basic, non-comprehensive
+	 * encoding.
 	 *
-	 * @param input The raw string.
-	 * @return A URL-safe string with spaces percent-encoded.
+	 * Currently, it only replaces spaces (` `) with `%20`. For robust URL encoding,
+	 * consider using `java.net.URLEncoder`.
+	 *
+	 * Example:
+	 * ```
+	 * getUrlSafeString("hello world") // returns "hello%20world"
+	 * ```
+	 *
+	 * @param input The raw string to encode.
+	 * @return A new string with spaces replaced by `%20`.
 	 */
 	@JvmStatic
-	fun getUrlSafeString(input: String): String {
+	fun encodeSpaceAsUrlHex(input: String): String {
 		return input.replace(" ", "%20")
 	}
 
 	/**
-	 * Extracts the second-level domain from a URL.
+	 * Extracts the base domain from a URL's host.
 	 *
-	 * Example:
-	 * ```
-	 * getBaseDomain("https://www.google.com") // "google"
+	 * This function isolates the primary domain name, typically the part just before the
+	 * Top-Level Domain (TLD). For example, in "www.google.com", "google" is the base domain.
+	 * It handles common formats, including subdomains.
+	 *
+	 * Examples:
+	 * ```kotlin
+	 * getBaseDomain("https://www.google.com")      // "google"
+	 * getBaseDomain("https://mail.google.co.uk")   // "google" (handles multi-part TLDs)
+	 * getBaseDomain("https://example.com")         // "example"
+	 * getBaseDomain("http://localhost:8080")       // "localhost"
+	 * getBaseDomain("not-a-valid-url")             // null
 	 * ```
 	 *
-	 * @param url Full URL.
-	 * @return Base domain without TLD, or `null` if invalid.
+	 * **Note:** This implementation uses a simple heuristic. It may not correctly handle
+	 * all edge cases involving complex, multi-level country code TLDs (e.g., `*.k12.tr`).
+	 *
+	 * @param url The full URL string (e.g., "https://www.example.com/path").
+	 * @return The base domain as a `String` (e.g., "example"), or `null` if the URL
+	 *         is malformed or a host cannot be extracted.
 	 */
 	@JvmStatic
 	fun getBaseDomain(url: String): String? {
@@ -306,10 +439,22 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Extracts only the hostname from a URL.
+	 * Extracts the hostname (e.g., `www.example.com`) from a URL string.
 	 *
-	 * @param urlString The full URL.
-	 * @return Host name, or `null` if invalid.
+	 * This function safely parses the URL and isolates the host part. It gracefully
+	 * handles malformed or `null` URLs by returning `null`.
+	 *
+	 * Example:
+	 * ```
+	 * getHostFromUrl("https://user@www.example.com:8080/path?query=1")
+	 * // returns "www.example.com"
+	 *
+	 * getHostFromUrl("invalid-url")
+	 * // returns null
+	 * ```
+	 *
+	 * @param urlString The full URL string to parse. Can be `null`.
+	 * @return The host name as a `String`, or `null` if the URL is invalid or `null`.
 	 */
 	@JvmStatic
 	fun getHostFromUrl(urlString: String?): String? {
@@ -322,10 +467,21 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Returns a Google favicon service link for a given domain.
+	 * Generates a URL to fetch a website's favicon using Google's public favicon service.
 	 *
-	 * @param domain Domain name (no scheme).
-	 * @return Direct link to a 128px favicon image.
+	 * This service provides a simple way to get a site's icon without needing to parse the site's HTML.
+	 * The returned URL points to a 128x128 pixel PNG image of the favicon.
+	 *
+	 * Example:
+	 * ```kotlin
+	 * val faviconUrl = getGoogleFaviconUrl("github.com")
+	 * // Returns "https://www.google.com/s2/favicons?domain=github.com&sz=128"
+	 * ```
+	 *
+	 * @param domain The domain name (e.g., "example.com") for which to retrieve the favicon.
+	 *               It should not include the protocol (like "https://").
+	 * @return A direct URL to the favicon image, sized at 128x128 pixels.
+	 * @see <a href="https://developers.google.com/search/docs/appearance/favicon-in-search">Google Favicon Documentation</a>
 	 */
 	@JvmStatic
 	fun getGoogleFaviconUrl(domain: String): String {
@@ -333,10 +489,19 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Checks if a URL is considered expired (HTTP status ≥ 400).
+	 * Checks if a URL is considered expired or inaccessible by performing a HEAD request.
 	 *
-	 * @param urlString Full URL.
-	 * @return `true` if the URL returns an error status, otherwise `false`.
+	 * A URL is considered "expired" if the server responds with an HTTP status code
+	 * of 400 (Bad Request) or higher. This can indicate that the resource has been
+	 * moved, deleted (404 Not Found), or is otherwise unavailable (e.g., 403 Forbidden, 500 Server Error).
+	 *
+	 * This method uses a 5-second timeout for both connecting and reading. If any
+	 * exception occurs during the process (e.g., timeout, DNS error), the function
+	 * will conservatively return `true`, assuming the URL is not accessible.
+	 *
+	 * @param urlString The full URL to check.
+	 * @return `true` if the URL returns an HTTP status code >= 400 or if an error occurs
+	 *         during the check; `false` if the status code is less than 400.
 	 */
 	@JvmStatic
 	fun isUrlExpired(urlString: String): Boolean {
@@ -359,8 +524,17 @@ object URLUtilityKT {
 	/**
 	 * Removes the `www.` prefix from a URL string.
 	 *
-	 * @param url May be `null`.
-	 * @return String without `www.`, or `""` if `url` is `null`.
+	 * This operation is case-sensitive and only removes the first occurrence.
+	 *
+	 * Example:
+	 * ```
+	 * removeWwwFromUrl("https://www.example.com") // returns "https://example.com"
+	 * removeWwwFromUrl("https://example.com")      // returns "https://example.com"
+	 * ```
+	 *
+	 * @param url The URL string, which may be `null`.
+	 * @return A new string without the `www.` prefix. Returns the original URL if the
+	 *   prefix is not found or an error occurs. Returns an empty string if the input `url` is `null`.
 	 */
 	@JvmStatic
 	fun removeWwwFromUrl(url: String?): String {
@@ -374,21 +548,23 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Fetches HTML using old mobile browser user-agents.
+	 * Fetches the HTML content of a webpage by simulating a request from an old mobile browser.
 	 *
-	 * Useful for:
-	 * - Reducing heavy modern scripts.
-	 * - Accessing mobile-optimized versions of pages.
+	 * This method is particularly useful for:
+	 * - Bypassing client-side rendering or heavy JavaScript that can obstruct content scraping.
+	 * - Accessing simpler, mobile-optimized versions of webpages, which are often faster to parse.
 	 *
-	 * Retry logic:
-	 * - If `retry` is true, will retry `numOfRetry` times with different user-agents.
-	 * - Wait time increases with each attempt.
+	 * It cycles through a predefined list of legacy mobile user-agents for each request.
 	 *
-	 * @param url Target webpage.
-	 * @param retry Enable retry logic.
-	 * @param numOfRetry Retry attempts if enabled.
-	 * @param timeoutSeconds Timeout per request in seconds.
-	 * @return HTML string or `null` if all attempts fail.
+	 * The function includes an optional retry mechanism with an incremental backoff delay to handle
+	 * transient network errors or rate limiting. If `retry` is enabled, it will make up to
+	`numOfRetry` attempts upon failure.
+	 *
+	 * @param url The URL of the target webpage.
+	 * @param retry If `true`, enables the retry logic on failure. Defaults to `false`.
+	 * @param numOfRetry The total number of retry attempts if `retry` is enabled. Defaults to `0`.
+	 * @param timeoutSeconds The connection and read timeout for each HTTP request, in seconds.
+	 * @return The fetched HTML as a `String`, or `null` if all attempts fail or the page is empty.
 	 */
 	@JvmStatic
 	fun fetchMobileWebPageContent(
@@ -451,14 +627,19 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Fetches HTML content of a webpage, optionally retrying.
+	 * Fetches the HTML content of a webpage, delegating to `fetchMobileWebPageContent`.
 	 *
-	 * If the URL is a social media link, mobile-fetch mode is used automatically.
+	 * This function acts as a simplified wrapper around `fetchMobileWebPageContent`,
+	 * primarily to handle retry logic. It uses a mobile user-agent to request a
+	 * lighter, mobile-optimized version of the page, which is often faster and
+	 * less prone to blocking.
 	 *
-	 * @param url Target URL.
-	 * @param retry Enable retry logic.
-	 * @param numOfRetry Retry attempts.
-	 * @return HTML string or `null` if all attempts fail.
+	 * @param url The target URL to fetch.
+	 * @param retry If `true`, enables a retry mechanism. When enabled, the function will
+	 *   make up to `numOfRetry` attempts if the initial fetch fails (returns `null` or empty).
+	 * @param numOfRetry The maximum number of retry attempts to perform if `retry` is `true`.
+	 *   This parameter is ignored if `retry` is `false`.
+	 * @return The HTML content as a [String], or `null` if all fetch attempts fail.
 	 */
 	@JvmStatic
 	fun fetchWebPageContent(
@@ -480,11 +661,26 @@ object URLUtilityKT {
 	}
 
 	/**
-	 * Normalizes an encoded URL by decoding and re-encoding all query parameters,
-	 * and ensuring consistent ordering.
+	 * Normalizes an encoded URL to a canonical form.
 	 *
-	 * @param url URL to normalize.
-	 * @return Normalized URL, or the original if normalization fails.
+	 * This function performs the following steps:
+	 * 1. Unescapes any escaped forward slashes (`\/`).
+	 * 2. Decodes all query parameter keys and values.
+	 * 3. Sorts the query parameters alphabetically by key.
+	 * 4. Re-encodes the sorted keys and values.
+	 * 5. Reconstructs the URL with the base path and the normalized query string.
+	 *
+	 * This is useful for creating consistent, comparable URLs, especially when they might come from
+	 * different sources with varying encoding or parameter order.
+	 *
+	 * Example:
+	 * ```
+	 * normalizeEncodedUrl("https://example.com/path?c=3&a=1&b=2")
+	 * // returns "https://example.com/path?a=1&b=2&c=3"
+	 * ```
+	 *
+	 * @param url The URL string to normalize. It may contain encoded characters.
+	 * @return The normalized URL. If a parsing error occurs, the original URL is returned.
 	 */
 	@JvmStatic
 	fun normalizeEncodedUrl(url: String): String {

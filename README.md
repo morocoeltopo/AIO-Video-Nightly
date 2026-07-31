@@ -1,119 +1,93 @@
 <div align="center">
-<img src="app/src/main/res/drawable/ic_launcher_logo_v4.png" width=200 height=200 align="center" alt="AIO Video Downloader Logo">
+<img src="app/src/main/res/drawable/ic_launcher_logo_v4.png" width=160 height=160 alt="AIO Video Downloader Logo">
 
 # AIO Video Downloader
+### 🚀 Premium All-in-One Media Hub for Android
 
-### 🚀 All-in-One Video Solution: Download, Play, Protect - Simple, Fast & Private
-
-[![Download AIO Video Downloader](https://a.fsdn.com/con/app/sf-download-button)](https://sourceforge.net/projects/aio-video-downloader/files/latest/download)
-----
-[![Release version](https://img.shields.io/github/v/release/shibaFoss/AIO-Video-Downloader?color=brightgreen&label=Stable-Download&style=for-the-badge)](https://github.com/shibaFoss/AIO-Video-Downloader/releases/latest/)
-[![GitHub all releases](https://img.shields.io/github/downloads/shibafoss/AIO-Video-Downloader/total?color=brightgreen&label=Total-Downloads&style=for-the-badge)](https://github.com/shibafoss/AIO-Video-Downloader/releases/)
-[![Download AIO-Video-Downloader](https://img.shields.io/sourceforge/dm/aio-video-downloader.svg?color=brightgreen&label=Monthy-Downloads&style=for-the-badge)](https://sourceforge.net/projects/aio-video-downloader/files/latest/download)
-[![Follow on Instagram](https://img.shields.io/badge/Follow-%40shibafoss-ff69b4?logo=instagram&style=for-the-badge)](https://instagram.com/shibafoss)
-
-
-![AIO Video Downloader Logo](others/graphics/feature_cover.png)
+**Download • Play • Protect • Simple • Fast • Private**
+<div align="center">
+    <a href="https://ytder.com"><img src="https://openclipart.org/image/400px/201887"></a>
 </div>
+
+[![Download APK](https://img.shields.io/github/v/release/shibaFoss/AIO-Video-Downloader?color=brightgreen&label=Direct-Download&style=for-the-badge&logo=android)](https://github.com/shibaFoss/AIO-Video-Downloader/releases/latest/)
+
+---
+
+[![GitHub all releases](https://img.shields.io/github/downloads/shibafoss/AIO-Video-Downloader/total?color=blue&label=Total-Downloads&style=flat-square)](https://github.com/shibafoss/AIO-Video-Downloader/releases/)
+[![Follow on Instagram](https://img.shields.io/badge/Follow-%40shibafoss-ff69b4?logo=instagram&style=flat-square)](https://instagram.com/shibafoss)
+[![License](https://img.shields.io/badge/License-Open_Source-orange?style=flat-square)](#)
+
+<img src="others/graphics/feature_cover.png" width="100%" alt="AIO Video Downloader Feature Cover">
+</div>
+
+## 🌐 Visit the Official Site
+For the latest news, detailed guides, and direct APK mirrors, visit our official landing page:
+### 👉 **[YTDER.COM](https://ytder.com)**
+
+---
 
 ## 📌 Introduction
 
-**AIO Video Downloader** is your ultimate all-in-one media companion - combining powerful video downloading, a full-featured video player, and secure private file protection in one simple, elegant app.
+**AIO Video Downloader** is your ultimate all-in-one media companion for Android. It combines a professional-grade video downloader, a high-fidelity media player, and a secure private vault into one elegant, ad-free package.
 
-Built on the robust **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** engine, AIO delivers **super-fast download speeds** and can grab virtually any video that plays online. With support for **1000+ websites**, you'll never miss your favorite content again.
-
-No more switching between multiple apps - download, play, and protect your media files all in one place!
-
-## 📱 Screenshots
-
-<div align="center">
-<div>
-<img src="others/graphics/screenshots/1.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/2.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/3.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/4.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/5.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/6.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/7.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/8.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-<img src="others/graphics/screenshots/9.0.jpg" width="30%" alt="AIO Video Downloader Screenshot"/>
-</div>
-</div>
-
-## ✨ Key Features
-
-### 🎯 **Simple & Intuitive**
-- **Clean, User-Friendly Interface**: No complicated menus or confusing options
-- **One-Tap Downloads**: Grab videos with a single click
-- **Smart Suggestions**: Automatically detects downloadable content
-- **Easy File Management**: Organize your downloads effortlessly
-
-### ⚡ **Super Fast Downloads**
-- **Lightning-First Speed**: Optimized download engine for maximum speed
-- **Multi-Connection Downloads**: Faster downloads using parallel connections
-- **Background Processing**: Continue using your phone while downloading
-- **Resume Support**: Never lose progress with resume capability
-
-### 🎬 **Full-Featured Video Player**
-- **Built-in Media Player**: Play your downloads instantly without leaving the app
-- **Multiple Format Support**: MP4, MKV, AVI, 3GP, and more
-- **Hardware Acceleration**: Smooth playback for HD and 4K videos
-- **Playback Controls**: Gesture controls, brightness, volume, and seek
-- **Background Play**: Keep audio playing while using other apps
-- **Subtitle Support**: Load external subtitle files
-- **Playlist Management**: Create and manage video playlists
-
-### 🔒 **Private File Lock**
-- **Secure Private Folder**: Hide sensitive videos and files from gallery
-- **App-Locked Storage**: Protected by app security - only accessible within AIO
-- **Move Files Privately**: Easily move downloads between gallery and private storage
-- **Privacy Protection**: Keep personal content away from prying eyes
-- **No System Permissions**: Private folder doesn't require special permissions
-
-### 🌐 **Universal Video Grabber**
-- **1000+ Websites Supported**: YouTube, Instagram, Facebook, Twitter, TikTok, and countless more
-- **Virtually Any Online Video**: If it plays in your browser, you can download it
-- **Auto-Detection**: Smart recognition of video content on webpages
-- **Built-in Browser**: Secure browsing within the app
-- **Custom Headers**: Support for sites requiring login or special headers
-
-### 🎵 **Audio & Video Flexibility**
-- **Multiple Quality Options**: 144p to 4K (when available)
-- **Audio Extraction**: Save videos as MP3 audio files
-- **Format Selection**: Choose your preferred video/audio format
-- **Batch Downloads**: Queue multiple videos at once
-
-### 🛡️ **Safe & Transparent**
-- **No Ads**: Completely ad-free experience
-- **Open Source**: Transparent codebase you can audit and trust
-- **No Tracking**: We don't collect your personal data
-- **Regular Updates**: Continuous improvements and new features
-
-### 📁 **Smart File Management**
-- **Download Manager**: Pause, resume, or cancel downloads
-- **Organized Library**: Automatic sorting by date, name, or size
-- **Storage Management**: Monitor and manage your device storage
-- **Quick Search**: Find your downloads instantly
+Built on the robust **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** engine, AIO delivers industry-leading speeds and supports **1000+ websites**, including YouTube, Instagram, Facebook, TikTok, and Twitter.
 
 ---
 
-## 🚀 How to Use
+## 📱 App Highlights
 
-1. **Download**: Copy any video URL or use the built-in browser
-2. **Grab**: AIO automatically detects downloadable content
-3. **Choose**: Select your preferred quality and format
-4. **Download**: Enjoy super-fast download speeds
-5. **Play**: Use the built-in player or move to private storage
+<div align="center">
+    <img src="others/graphics/screenshots/1.0.jpg" width="32%" />
+    <img src="others/graphics/screenshots/2.0.jpg" width="32%" />
+    <img src="others/graphics/screenshots/3.0.jpg" width="32%" />
+</div>
+
+### ⚡ **Super-Fast Extraction**
+- **yt-dlp Integration**: The most powerful engine for video grabbing.
+- **Multi-Threaded**: Optimized for maximum bandwidth usage.
+- **4K Support**: Download in resolutions from 144p up to 4K (Ultra HD).
+
+### 🎬 **HD Media Player**
+- **Native Playback**: Supports MP4, MKV, AVI, WebM, and more.
+- **Gesture Control**: Intuitive swipes for brightness, volume, and seeking.
+- **Audio Extraction**: Save and play videos as high-quality MP3s.
+
+### 🔒 **Private Vault**
+- **Hidden Storage**: Move sensitive downloads to a secure, app-locked folder.
+- **Gallery Stealth**: Files in the vault are invisible to the rest of your phone.
+
+---
+
+## 🏆 Why AIO is Better
+
+| Feature | AIO Video Downloader | Snaptube / Vidmate |
+| :--- | :---: | :---: |
+| **Advertisements** | ❌ **None** | ⚠️ Heavy & Invasive |
+| **Open Source** | ✅ **Yes** | ❌ No (Proprietary) |
+| **Privacy** | 🛡️ **High** | 📉 Low (Tracking) |
+| **Engine** | 💎 **yt-dlp** | Closed-Source |
+| **Private Folder** | ✅ **Yes** | ❌ Limited |
+
+---
+
+## 🚀 How to Install
+
+1.  **Download**: Head to **[ytder.com](https://ytder.com)** or the [GitHub Releases](https://github.com/shibaFoss/AIO-Video-Downloader/releases/latest/) page.
+2.  **Install**: Open the APK file (Ensure "Install from Unknown Sources" is enabled in settings).
+3.  **Enjoy**: Start downloading and playing your favorite media instantly!
 
 ## 🔧 Technical Details
 
-- **Backend**: Powered by yt-dlp with youtubedl-android integration
-- **Platform**: Android 8.0+ (Oreo and above)
-- **Architecture**: Modern Android development with Kotlin
-- **License**: Open Source - Custom License
+- **Language**: Kotlin / Material Design 3
+- **Minimum OS**: Android 8.0 (Oreo) or higher
+- **Architecture**: arm64-v8a, armeabi-v7a, x86_64
 
 ---
 
+<div align="center">
+
 **Made with ❤️ in India** 🇮🇳
 
-*AIO Video Downloader is not affiliated with any proprietary video downloader apps. We believe in open, transparent software that respects your privacy.*
+*AIO Video Downloader is an independent project. We believe in software that respects user privacy and freedom. Visit us at [ytder.com](https://ytder.com).*
+
+</div>

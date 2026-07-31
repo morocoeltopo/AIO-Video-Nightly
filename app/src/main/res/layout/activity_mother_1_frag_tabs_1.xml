@@ -6,7 +6,8 @@
 	android:layout_height="match_parent"
 	android:background="@color/transparent"
 	android:orientation="vertical"
-	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint">
+	tools:ignore="UseCompatTextViewDrawableXml,UseAppTint"
+	>
 	
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
@@ -14,13 +15,15 @@
 		android:layout_marginHorizontal="@dimen/_5"
 		android:layout_marginVertical="@dimen/_5"
 		app:cardBackgroundColor="@color/color_actionbar_title_bg"
-		app:cardCornerRadius="@dimen/_10">
+		app:cardCornerRadius="@dimen/_10"
+		>
 		
 		<LinearLayout
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			android:baselineAligned="false"
-			android:orientation="horizontal">
+			android:orientation="horizontal"
+			>
 			
 			<LinearLayout
 				android:id="@+id/btn_home_tab"
@@ -33,7 +36,8 @@
 				android:layout_weight="1"
 				android:background="@drawable/ic_button_negative_selector"
 				android:clickable="true"
-				android:orientation="vertical">
+				android:orientation="vertical"
+				>
 				
 				<ImageView
 					android:id="@+id/img_home_tab"
@@ -45,7 +49,8 @@
 					android:importantForAccessibility="no"
 					android:src="@drawable/ic_button_nav_home"
 					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<TextView
 					android:id="@+id/txt_home_tab"
@@ -54,13 +59,13 @@
 					android:layout_gravity="center"
 					android:layout_marginBottom="@dimen/_5"
 					android:ellipsize="end"
-					android:fontFamily="@font/application_font_family"
+					android:fontFamily="@font/font_family_semibold"
 					android:gravity="center"
 					android:maxLines="1"
 					android:text="@string/title_home"
 					android:textColor="@color/color_text_primary"
-					android:textFontWeight="900"
-					android:textSize="@dimen/small_text_size" />
+					android:textSize="@dimen/message_text_size"
+					/>
 			</LinearLayout>
 			
 			<LinearLayout
@@ -74,7 +79,8 @@
 				android:layout_weight="1"
 				android:background="@drawable/ic_button_negative_selector"
 				android:clickable="true"
-				android:orientation="vertical">
+				android:orientation="vertical"
+				>
 				
 				<ImageView
 					android:id="@+id/img_browser_tab"
@@ -86,7 +92,8 @@
 					android:importantForAccessibility="no"
 					android:src="@drawable/ic_button_nav_browser"
 					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<TextView
 					android:id="@+id/txt_browser_tab"
@@ -95,13 +102,13 @@
 					android:layout_gravity="center"
 					android:layout_marginBottom="@dimen/_5"
 					android:ellipsize="end"
-					android:fontFamily="@font/application_font_family"
+					android:fontFamily="@font/font_family_semibold"
 					android:gravity="center"
 					android:maxLines="1"
 					android:text="@string/title_browser"
 					android:textColor="@color/color_text_primary"
-					android:textFontWeight="900"
-					android:textSize="@dimen/small_text_size" />
+					android:textSize="@dimen/message_text_size"
+					/>
 			</LinearLayout>
 			
 			<LinearLayout
@@ -115,7 +122,8 @@
 				android:layout_weight="1"
 				android:background="@drawable/ic_button_negative_selector"
 				android:clickable="true"
-				android:orientation="vertical">
+				android:orientation="vertical"
+				>
 				
 				<ImageView
 					android:id="@+id/img_tasks_tab"
@@ -127,7 +135,8 @@
 					android:importantForAccessibility="no"
 					android:src="@drawable/ic_button_nav_download"
 					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<TextView
 					android:id="@+id/txt_task_tab"
@@ -136,13 +145,13 @@
 					android:layout_gravity="center"
 					android:layout_marginBottom="@dimen/_5"
 					android:ellipsize="end"
-					android:fontFamily="@font/application_font_family"
+					android:fontFamily="@font/font_family_semibold"
 					android:gravity="center"
 					android:maxLines="1"
 					android:text="@string/title_tasks"
 					android:textColor="@color/color_text_primary"
-					android:textFontWeight="900"
-					android:textSize="@dimen/small_text_size" />
+					android:textSize="@dimen/message_text_size"
+					/>
 			</LinearLayout>
 			
 			<LinearLayout
@@ -156,7 +165,8 @@
 				android:layout_weight="1"
 				android:background="@drawable/ic_button_negative_selector"
 				android:clickable="true"
-				android:orientation="vertical">
+				android:orientation="vertical"
+				>
 				
 				<ImageView
 					android:id="@+id/img_settings_tab"
@@ -168,7 +178,8 @@
 					android:importantForAccessibility="no"
 					android:src="@drawable/ic_button_nav_settings"
 					android:tint="@color/color_secondary"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<TextView
 					android:id="@+id/txt_settings_tab"
@@ -177,13 +188,13 @@
 					android:layout_gravity="center"
 					android:layout_marginBottom="@dimen/_5"
 					android:ellipsize="end"
-					android:fontFamily="@font/application_font_family"
+					android:fontFamily="@font/font_family_semibold"
 					android:gravity="center"
 					android:maxLines="1"
 					android:text="@string/title_settings"
 					android:textColor="@color/color_text_primary"
-					android:textFontWeight="900"
-					android:textSize="@dimen/small_text_size" />
+					android:textSize="@dimen/message_text_size"
+					/>
 			</LinearLayout>
 		</LinearLayout>
 	</androidx.cardview.widget.CardView>

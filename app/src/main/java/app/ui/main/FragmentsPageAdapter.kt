@@ -2,41 +2,48 @@
 
 package app.ui.main
 
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentPagerAdapter
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import app.core.bases.BaseActivity
-import app.ui.main.fragments.browser.BrowserFragment
-import app.ui.main.fragments.downloads.DownloadsFragment
-import app.ui.main.fragments.home.HomeFragment
-import app.ui.main.fragments.settings.SettingsFragment
+import androidx.fragment.app.*
+import androidx.viewpager2.adapter.*
+import app.core.bases.*
+import app.ui.main.fragments.browser.*
+import app.ui.main.fragments.downloads.*
+import app.ui.main.fragments.home.*
+import app.ui.main.fragments.settings.*
 
 /**
- * Adapter for managing and supplying fragments for a ViewPager.
+ * An adapter that provides fragments for a [androidx.viewpager2.widget.ViewPager2].
  *
- * This adapter maps each position to a specific fragment:
- * - 0 → HomeFragment
- * - 1 → BrowserFragment
- * - 2 → DownloadsFragment
- * - 3 → SettingsFragment
+ * This adapter is responsible for creating and supplying the correct fragment for each page
+ * based on its position. The mapping is as follows:
+ * - Position 0: [HomeFragment]
+ * - Position 1: [BrowserFragment]
+ * - Position 2: [DownloadsFragment]
+ * - Position 3: [SettingsFragment]
  *
- * @param fragmentManager The fragment manager used to handle fragment transactions.
- *
- * @note This class uses the deprecated [FragmentPagerAdapter]. Consider using [FragmentStateAdapter]
- * with ViewPager2 for modern implementations.
+ * @param baseActivity The host activity that will contain the ViewPager2.
  */
 class FragmentsPageAdapter(baseActivity: BaseActivity) : FragmentStateAdapter(baseActivity) {
 
 	/**
-	 * Returns the total number of fragments/pages managed by this adapter.
+	 * Returns the total number of fragments (pages) managed by this adapter.
+	 *
+	 * The count is fixed to 4, representing the Home, Browser, Downloads, and Settings fragments.
 	 */
 	override fun getItemCount(): Int = 4
 
 	/**
-	 * Returns the fragment associated with the specified position in the ViewPager.
+	 * Creates and returns the fragment for a given position.
 	 *
-	 * @param position The index of the requested fragment.
-	 * @return The corresponding [Fragment] for the given position.
+	 * This method maps each position to a specific fragment instance:
+	 * - **0:** [HomeFragment]
+	 * - **1:** [BrowserFragment]
+	 * - **2:** [DownloadsFragment]
+	 * - **3:** [SettingsFragment]
+	 *
+	 * If an unexpected position is provided, it defaults to returning a [HomeFragment].
+	 *
+	 * @param position The position of the fragment to be created.
+	 * @return The [Fragment] instance corresponding to the specified position.
 	 */
 	override fun createFragment(position: Int): Fragment {
 		return when (position) {
@@ -44,7 +51,7 @@ class FragmentsPageAdapter(baseActivity: BaseActivity) : FragmentStateAdapter(ba
 			1 -> BrowserFragment()
 			2 -> DownloadsFragment()
 			3 -> SettingsFragment()
-			else -> HomeFragment() // Fallback to HomeFragment in unexpected cases
+			else -> HomeFragment()
 		}
 	}
 }

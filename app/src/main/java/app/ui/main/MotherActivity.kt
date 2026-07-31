@@ -1,48 +1,41 @@
 package app.ui.main
 
-import android.content.Intent
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import android.content.*
+import androidx.activity.result.contract.ActivityResultContracts.*
 import androidx.annotation.OptIn
-import androidx.core.content.ContextCompat.getColor
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.media3.common.util.UnstableApi
-import androidx.viewpager2.widget.ViewPager2
+import androidx.core.content.ContextCompat.*
+import androidx.lifecycle.*
+import androidx.media3.common.util.*
+import androidx.viewpager2.widget.*
 import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOKeyStrings.ACTIVITY_RESULT_KEY
-import app.core.bases.BaseActivity
+import app.core.bases.*
 import app.core.engines.downloader.DownloadNotification.Companion.FROM_DOWNLOAD_NOTIFICATION
 import app.core.engines.video_parser.parsers.SupportedURLs.isSocialMediaUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrl
 import app.core.engines.video_parser.parsers.VideoThumbGrabber.startParsingVideoThumbUrl
-import app.ui.main.fragments.browser.BrowserFragment
-import app.ui.main.fragments.browser.webengine.SingleResolutionPrompter
-import app.ui.main.fragments.downloads.DownloadsFragment
-import app.ui.main.fragments.downloads.intercepter.SharedVideoURLIntercept
-import app.ui.main.fragments.home.HomeFragment
-import app.ui.main.fragments.settings.SettingsFragment
+import app.ui.main.fragments.browser.*
+import app.ui.main.fragments.browser.webengine.*
+import app.ui.main.fragments.downloads.*
+import app.ui.main.fragments.downloads.intercepter.*
+import app.ui.main.fragments.home.*
+import app.ui.main.fragments.settings.*
 import app.ui.others.media_player.MediaPlayerActivity.Companion.INTENT_EXTRA_SOURCE_ORIGIN
-import com.aio.R
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.aio.*
+import kotlinx.coroutines.*
 import lib.device.IntentUtility.getIntentDataURI
-import lib.networks.URLUtility
+import lib.networks.*
 import lib.networks.URLUtilityKT.fetchWebPageContent
 import lib.networks.URLUtilityKT.getWebpageTitleOrDescription
-import lib.process.AsyncJobUtils.executeOnMainThread
+import lib.process.*
+import lib.process.AsyncJobUtils.*
 import lib.process.CommonTimeUtils.OnTaskFinishListener
 import lib.process.CommonTimeUtils.delay
-import lib.process.LogHelperUtils
-import lib.process.ThreadsUtility
 import lib.texts.ClipboardUtils.getTextFromClipboard
-import lib.ui.MsgDialogUtils
+import lib.ui.*
 import lib.ui.ViewUtility.setLeftSideDrawable
-import lib.ui.builders.ToastView
-import lib.ui.builders.WaitingDialog
-import java.lang.ref.WeakReference
+import lib.ui.builders.*
+import java.lang.ref.*
 
 /**
  * The main activity that hosts all fragments and manages navigation.
@@ -56,37 +49,38 @@ import java.lang.ref.WeakReference
  * - Coordinates between fragments
  */
 class MotherActivity : BaseActivity() {
+	
 	private val logger = LogHelperUtils.from(javaClass)
-
+	
 	// Weak reference to avoid memory leaks
 	private var weakMotherActivityRef = WeakReference(this)
 	private val safeMotherActivityRef = weakMotherActivityRef.get()
-
+	
 	// ViewModel for sharing data between fragments
 	private lateinit var sharedViewModel: SharedViewModel
-
+	
 	// UI Components
 	private lateinit var fragmentViewPager: ViewPager2
 	private lateinit var motherBottomTabs: MotherBottomTabs
-
+	
 	// Lazy initialized side navigation drawer
 	val sideNavigation: WebNavigationDrawer? by lazy {
 		logger.d("Initializing WebNavigationDrawer lazily")
 		WebNavigationDrawer(safeMotherActivityRef).apply { initialize() }
 	}
-
+	
 	// Activity result launcher
 	val resultLauncher = registerResultOrientedActivityLauncher()
-
+	
 	// Fragment references
 	var homeFragment: HomeFragment? = null
 	var browserFragment: BrowserFragment? = null
 	var downloadFragment: DownloadsFragment? = null
 	var settingsFragment: SettingsFragment? = null
-
+	
 	// Flag for URL parsing
 	var isParsingTitleFromUrlAborted = false
-
+	
 	/**
 	 * Returns the layout resource ID for this activity
 	 * @return The layout resource ID (R.layout.activity_mother_1)
@@ -95,7 +89,7 @@ class MotherActivity : BaseActivity() {
 		logger.d("Rendering layout for MotherActivity")
 		return R.layout.activity_mother_1
 	}
-
+	
 	/**
 	 * Called after layout is rendered
 	 * Sets up main components and shows initial ad
@@ -107,7 +101,7 @@ class MotherActivity : BaseActivity() {
 			setupBottomTabs()
 		}
 	}
-
+	
 	/**
 	 * Handles back press events
 	 */
@@ -115,7 +109,7 @@ class MotherActivity : BaseActivity() {
 		logger.d("Back button pressed in MotherActivity")
 		handleBackPressEvent()
 	}
-
+	
 	/**
 	 * Called when activity resumes
 	 * Sets up monitoring and handles pending intents
@@ -128,7 +122,7 @@ class MotherActivity : BaseActivity() {
 		openDownloadsFragmentIfIntended()
 		updateButtonTabSelectionUI()
 	}
-
+	
 	/**
 	 * Clear the weak reference of the activity. Careful using the function,
 	 * and should call by the application life cycle manager to automatically
@@ -139,7 +133,7 @@ class MotherActivity : BaseActivity() {
 		weakMotherActivityRef.clear()
 		super.clearWeakActivityReference()
 	}
-
+	
 	/**
 	 * Opens the Home fragment
 	 */
@@ -148,11 +142,11 @@ class MotherActivity : BaseActivity() {
 		CoroutineScope(Dispatchers.Main).launch {
 			sideNavigation?.closeDrawerNavigation()
 			if (fragmentViewPager.currentItem != 0) {
-				fragmentViewPager.currentItem = 0
+				fragmentViewPager.setCurrentItem(0, false)
 			}
 		}
 	}
-
+	
 	/**
 	 * Opens the Browser fragment
 	 */
@@ -161,11 +155,11 @@ class MotherActivity : BaseActivity() {
 		CoroutineScope(Dispatchers.Main).launch {
 			sideNavigation?.closeDrawerNavigation()
 			if (fragmentViewPager.currentItem != 1) {
-				fragmentViewPager.currentItem = 1
+				fragmentViewPager.setCurrentItem(1, false)
 			}
 		}
 	}
-
+	
 	/**
 	 * Opens the Downloads fragment
 	 */
@@ -174,11 +168,11 @@ class MotherActivity : BaseActivity() {
 		CoroutineScope(Dispatchers.Main).launch {
 			sideNavigation?.closeDrawerNavigation()
 			if (fragmentViewPager.currentItem != 2) {
-				fragmentViewPager.currentItem = 2
+				fragmentViewPager.setCurrentItem(2, false)
 			}
 		}
 	}
-
+	
 	/**
 	 * Opens the Settings fragment
 	 */
@@ -187,11 +181,11 @@ class MotherActivity : BaseActivity() {
 		CoroutineScope(Dispatchers.Main).launch {
 			sideNavigation?.closeDrawerNavigation()
 			if (fragmentViewPager.currentItem != 3) {
-				fragmentViewPager.currentItem = 3
+				fragmentViewPager.setCurrentItem(3, false)
 			}
 		}
 	}
-
+	
 	/**
 	 * Gets the current fragment position
 	 * @return Current fragment position (0-3)
@@ -200,7 +194,7 @@ class MotherActivity : BaseActivity() {
 		logger.d("Getting current fragment number: ${fragmentViewPager.currentItem}")
 		return fragmentViewPager.currentItem
 	}
-
+	
 	/**
 	 * Sets up the ViewPager for fragment navigation
 	 */
@@ -209,12 +203,12 @@ class MotherActivity : BaseActivity() {
 		safeMotherActivityRef?.let {
 			fragmentViewPager = findViewById(R.id.fragment_viewpager)
 			// Keep all fragments in memory
-			fragmentViewPager.offscreenPageLimit = 4
+			fragmentViewPager.offscreenPageLimit = 1
 			fragmentViewPager.adapter = FragmentsPageAdapter(it)
-
+			
 			// Listener for page changes
 			fragmentViewPager.isUserInputEnabled = false
-
+			
 			fragmentViewPager.registerOnPageChangeCallback(object :
 				ViewPager2.OnPageChangeCallback() {
 				override fun onPageSelected(position: Int) {
@@ -224,7 +218,7 @@ class MotherActivity : BaseActivity() {
 			})
 		}
 	}
-
+	
 	/**
 	 * Sets up the bottom navigation tabs
 	 */
@@ -235,7 +229,7 @@ class MotherActivity : BaseActivity() {
 			motherBottomTabs.initialize()
 		}
 	}
-
+	
 	/**
 	 * Updates the UI for selected tab
 	 * @param currentItem The currently selected tab position (0-3)
@@ -250,7 +244,7 @@ class MotherActivity : BaseActivity() {
 			else -> motherBottomTabs.updateTabSelectionUI(MotherBottomTabs.Tab.HOME_TAB)
 		}
 	}
-
+	
 	/**
 	 * Registers an activity result launcher
 	 * @return The configured ActivityResultLauncher
@@ -265,14 +259,14 @@ class MotherActivity : BaseActivity() {
 					// Initialize ViewModel if needed
 					if (!::sharedViewModel.isInitialized) sharedViewModel =
 						ViewModelProvider(this)[SharedViewModel::class.java]
-
+					
 					// Open browser and update URL if needed
 					if (fragmentViewPager.currentItem != 1) openBrowserFragment()
 					sharedViewModel.updateBrowserURLEditResult(resultString)
 				}
 			}
 		}
-
+	
 	/**
 	 * Handles back press events with custom behavior
 	 */
@@ -285,7 +279,7 @@ class MotherActivity : BaseActivity() {
 				if (sideNavigation.isDrawerOpened()) {
 					sideNavigation.closeDrawerNavigation(); return
 				}
-
+				
 				// Custom back behavior per fragment
 				when (fragmentViewPager.currentItem) {
 					1 -> { // Browser fragment
@@ -298,7 +292,7 @@ class MotherActivity : BaseActivity() {
 							)[viewModelClass]
 						}; sharedViewModel.triggerBackPressEvent()
 					}
-
+					
 					2 -> { // Downloads fragment
 						logger.d("Back press in DownloadsFragment")
 						val fragmentViewPager = downloadFragment?.fragmentViewPager
@@ -310,17 +304,17 @@ class MotherActivity : BaseActivity() {
 							openBrowserFragment()
 						}
 					}
-
+					
 					3 -> {
 						logger.d("Back press in SettingsFragment")
 						openDownloadsFragment() // From settings
 					}
-
+					
 					4 -> {
 						logger.d("Back press in unexpected fragment position 4")
 						openSettingsFragment() // Shouldn't happen (only 4 fragments)
 					}
-
+					
 					else -> {
 						logger.d("Exit handling with ${sideNavigation.totalWebViews.size} webviews")
 						// Exit handling
@@ -331,7 +325,7 @@ class MotherActivity : BaseActivity() {
 			}
 		}
 	}
-
+	
 	/**
 	 * Shows exit warning dialog when multiple tabs are open
 	 */
@@ -339,7 +333,7 @@ class MotherActivity : BaseActivity() {
 		logger.d("Showing exit warning dialog")
 		safeMotherActivityRef?.let { safeMotherActivityRef ->
 			sideNavigation?.let { sideNavigation ->
-
+				
 				val dialogBuilder = MsgDialogUtils.getMessageDialog(
 					baseActivityInf = safeMotherActivityRef,
 					messageTextViewCustomize = {
@@ -356,7 +350,7 @@ class MotherActivity : BaseActivity() {
 						it.setLeftSideDrawable(R.drawable.ic_button_cancel)
 					}
 				)
-
+				
 				dialogBuilder?.let { dialog ->
 					dialog.setOnClickForNegativeButton {
 						logger.d("User chose to exit the app")
@@ -365,7 +359,7 @@ class MotherActivity : BaseActivity() {
 							override fun afterDelay() = finish()
 						})
 					}
-
+					
 					dialog.setOnClickForPositiveButton {
 						logger.d("User chose to close tabs")
 						dialog.close()
@@ -376,13 +370,13 @@ class MotherActivity : BaseActivity() {
 							}
 						})
 					}
-
+					
 					dialog.show()
 				}
 			}
 		}
 	}
-
+	
 	/**
 	 * Opens Downloads fragment if coming from notification
 	 */
@@ -394,17 +388,17 @@ class MotherActivity : BaseActivity() {
 				logger.d("No WHERE_DID_YOU_COME_FROM extra found")
 				return
 			}
-
+			
 			if (result == FROM_DOWNLOAD_NOTIFICATION) {
 				logger.d("Opening DownloadsFragment from notification")
 				openDownloadsFragment()
 				return
 			}
-
+			
 			logger.d("WHERE_DID_YOU_COME_FROM value: $result")
 		}
 	}
-
+	
 	/**
 	 * Handles incoming intent URLs
 	 */
@@ -416,11 +410,11 @@ class MotherActivity : BaseActivity() {
 				logger.d("No intent URL found")
 				return
 			}
-
+			
 			val browserFragmentBody = browserFragment?.browserFragmentBody
 			val alreadyLoadedIntentURL = browserFragmentBody?.alreadyLoadedIntentURL
 			val isIntentURLLoaded = alreadyLoadedIntentURL == intentURL
-
+			
 			if (!isIntentURLLoaded) {
 				logger.d("Loading new intent URL: $intentURL")
 				openBrowserFragment()
@@ -429,7 +423,7 @@ class MotherActivity : BaseActivity() {
 			}
 		}
 	}
-
+	
 	/**
 	 * Monitors clipboard for URLs and shows prompt if found
 	 */
@@ -446,7 +440,7 @@ class MotherActivity : BaseActivity() {
 							logger.d("Same URL was already processed")
 							return
 						}
-
+						
 						if (URLUtility.isValidURL(clipboardText)) {
 							logger.d("Valid URL found in clipboard")
 							aioSettings.lastProcessedClipboardText = clipboardText
@@ -495,7 +489,7 @@ class MotherActivity : BaseActivity() {
 			}
 		})
 	}
-
+	
 	/**
 	 * Shows video resolution picker for supported URLs
 	 * @param clipboardText The URL to process
@@ -520,7 +514,7 @@ class MotherActivity : BaseActivity() {
 						dialog.dismiss()
 					}
 				); waitingDialog.show()
-
+				
 				ThreadsUtility.executeInBackground(codeBlock = {
 					logger.d("Fetching webpage content in background")
 					val htmlBody = fetchWebPageContent(clipboardText, true)
@@ -560,7 +554,7 @@ class MotherActivity : BaseActivity() {
 			invalidUrlErrorToast(safeMotherActivityRef)
 		}
 	}
-
+	
 	/**
 	 * Shows invalid URL error toast
 	 * @param safeMotherActivity The activity reference
@@ -573,7 +567,7 @@ class MotherActivity : BaseActivity() {
 			msgId = R.string.title_file_url_not_valid
 		)
 	}
-
+	
 	/**
 	 * Starts parsing video URL
 	 * @param safeActivity The activity reference
@@ -584,7 +578,7 @@ class MotherActivity : BaseActivity() {
 		val videoInterceptor = SharedVideoURLIntercept(safeActivity)
 		videoInterceptor.interceptIntentURI(userEnteredUrl)
 	}
-
+	
 	/**
 	 * Opens browser fragment with given URL
 	 * @param targetUrl The URL to load in browser
@@ -607,21 +601,22 @@ class MotherActivity : BaseActivity() {
 			)
 		}
 	}
-
+	
 	/**
 	 * ViewModel for sharing data between fragments
 	 */
 	class SharedViewModel : ViewModel() {
+		
 		private val logger = LogHelperUtils.from(javaClass)
-
+		
 		// LiveData for URL sharing
 		private val liveURLStringData = MutableLiveData<String>()
 		val liveURLString: LiveData<String> get() = liveURLStringData
-
+		
 		// LiveData for back press events
 		private val backPressLiveEventData = MutableLiveData<Unit>()
 		val backPressLiveEvent: LiveData<Unit> get() = backPressLiveEventData
-
+		
 		/**
 		 * Updates the browser URL result
 		 * @param result The URL string to share
@@ -630,7 +625,7 @@ class MotherActivity : BaseActivity() {
 			logger.d("Updating browser URL result: $result")
 			liveURLStringData.value = result
 		}
-
+		
 		/**
 		 * Triggers a back press event
 		 */

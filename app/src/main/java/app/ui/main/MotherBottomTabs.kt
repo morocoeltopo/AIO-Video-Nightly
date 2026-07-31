@@ -1,14 +1,14 @@
 package app.ui.main
 
-import android.graphics.PorterDuff.Mode.SRC_IN
-import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.core.content.ContextCompat.getColor
-import androidx.core.content.res.ResourcesCompat.getDrawable
-import com.aio.R
-import lib.process.LogHelperUtils
-import java.lang.ref.WeakReference
+import android.graphics.PorterDuff.Mode.*
+import android.view.*
+import android.widget.*
+import androidx.core.content.ContextCompat.*
+import androidx.core.content.res.*
+import androidx.core.content.res.ResourcesCompat.*
+import com.aio.*
+import lib.process.*
+import java.lang.ref.*
 
 /**
  * Handles the bottom navigation tabs in the main activity.
@@ -123,6 +123,8 @@ class MotherBottomTabs(motherActivity: MotherActivity?) {
 				safeActivityRef.findViewById<View>(ids[2])?.let { textTab ->
 					(textTab as TextView).apply {
 						setTextColor(getColor(context, R.color.color_text_primary))
+						val boldTypeface = ResourcesCompat.getFont(context, R.font.font_family_semibold)
+						typeface = boldTypeface
 					}
 				}
 			}
@@ -151,6 +153,8 @@ class MotherBottomTabs(motherActivity: MotherActivity?) {
 				safeActivityRef.findViewById<View>(ids[2])?.let { textTab ->
 					(textTab as TextView).apply {
 						setTextColor(getColor(context, R.color.color_on_secondary))
+						val boldTypeface = ResourcesCompat.getFont(context, R.font.font_family_bold)
+						typeface = boldTypeface
 					}
 				}
 			}

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Custom RadioButton item layout for single language picker.  -->
+<?xml version="1.0" encoding="utf-8"?>
 <RadioButton xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
@@ -8,8 +8,9 @@
 	android:drawableStart="@drawable/ic_button_radio_selector"
 	android:drawablePadding="@dimen/_10"
 	android:drawableTint="@color/color_secondary"
-	android:fontFamily="@font/application_font_family"
+	android:fontFamily="@font/font_family_regular"
 	android:text="@string/title__"
 	android:textColor="@color/color_text_primary"
-	android:textSize="@dimen/normal_text_size"
-	tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize" />
+	android:textSize="@dimen/normal_text_size_small"
+	tools:ignore="TouchTargetSizeCheck,VisualLintButtonSize"
+	/>

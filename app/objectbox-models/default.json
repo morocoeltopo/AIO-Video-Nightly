@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:5859520049495032366",
-      "lastPropertyId": "67:1368932844357110787",
+      "lastPropertyId": "68:178972667968884868",
       "name": "AIOSettings",
       "properties": [
         {
@@ -1218,15 +1218,111 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "12:7569874744703568408",
+      "lastPropertyId": "17:781794872842907328",
+      "name": "AIOUserProfile",
+      "properties": [
+        {
+          "id": "1:5810255168624433874",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4616574885519616574",
+          "name": "uniqueUserServerId",
+          "type": 9
+        },
+        {
+          "id": "3:4137017737296739071",
+          "name": "isUserCurrentlyLoggedIn",
+          "type": 1
+        },
+        {
+          "id": "4:3795839604334166632",
+          "name": "userFullName",
+          "type": 9
+        },
+        {
+          "id": "5:3563065494806848623",
+          "name": "userEmailAddress",
+          "type": 9
+        },
+        {
+          "id": "6:610325315094884096",
+          "name": "userPhoneNumber",
+          "type": 9
+        },
+        {
+          "id": "7:6505796429524232157",
+          "name": "isUserAccountVerified",
+          "type": 1
+        },
+        {
+          "id": "8:1361445947770021632",
+          "name": "isEmailVerified",
+          "type": 1
+        },
+        {
+          "id": "9:3592428143098118184",
+          "name": "emailVerifiedAt",
+          "type": 9
+        },
+        {
+          "id": "10:3095313346512344774",
+          "name": "isPhoneVerified",
+          "type": 1
+        },
+        {
+          "id": "11:4961409331198779666",
+          "name": "phoneVerifiedAt",
+          "type": 9
+        },
+        {
+          "id": "12:8194214540968974585",
+          "name": "supabaseAccountCreatedAt",
+          "type": 9
+        },
+        {
+          "id": "13:8089050123081261533",
+          "name": "lastSupabaseLoginAt",
+          "type": 9
+        },
+        {
+          "id": "14:5946847702171891331",
+          "name": "isSupabaseLinked",
+          "type": 1
+        },
+        {
+          "id": "15:5946861213634220957",
+          "name": "supabaseUserMetadata",
+          "type": 9
+        },
+        {
+          "id": "16:7690956402719196767",
+          "name": "supabaseAppMetadata",
+          "type": 9
+        },
+        {
+          "id": "17:781794872842907328",
+          "name": "lastTimeUpdatedWithSupabase",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "10:6838358189535358868",
+  "lastEntityId": "12:7569874744703568408",
   "lastIndexId": "0:0",
   "lastRelationId": "1:8496475234812365537",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    20975917045098968
+  ],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
     6998681376410707544,
@@ -1234,7 +1330,14 @@
     720351275970656264,
     2728132546519396816,
     2878173129867797327,
-    9019781913617655866
+    9019781913617655866,
+    178972667968884868,
+    8763911908649575557,
+    4624010957096845038,
+    8448751441554402215,
+    6548612220169475477,
+    1328303030505046394,
+    3300727228893496431
   ],
   "retiredRelationUids": [],
   "version": 1

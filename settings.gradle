@@ -1,13 +1,25 @@
+// -----------------------------------------------------------------------------
+// Settings-level Gradle configuration
+// This file controls plugin resolution, dependency repositories,
+// and overall project structure.
+// -----------------------------------------------------------------------------
+
 /**
- * This block configures the repositories where Gradle will look for plugins.
- * It's a central place to define plugin sources for the entire build.
- * - google(): For Android, Google, and AndroidX related plugins. Content filtering is used
- *             to ensure only specific group IDs are fetched from this repository, improving build speed.
- * - mavenCentral(): A major repository for a vast number of open-source libraries and plugins.
- * - gradlePluginPortal(): The official repository for Gradle community plugins.
+ * Configures where Gradle should search for plugins.
+ * This block is evaluated before any build scripts and applies globally.
  */
 pluginManagement {
+
+	/**
+	 * Repositories used to resolve Gradle plugins.
+	 * Restricting repository content improves performance and security.
+	 */
 	repositories {
+
+		/**
+		 * Google’s Maven repository.
+		 * Content filtering limits downloads to Android and Google-related plugins only.
+		 */
 		google {
 			content {
 				includeGroupByRegex("com\\.android.*")
@@ -15,38 +27,67 @@ pluginManagement {
 				includeGroupByRegex("androidx.*")
 			}
 		}
+
+		// Maven Central repository for widely used community plugins.
 		mavenCentral()
+
+		// Official Gradle Plugin Portal for Gradle-specific plugins.
 		gradlePluginPortal()
 	}
 }
 
 /**
- * The Foojay Toolchains plugin helps manage and provision consistent JDKs for the project,
- * ensuring that all developers and CI environments use the same Java version.
+ * Plugins applied at the settings level.
+ * These affect the build environment rather than individual modules.
  */
 plugins {
+
+	/**
+	 * Foojay Toolchains Resolver plugin.
+	 * Automatically provisions and aligns JDK versions across
+	 * developers and CI environments.
+	 */
 	id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
 /**
- * This block configures the repositories for project dependencies (libraries).
- * `FAIL_ON_PROJECT_REPOS` enforces that all repository declarations are centralized here,
- * preventing modules from declaring their own, which improves build reliability and security.
- * - google(): For Android, Google, and AndroidX libraries.
- * - mavenCentral(): The primary source for most open-source Java/Kotlin libraries.
- * - jitpack.io: A repository that builds and serves dependencies directly from Git repositories (e.g., GitHub).
+ * Centralized dependency repository configuration.
+ * Enforces consistent dependency resolution across all modules.
  */
 dependencyResolutionManagement {
-	repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-	
+
+	/**
+	 * Prefers repositories defined in this file over module-level repositories.
+	 * Helps avoid accidental or insecure repository usage in submodules.
+	 */
+	repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+
+	/**
+	 * Repositories used to resolve project dependencies (libraries).
+	 */
 	repositories {
+
+		// Google’s Maven repository for Android and Google libraries.
 		google()
+
+		// Primary repository for Java and Kotlin open-source libraries.
 		mavenCentral()
+
+		// Gradle Plugin Portal (occasionally used by libraries).
+		gradlePluginPortal()
+
+		// JitPack repository for dependencies built directly from Git repositories.
 		maven { url "https://jitpack.io" }
 	}
 }
 
-// Set the name of the root project.
+/**
+ * Defines the logical name of the root project.
+ * Used in Gradle outputs and IDE project views.
+ */
 rootProject.name = "AIO_VDM"
-// Include the 'app' module in the project.
+
+/**
+ * Includes the application module in the build.
+ */
 include ':app'

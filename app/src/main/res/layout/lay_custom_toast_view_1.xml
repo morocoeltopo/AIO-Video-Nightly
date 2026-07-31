@@ -11,12 +11,14 @@
 	android:orientation="horizontal"
 	app:cardBackgroundColor="@color/color_toast_view_bg"
 	app:cardCornerRadius="@dimen/_10"
-	app:cardElevation="@dimen/_5">
+	app:cardElevation="@dimen/_5"
+	>
 	
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:orientation="horizontal">
+		android:orientation="horizontal"
+		>
 		
 		<de.hdodenhof.circleimageview.CircleImageView
 			android:id="@+id/img_toast_app_icon"
@@ -29,7 +31,8 @@
 			android:layout_marginBottom="@dimen/_5"
 			android:elevation="@dimen/_1"
 			android:importantForAccessibility="no"
-			android:src="@mipmap/ic_launcher_v2" />
+			android:src="@mipmap/ic_launcher_v2"
+			/>
 		
 		<TextView
 			android:id="@+id/txt_toast_message"
@@ -40,12 +43,12 @@
 			android:layout_marginTop="@dimen/_5"
 			android:layout_marginEnd="@dimen/_10"
 			android:layout_marginBottom="@dimen/_5"
-			android:fontFamily="@font/application_font_family"
+			android:fontFamily="@font/font_family_medium"
 			android:gravity="center_vertical"
 			android:text="@string/title_100_percentage"
 			android:textColor="@color/color_text_primary"
-			android:textFontWeight="900"
-			android:textSize="@dimen/message_text_size" />
+			android:textSize="@dimen/message_text_size"
+			/>
 	</LinearLayout>
 
 </androidx.cardview.widget.CardView>

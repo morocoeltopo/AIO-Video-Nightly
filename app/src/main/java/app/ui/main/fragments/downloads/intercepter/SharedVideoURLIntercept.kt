@@ -1,31 +1,29 @@
 package app.ui.main.fragments.downloads.intercepter
 
-import android.widget.TextView
+import android.widget.*
 import app.core.AIOApp.Companion.INSTANCE
-import app.core.AIOApp.Companion.youtubeVidParser
-import app.core.bases.BaseActivity
+import app.core.bases.*
+import app.core.engines.video_parser.parsers.*
 import app.core.engines.video_parser.parsers.SupportedURLs.filterYoutubeUrlWithoutPlaylist
 import app.core.engines.video_parser.parsers.SupportedURLs.isYouTubeUrl
 import app.core.engines.video_parser.parsers.SupportedURLs.isYtdlpSupportedUrl
-import app.core.engines.video_parser.parsers.VideoFormat
-import app.core.engines.video_parser.parsers.VideoInfo
-import app.core.engines.video_parser.parsers.VideoParserUtility.getYtdlpVideoFormatsListWithRetry
-import app.ui.main.MotherActivity
-import app.ui.others.information.IntentInterceptActivity
-import com.aio.R
+import app.core.engines.video_parser.parsers.VideoParserUtility.getYtdlpVideoFormatsWithRetry
+import app.core.engines.youtube.*
+import app.ui.main.*
+import app.ui.others.information.*
+import com.aio.*
 import lib.device.IntentUtility.openLinkInSystemBrowser
 import lib.networks.DownloaderUtils.getHumanReadableFormat
-import lib.networks.URLUtility.isValidURL
-import lib.process.AsyncJobUtils.executeOnMainThread
-import lib.process.LogHelperUtils
-import lib.process.ThreadsUtility
+import lib.networks.URLUtility.*
+import lib.process.*
+import lib.process.AsyncJobUtils.*
 import lib.texts.CommonTextUtils.getText
 import lib.ui.MsgDialogUtils.showMessageDialog
 import lib.ui.ViewUtility.setLeftSideDrawable
+import lib.ui.builders.*
 import lib.ui.builders.ToastView.Companion.showToast
-import lib.ui.builders.WaitingDialog
-import org.schabi.newpipe.extractor.stream.StreamInfo
-import java.lang.ref.WeakReference
+import org.schabi.newpipe.extractor.stream.*
+import java.lang.ref.*
 
 /**
  * Intercepts shared video URLs and processes them to extract downloadable formats,
@@ -48,44 +46,44 @@ class SharedVideoURLIntercept(
 	private val onOpeningBuiltInBrowser: (() -> Unit?)? = null,
 	private val closeActivityOnSuccessfulDownload: Boolean = false
 ) {
-
+	
 	/** Logger instance for recording debug and error messages related to video interception. */
 	private val logger = LogHelperUtils.from(javaClass)
-
+	
 	/**
 	 * Holds a weak reference to the associated [BaseActivity] to prevent memory leaks.
 	 * This ensures the class can access context-related resources safely without
 	 * keeping the activity in memory unnecessarily.
 	 */
 	private var safeBaseActivityRef = WeakReference(baseActivity).get()
-
+	
 	/**
 	 * Flag indicating whether a video interception or extraction process
 	 * is currently running. Helps prevent duplicate or parallel interception tasks.
 	 */
 	@Volatile
 	private var isInterceptingInProcess: Boolean = false
-
+	
 	/**
 	 * Flag that marks whether the current interception process has been
 	 * either cancelled by the user or completed successfully.
 	 */
 	@Volatile
 	private var isInterceptingTerminated: Boolean = false
-
+	
 	/**
 	 * Dialog instance used to show a loading or progress indicator
 	 * while analyzing or parsing a shared video link.
 	 */
 	@Volatile
 	private var interceptWaitingDialog: WaitingDialog? = null
-
+	
 	/**
 	 * Determines whether the app should automatically open the video link
 	 * in an external browser if interception or format extraction fails.
 	 */
 	private var shouldOpenBrowserAsFallback = true
-
+	
 	/**
 	 * Initiates the interception and analysis of a shared video URL.
 	 *
@@ -99,26 +97,26 @@ class SharedVideoURLIntercept(
 	 */
 	fun interceptIntentURI(targetUrl: String?, shouldOpenBrowserAsFallback: Boolean = true) {
 		logger.d("Starting URL interception process")
-
+		
 		// Save fallback behavior flag
 		this.shouldOpenBrowserAsFallback = shouldOpenBrowserAsFallback
-
+		
 		targetUrl?.let {
 			// Validate the provided URL before proceeding
 			if (!isValidURL(targetUrl)) {
 				logger.d("Invalid URL provided: $targetUrl")
 				return
 			}
-
+			
 			// Show loading dialog while processing the link
 			logger.d("Initializing waiting dialog for URL interception")
 			initializeWaitingMessageDialog()
-
+			
 			// Begin actual video interception and parsing
 			startInterceptingUrl(targetUrl)
 		} ?: logger.d("No URL provided — skipping interception")
 	}
-
+	
 	/**
 	 * Initializes and displays the waiting dialog during video URL analysis.
 	 *
@@ -134,7 +132,7 @@ class SharedVideoURLIntercept(
 	 */
 	private fun initializeWaitingMessageDialog() {
 		logger.d("Creating waiting dialog for video analysis")
-
+		
 		interceptWaitingDialog = WaitingDialog(
 			isCancelable = false,
 			baseActivityInf = safeBaseActivityRef,
@@ -147,10 +145,10 @@ class SharedVideoURLIntercept(
 				}
 			}
 		)
-
+		
 		logger.d("Waiting dialog initialized successfully")
 	}
-
+	
 	/**
 	 * Updates the text message displayed in the interception waiting dialog.
 	 *
@@ -167,7 +165,7 @@ class SharedVideoURLIntercept(
 	 */
 	private fun updateInterceptWaitingDialogMessage(newUpdatedMessage: String) {
 		logger.d("Updating waiting dialog message to: \"$newUpdatedMessage\"")
-
+		
 		interceptWaitingDialog?.let { waitingDialog ->
 			executeOnMainThread {
 				waitingDialog.dialogBuilder?.apply {
@@ -178,7 +176,7 @@ class SharedVideoURLIntercept(
 			}
 		} ?: logger.d("No active waiting dialog found — message not updated")
 	}
-
+	
 	/**
 	 * Begins the interception and analysis process for the provided video URL.
 	 *
@@ -196,18 +194,18 @@ class SharedVideoURLIntercept(
 	 */
 	private fun startInterceptingUrl(targetVideoUrl: String) {
 		logger.d("Starting interception for URL: $targetVideoUrl")
-
+		
 		interceptWaitingDialog?.let { waitingDialog ->
 			// Prevent multiple interceptions running simultaneously
 			if (isInterceptingInProcess) {
 				logger.d("Interception already in progress — ignoring duplicate request")
 				return
 			}
-
+			
 			// Show waiting dialog and mark process as active
 			waitingDialog.show()
 			isInterceptingInProcess = true
-
+			
 			// Execute network and parsing logic on background thread
 			ThreadsUtility.executeInBackground(codeBlock = {
 				// Handle unsupported yt-dlp URLs
@@ -224,14 +222,14 @@ class SharedVideoURLIntercept(
 					}
 					return@executeInBackground
 				}
-
+				
 				// Begin actual video analysis
 				logger.d("Supported URL detected — initiating yt-dlp analysis")
 				startAnalyzingVideoUrl(targetVideoUrl)
 			})
 		} ?: logger.d("No waiting dialog initialized — interception aborted")
 	}
-
+	
 	/**
 	 * Analyzes the provided video URL to extract available formats and resolutions,
 	 * then displays a resolution picker dialog for user selection.
@@ -250,15 +248,15 @@ class SharedVideoURLIntercept(
 	 */
 	private suspend fun startAnalyzingVideoUrl(videoUrl: String) {
 		logger.d("Analyzing video URL: $videoUrl")
-
+		
 		safeBaseActivityRef?.let { safeBaseActivityRef ->
 			// Step 1: Handle YouTube URLs separately
 			val ytStreamInfo = if (isYouTubeUrl(videoUrl)) {
 				logger.d("YouTube URL detected — fetching stream info")
 				val urlWithoutPlaylist = filterYoutubeUrlWithoutPlaylist(videoUrl)
-				youtubeVidParser.getStreamInfo(urlWithoutPlaylist)
+				YouTubeVideoStreamParser.getStreamInfo(urlWithoutPlaylist)
 			} else null
-
+			
 			// Step 2: Gather and prioritize available metadata
 			val videoCookie = userGivenVideoInfo?.videoCookie
 			val videoTitle = ytStreamInfo?.name ?: userGivenVideoInfo?.videoTitle
@@ -269,16 +267,16 @@ class SharedVideoURLIntercept(
 				if (playbackInSec > 0L) playbackInSec * 1000 else 0L
 			}
 			val videoThumbnailByReferer = userGivenVideoInfo?.videoThumbnailByReferer ?: false
-
+			
 			// Step 3: Extract available video formats using the appropriate parser
 			val videoFormats = if (isYouTubeUrl(videoUrl)) {
 				logger.d("Fetching available YouTube resolutions")
 				getYoutubeVideoResolutionsFrom(ytStreamInfo)
 			} else {
 				logger.d("Fetching video formats via yt-dlp for: $videoUrl")
-				ArrayList(getYtdlpVideoFormatsListWithRetry(videoUrl, videoCookie))
+				ArrayList(getYtdlpVideoFormatsWithRetry(videoUrl, videoCookie))
 			}
-
+			
 			// Step 4: Build video information model for display
 			val videoInfo = VideoInfo(
 				videoUrl = videoUrl,
@@ -291,7 +289,7 @@ class SharedVideoURLIntercept(
 				videoFormats = videoFormats,
 				videoDuration = videoDurationFromYtStream ?: userGivenVideoInfo?.videoDuration ?: 0L
 			)
-
+			
 			// Step 5: Switch to main thread to update UI
 			ThreadsUtility.executeOnMain(codeBlock = {
 				logger.d("Video analysis complete — preparing UI update")
@@ -302,7 +300,7 @@ class SharedVideoURLIntercept(
 						logger.d("Interception terminated before completion — aborting UI display")
 						return@let
 					}
-
+					
 					// Handle empty formats (no downloadable content)
 					if (videoInfo.videoFormats.isEmpty()) {
 						logger.d("No downloadable video formats found for: $videoUrl")
@@ -314,7 +312,7 @@ class SharedVideoURLIntercept(
 						}
 						return@let
 					}
-
+					
 					// Step 6: Show available resolutions in picker dialog
 					logger.d("Displaying resolution picker — total formats: ${videoInfo.videoFormats.size}")
 					VideoResolutionPicker(
@@ -332,7 +330,7 @@ class SharedVideoURLIntercept(
 			})
 		} ?: logger.d("Base activity reference lost — aborting video analysis")
 	}
-
+	
 	/**
 	 * Retrieves a list of available YouTube video resolutions (and audio-only option) from a [StreamInfo] object.
 	 * If no stream data is provided (null), returns a default list of resolutions.
@@ -363,7 +361,7 @@ class SharedVideoURLIntercept(
 		else {
 			logger.d("Processing stream info for resolutions")
 			val formats = mutableListOf<VideoFormat>()
-
+			
 			// Add audio-only option (always first)
 			ytStreamInfo.audioStreams
 				.maxByOrNull { it.bitrate }?.let { bestStream ->
@@ -377,7 +375,7 @@ class SharedVideoURLIntercept(
 						)
 					)
 				}
-
+			
 			// Process video streams:
 			// 1. Filter streams with valid bitrate.
 			// 2. Group by height (resolution).
@@ -398,12 +396,12 @@ class SharedVideoURLIntercept(
 						)
 					}
 				}
-
+			
 			logger.d("Found ${formats.size} video formats")
 			return ArrayList(formats)
 		}
 	}
-
+	
 	/**
 	 * Displays a fallback prompt asking the user whether to open the provided video URL
 	 * in the in-app browser when no downloadable or playable formats are found.
@@ -421,11 +419,11 @@ class SharedVideoURLIntercept(
 	 */
 	private fun showOpeningInBrowserPrompt(videoUrl: String) {
 		logger.d("Initializing browser fallback prompt for URL: $videoUrl")
-
+		
 		// Define message and button text resources
 		val msgResId = R.string.text_error_failed_to_fetch_video_format
 		val buttonTextResId = R.string.title_open_link_in_browser
-
+		
 		// Step 1: Build and display the message dialog
 		showMessageDialog(
 			baseActivityInf = safeBaseActivityRef,
@@ -448,7 +446,7 @@ class SharedVideoURLIntercept(
 			}
 		} ?: logger.d("Failed to show browser fallback prompt — dialog instance is null")
 	}
-
+	
 	/**
 	 * Attempts to open the provided URL using the app's built-in browser.
 	 *
@@ -469,31 +467,30 @@ class SharedVideoURLIntercept(
 	 */
 	private fun openInBuiltInBrowser(targetUrl: String) {
 		logger.d("Request received to open URL in built-in browser: $targetUrl")
-
+		
 		safeBaseActivityRef?.let { safeBaseActivityRef ->
 			try {
 				// Step 1: Ensure the activity is capable of handling browser operations
 				if (safeBaseActivityRef is MotherActivity) {
-					val fileUrl = targetUrl
 					logger.d("Activity confirmed as MotherActivity, proceeding with in-app browser launch")
-
+					
 					val browserFragment = safeBaseActivityRef.browserFragment
 					val browserFragmentBody = browserFragment?.browserFragmentBody
 					val webviewEngine = browserFragmentBody?.webviewEngine ?: run {
 						logger.d("WebView engine not found, aborting built-in browser launch")
 						return
 					}
-
+					
 					// Step 2: Validate the target URL before navigating
-					if (fileUrl.isNotEmpty() && isValidURL(fileUrl)) {
-						logger.d("Valid URL detected: $fileUrl — adding new browsing tab")
-
+					if (targetUrl.isNotEmpty() && isValidURL(targetUrl)) {
+						logger.d("Valid URL detected: $targetUrl — adding new browsing tab")
+						
 						val sideNavigation = safeBaseActivityRef.sideNavigation
-						sideNavigation?.addNewBrowsingTab(url = fileUrl, webviewEngine = webviewEngine)
+						sideNavigation?.addNewBrowsingTab(url = targetUrl, webviewEngine = webviewEngine)
 						safeBaseActivityRef.openBrowserFragment()
 						logger.d("Successfully opened URL in built-in browser")
 					} else {
-						logger.d("Invalid or empty URL: $fileUrl — showing invalid URL toast")
+						logger.d("Invalid or empty URL: $targetUrl — showing invalid URL toast")
 						showInvalidUrlToast()
 					}
 				} else {
@@ -509,7 +506,7 @@ class SharedVideoURLIntercept(
 			}
 		} ?: logger.d("Safe activity reference is null — cannot open built-in browser")
 	}
-
+	
 	/**
 	 * Opens the given URL in the device's default system browser.
 	 *
@@ -525,7 +522,7 @@ class SharedVideoURLIntercept(
 	 */
 	private fun openInSystemBrowser(urlFromIntent: String) {
 		logger.d("Attempting to open URL in system browser: $urlFromIntent")
-
+		
 		openLinkInSystemBrowser(urlFromIntent, safeBaseActivityRef) {
 			logger.d("System browser failed to open URL, showing error toast")
 			showToast(
@@ -534,7 +531,7 @@ class SharedVideoURLIntercept(
 			)
 		}
 	}
-
+	
 	/**
 	 * Displays a short toast message when the provided URL is invalid or malformed.
 	 *
@@ -553,7 +550,7 @@ class SharedVideoURLIntercept(
 			msgId = R.string.title_invalid_url
 		)
 	}
-
+	
 	/**
 	 * Handles user cancellation during an ongoing video URL interception.
 	 *
@@ -565,7 +562,7 @@ class SharedVideoURLIntercept(
 	 */
 	private fun onCancelInterceptRequested(waitingDialog: WaitingDialog) {
 		logger.d("User requested cancellation of video URL interception")
-
+		
 		waitingDialog.dialogBuilder?.let { dialogBuilder ->
 			if (dialogBuilder.isShowing) {
 				logger.d("Closing waiting dialog due to user cancellation")
@@ -573,12 +570,12 @@ class SharedVideoURLIntercept(
 				safelyCloseBaseActivity()
 			}
 		}
-
+		
 		isInterceptingInProcess = false
 		isInterceptingTerminated = true
 		logger.d("Interception state updated: process stopped and terminated")
 	}
-
+	
 	/**
 	 * Safely closes the current activity if it’s an [IntentInterceptActivity].
 	 *
@@ -588,7 +585,7 @@ class SharedVideoURLIntercept(
 	 */
 	private fun safelyCloseBaseActivity() {
 		logger.d("Attempting to safely close the base activity")
-
+		
 		executeOnMainThread {
 			try {
 				// Close only if the base activity was started as an intercept intent

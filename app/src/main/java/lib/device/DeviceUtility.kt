@@ -1,26 +1,23 @@
 package lib.device
 
-import android.content.Context
-import android.content.Context.CONNECTIVITY_SERVICE
-import android.content.Context.TELEPHONY_SERVICE
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities.TRANSPORT_BLUETOOTH
-import android.net.NetworkCapabilities.TRANSPORT_CELLULAR
-import android.net.NetworkCapabilities.TRANSPORT_ETHERNET
-import android.net.NetworkCapabilities.TRANSPORT_WIFI
-import android.os.Build
-import android.telephony.TelephonyManager
+import android.content.*
+import android.content.Context.*
+import android.net.*
+import android.net.NetworkCapabilities.*
+import android.os.*
+import android.telephony.*
 import app.core.AIOApp.Companion.INSTANCE
 import lib.texts.CommonTextUtils.capitalizeFirstLetter
-import java.lang.ref.WeakReference
-import java.util.Locale.getDefault
+import java.lang.ref.*
+import java.util.*
+import java.util.Locale.*
 
 /**
  * Utility class for retrieving information related to the device hardware,
  * display, connectivity, and locale settings.
  */
 object DeviceUtility {
-
+	
 	/**
 	 * Retrieves the raw screen density of the device.
 	 *
@@ -35,7 +32,7 @@ object DeviceUtility {
 			return density
 		}; return 0.0f
 	}
-
+	
 	/**
 	 * Returns the screen density formatted as a human-readable bucket like `hdpi`, `xxhdpi`, etc.
 	 *
@@ -58,7 +55,7 @@ object DeviceUtility {
 			return formattedDensity
 		}; return ""
 	}
-
+	
 	/**
 	 * Returns the device manufacturer and model as a formatted name.
 	 *
@@ -73,7 +70,7 @@ object DeviceUtility {
 		} else capitalizeFirstLetter("$manufacturer $model")
 		return deviceName
 	}
-
+	
 	/**
 	 * Checks whether the device has an active internet connection through
 	 * any known transport methods (Wi-Fi, cellular, Ethernet, or Bluetooth).
@@ -93,11 +90,11 @@ object DeviceUtility {
 		val cellularChecked = nc.hasTransport(TRANSPORT_CELLULAR)
 		val ethernetChecked = nc.hasTransport(TRANSPORT_ETHERNET)
 		val bluetoothChecked = nc.hasTransport(TRANSPORT_BLUETOOTH)
-
+		
 		val isOnline = wifiChecked || cellularChecked || ethernetChecked || bluetoothChecked
 		return isOnline
 	}
-
+	
 	/**
 	 * Attempts to determine the user's country based on locale or SIM info.
 	 *
@@ -113,4 +110,88 @@ object DeviceUtility {
 		if (simCountryIso.isNotEmpty()) return simCountryIso.uppercase(getDefault())
 		return "Unknown"
 	}
+	
+	/**
+	 * Determines whether the user is likely located in India by evaluating
+	 * multiple non-invasive device signals.
+	 *
+	 * The check is heuristic-based and does NOT rely on GPS or IP lookup.
+	 * Signals are evaluated in order of reliability:
+	 *
+	 * 1. Mobile network country ISO (best signal when connected to a carrier)
+	 * 2. SIM card country ISO (subscription origin)
+	 * 3. Device default locale (user-selected region)
+	 * 4. System time zone (last-resort heuristic)
+	 *
+	 * The function returns `true` as soon as any signal positively identifies
+	 * India ("IN"). If none match, it returns `false`.
+	 *
+	 * Notes:
+	 * - No runtime permissions are required.
+	 * - Results are best-effort and not legally authoritative.
+	 * - Suitable for feature gating, UI defaults, or regional behavior.
+	 *
+	 * @param context Context used to access system services (TelephonyManager).
+	 * @return `true` if the device is likely associated with India, otherwise `false`.
+	 */
+	@JvmStatic
+	fun isUserFromIndia(context: Context?): Boolean {
+		if (context == null) return false
+		
+		val indiaCountryCode = "in"
+		val indianTimeZoneId = "Asia/Kolkata"
+		
+		// TelephonyManager may be null on Wi-Fi–only devices (e.g., tablets)
+		val tm = context.getSystemService(TELEPHONY_SERVICE) as? TelephonyManager
+		
+		return when {
+			// 1. Country provided by the active mobile network
+			tm?.networkCountryIso?.equals(indiaCountryCode, ignoreCase = true) == true -> true
+			
+			// 2. Country associated with the SIM card
+			tm?.simCountryIso?.equals(indiaCountryCode, ignoreCase = true) == true -> true
+			
+			// 3. User-configured device locale
+			getDefault().country.equals(indiaCountryCode, ignoreCase = true) -> true
+			
+			// 4. System time zone fallback
+			TimeZone.getDefault().id.equals(indianTimeZoneId, ignoreCase = true) -> true
+			
+			else -> false
+		}
+	}
+	
+	/**
+	 * Normalizes an Indian mobile number to the standard 10-digit format.
+	 *
+	 * This function handles common variations in Indian mobile numbers, such as:
+	 * - The "+91" country code prefix.
+	 * - The "0" trunk prefix often used for STD calls.
+	 *
+	 * It strips these prefixes to return a clean, 10-digit number.
+	 * If the input number is already 10 digits or does not match the known
+	 * prefixed formats (12 or 11 digits), it is returned as is.
+	 *
+	 * Examples:
+	 * - `"+919876543210"` becomes `"9876543210"`
+	 * - `"09876543210"` becomes `"9876543210"`
+	 * - `"9876543210"` remains `"9876543210"`
+	 * - `"12345"` remains `"12345"` (as it's not a valid prefixed format)
+	 *
+	 * @param number The phone number string to normalize.
+	 * @return A 10-digit mobile number string, or the original string if it
+	 *         cannot be normalized as expected.
+	 */
+	@JvmStatic
+	fun normalizeIndianNumber(raw: String): String {
+		val digits = raw.filter { it.isDigit() }
+		return when (
+			digits.length) {
+			12 if digits.startsWith("91") -> digits.substring(2)
+			11 if digits.startsWith("0") -> digits.substring(1)
+			10 -> digits
+			else -> digits
+		}
+	}
+	
 }

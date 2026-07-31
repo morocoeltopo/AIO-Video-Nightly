@@ -62,4 +62,9 @@
 
 -dontwarn sun.reflect.ReflectionFactory
 
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** {
+  *;
+}
+
 -optimizationpasses 7

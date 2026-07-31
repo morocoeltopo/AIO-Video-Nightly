@@ -952,10 +952,10 @@ class MediaPlayerActivity : BaseActivity(), AIOTimerListener, Listener {
 	 *
 	 * @param newConfig The new configuration data
 	 */
-	override fun onConfigurationChanged(newConfig: Configuration) {
-		super.onConfigurationChanged(newConfig)
-		if (newConfig.orientation == ORIENTATION_PORTRAIT) handlePortraitMode()
-		else if (newConfig.orientation == ORIENTATION_LANDSCAPE) handleLandscapeMode()
+	override fun onConfigurationChanged(newConfiguration: Configuration) {
+		super.onConfigurationChanged(newConfiguration)
+		if (newConfiguration.orientation == ORIENTATION_PORTRAIT) handlePortraitMode()
+		else if (newConfiguration.orientation == ORIENTATION_LANDSCAPE) handleLandscapeMode()
 	}
 
 	/**

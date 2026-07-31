@@ -1,6 +1,7 @@
 package app.core.engines.youtube
 
 import app.core.engines.objectbox.*
+import app.core.engines.youtube.YTVideosModelsDBManager.getYouTubeVideoById
 import io.objectbox.*
 import lib.process.*
 import java.util.concurrent.*
@@ -31,7 +32,10 @@ object YTVideosModelsDBManager {
 	 * ObjectBox BoxStore instance.
 	 * This central access point to the database is initialized lazily upon first use.
 	 */
-	private val globalObjectBoxStore: BoxStore by lazy { getGlobalObjectBoxStore() }
+	private val globalObjectBoxStore: BoxStore by lazy {
+		logger.d("Retrieving BoxStore instance for YouTube videos database.")
+		ObjectBoxManager.getBoxStore()
+	}
 	
 	/**
 	 * Lazy-initialized Box (Data Access Object) for [YouTubeVideoDataModel] entities.
@@ -43,17 +47,10 @@ object YTVideosModelsDBManager {
 		}
 	}
 	
-	/**
-	 * Retrieves the singleton BoxStore instance.
-	 * Ensures that the central database store is accessed correctly.
-	 *
-	 * @return [BoxStore] The initialized ObjectBox database store instance.
-	 * @throws IllegalStateException if the BoxStore has not been initialized via [ObjectBoxManager].
-	 */
 	@JvmStatic
-	fun getGlobalObjectBoxStore(): BoxStore {
-		logger.d("Retrieving BoxStore instance for YouTube videos database.")
-		return ObjectBoxManager.getBoxStore()
+	@Synchronized
+	fun getYouTubeVideosModelBox(): Box<YouTubeVideoDataModel> {
+		return ytVideoModelsBox
 	}
 	
 	/**
@@ -70,20 +67,7 @@ object YTVideosModelsDBManager {
 	 * The ID field will be updated upon success. If the ID is zero, a new entity will be created.
 	 *
 	 * @param listener The callback interface to handle the result (success or error).
-	 *
 	 * @threadsafe The method is synchronized to prevent concurrent modification issues.
-	 *
-	 * Example usage:
-	 * ```
-	 * YTVideosModelsDBManager.saveYouTubeVideoDataModelInDB(newVideo, object : OnSaveResultListener {
-	 * override fun onSuccess(savedId: Long) {
-	 * // UI update logic here: show success message
-	 * }
-	 * override fun onError(error: Exception) {
-	 * // UI update logic here: show error message
-	 * }
-	 * })
-	 * ```
 	 */
 	@JvmStatic
 	@Synchronized
@@ -108,15 +92,19 @@ object YTVideosModelsDBManager {
 	}
 	
 	/**
-	 * Retrieves **all** YouTube video data models from the database.
+	 * Retrieves all YouTube video data models from the database.
 	 *
-	 * Note: This operation can be resource-intensive for very large datasets.
-	 * For optimal performance, consider implementing a paged query approach if
-	 * the dataset size is a concern.
+	 * This function fetches every `YouTubeVideoDataModel` persisted in the ObjectBox store.
+	 * The operation is performed synchronously and is thread-safe.
 	 *
-	 * @return [List]<[YouTubeVideoDataModel]> A list of all persisted video models,
-	 * or an empty list if no videos exist or an error occurs.
-	 * @threadsafe Method is synchronized for safe reads.
+	 * **Warning:** Loading all entities into memory can be resource-intensive if the database
+	 * contains a very large number of video models. For performance-critical applications or
+	 * large datasets, consider using a paginated query or a more specific query function.
+	 *
+	 * @return A [List] of all [YouTubeVideoDataModel] instances. Returns an empty list
+	 *         if no models are found in the database or if an error occurs during retrieval.
+	 * @see getYouTubeVideoById
+	 * @threadsafe This method is synchronized to ensure safe concurrent read access.
 	 */
 	@JvmStatic
 	@Synchronized
@@ -138,11 +126,13 @@ object YTVideosModelsDBManager {
 	
 	/**
 	 * Retrieves a specific YouTube video from the database by its unique ObjectBox ID.
-	 * If the ID does not exist, returns `null`.
 	 *
-	 * @param ytVideoModelID The unique identifier ([Long]) of the YouTube video to retrieve.
-	 * @return [YouTubeVideoDataModel]? The video model if found, or `null` if the ID does
-	 * not exist or an error occurred.
+	 * This method performs a direct lookup using the primary key, making it a highly
+	 * efficient way to fetch a single, known entity. If the ID does not correspond to
+	 * any existing record, it gracefully returns `null`.
+	 *
+	 * @param ytVideoModelID The unique `Long` identifier of the `YouTubeVideoDataModel` to retrieve.
+	 * @return The matching [YouTubeVideoDataModel] if found, otherwise `null`.
 	 */
 	@JvmStatic
 	fun getYouTubeVideoById(ytVideoModelID: Long): YouTubeVideoDataModel? {
@@ -157,15 +147,20 @@ object YTVideosModelsDBManager {
 	}
 	
 	/**
-	 * Deletes a specific YouTube video record from the database using its unique ID.
+	 * Deletes a YouTube video record from the database using its unique ObjectBox ID.
 	 *
-	 * The operation is wrapped in a transaction for reliability.
+	 * This operation is executed within a database transaction for atomicity and reliability.
+	 * The function will log the outcome of the deletion attempt.
+	 *
+	 * Note: ObjectBox's `remove(id)` returns `true` if an entity with the given ID was found
+	 * and removed, and `false` if no entity with that ID existed. This implementation
+	 * returns `true` in both of these cases, as the desired state (the record not being
+	 * in the database) is achieved. It only returns `false` if a database exception occurs.
 	 *
 	 * @param ytVideoModelID The unique identifier ([Long]) of the YouTube video to delete.
-	 * @return `true` if deletion succeeded or the entity was not found,
-	 * `false` if a critical database error occurred.
-	 *
-	 * @threadsafe Method is synchronized to ensure thread-safe removal.
+	 * @return Returns `true` if the deletion was successful or if the entity did not exist.
+	 *         Returns `false` only if a critical database error occurred during the transaction.
+	 * @threadsafe This method is synchronized to ensure thread-safe removal operations.
 	 */
 	@JvmStatic
 	@Synchronized
@@ -181,53 +176,83 @@ object YTVideosModelsDBManager {
 	}
 	
 	/**
-	 * **CAUTION: Destructive Operation**
+	 * **CAUTION: This is a destructive operation.**
 	 *
-	 * Removes **all** YouTube video records from the database.
+	 * Removes **all** YouTube video records from the database. This action is irreversible.
+	 * The operation is executed within a database transaction to ensure atomicity, meaning
+	 * either all records are removed successfully or none are.
 	 *
-	 * @return `true` if all records were successfully cleared, `false` if an error occurred.
-	 * @threadsafe Method is synchronized to ensure a complete, atomic clear operation.
+	 * @return `true` if all records were successfully cleared, or `false` if a database error occurred.
+	 * @threadsafe The method is synchronized to prevent concurrent access and ensure a complete, atomic clear.
 	 */
 	@JvmStatic
 	@Synchronized
-	fun clearAllYouTubeVideos(): Boolean {
-		return try {
-			globalObjectBoxStore.runInTx { ytVideoModelsBox.removeAll() }
-			logger.d("Cleared all YouTube videos from database.")
-			true
-		} catch (error: Exception) {
-			logger.e("Error clearing YouTube videos: ${error.message}", error)
-			false
-		}
-	}
-	
-	@JvmStatic
-	@Synchronized
-	fun clearOldYouTubeVideosModelsFromDB(daysToKeep: Int = 7) {
-		try {
-			val timeToKeepMillis = TimeUnit.DAYS.toMillis(daysToKeep.toLong())
-			val cutoffTime = System.currentTimeMillis() - timeToKeepMillis
-			
-			val listOfModels = getAllYouTubeVideoDataModels()
-			val modelsToDelete = listOfModels.filter { model ->
-				model.lastModifiedTimeDate < cutoffTime
+	fun clearAllYouTubeVideos(onResult: (Boolean) -> Unit = {}) {
+		ThreadsUtility.executeInBackground(
+			timeOutInMilli = 500,
+			codeBlock = {
+				val result = try {
+					globalObjectBoxStore.runInTx { ytVideoModelsBox.removeAll() }
+					logger.d("Cleared all YouTube videos from database.")
+					true
+				} catch (error: Exception) {
+					logger.e("Error clearing YouTube videos: ${error.message}", error)
+					false
+				}
+				onResult.invoke(result)
 			}
-			
-			val idsToDelete = modelsToDelete.map { it.id }
-			getGlobalObjectBoxStore().runInTx { ytVideoModelsBox.removeByIds(idsToDelete) }
-			
-			logger.i(
-				"Successfully cleared ${idsToDelete.size} " +
-					"old YouTube video models (older than $daysToKeep days)."
-			)
-		} catch (error: Exception) {
-			logger.e("Error clearing old YouTube video models: ${error.message}", error)
-		}
+		)
 	}
 	
 	/**
-	 * Interface definition for a callback to be invoked when a database save operation finishes.
-	 * This decouples the database logic from the UI/Business logic, allowing for better error handling.
+	 * Asynchronously removes YouTube video models older than a specified number of days from the database.
+	 *
+	 * This function performs a cleanup operation to manage storage by deleting outdated video records.
+	 * It calculates a cutoff timestamp based on the `daysToKeep` parameter and removes all video models
+	 * whose `lastModifiedTimeDate` is older than this cutoff. The entire operation is executed
+	 * on a background thread to prevent blocking the main thread.
+	 *
+	 * @param daysToKeep The number of days to retain video models. Records older than this
+	 *                   will be deleted. Defaults to 7 days.
+	 *
+	 * @threadsafe The method is synchronized to ensure that only one cleanup operation can be
+	 *             initiated at a time. The database transaction itself is atomic.
+	 */
+	@JvmStatic
+	@Synchronized
+	fun clearOldYouTubeVideosModelsFromDB(daysToKeep: Int = 7) {
+		ThreadsUtility.executeInBackground(
+			timeOutInMilli = 500,
+			codeBlock = {
+				try {
+					val timeToKeepMillis = TimeUnit.DAYS.toMillis(daysToKeep.toLong())
+					val cutoffTime = System.currentTimeMillis() - timeToKeepMillis
+					
+					val listOfModels = getAllYouTubeVideoDataModels()
+					val modelsToDelete = listOfModels.filter { model ->
+						model.lastModifiedTimeDate < cutoffTime
+					}
+					
+					val idsToDelete = modelsToDelete.map { it.id }
+					globalObjectBoxStore.runInTx { ytVideoModelsBox.removeByIds(idsToDelete) }
+					
+					logger.i(
+						"Successfully cleared ${idsToDelete.size} " +
+							"old YouTube video models (older than $daysToKeep days)."
+					)
+				} catch (error: Exception) {
+					logger.e("Error clearing old YouTube video models: ${error.message}", error)
+				}
+			}
+		)
+	}
+	
+	/**
+	 * Defines a callback to be invoked when a database save operation completes.
+	 *
+	 * This listener decouples the database layer from the UI or business logic,
+	 * providing a standardized way to handle both successful outcomes and failures
+	 * without exposing low-level database exceptions to the caller.
 	 */
 	interface OnSaveResultListener {
 		

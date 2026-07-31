@@ -5,6 +5,7 @@ import androidx.documentfile.provider.*
 import androidx.documentfile.provider.DocumentFile.*
 import androidx.lifecycle.*
 import app.core.AIOApp.Companion.aioHistory
+import app.core.AIOApp.Companion.aioSettings
 import app.core.AIOApp.Companion.internalDataFolder
 import app.core.bases.*
 import app.core.bases.language.*
@@ -17,6 +18,9 @@ import app.core.engines.downloader.DownloadModelsDBManager.getAllDownloadsWithRe
 import app.core.engines.objectbox.*
 import app.core.engines.objectbox.ObjectBoxManager.initializeObjectBoxDB
 import app.core.engines.settings.*
+import app.core.engines.supabase.*
+import app.core.engines.supabase.SupabaseCloudServer.initializeSupabaseClient
+import app.core.engines.user_profile.*
 import app.core.engines.youtube.*
 import com.aio.*
 import com.anggrayudi.storage.file.DocumentFileCompat.fromPublicFolder
@@ -76,7 +80,7 @@ import lib.process.ThreadsUtility.executeInBackground
  *
  * ## Startup Sequence:
  */
-class AIOApp : LanguageAwareApplication(), LifecycleObserver {
+class AIOApp : LocaleApplicationImpl(), LifecycleObserver {
 	
 	/**
 	 * Logger instance for comprehensive application lifecycle tracking.
@@ -116,7 +120,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		 *
 		 * @see AIOBackend for the underlying implementation.
 		 */
-		var IS_CLOUD_BACKUP_ENABLED = true
+		var IS_CLOUD_BACKUP_ENABLED = false
 		
 		/**
 		 * A global flag indicating whether the "Ultimate" version of the application
@@ -170,6 +174,56 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		}
 		
 		/**
+		 * A global [CoroutineScope] tied to the application's lifecycle, designed for
+		 * managing long-running background tasks.
+		 *
+		 * This scope is automatically cancelled when the application process is terminated,
+		 * ensuring that all associated coroutines are cleaned up properly to prevent
+		 * memory leaks and orphaned jobs. It is ideal for operations that need to
+		 * persist for the duration of the application's lifetime but should not block
+		 * the main thread.
+		 *
+		 * It uses a `SupervisorJob` to ensure that the failure of one child coroutine
+		 * does not cancel the entire scope, making it resilient to isolated errors.
+		 *
+		 * ### Example Usage:
+		 * ```kotlin
+		 * AIOApp.applicationJob.launch {
+		 *     // Perform a long-running background task, e.g., data sync
+		 * }
+		 * ```
+		 *
+		 * @see CoroutineScope
+		 * @see SupervisorJob
+		 * @see Dispatchers.IO
+		 */
+		private val applicationJob = SupervisorJob()
+		
+		/**
+		 * A global [CoroutineScope] tied to the application's lifecycle.
+		 *
+		 * This scope is the primary choice for launching long-running coroutines that
+		 * need to persist for the entire duration of the application's life, independent
+		 * of any specific `Activity` or `ViewModel`. It is automatically cancelled
+		 * when the application process is terminated, ensuring that all coroutines
+		 * launched within it are properly cleaned up to prevent leaks.
+		 *
+		 * It is configured with `Dispatchers.Default` and a `SupervisorJob`, which
+		 * provides resilience: if one child coroutine fails, it will not cancel
+		 * the scope or its other children.
+		 *
+		 * ### Use Cases:
+		 * - Initiating background data synchronization.
+		 * - Running long-term monitoring services.
+		 * - Performing one-off asynchronous tasks that are not tied to a UI component.
+		 *
+		 * @see CoroutineScope
+		 * @see SupervisorJob
+		 * @see Dispatchers.Default
+		 */
+		private val applicationScope = CoroutineScope(Dispatchers.Main + applicationJob)
+		
+		/**
 		 * Global application settings and user preferences manager.
 		 *
 		 * This singleton instance, initialized during the critical startup path, provides
@@ -182,6 +236,18 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		 * @see getAIOSettings for the public accessor.
 		 */
 		lateinit var aioSettings: AIOSettings
+		
+		/**
+		 * Manages the currently logged-in user's profile information.
+		 *
+		 * This lazily-initialized singleton holds the data model for the user's profile,
+		 * which may include details such as username, email, subscription status, and
+		 * cloud sync preferences. It is initialized on first access and serves as the
+		 * single source of truth for user-specific data throughout the application.
+		 *
+		 * @see AIOUser for the underlying data model.
+		 */
+		lateinit var aioUserProfile: AIOUserProfile
 		
 		/**
 		 * Browser bookmarks management system.
@@ -302,7 +368,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		 * @see DslJson
 		 */
 		val aioDSLJsonInstance = DslJson<Any>()
-
+		
 		/**
 		 * Comprehensive download management and execution system.
 		 *
@@ -386,6 +452,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		
 		INSTANCE = this
 		initializeObjectBoxDB(INSTANCE)
+		initializeSupabaseClient()
 		aioBackend.initParseBackend()
 		
 		startupManager.apply {
@@ -395,6 +462,7 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		}.let { performStartupExecution(it) }
 		
 		logger.d("Application startup sequence completed")
+		
 	}
 	
 	/**
@@ -460,18 +528,28 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 	 * @see StartupManager for the implementation of the priority-based execution logic.
 	 * @see AIOApp.onCreate where this method is called to initiate the startup process.
 	 */
-	private fun StartupManager.initializeCriticalServices() {
+	private fun StartupManager.initializeCriticalServices(
+		onSettingsLoaded: () -> Unit = {},
+		onUserProfileLoaded: () -> Unit = {}
+	) {
 		addCriticalTask { // Critical tasks block the main thread.
 			warmUpOkHttpClient()
 			logger.d("[Startup] Critical: Loading system configurations...")
-			loadSystemConfigurations()
+			loadSystemConfigurations(onSettingsLoaded)
 			logger.d("[Startup] Critical: System configurations loaded.")
+			
+			logger.d("[Startup] Critical: Loading application user profile...")
+			loadApplicationUserProfile(onUserProfileLoaded)
+			logger.d("[Startup] Critical: application user profile loaded.")
+			
 			logger.d("[Startup] Critical: Initializing download system...")
 			initializeDownloadSystemWithModels()
 			logger.d("[Startup] Critical: Download system initialized.")
+			
 			logger.d("[Startup] Critical: Preloading raw files...")
 			preloadApplicationRawFiles()
 			logger.d("[Startup] Critical: Raw files preloaded.")
+			
 			logger.d("[Startup] Critical: Initializing YouTube services...")
 			initializeYouTubeServices()
 			logger.d("[Startup] Critical: YouTube services initialized.")
@@ -584,39 +662,76 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 	}
 	
 	/**
-	 * Loads and initializes the core system configurations and user data.
+	 * Loads and initializes the core system configurations, primarily the application settings.
 	 *
-	 * This function orchestrates the loading of essential application data, including settings,
-	 * bookmarks, and browsing history. It implements a robust, fault-tolerant strategy
-	 * by first attempting to load data from the primary database source (ObjectBox). If any
-	 * error occurs during this process, it gracefully falls back to a legacy file-based
-	 * storage system to ensure the application remains functional.
-	 *
-	 * ### Loading Strategy:
-	 * 1.  **Attempt Database Load**: Tries to initialize `aioSettings`, `aioBookmark`, and
-	 *     `aioHistory` from their respective `DBManager` classes.
-	 * 2.  **Error Handling & Fallback**: If a database-related `Exception` is caught for any
-	 *     component, it logs the error and loads the data from a legacy file (`readObjectFromStorage`).
-	 * 3.  **Continue on Failure**: This approach ensures that a failure in one data system
-	 *     (e.g., bookmarks) does not prevent others (e.g., settings) from loading,
-	 *     promoting application resilience.
+	 * This function handles the loading of `aioSettings`. It implements a robust,
+	 * fault-tolerant strategy by first attempting to load the settings from the primary
+	 * database source (ObjectBox). If any error occurs during this process, it gracefully
+	 * falls back to a legacy file-based storage system (`readObjectFromStorage`) to
+	 * ensure the application remains functional even with database issues.
 	 *
 	 * This method is a critical part of the application's startup sequence, ensuring that all
-	 * user-specific data and configurations are available before the UI is presented.
+	 * user-specific configurations are available before the UI is presented.
+	 *
+	 * ### Loading Strategy:
+	 * 1.  **Attempt Database Load**: Tries to initialize `aioSettings` from the
+	 *     `AIOSettingsDBManager`.
+	 * 2.  **Error Handling & Fallback**: If a database-related `Exception` is caught,
+	 *     it logs the error and loads the settings from a legacy file.
+	 * 3.  **Resilience**: This approach ensures that a database failure does not prevent
+	 *     the application from starting, promoting overall resilience.
 	 *
 	 * @see AIOSettingsDBManager.loadSettingsFromDB
-	 * @see AIOBookmarksDBManager.loadAIOBookmarksFromDB
-	 * @see AIOHistoryDBManager.loadAIOHistoryFromDB
 	 * @see BaseObservable.readObjectFromStorage for the legacy fallback mechanism.
 	 */
-	private fun loadSystemConfigurations() {
+	private fun loadSystemConfigurations(onSettingsLoaded: () -> Unit) {
 		try {
 			logger.d("[Startup] Loading settings from database...")
 			aioSettings = AIOSettingsDBManager.loadSettingsFromDB()
+			aioSettings.updateInStorage()
 		} catch (error: Exception) {
-			logger.e("[Startup] Failed to load settings from database, " +
-				"falling back to legacy storage.", error)
+			logger.e(
+				"[Startup] Failed to load settings from database, " +
+					"falling back to legacy storage.", error
+			)
 			aioSettings = AIOSettings().apply(AIOSettings::readObjectFromStorage)
+			aioSettings.updateInStorage()
+			onSettingsLoaded.invoke()
+		}
+	}
+	
+	/**
+	 * Loads the application user profile from the database.
+	 *
+	 * This function is responsible for retrieving the current user's profile information,
+	 * such as username, preferences, and subscription status, from the local ObjectBox
+	 * database. It initializes the `aioUserProfile` singleton instance, making the
+	 * user's data accessible throughout the application.
+	 *
+	 * This operation is executed as part of the high-priority startup sequence, ensuring
+	 * that user-specific data is available early in the application lifecycle without
+	 * blocking the main thread.
+	 *
+	 * If the database fails to load the profile, an error is logged, and the
+	 * application proceeds with a default or empty user profile, ensuring resilience.
+	 *
+	 * @see AIOUserProfileDBManager.loadUserProfileFromDB for the database retrieval logic.
+	 * @see AIOUserProfile for the data model.
+	 */
+	private fun loadApplicationUserProfile(onUserProfileLoaded: () -> Unit = {}) {
+		try {
+			logger.d("[Startup] Loading user profile from database...")
+			aioUserProfile = AIOUserProfileDBManager.loadSettingsFromDB()
+			aioUserProfile.updateInStorage()
+			SupabaseCloudServer.observeSupabaseAuthState(applicationScope)
+		} catch (error: Exception) {
+			logger.e(
+				"[Startup] Failed to load user profile from database, " +
+					"falling back to legacy storage.", error
+			)
+			aioUserProfile = AIOUserProfile().apply(AIOUserProfile::readObjectFromStorage)
+			aioUserProfile.updateInStorage()
+			onUserProfileLoaded.invoke()
 		}
 	}
 	
@@ -693,10 +808,12 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 		try {
 			logger.d("[Startup] Loading browsing history from storage...")
 			aioHistory = AIOHistoryDBManager.loadAIOHistoryFromDB()
+			aioHistory.updateInStorage()
 			logger.d("[Startup] Browsing history loaded successfully")
 		} catch (error: Exception) {
 			logger.e("[Startup] Failed to load browsing history: ${error.message}", error)
 			aioHistory = AIOHistory().apply(AIOHistory::readObjectFromStorage)
+			aioHistory.updateInStorage()
 			logger.d("[Startup] Using legacy history storage as fallback")
 		}
 	}
@@ -724,11 +841,13 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 			logger.d("[Startup] Loading bookmarks from database...")
 			aioBookmark = AIOBookmarks()
 			aioBookmark = AIOBookmarksDBManager.loadAIOBookmarksFromDB()
+			aioBookmark.updateInStorage()
 			logger.d("[Startup] Bookmarks loaded successfully")
 			
 		} catch (error: Exception) {
 			logger.e("[Startup] Failed to load bookmarks from database: ${error.message}", error)
 			aioBookmark = AIOBookmarks().apply(AIOBookmarks::readObjectFromStorage)
+			aioBookmark.updateInStorage()
 			logger.d("[Startup] Using legacy bookmarks storage as fallback")
 		}
 	}
@@ -910,6 +1029,8 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 			logger.d("Shutdown: Cleanup completed")
 		})
 		
+		applicationScope.cancel()
+		applicationJob.cancel()
 		super.onTerminate()
 		logger.d("onTerminate: Application shutdown finished")
 	}
@@ -979,6 +1100,25 @@ class AIOApp : LanguageAwareApplication(), LifecycleObserver {
 	fun getAIOSettings(): AIOSettings {
 		logger.d("Accessing application settings")
 		return aioSettings
+	}
+	
+	/**
+	 * Checks if the global application settings have been successfully loaded.
+	 *
+	 * This utility function provides a reliable way to determine if the `aioSettings`
+	 * singleton has been initialized. It is useful for components that depend on
+	 * settings being available before they can operate correctly.
+	 *
+	 * @return `true` if the `aioSettings` instance has been loaded and is ready for use,
+	 *         `false` otherwise. This can be `false` early in the application lifecycle
+	 *         or if the initialization failed.
+	 * @see aioSettings for the singleton instance.
+	 * @see loadSystemConfigurations for the initialization logic.
+	 */
+	fun isAIOSettingLoaded(): Boolean {
+		return runCatching {
+			return aioSettings.userSelectedUILanguage.isNotEmpty()
+		}.getOrDefault(false)
 	}
 	
 	/**

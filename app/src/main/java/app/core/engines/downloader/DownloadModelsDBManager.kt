@@ -199,7 +199,7 @@ object DownloadModelsDBManager {
 	 */
 	@JvmStatic
 	@Synchronized
-	fun getAllDownloadsWithRelationsOptimized(): List<DownloadDataModel> {
+	fun getAllDownloadsWithRelationsAssembled(): List<DownloadDataModel> {
 		logger.d("Retrieving all downloads (optimized bulk assembly)")
 		val startTime = System.currentTimeMillis()
 		return try {

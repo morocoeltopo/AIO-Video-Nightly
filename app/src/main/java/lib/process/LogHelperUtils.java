@@ -14,7 +14,7 @@ public final class LogHelperUtils implements Serializable {
 
 	private LogHelperUtils(Class<?> class_) {
 		this.class_ = class_;
-		this.isDebuggingMode = AIOApp.IS_DEBUG_MODE_ON;
+		this.isDebuggingMode = AIOApp.Companion.getIS_DEBUG_MODE_ON();
 	}
 
 	@NonNull

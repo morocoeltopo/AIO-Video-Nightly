@@ -24,7 +24,7 @@ class UpStreamServerDownloadModelSync {
 			}.forEachIndexed { index, dataModel ->
 				val convertClassToJSON = dataModel.convertClassToJSON()
 				logger.d("Index:$index, DownloadModel [${dataModel.downloadId}]: $convertClassToJSON")
-				uploadJsonToParse(dataModel.javaClass.simpleName, convertClassToJSON)
+				uploadJsonToParse(downloadId = dataModel.downloadId, dataModel.javaClass.simpleName, convertClassToJSON)
 			}
 		})
 	}
@@ -58,13 +58,15 @@ class UpStreamServerDownloadModelSync {
 					} else {
 						logger.d("No DownloadModel found on server for this installation")
 					}
-					
-					if (baseActivity is MotherActivity) {
-						baseActivity.downloadFragment
-							?.finishedTasksFragment
-							?.finishedTasksListAdapter
-							?.notifyDataSetChangedOnSort(true)
-					}
+					AIOApp.downloadSystem.parseDownloadDataModelsAndSync(onComplete = {
+						if (baseActivity is MotherActivity) {
+							baseActivity.downloadFragment
+								?.finishedTasksFragment
+								?.finishedTasksListAdapter
+								?.notifyDataSetChangedOnSort(true)
+						}
+						logger.d("Refresh finished")
+					})
 				} catch (error: Exception) {
 					logger.d("downStreamSyncFromServer failed: ${error.message}")
 				}
@@ -73,77 +75,126 @@ class UpStreamServerDownloadModelSync {
 	}
 	
 	fun uploadJsonToParse(
+		downloadId: Int? = null,
 		tableName: String,
 		jsonString: String,
 		additionalData: Map<String, Any> = emptyMap(),
 		storeRawJson: Boolean = true,
-		rawJsonColumnName: String = "raw_json"
+		rawJsonColumnName: String = "raw_json",
+		updateIfExists: Boolean = true,
+		onComplete: ((success: Boolean, message: String) -> Unit)? = null
 	) {
-		if (!AIOApp.IS_CLOUD_BACKUP_ENABLED) return
+		if (!AIOApp.IS_CLOUD_BACKUP_ENABLED) {
+			onComplete?.invoke(false, "Cloud backup disabled")
+			return
+		}
 		
-		try {
-			val jsonObject = JSONObject(jsonString)
-			val cloudTable = ParseObject(tableName)
-			
-			// 1. Store the entire JSON string in a column if requested
-			if (storeRawJson) {
-				cloudTable.put(rawJsonColumnName, jsonString)
-			}
-			
-			// Add the installation ID
-			cloudTable.put("installation_id", getCurrentInstallation().installationId)
-			
-			// List of reserved Parse field names
-			val reservedFields = listOf(
-				"objectId", "id", "ACL", "createdAt", "updatedAt",
-				"authData", "sessionToken", "_rperm", "_wperm"
-			)
-			
-			// Add all fields from JSON
-			val iterator = jsonObject.keys()
-			while (iterator.hasNext()) {
-				val key = iterator.next()
-				val value = jsonObject.get(key)
-				
-				// Skip reserved fields or rename them
-				when {
-					reservedFields.contains(key) -> {
-						// Rename "id" to "original_id" or skip
-						if (key == "id") {
-							cloudTable.put("original_id", value)
+		ThreadsUtility.executeInBackground(
+			timeOutInMilli = 15000,
+			codeBlock = {
+				try {
+					val installationId = getCurrentInstallation().installationId
+					val jsonObject = JSONObject(jsonString)
+					
+					// Step 1: Find existing record (if needed)
+					var existingObjectId: String? = null
+					if (updateIfExists) {
+						try {
+							val parseQuery = ParseQuery.getQuery<ParseObject>(tableName)
+							parseQuery.whereEqualTo("installation_id", installationId)
+							downloadId?.let { parseQuery.whereEqualTo("downloadID", it) }
+							parseQuery.orderByDescending("createdAt")
+							parseQuery.limit = 1
+							
+							val result = parseQuery.find()
+							if (result.isNotEmpty()) {
+								existingObjectId = result[0].objectId
+								logger.d("Existing record found: $existingObjectId")
+							}
+						} catch (e: Exception) {
+							logger.d("Error checking existing record: ${e.message}")
+							// Continue anyway
 						}
-						// For other reserved fields, you can either skip or rename
-						// else -> skip
 					}
 					
-					else -> {
-						// Only add non-null and non-empty values
-						if (value != null && value != JSONObject.NULL) {
-							cloudTable.put(key, value)
+					// Step 2: Prepare ParseObject (new or existing)
+					val cloudTable = if (existingObjectId != null) {
+						createWithoutData(tableName, existingObjectId)
+					} else {
+						ParseObject(tableName)
+					}
+					
+					// Step 3: Update all fields
+					
+					// Store raw JSON
+					if (storeRawJson) {
+						cloudTable.put(rawJsonColumnName, jsonString)
+					}
+					
+					// Installation ID
+					cloudTable.put("installation_id", installationId)
+					
+					// Process JSON fields
+					val iterator = jsonObject.keys()
+					while (iterator.hasNext()) {
+						val key = iterator.next()
+						val value = jsonObject.get(key)
+						
+						when {
+							key == "id" -> cloudTable.put("original_id", value)
+							key in listOf("objectId", "ACL", "createdAt", "updatedAt") -> {
+								// Skip Parse reserved fields
+							}
+							value != null && value != JSONObject.NULL -> {
+								cloudTable.put(key, value)
+							}
 						}
 					}
+					
+					// Additional metadata
+					for ((key, value) in additionalData) {
+						cloudTable.put(key, value)
+					}
+					
+					cloudTable.put("last_updated", Date())
+					
+					// Step 4: Save
+					cloudTable.saveInBackground { error ->
+						if (error != null) {
+							val errorMsg = "Upload failed: ${error.message}"
+							logger.d(errorMsg)
+							onComplete?.invoke(false, errorMsg)
+							
+							// Fallback: Try to create new if update failed
+							if (existingObjectId != null) {
+								logger.d("Update failed, trying to create new record")
+								uploadJsonToParse(
+									tableName = tableName,
+									jsonString = jsonString,
+									additionalData = additionalData,
+									storeRawJson = storeRawJson,
+									rawJsonColumnName = rawJsonColumnName,
+									updateIfExists = false, // Force create new
+									onComplete = onComplete
+								)
+							}
+						} else {
+							val successMsg = if (existingObjectId != null) {
+								"Settings updated successfully"
+							} else {
+								"Settings uploaded successfully"
+							}
+							logger.d(successMsg)
+							onComplete?.invoke(true, successMsg)
+						}
+					}
+					
+				} catch (error: Exception) {
+					val errorMsg = "Upload failed: ${error.message}"
+					logger.d(errorMsg)
+					onComplete?.invoke(false, errorMsg)
 				}
 			}
-			
-			// Add any additional data (like device info, etc.)
-			for ((key, value) in additionalData) {
-				cloudTable.put(key, value)
-			}
-			
-			// Add timestamp for when this was uploaded
-			cloudTable.put("uploaded_at", Date())
-			
-			// Save in background
-			cloudTable.saveInBackground {
-				if (it != null) {
-					logger.d("uploadJsonToParse failed: ${it.message}")
-				} else {
-					logger.d("uploadJsonToParse succeeded for table: $tableName")
-				}
-			}
-			
-		} catch (error: Exception) {
-			logger.d("uploadJsonToParse failed: ${error.message}")
-		}
+		)
 	}
 }

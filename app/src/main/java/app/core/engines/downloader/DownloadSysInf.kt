@@ -1,14 +1,14 @@
 package app.core.engines.downloader
 
-import app.core.AIOApp
+import app.core.*
 import app.core.AIOApp.Companion.aioSettings
 import app.core.engines.downloader.DownloadModelFilesParser.getDownloadDataModels
 import app.core.engines.downloader.DownloadStatus.COMPLETE
-import com.aio.R
-import kotlinx.coroutines.CoroutineScope
+import com.aio.*
+import kotlinx.coroutines.*
 import lib.device.DateTimeUtils.getDaysPassedSince
-import lib.process.LogHelperUtils.from
-import lib.process.ThreadsUtility
+import lib.process.*
+import lib.process.LogHelperUtils.*
 import lib.texts.CommonTextUtils.getText
 
 /**
@@ -43,7 +43,7 @@ import lib.texts.CommonTextUtils.getText
  * @see DownloadTaskInf for individual download task execution
  */
 interface DownloadSysInf {
-
+	
 	/**
 	 * Indicates whether the download system is currently initializing.
 	 *
@@ -57,7 +57,7 @@ interface DownloadSysInf {
 	 * - Bulk operations that require exclusive access
 	 */
 	var isInitializing: Boolean
-
+	
 	/**
 	 * Reference to the main application context.
 	 *
@@ -72,7 +72,7 @@ interface DownloadSysInf {
 	 */
 	val appContext: AIOApp
 		get() = AIOApp.INSTANCE
-
+	
 	/**
 	 * Manages and displays system notifications for downloads.
 	 *
@@ -87,7 +87,7 @@ interface DownloadSysInf {
 	 * - Persistent notifications for ongoing operations
 	 */
 	val downloadNotification: DownloadNotification
-
+	
 	/**
 	 * Collection of pre-loaded download models for rapid system initialization.
 	 *
@@ -101,7 +101,7 @@ interface DownloadSysInf {
 	 * - Improved responsiveness when displaying download lists
 	 */
 	val prefetchedEntireDownloadModels: ArrayList<DownloadDataModel>
-
+	
 	/**
 	 * Collection of all currently active downloads.
 	 *
@@ -119,7 +119,7 @@ interface DownloadSysInf {
 	 * or are explicitly removed by the user.
 	 */
 	val activeDownloadDataModels: ArrayList<DownloadDataModel>
-
+	
 	/**
 	 * Collection of all completed downloads.
 	 *
@@ -133,7 +133,7 @@ interface DownloadSysInf {
 	 * - Automatic cleanup during system initialization
 	 */
 	val finishedDownloadDataModels: ArrayList<DownloadDataModel>
-
+	
 	/**
 	 * List of currently running download tasks.
 	 *
@@ -146,7 +146,7 @@ interface DownloadSysInf {
 	 * - Excess tasks are moved to waiting queue
 	 */
 	val runningDownloadTasks: ArrayList<DownloadTaskInf>
-
+	
 	/**
 	 * Queue of download tasks waiting for execution.
 	 *
@@ -160,7 +160,7 @@ interface DownloadSysInf {
 	 * - Manual prioritization support through reordering
 	 */
 	val waitingDownloadTasks: ArrayList<DownloadTaskInf>
-
+	
 	/**
 	 * Manages synchronization between download logic and the user interface.
 	 *
@@ -175,7 +175,7 @@ interface DownloadSysInf {
 	 * - Progress bars and download statistics
 	 */
 	val downloadsUIManager: DownloadUIManager
-
+	
 	/**
 	 * List of listeners that are notified when a download finishes.
 	 *
@@ -190,7 +190,7 @@ interface DownloadSysInf {
 	 * - Logging download completion events
 	 */
 	var downloadOnFinishListeners: ArrayList<DownloadFinishUIListener>
-
+	
 	/**
 	 * Adds a new download entry into the download manager system.
 	 *
@@ -213,7 +213,7 @@ interface DownloadSysInf {
 	fun addDownload(downloadModel: DownloadDataModel, onAdded: () -> Unit = {}) {
 		onAdded()
 	}
-
+	
 	/**
 	 * Resumes a paused or interrupted download task.
 	 *
@@ -241,7 +241,7 @@ interface DownloadSysInf {
 	) {
 		onResumed()
 	}
-
+	
 	/**
 	 * Pauses an active download, temporarily halting data transfer.
 	 *
@@ -262,7 +262,7 @@ interface DownloadSysInf {
 	fun pauseDownload(downloadModel: DownloadDataModel, onPaused: () -> Unit = {}) {
 		onPaused()
 	}
-
+	
 	/**
 	 * Clears a download from the system while preserving downloaded files.
 	 *
@@ -280,7 +280,7 @@ interface DownloadSysInf {
 	fun clearDownload(downloadModel: DownloadDataModel, onCleared: () -> Unit = {}) {
 		onCleared()
 	}
-
+	
 	/**
 	 * Permanently deletes a download and its associated files.
 	 *
@@ -302,7 +302,7 @@ interface DownloadSysInf {
 	fun deleteDownload(downloadModel: DownloadDataModel, onDeleted: () -> Unit = {}) {
 		onDeleted()
 	}
-
+	
 	/**
 	 * Resumes all currently paused downloads in the system.
 	 *
@@ -317,7 +317,7 @@ interface DownloadSysInf {
 	 * - Updates all relevant UI components
 	 */
 	fun resumeAllDownloads() {}
-
+	
 	/**
 	 * Pauses all currently active downloads in the system.
 	 *
@@ -330,7 +330,7 @@ interface DownloadSysInf {
 	 * - User-initiated mass pause operations
 	 */
 	fun pauseAllDownloads() {}
-
+	
 	/**
 	 * Clears all downloads from the system while preserving files.
 	 *
@@ -339,7 +339,7 @@ interface DownloadSysInf {
 	 * preserving the user's downloaded content.
 	 */
 	fun clearAllDownloads() {}
-
+	
 	/**
 	 * Permanently deletes all downloads and their associated files.
 	 *
@@ -352,7 +352,7 @@ interface DownloadSysInf {
 	 * be reversed. Use only when intentional mass deletion is required.
 	 */
 	fun deleteAllDownloads() {}
-
+	
 	/**
 	 * Initializes the download system by loading and syncing existing downloads.
 	 *
@@ -372,7 +372,7 @@ interface DownloadSysInf {
 	fun initSystem() {
 		parseDownloadDataModelsAndSync()
 	}
-
+	
 	/**
 	 * Gets the current count of actively running download tasks.
 	 *
@@ -383,7 +383,7 @@ interface DownloadSysInf {
 	 *         less than or equal to the configured parallel download limit.
 	 */
 	fun numberOfRunningTasks(): Int = runningDownloadTasks.size
-
+	
 	/**
 	 * Checks if a download exists in the running tasks list.
 	 *
@@ -397,7 +397,7 @@ interface DownloadSysInf {
 	fun existsInRunningTasksList(downloadModel: DownloadDataModel): Boolean {
 		return runningDownloadTasks.any { it.downloadDataModel.downloadId == downloadModel.downloadId }
 	}
-
+	
 	/**
 	 * Checks if a download exists in the waiting tasks list.
 	 *
@@ -412,7 +412,7 @@ interface DownloadSysInf {
 	fun existsInWaitingTasksList(downloadModel: DownloadDataModel): Boolean {
 		return waitingDownloadTasks.any { it.downloadDataModel.downloadId == downloadModel.downloadId }
 	}
-
+	
 	/**
 	 * Checks if a download exists in the active downloads list.
 	 *
@@ -426,7 +426,7 @@ interface DownloadSysInf {
 	fun existsInActiveDownloadDataModelsList(downloadModel: DownloadDataModel): Boolean {
 		return activeDownloadDataModels.contains(downloadModel)
 	}
-
+	
 	/**
 	 * Finds a download task by its associated data model.
 	 *
@@ -442,7 +442,7 @@ interface DownloadSysInf {
 		return runningDownloadTasks.toList().find { it.downloadDataModel.downloadId == downloadModel.downloadId }
 			?: waitingDownloadTasks.toList().find { it.downloadDataModel.downloadId == downloadModel.downloadId }
 	}
-
+	
 	/**
 	 * Checks if a download task can be safely paused given its current state.
 	 *
@@ -462,7 +462,7 @@ interface DownloadSysInf {
 	fun canDownloadTaskBePaused(downloadModel: DownloadDataModel): Boolean {
 		return existsInRunningTasksList(downloadModel) || existsInWaitingTasksList(downloadModel)
 	}
-
+	
 	/**
 	 * Loads and synchronizes download models from persistent storage.
 	 *
@@ -483,7 +483,7 @@ interface DownloadSysInf {
 	 * @throws RuntimeException if critical errors occur during parsing that
 	 *         prevent proper system initialization.
 	 */
-	fun parseDownloadDataModelsAndSync() {
+	fun parseDownloadDataModelsAndSync(onComplete: (Boolean) -> Unit = {}) {
 		ThreadsUtility.executeInBackground(codeBlock = {
 			isInitializing = true
 			val prefetchedDownloadModels = prefetchedEntireDownloadModels.ifEmpty { getDownloadDataModels() }
@@ -493,29 +493,31 @@ interface DownloadSysInf {
 						if (it.globalSettings.downloadAutoRemoveTaskAfterNDays == 0) {
 							it.deleteModelFromDisk(); return@forEach
 						}
-
+						
 						val autoRemoveDaysSettings = aioSettings.downloadAutoRemoveTaskAfterNDays
 						if (getDaysPassedSince(it.lastModifiedTimeDate) > autoRemoveDaysSettings) {
 							it.deleteModelFromDisk(); return@forEach
 						}
 					}
-
+					
 					it.statusInfo = getText(R.string.title_completed)
 					addAndSortFinishedDownloadDataModels(it)
 				}
-
+				
 				if (isValidActiveDownloadModel(it)) {
 					it.statusInfo = getText(R.string.title_paused)
 					addAndSortActiveDownloadModelList(it)
 				}
 			}
 			isInitializing = false
+			onComplete.invoke(true)
 		}, errorHandler = {
 			isInitializing = false
+			onComplete.invoke(false)
 			error("Error found in parsing download model from disk.")
 		})
 	}
-
+	
 	/**
 	 * Adds a download to the active list and maintains proper sorting.
 	 *
@@ -530,7 +532,7 @@ interface DownloadSysInf {
 			activeDownloadDataModels.add(downloadModel)
 		}; sortActiveDownloadDataModels()
 	}
-
+	
 	/**
 	 * Sorts active downloads by start time with newest downloads first.
 	 *
@@ -541,7 +543,7 @@ interface DownloadSysInf {
 	fun sortActiveDownloadDataModels() {
 		activeDownloadDataModels.sortByDescending { it.startTimeDate }
 	}
-
+	
 	/**
 	 * Adds a download to the completed list and maintains proper sorting.
 	 *
@@ -556,7 +558,7 @@ interface DownloadSysInf {
 			finishedDownloadDataModels.add(downloadModel)
 		}; sortFinishedDownloadDataModels()
 	}
-
+	
 	/**
 	 * Sorts completed downloads by start time with newest downloads first.
 	 *
@@ -567,7 +569,7 @@ interface DownloadSysInf {
 	fun sortFinishedDownloadDataModels() {
 		finishedDownloadDataModels.sortByDescending { it.startTimeDate }
 	}
-
+	
 	/**
 	 * Validates if a download model represents an active (incomplete) download.
 	 *
@@ -587,9 +589,9 @@ interface DownloadSysInf {
 	fun isValidActiveDownloadModel(downloadModel: DownloadDataModel): Boolean {
 		val isValidActiveTask = (downloadModel.status != COMPLETE && !downloadModel.isComplete)
 		return isValidActiveTask && !downloadModel.isRemoved && !downloadModel.isDeleted &&
-				!downloadModel.isWentToPrivateFolder
+			!downloadModel.isWentToPrivateFolder
 	}
-
+	
 	/**
 	 * Validates if a download model represents a successfully completed download.
 	 *
@@ -608,13 +610,13 @@ interface DownloadSysInf {
 	 */
 	fun isValidCompletedDownloadModel(downloadModel: DownloadDataModel): Boolean {
 		val isValid = (downloadModel.status == COMPLETE || downloadModel.isComplete) &&
-				!downloadModel.isWentToPrivateFolder &&
-				downloadModel.getDestinationFile().exists()
+			!downloadModel.isWentToPrivateFolder &&
+			downloadModel.getDestinationFile().exists()
 		val isExisted = downloadModel.getDestinationFile().exists()
 		if (!isExisted) downloadModel.deleteModelFromDisk()
 		return isValid && isExisted
 	}
-
+	
 	/**
 	 * Logs the current status of a download task for debugging and monitoring.
 	 *

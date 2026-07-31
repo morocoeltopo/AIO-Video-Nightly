@@ -7,7 +7,8 @@
 	android:layout_height="wrap_content"
 	android:background="@color/transparent"
 	android:clickable="true"
-	tools:ignore="UseAppTint, UselessParent">
+	tools:ignore="UseAppTint, UselessParent"
+	>
 	
 	<androidx.cardview.widget.CardView
 		android:layout_width="match_parent"
@@ -18,13 +19,15 @@
 		android:layout_marginBottom="@dimen/_5"
 		android:orientation="vertical"
 		app:cardBackgroundColor="@color/color_cardview_bg"
-		app:cardCornerRadius="@dimen/_10">
+		app:cardCornerRadius="@dimen/_10"
+		>
 		
 		<RelativeLayout
 			android:id="@+id/main_row_container"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:background="@drawable/ic_button_selector_background">
+			android:background="@drawable/ic_button_selector_background"
+			>
 			
 			<androidx.cardview.widget.CardView
 				android:id="@+id/thumbnail_container"
@@ -35,7 +38,8 @@
 				android:layout_marginEnd="@dimen/_0"
 				android:layout_marginBottom="@dimen/_5"
 				app:cardBackgroundColor="@color/color_cardview_bg"
-				app:cardCornerRadius="@dimen/_5">
+				app:cardCornerRadius="@dimen/_5"
+				>
 				
 				<ImageView
 					android:id="@+id/img_media_play_indicator"
@@ -48,7 +52,8 @@
 					android:src="@drawable/image_media_play"
 					android:tint="@color/color_on_primary"
 					android:visibility="gone"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<ImageView
 					android:id="@+id/img_file_thumbnail"
@@ -59,7 +64,8 @@
 					android:importantForAccessibility="no"
 					android:scaleType="centerCrop"
 					android:src="@drawable/image_no_thumb_available"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<ImageView
 					android:id="@+id/img_site_favicon"
@@ -72,7 +78,8 @@
 					android:elevation="@dimen/_5"
 					android:importantForAccessibility="no"
 					android:visibility="gone"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<ImageView
 					android:id="@+id/img_file_type_indicator"
@@ -88,7 +95,8 @@
 					android:importantForAccessibility="no"
 					android:tint="@color/color_on_primary"
 					android:visibility="visible"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<ImageView
 					android:id="@+id/img_private_folder_indicator"
@@ -105,7 +113,8 @@
 					android:importantForAccessibility="no"
 					android:tint="@color/color_on_primary"
 					android:visibility="visible"
-					tools:ignore="ImageContrastCheck" />
+					tools:ignore="ImageContrastCheck"
+					/>
 				
 				<LinearLayout
 					android:id="@+id/container_media_duration"
@@ -118,7 +127,8 @@
 					android:layout_marginBottom="@dimen/_5"
 					android:background="@drawable/rounded_primary_color"
 					android:orientation="vertical"
-					android:visibility="gone">
+					android:visibility="gone"
+					>
 					
 					<TextView
 						android:id="@+id/txt_media_duration"
@@ -133,7 +143,8 @@
 						android:textFontWeight="700"
 						android:textSize="@dimen/smallest_text_size"
 						android:textStyle="normal"
-						tools:ignore="TextContrastCheck" />
+						tools:ignore="TextContrastCheck"
+						/>
 				</LinearLayout>
 				
 				<ImageView
@@ -147,7 +158,8 @@
 					android:importantForAccessibility="no"
 					android:src="@drawable/media3_icon_check_circle_filled"
 					android:tint="@color/color_secondary"
-					android:visibility="gone" />
+					android:visibility="gone"
+					/>
 			</androidx.cardview.widget.CardView>
 			
 			<LinearLayout
@@ -157,27 +169,31 @@
 				android:layout_marginStart="@dimen/_8"
 				android:layout_marginEnd="@dimen/_5"
 				android:layout_toEndOf="@id/thumbnail_container"
-				android:orientation="vertical">
+				android:orientation="vertical"
+				>
 				
 				<RelativeLayout
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
+					android:layout_height="wrap_content"
+					>
 					
 					<TextView
 						android:id="@+id/txt_file_name"
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
 						android:layout_toStartOf="@id/btn_open_download_file"
+						android:background="@drawable/rounded_border_color"
 						android:ellipsize="end"
 						android:fontFamily="@font/application_font_family"
 						android:gravity="top|left"
 						android:maxLines="2"
 						android:singleLine="false"
-						android:text="@string/text_sample_video_file_name"
+						android:text="@string/text_empty_string"
 						android:textColor="@color/color_text_primary"
 						android:textFontWeight="500"
 						android:textSize="@dimen/message_text_size"
-						tools:ignore="TextSizeCheck,VisualLintBounds" />
+						tools:ignore="TextSizeCheck,VisualLintBounds"
+						/>
 					
 					<ImageView
 						android:id="@+id/btn_open_download_file"
@@ -190,7 +206,8 @@
 						android:importantForAccessibility="no"
 						android:src="@drawable/ic_button_open_v2"
 						android:tint="@color/color_secondary"
-						tools:ignore="ImageContrastCheck" />
+						tools:ignore="ImageContrastCheck"
+						/>
 				</RelativeLayout>
 				
 				<RelativeLayout
@@ -198,7 +215,8 @@
 					android:layout_height="wrap_content"
 					android:layout_marginTop="@dimen/_3"
 					android:background="@drawable/rounded_surface_color"
-					android:orientation="horizontal">
+					android:orientation="horizontal"
+					>
 					
 					<TextView
 						android:id="@+id/txt_file_info"
@@ -219,7 +237,8 @@
 						android:textFontWeight="500"
 						android:textSize="@dimen/smaller_text_size"
 						android:textStyle="italic"
-						tools:ignore="TextContrastCheck" />
+						tools:ignore="TextContrastCheck"
+						/>
 					
 					<ImageView
 						android:id="@+id/img_new_indicator"
@@ -233,7 +252,8 @@
 						android:src="@drawable/ic_button_dot"
 						android:tint="@color/color_secondary"
 						android:visibility="gone"
-						tools:ignore="ContentDescription" />
+						tools:ignore="ContentDescription"
+						/>
 				</RelativeLayout>
 			</LinearLayout>
 		</RelativeLayout>

@@ -4,6 +4,7 @@ import app.core.engines.objectbox.*
 import app.core.engines.settings.AIOSettingsDBManager.APP_SETTINGS_DB_ID
 import app.core.engines.settings.AIOSettingsDBManager.createDefaultSettingsObject
 import app.core.engines.settings.AIOSettingsDBManager.saveSettingsInDB
+import app.core.engines.supabase.*
 import io.objectbox.*
 import lib.process.*
 
@@ -151,23 +152,24 @@ object AIOSettingsDBManager {
 	}
 	
 	/**
-	 * Persists the provided settings to the ObjectBox database.
+	 * Persists the provided [AIOSettings] instance to the ObjectBox database.
 	 *
-	 * This method saves or updates the application settings. It uses ObjectBox's `put`
-	 * operation, which handles both insert and update operations automatically. Before
-	 * saving, it ensures the settings object has the correct fixed ID (`APP_SETTINGS_DB_ID`)
-	 * to guarantee that only a single settings record exists in the database.
+	 * This method saves or updates the application's configuration. It uses ObjectBox's `put`
+	 * operation, which seamlessly handles both inserting a new record and updating an existing one.
+	 * Before saving, it ensures the settings object has the correct fixed ID (`APP_SETTINGS_DB_ID`)
+	 * to guarantee that only a single, consistent settings record exists.
 	 *
-	 * This function is synchronized to prevent race conditions from concurrent writes,
-	 * ensuring data integrity.
+	 * The method is synchronized to prevent race conditions from concurrent writes, ensuring
+	 * data integrity and stability.
 	 *
 	 * Error Handling:
-	 * - If a database error occurs, the exception is caught and logged.
-	 * - The function does not re-throw exceptions, allowing the application to continue
-	 *   running with the current in-memory settings, thus preventing crashes due to
-	 *   persistence failures.
+	 * If a database error occurs during the save operation, the exception is caught and logged.
+	 * The function does not re-throw the exception, allowing the application to continue
+	 * running with its current in-memory settings. This prevents crashes due to
+	 * intermittent I/O or database failures.
 	 *
-	 * @param settings The `AIOSettings` instance to be saved to the database.
+	 * @param settings The `AIOSettings` object to be saved. This instance will be modified
+	 *                 if its `downloadDataModelDBId` is not already set to the standard ID.
 	 * @see Box.put for details on ObjectBox's insert/update operation.
 	 * @see APP_SETTINGS_DB_ID for the fixed ID of the settings record.
 	 */
@@ -177,6 +179,11 @@ object AIOSettingsDBManager {
 		try {
 			if (settings.downloadDataModelDBId < 0) {
 				settings.downloadDataModelDBId = APP_SETTINGS_DB_ID
+				logger.d("Saving setting to cloud: ${settings.convertClassToJSON()}")
+				SupabaseCloudServer.updateDataModelToSupabase(
+					dataModelName = AIOSettings::class.java.simpleName,
+					dataModelJsonString = settings.convertClassToJSON()
+				)
 			}
 			getSettingsObjectBox().put(settings)
 			logger.d("Settings saved successfully to ObjectBox database id:${settings.id}")
